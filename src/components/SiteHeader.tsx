@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { SignOutButton } from "@/components/SignOutButton";
+import { Logo } from "@/components/Logo";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -8,8 +9,8 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <Link href="/" className="logo">
-          MyTutoringHub
+        <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
+          <Logo />
         </Link>
         <nav className="nav">
           <Link href="/search">Find tutors</Link>

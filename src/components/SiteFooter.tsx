@@ -1,14 +1,15 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <strong className="logo" style={{ display: "inline-block" }}>
-            MyTutoringHub
-          </strong>
-          <p className="muted">
+          <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
+            <Logo />
+          </Link>
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
             Find private tutors online or in person. Lesson payments stay between student and tutor.
           </p>
         </div>

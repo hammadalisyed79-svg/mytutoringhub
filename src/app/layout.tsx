@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   description:
     "MyTutoringHub connects students and private tutors. Subscribe to message, post requests, and arrange lessons directly.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://mytutoringhub.com"),
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo-mark.png" }],
+    shortcut: ["/logo.svg"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

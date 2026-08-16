@@ -78,6 +78,39 @@ a {
   color: var(--brand-deep);
 }
 
+.logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.brand-logo-mark {
+  width: 2.15rem;
+  height: 2.15rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.brand-logo-text {
+  font-family: var(--font-display), serif;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--brand-deep);
+  line-height: 1;
+}
+
+.brand-logo-text span {
+  color: var(--accent);
+}
+
+
 .nav {
   display: flex;
   flex-wrap: wrap;
@@ -508,6 +541,23 @@ select {
   font-weight: 700;
   opacity: 0.85;
   margin: 0 0 0.75rem !important;
+}
+
+.hero-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.hero-brand-mark {
+  width: 3rem;
+  height: 3rem;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.25));
+}
+
+.hero-brand-row .hero-kicker {
+  margin: 0 !important;
 }
 
 .hero-findtutor h1 {

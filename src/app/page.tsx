@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
+import { LogoMark } from "@/components/Logo";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 
 export default async function HomePage() {
@@ -24,7 +25,10 @@ export default async function HomePage() {
     <>
       <section className="hero hero-findtutor">
         <div className="hero-content">
-          <p className="hero-kicker">Private lessons & tutors</p>
+          <div className="hero-brand-row">
+            <LogoMark className="hero-brand-mark" />
+            <p className="hero-kicker">Private lessons & tutors</p>
+          </div>
           <h1>MyTutoringHub</h1>
           <p>Find private tutors that unlock your potential — online or near you.</p>
           <HeroSearch />
