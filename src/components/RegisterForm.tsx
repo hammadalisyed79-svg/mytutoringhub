@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export function RegisterForm() {
-  const router = useRouter();
+function RegisterFormInner() {
+  const searchParams = useSearchParams();
+  const defaultRole = searchParams.get("role") === "tutor" ? "TUTOR" : "STUDENT";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,11 +39,10 @@ export function RegisterForm() {
     });
     setLoading(false);
     if (login?.error) {
-      router.push("/login");
+      window.location.href = "/login";
       return;
     }
-    router.push("/pricing");
-    router.refresh();
+    window.location.href = "/pricing";
   }
 
   return (
@@ -62,12 +62,17 @@ export function RegisterForm() {
       <fieldset className="role-pick">
         <legend>I am a…</legend>
         <label className="radio">
-          <input type="radio" name="role" value="STUDENT" defaultChecked />
-          Student / parent
+          <input
+            type="radio"
+            name="role"
+            value="STUDENT"
+            defaultChecked={defaultRole === "STUDENT"}
+          />
+          Student / parent looking for a tutor
         </label>
         <label className="radio">
-          <input type="radio" name="role" value="TUTOR" />
-          Tutor
+          <input type="radio" name="role" value="TUTOR" defaultChecked={defaultRole === "TUTOR"} />
+          Tutor looking for students
         </label>
       </fieldset>
       {error && <p className="form-error">{error}</p>}
@@ -75,5 +80,13 @@ export function RegisterForm() {
         {loading ? "Creating account…" : "Create account"}
       </button>
     </form>
+  );
+}
+
+export function RegisterForm() {
+  return (
+    <Suspense fallback={<p className="muted">Loading…</p>}>
+      <RegisterFormInner />
+    </Suspense>
   );
 }

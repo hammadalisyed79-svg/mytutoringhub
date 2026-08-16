@@ -9,6 +9,7 @@ type SearchParams = Promise<{
   mode?: string;
   verified?: string;
   max?: string;
+  location?: string;
 }>;
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
@@ -31,6 +32,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               ],
             }
           : {}),
+      ...(sp.location ? { location: { contains: sp.location } } : {}),
       ...(sp.mode === "online" ? { online: true } : {}),
       ...(sp.mode === "inperson" ? { inPerson: true } : {}),
       ...(sp.verified === "1" ? { verified: true } : {}),
@@ -46,18 +48,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">Find a tutor</h1>
-        <p className="section-lead">Filter by subject, format, and budget. Highlighted tutors appear first.</p>
+        <h1 className="page-title">Find private tutors</h1>
+        <p className="section-lead">
+          Choose by subject, price, and format. Contact tutors with a Student Pass — lesson fees
+          stay between you.
+        </p>
 
-        <form className="filters" method="get">
+        <form className="filters filters-wide" method="get">
           <label>
-            Search
-            <input name="q" defaultValue={sp.q || ""} placeholder="Name, subject, city…" />
+            Keyword
+            <input name="q" defaultValue={sp.q || ""} placeholder="Tutor name, topic…" />
           </label>
           <label>
             Subject
             <select name="subject" defaultValue={sp.subject || ""}>
-              <option value="">Any</option>
+              <option value="">Any subject</option>
               {subjects.map((s) => (
                 <option key={s.id} value={s.name}>
                   {s.name}
@@ -66,28 +71,42 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             </select>
           </label>
           <label>
-            Mode
+            Location
+            <input name="location" defaultValue={sp.location || ""} placeholder="City or Online" />
+          </label>
+          <label>
+            Format
             <select name="mode" defaultValue={sp.mode || ""}>
-              <option value="">Any</option>
-              <option value="online">Online</option>
-              <option value="inperson">In person</option>
+              <option value="">Online or in person</option>
+              <option value="online">Online lessons</option>
+              <option value="inperson">In-person lessons</option>
             </select>
           </label>
           <label>
-            Max rate
-            <input name="max" type="number" min={5} defaultValue={sp.max || ""} placeholder="e.g. 40" />
+            Max $/hr
+            <input name="max" type="number" min={5} defaultValue={sp.max || ""} placeholder="40" />
           </label>
           <label className="radio" style={{ alignSelf: "end", marginBottom: "0.55rem" }}>
             <input type="checkbox" name="verified" value="1" defaultChecked={sp.verified === "1"} />
-            Verified only
+            Verified tutors only
           </label>
           <button className="btn" type="submit" style={{ alignSelf: "end" }}>
-            Apply
+            Search
           </button>
         </form>
 
-        <div className="results">
-          {tutors.length === 0 && <p className="muted">No tutors match those filters yet.</p>}
+        <p className="muted" style={{ marginBottom: "1rem" }}>
+          {tutors.length} tutor{tutors.length === 1 ? "" : "s"} found
+          {sp.subject ? ` for ${sp.subject}` : ""}
+        </p>
+
+        <div className="tutor-grid tutor-grid-list">
+          {tutors.length === 0 && (
+            <p className="muted">
+              No tutors match yet.{" "}
+              <Link href="/ads/new">Post a student request</Link> so tutors can find you.
+            </p>
+          )}
           {tutors.map((t) => {
             const avg =
               t.reviews.length > 0
@@ -97,23 +116,32 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               <Link
                 key={t.id}
                 href={`/tutors/${t.id}`}
-                className={`tutor-row ${t.highlighted ? "highlighted" : ""}`}
+                className={`tutor-card ${t.highlighted ? "highlighted" : ""}`}
               >
-                <div className="meta">
-                  {t.highlighted && <span className="badge accent">Highlighted</span>}
-                  {t.verified && <span className="badge">Verified</span>}
-                  {avg !== null && <span>{avg.toFixed(1)} ★ ({t.reviews.length})</span>}
+                <div className="tutor-avatar" aria-hidden>
+                  {t.user.name.slice(0, 1)}
                 </div>
-                <h2 style={{ margin: 0, fontSize: "1.25rem" }}>{t.user.name}</h2>
-                <p style={{ margin: 0 }}>{t.headline || t.subjects}</p>
-                <div className="meta">
-                  <span>${t.hourlyRate}/hr</span>
-                  <span>{t.location || "Location TBD"}</span>
-                  <span>
-                    {t.online ? "Online" : ""}
-                    {t.online && t.inPerson ? " · " : ""}
-                    {t.inPerson ? "In person" : ""}
-                  </span>
+                <div className="tutor-card-body">
+                  <div className="meta">
+                    {t.highlighted && <span className="badge accent">Highlighted</span>}
+                    {t.verified && <span className="badge">Verified</span>}
+                    {avg !== null && (
+                      <span>
+                        {avg.toFixed(1)} ★ · {t.reviews.length} review
+                        {t.reviews.length === 1 ? "" : "s"}
+                      </span>
+                    )}
+                  </div>
+                  <h2>{t.user.name}</h2>
+                  <p className="tutor-headline">{t.headline || t.subjects}</p>
+                  <p className="muted clamp-2">{t.bio}</p>
+                  <div className="meta">
+                    <strong className="price-tag">${t.hourlyRate}/hr</strong>
+                    <span>{t.location || "Flexible location"}</span>
+                    <span>
+                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ")}
+                    </span>
+                  </div>
                 </div>
               </Link>
             );

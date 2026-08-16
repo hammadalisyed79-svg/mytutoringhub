@@ -1,62 +1,232 @@
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { HeroSearch } from "@/components/HeroSearch";
+import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [tutorCount, studentCount, openAds] = await Promise.all([
+    prisma.tutorProfile.count({ where: { active: true } }),
+    prisma.user.count({ where: { role: "STUDENT" } }),
+    prisma.studentAd.count({ where: { status: "OPEN" } }),
+  ]);
+
+  const featured = await prisma.tutorProfile.findMany({
+    where: { active: true },
+    take: 3,
+    orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
+    include: {
+      user: { select: { name: true } },
+      reviews: { select: { rating: true } },
+    },
+  });
+
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-findtutor">
         <div className="hero-content">
+          <p className="hero-kicker">Private lessons & tutors</p>
           <h1>MyTutoringHub</h1>
-          <p>
-            Find trusted private tutors for school, languages, music, and more — then arrange
-            lessons your way.
-          </p>
-          <div className="hero-ctas">
-            <Link href="/register?role=student" className="btn">
-              I need a tutor
-            </Link>
-            <Link href="/register?role=tutor" className="btn btn-secondary">
-              I am a tutor
-            </Link>
+          <p>Find private tutors that unlock your potential — online or near you.</p>
+          <HeroSearch />
+        </div>
+      </section>
+
+      <section className="section section-stats">
+        <div className="container stats-row">
+          <div>
+            <strong>{Math.max(tutorCount, 1).toLocaleString()}+</strong>
+            <span>Active tutors</span>
+          </div>
+          <div>
+            <strong>{Math.max(studentCount, 1).toLocaleString()}+</strong>
+            <span>Students joined</span>
+          </div>
+          <div>
+            <strong>{openAds}</strong>
+            <span>Open student requests</span>
+          </div>
+          <div>
+            <strong>350+</strong>
+            <span>Subjects & skills</span>
           </div>
         </div>
       </section>
 
       <section className="section">
         <div className="container">
-          <h2>How it works</h2>
+          <h2>Find and contact private tutors</h2>
           <p className="section-lead">
-            Like FindTutor: we connect people. Lesson payments stay between student and tutor.
+            Browse profiles, compare rates, message tutors with a Student Pass, then arrange
+            lessons directly — we never take a lesson commission.
           </p>
-          <div className="steps">
-            <div className="step">
-              <span>1</span>
-              <h3>Subscribe</h3>
-              <p className="muted">Students and tutors unlock messaging with a simple monthly pass.</p>
-            </div>
-            <div className="step">
-              <span>2</span>
-              <h3>Connect</h3>
-              <p className="muted">Search profiles, post a request ad, and start a conversation.</p>
-            </div>
-            <div className="step">
-              <span>3</span>
-              <h3>Learn</h3>
-              <p className="muted">Agree on rates and schedule directly — keep 100% of lesson fees.</p>
-            </div>
+          <div className="feature-split">
+            <article>
+              <h3>Choose the perfect tutor</h3>
+              <p className="muted">
+                Filter by subject, budget, online or in-person, and verified badges.
+              </p>
+            </article>
+            <article>
+              <h3>Learn at your own pace</h3>
+              <p className="muted">
+                Fully personalised private lessons tailored to your goals and schedule.
+              </p>
+            </article>
+            <article>
+              <h3>Online or in person</h3>
+              <p className="muted">
+                Video lessons from home, or meet a local tutor near you.
+              </p>
+            </article>
           </div>
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 0 }}>
+      {featured.length > 0 && (
+        <section className="section section-alt">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <h2>Featured tutors</h2>
+                <p className="section-lead">Highlighted and verified profiles students love.</p>
+              </div>
+              <Link href="/search" className="btn btn-secondary">
+                See all tutors
+              </Link>
+            </div>
+            <div className="tutor-grid">
+              {featured.map((t) => {
+                const avg =
+                  t.reviews.length > 0
+                    ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
+                    : null;
+                return (
+                  <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
+                    <div className="tutor-avatar" aria-hidden>
+                      {t.user.name.slice(0, 1)}
+                    </div>
+                    <div>
+                      <div className="meta">
+                        {t.verified && <span className="badge">Verified</span>}
+                        {t.highlighted && <span className="badge accent">Highlighted</span>}
+                      </div>
+                      <h3>{t.user.name}</h3>
+                      <p>{t.headline || t.subjects}</p>
+                      <div className="meta">
+                        <span>${t.hourlyRate}/hr</span>
+                        {avg !== null && <span>{avg.toFixed(1)} ★</span>}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="section">
         <div className="container">
-          <h2>Ready when you are</h2>
-          <p className="section-lead">Browse tutors now, or see subscription plans for students and tutors.</p>
-          <div className="hero-ctas">
-            <Link href="/search" className="btn">
-              Browse tutors
+          <h2>Private lessons for hundreds of subjects</h2>
+          <p className="section-lead">
+            School support, languages, music, coding, and exam prep — for every level.
+          </p>
+          <div className="subject-chips">
+            {POPULAR_SUBJECTS.map((s) => (
+              <Link key={s} href={`/search?subject=${encodeURIComponent(s)}`} className="chip">
+                {s}
+              </Link>
+            ))}
+          </div>
+          <div className="subject-cats">
+            {SUBJECT_CATEGORIES.map((cat) => (
+              <div key={cat.title}>
+                <h3>{cat.title}</h3>
+                <ul>
+                  {cat.items.map((item) => (
+                    <li key={item.slug}>
+                      <Link href={`/search?subject=${encodeURIComponent(item.slug)}`}>
+                        {item.name} tutors
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p style={{ marginTop: "1.25rem" }}>
+            <Link href="/subjects" className="btn btn-secondary">
+              Browse all subjects
             </Link>
-            <Link href="/pricing" className="btn btn-secondary">
-              View pricing
+          </p>
+        </div>
+      </section>
+
+      <section className="section section-alt">
+        <div className="container">
+          <h2>How MyTutoringHub works</h2>
+          <p className="section-lead">Search · Contact · Learn — same simple flow as FindTutor.</p>
+          <div className="steps">
+            <div className="step">
+              <span>1</span>
+              <h3>Search</h3>
+              <p className="muted">Tell us what you want to learn and pick tutors that fit your needs.</p>
+            </div>
+            <div className="step">
+              <span>2</span>
+              <h3>Contact</h3>
+              <p className="muted">
+                With a Student Pass, message as many tutors as you like and compare replies.
+              </p>
+            </div>
+            <div className="step">
+              <span>3</span>
+              <h3>Learn</h3>
+              <p className="muted">
+                Arrange lessons and pay your tutor directly — keep it personal and flexible.
+              </p>
+            </div>
+          </div>
+          <p style={{ marginTop: "1.5rem" }}>
+            <Link href="/how-it-works" className="btn">
+              See how it works
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <h2>Why families choose MyTutoringHub</h2>
+          <div className="testimonial-grid">
+            {TESTIMONIALS.map((t) => (
+              <blockquote key={t.name} className="testimonial">
+                <p>“{t.quote}”</p>
+                <footer>
+                  <strong>{t.name}</strong>
+                  <span className="muted">{t.role}</span>
+                </footer>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section cta-band">
+        <div className="container cta-band-inner">
+          <div>
+            <h2>Are you a tutor? Start teaching</h2>
+            <p>
+              Create your profile, get a Tutor Basic plan, and optional Verified / Highlighted
+              upgrades. You keep 100% of lesson fees.
+            </p>
+          </div>
+          <div className="hero-ctas">
+            <Link href="/become-a-tutor" className="btn">
+              Become a tutor
+            </Link>
+            <Link href="/ads" className="btn btn-secondary">
+              See student requests
             </Link>
           </div>
         </div>

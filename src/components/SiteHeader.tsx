@@ -13,7 +13,10 @@ export async function SiteHeader() {
         </Link>
         <nav className="nav">
           <Link href="/search">Find tutors</Link>
+          <Link href="/subjects">Subjects</Link>
           <Link href="/ads">Student ads</Link>
+          <Link href="/how-it-works">How it works</Link>
+          <Link href="/become-a-tutor">Become a tutor</Link>
           <Link href="/pricing">Pricing</Link>
           {session?.user ? (
             <>
@@ -26,7 +29,7 @@ export async function SiteHeader() {
             <>
               <Link href="/login">Log in</Link>
               <Link href="/register" className="btn btn-sm">
-                Join
+                Join free
               </Link>
             </>
           )}
