@@ -1,25 +1,26 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { authConfig } from "@/lib/auth.config";
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const protectedPaths = ["/dashboard", "/messages", "/ads/new", "/admin"];
-  const needsAuth = protectedPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  if (!needsAuth) return NextResponse.next();
+const { auth } = NextAuth(authConfig);
 
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  if (!token) {
-    const url = new URL("/login", req.url);
-    url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
+export default auth((req) => {
+  if (
+    req.nextUrl.pathname.startsWith("/admin") &&
+    req.auth?.user &&
+    req.auth.user.role !== "ADMIN"
+  ) {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
-  if (pathname.startsWith("/admin") && token.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-  return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/messages/:path*", "/ads/new", "/admin/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/messages/:path*",
+    "/ads/new",
+    "/admin/:path*",
+    "/login",
+    "/register",
+  ],
 };
