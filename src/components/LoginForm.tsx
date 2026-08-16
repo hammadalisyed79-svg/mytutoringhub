@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
 export function LoginForm() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,28 +13,28 @@ export function LoginForm() {
     setLoading(true);
     const fd = new FormData(e.currentTarget);
     const res = await signIn("credentials", {
-      email: String(fd.get("email")),
+      email: String(fd.get("email")).trim().toLowerCase(),
       password: String(fd.get("password")),
       redirect: false,
     });
-    setLoading(false);
     if (res?.error) {
-      setError("Invalid email or password");
+      setLoading(false);
+      setError("Invalid email or password. If you are new, create an account first.");
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    // Hard navigation so session cookie is applied reliably
+    window.location.href = "/dashboard";
   }
 
   return (
     <form className="auth-form" onSubmit={onSubmit}>
       <label>
         Email
-        <input name="email" type="email" required />
+        <input name="email" type="email" required autoComplete="email" />
       </label>
       <label>
         Password
-        <input name="password" type="password" required />
+        <input name="password" type="password" required autoComplete="current-password" />
       </label>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={loading}>

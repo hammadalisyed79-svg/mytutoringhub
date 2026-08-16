@@ -1,5 +1,6 @@
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { SignOutButton } from "@/components/SignOutButton";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -19,16 +20,7 @@ export async function SiteHeader() {
               <Link href="/messages">Messages</Link>
               <Link href="/dashboard">Dashboard</Link>
               {session.user.role === "ADMIN" && <Link href="/admin">Admin</Link>}
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
-                <button type="submit" className="link-btn">
-                  Sign out
-                </button>
-              </form>
+              <SignOutButton />
             </>
           ) : (
             <>

@@ -1,9 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { RegisterForm } from "@/components/RegisterForm";
 
 export const metadata = { title: "Join" };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="auth-shell">
       <h1 className="page-title">Join MyTutoringHub</h1>
