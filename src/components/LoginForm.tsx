@@ -21,7 +21,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
     if (res?.error) {
       setLoading(false);
       setError(
-        "Invalid email or password. If you signed up with Google, use Continue with Google instead.",
+        "Invalid email or password. Gmail, Hotmail, Outlook, Yahoo, and other mailboxes all work here.",
       );
       return;
     }
@@ -36,16 +36,17 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
 
   return (
     <div className="auth-stack">
-      {googleEnabled && (
-        <>
-          <GoogleSignInButton intent="login" disabled={loading} />
-          <AuthDivider />
-        </>
-      )}
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>
           Email address
-          <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@gmail.com, you@hotmail.com…"
+          />
         </label>
         <label>
           Password
@@ -62,8 +63,15 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+      {googleEnabled && (
+        <>
+          <AuthDivider />
+          <GoogleSignInButton intent="login" disabled={loading} />
+        </>
+      )}
       <p className="auth-footnote muted">
-        We email you a sign-in confirmation for your security.
+        Use Gmail, Hotmail, Outlook, Yahoo, or any other email. Confirmations are sent from
+        admin@mytutoringhub.com.
       </p>
     </div>
   );

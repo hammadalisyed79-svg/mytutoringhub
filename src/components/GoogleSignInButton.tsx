@@ -77,7 +77,7 @@ function GoogleMark() {
 export function AuthDivider() {
   return (
     <div className="auth-divider" aria-hidden="true">
-      <span>or continue with email</span>
+      <span>or sign in with Google</span>
     </div>
   );
 }

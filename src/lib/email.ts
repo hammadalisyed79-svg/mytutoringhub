@@ -59,16 +59,20 @@ export async function sendEmail(opts: {
   html: string;
 }) {
   if (!resend) {
-    console.info("[email:dev]", opts.to, opts.subject);
+    console.info("[email:dev]", MAIL_FROM, "→", opts.to, opts.subject);
     return { ok: true as const, skipped: true };
   }
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: MAIL_FROM,
     replyTo: MAIL_REPLY_TO,
     to: opts.to,
     subject: opts.subject,
     html: opts.html,
   });
+  if (result.error) {
+    console.error("[email] Resend rejected", { to: opts.to, from: MAIL_FROM, error: result.error });
+    throw new Error(result.error.message || "Email could not be sent");
+  }
   return { ok: true as const, skipped: false };
 }
 

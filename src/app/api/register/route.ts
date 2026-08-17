@@ -4,10 +4,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueEmailVerification } from "@/lib/email-verification";
 import { getSiteSettings } from "@/lib/site-settings";
+import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 
 const schema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().min(5).max(254),
   password: z.string().min(6),
   role: z.enum(["STUDENT", "TUTOR"]),
 });
@@ -20,7 +21,13 @@ export async function POST(req: Request) {
     }
     const body = await req.json();
     const data = schema.parse(body);
-    const email = data.email.toLowerCase();
+    const email = normalizeEmail(data.email);
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "Enter a valid email such as Gmail, Hotmail, Outlook, or Yahoo." },
+        { status: 400 },
+      );
+    }
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ error: "Email already registered" }, { status: 400 });

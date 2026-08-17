@@ -75,13 +75,6 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </label>
       </fieldset>
 
-      {googleEnabled && (
-        <>
-          <GoogleSignInButton intent="register" role={role} disabled={loading} />
-          <AuthDivider />
-        </>
-      )}
-
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>
           Full name
@@ -89,7 +82,14 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </label>
         <label>
           Email address
-          <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@gmail.com, you@hotmail.com…"
+          />
         </label>
         <label>
           Password
@@ -104,11 +104,19 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </label>
         {error && <p className="form-error">{error}</p>}
         <button className="btn btn-block" type="submit" disabled={loading}>
-          {loading ? "Creating account…" : "Create account with email"}
+          {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
+
+      {googleEnabled && (
+        <>
+          <AuthDivider />
+          <GoogleSignInButton intent="register" role={role} disabled={loading} />
+        </>
+      )}
       <p className="auth-footnote muted">
-        We send a confirmation email to verify your address before messaging unlocks.
+        Gmail, Hotmail, Outlook, Yahoo, and other addresses are welcome. We send your confirmation
+        from admin@mytutoringhub.com.
       </p>
     </div>
   );

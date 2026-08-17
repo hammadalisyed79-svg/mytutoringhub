@@ -27,7 +27,7 @@ export async function issueEmailVerification(user: {
   const verifyUrl = `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
   await sendEmail({
     to: user.email,
-    subject: "Verify your MyTutoringHub email",
+    subject: "Confirm your email · My Tutoring Hub",
     html: verifyEmailHtml(user.name, verifyUrl),
   });
   return { expiresAt };

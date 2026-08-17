@@ -27,10 +27,10 @@ export function AuthLayout({
             lesson fees stay between you and the other party.
           </p>
           <ul className="auth-trust-list">
-            <li>Secure checkout via Safepay</li>
-            <li>Email confirmation on every sign-in</li>
+            <li>Gmail, Hotmail, Outlook, Yahoo, or any email</li>
+            <li>Confirmations from admin@mytutoringhub.com</li>
             <li>Student Pass & Tutor Basic plans</li>
-            <li>Works in your local currency</li>
+            <li>Secure checkout in your local currency</li>
           </ul>
         </aside>
 

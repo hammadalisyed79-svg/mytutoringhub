@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
 import { googleConfigured, handleGoogleSignIn } from "@/lib/oauth";
 import { sendLoginConfirmationEmail } from "@/lib/email";
+import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import type { Role } from "@/lib/types";
 
 declare module "next-auth" {
@@ -35,7 +36,7 @@ declare module "@auth/core/jwt" {
 }
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(5).max(254),
   password: z.string().min(6),
 });
 
@@ -48,7 +49,8 @@ const credentialsProvider = Credentials({
   async authorize(raw) {
     const parsed = credentialsSchema.safeParse(raw);
     if (!parsed.success) return null;
-    const email = parsed.data.email.toLowerCase();
+    const email = normalizeEmail(parsed.data.email);
+    if (!isValidEmail(email)) return null;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) return null;
     if (user.suspended) return null;

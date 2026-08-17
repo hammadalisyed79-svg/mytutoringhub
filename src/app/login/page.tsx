@@ -23,7 +23,7 @@ export default async function LoginPage({
   return (
     <AuthLayout
       title="Sign in"
-      lead="Access your dashboard, messages, and subscriptions."
+      lead="Use any email — Gmail, Hotmail, Outlook, Yahoo, and more. We send confirmations from admin@mytutoringhub.com."
       notice={
         <>
           {sp.verified === "1" && (

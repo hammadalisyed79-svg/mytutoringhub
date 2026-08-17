@@ -20,7 +20,7 @@ export default async function RegisterPage() {
   return (
     <AuthLayout
       title="Create your account"
-      lead="Join as a student or tutor. Verify your email, then choose a plan to connect."
+      lead="Join as a student or tutor with Gmail, Hotmail, Outlook, Yahoo, or any other email. Confirmations come from admin@mytutoringhub.com."
       footer={
         <p className="auth-switch muted">
           Already registered? <Link href="/login">Sign in</Link>
