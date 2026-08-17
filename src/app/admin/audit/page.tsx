@@ -35,8 +35,14 @@ export default async function AdminAuditPage() {
               <tr key={row.id}>
                 <td>{row.createdAt.toLocaleString()}</td>
                 <td>
-                  {row.admin.name}
-                  <div className="muted">{row.admin.email}</div>
+                  {row.admin ? (
+                    <>
+                      {row.admin.name}
+                      <div className="muted">{row.admin.email}</div>
+                    </>
+                  ) : (
+                    <span className="muted">Deleted admin</span>
+                  )}
                 </td>
                 <td>{row.action}</td>
                 <td>
