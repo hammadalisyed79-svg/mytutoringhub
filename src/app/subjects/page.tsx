@@ -5,11 +5,12 @@ import { CountryMarkets } from "@/components/CountryMarkets";
 import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { subjectCode } from "@/lib/markets";
 
 export const metadata = {
   title: "Subjects",
   description:
-    "Top tutoring subjects across 15 countries including Pakistan (PK), India, the UK, UAE, and the US. Browse by country code and subject.",
+    "Browse tutoring subjects with short subject codes across 15 countries, including Pakistan.",
 };
 
 function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {
@@ -42,13 +43,13 @@ export default async function SubjectsPage() {
         <h1 className="page-title">Subjects</h1>
         <p className="section-lead">
           School boards, exams, languages, and university subjects across 15 countries — including
-          Pakistan (PK). Open a country below or a subject page for tutors and typical hourly rates.
+          Pakistan. Each subject has a short code such as MATH, IELTS, or CSS.
         </p>
 
         <section style={{ marginBottom: "2.5rem" }}>
           <h2>Top 15 countries</h2>
           <p className="muted">
-            Each card shows the ISO country code and the subjects students search most in that market.
+            Each card lists that market’s top subjects with subject codes (MATH, PHY, IELTS…).
           </p>
           <CountryMarkets />
         </section>
@@ -71,7 +72,8 @@ export default async function SubjectsPage() {
         <section className="all-subjects">
           <h2>All subjects on My Tutoring Hub</h2>
           <p className="muted">
-            {averages.length} subjects, A–Z. Typical hourly rates appear when tutors are listed.
+            {averages.length} subjects, A–Z, with subject codes. Typical hourly rates appear when
+            tutors are listed.
           </p>
           {groupSubjectsByLetter(averages).map(([letter, items]) => (
             <div key={letter} className="subject-alpha">
@@ -79,6 +81,7 @@ export default async function SubjectsPage() {
               <div className="subject-directory">
                 {items.map((s) => (
                   <Link key={s.id} href={`/s/${s.slug}`} className="subject-tile">
+                    <span className="subject-code">{subjectCode(s.name)}</span>
                     <span className="subject-tile-name">{s.name}</span>
                     <span className="subject-tile-rate">
                       {s.avg != null ? `~${formatHourly(s.avg, currency)}` : "View tutors"}

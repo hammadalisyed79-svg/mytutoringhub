@@ -1435,7 +1435,9 @@ select:focus {
 
 .chip {
   display: inline-flex;
-  padding: 0.42rem 0.85rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.75rem 0.42rem 0.45rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: rgba(255, 252, 247, 0.92);
@@ -1482,18 +1484,21 @@ select:focus {
   font-size: 0.86rem;
 }
 
-.country-code {
+.country-code,
+.subject-code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 2.5rem;
-  padding: 0.28rem 0.45rem;
-  border-radius: 0.4rem;
+  padding: 0.22rem 0.4rem;
+  border-radius: 0.35rem;
   background: rgba(13, 95, 82, 0.12);
   color: var(--brand-deep);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .country-subject-chips {
@@ -1562,12 +1567,17 @@ select:focus {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 4.6rem;
+  gap: 0.35rem;
+  min-height: 5.1rem;
   padding: 0.8rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.subject-tile .subject-code {
+  align-self: flex-start;
 }
 
 .subject-tile:hover {

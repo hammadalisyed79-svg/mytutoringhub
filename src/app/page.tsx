@@ -209,7 +209,7 @@ export default async function HomePage() {
         <div className="container">
           <h2>Top subjects by country</h2>
           <p className="section-lead">
-            ISO country codes with the subjects families search most — Pakistan first, then 14 other
+            Popular subjects with codes such as MATH, IELTS, and CSS — Pakistan first, then 14 other
             high-demand markets. Open a chip to search tutors in that country.
           </p>
           <CountryMarkets compact />

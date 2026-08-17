@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TOP_COUNTRIES } from "@/lib/markets";
+import { TOP_COUNTRIES, subjectCode } from "@/lib/markets";
 
 export function CountryMarkets({ compact = false }: { compact?: boolean }) {
   const countries = compact ? TOP_COUNTRIES.slice(0, 6) : TOP_COUNTRIES;
@@ -8,9 +8,6 @@ export function CountryMarkets({ compact = false }: { compact?: boolean }) {
       {countries.map((country) => (
         <article key={country.code} className="country-market">
           <div className="country-market-head">
-            <span className="country-code" title={`ISO country code ${country.code}`}>
-              {country.code}
-            </span>
             <div>
               <h3>{country.name}</h3>
               <p className="muted">{country.cities.join(" · ")}</p>
@@ -22,7 +19,9 @@ export function CountryMarkets({ compact = false }: { compact?: boolean }) {
                 key={`${country.code}-${subject}`}
                 href={`/search?subject=${encodeURIComponent(subject)}&location=${encodeURIComponent(country.cities[0])}`}
                 className="chip"
+                title={`${subjectCode(subject)} · ${subject}`}
               >
+                <span className="subject-code">{subjectCode(subject)}</span>
                 {subject}
               </Link>
             ))}

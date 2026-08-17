@@ -325,3 +325,72 @@ export function allMarketCities() {
 export function countryByCode(code: string) {
   return TOP_COUNTRIES.find((c) => c.code === code.toUpperCase()) || null;
 }
+
+/** Short subject codes shown on chips and the directory (not ISO country codes). */
+export const SUBJECT_CODES: Record<string, string> = {
+  Mathematics: "MATH",
+  Physics: "PHY",
+  Chemistry: "CHEM",
+  Biology: "BIO",
+  English: "ENG",
+  Urdu: "URDU",
+  "O Level Maths": "OLM",
+  "A Level Physics": "ALP",
+  "A Level Chemistry": "ALC",
+  IELTS: "IELTS",
+  "CSS Prep": "CSS",
+  "Quran Nazra": "QRN",
+  "Computer Science": "CS",
+  "JEE Prep": "JEE",
+  "NEET Prep": "NEET",
+  "CBSE Maths": "CBSE",
+  "Spoken English": "SPE",
+  Accounting: "ACC",
+  "SAT Prep": "SAT",
+  "ACT Prep": "ACT",
+  "AP Calculus": "APC",
+  Spanish: "SPAN",
+  Algebra: "ALG",
+  Writing: "WRIT",
+  "GCSE Maths": "GCSE",
+  "11 Plus": "11P",
+  French: "FR",
+  Economics: "ECON",
+  Arabic: "AR",
+  "IB Maths": "IBM",
+  "Islamic Studies": "ISL",
+  Islamiyat: "ISLM",
+  "Pakistan Studies": "PST",
+  Calculus: "CALC",
+  "ATAR Maths": "ATAR",
+  Japanese: "JPN",
+  Bangla: "BNG",
+  "SSC Maths": "SSC",
+  "HSC Physics": "HSC",
+  "IGCSE Maths": "IGCSE",
+  "WAEC Maths": "WAEC",
+  "JAMB Prep": "JAMB",
+  "Bahasa Melayu": "BM",
+  "Additional Maths": "ADD",
+  Mandarin: "MAN",
+  "SPM Maths": "SPM",
+  Chinese: "CHI",
+  "PSLE Maths": "PSLE",
+  "Physical Science": "PSCI",
+  "Life Sciences": "LIFE",
+  Afrikaans: "AFR",
+  "Primary School": "PRI",
+  "Music Piano": "PIANO",
+  Guitar: "GTR",
+};
+
+export function subjectCode(name: string) {
+  if (SUBJECT_CODES[name]) return SUBJECT_CODES[name];
+  const parts = name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 4).toUpperCase();
+  return parts
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 4)
+    .toUpperCase();
+}
