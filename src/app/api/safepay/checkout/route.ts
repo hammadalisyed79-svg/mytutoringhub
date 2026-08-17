@@ -80,6 +80,9 @@ export async function POST(req: Request) {
       entry_mode: "raw",
       currency,
       amount,
+      metadata: {
+        order_id: orderId,
+      },
       include_fees: false,
     });
 
