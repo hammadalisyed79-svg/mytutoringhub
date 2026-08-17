@@ -12,6 +12,7 @@ const PRIMARY = [
   { href: "/search", label: "Find tutors" },
   { href: "/subjects", label: "Subjects" },
   { href: "/ads", label: "Student ads" },
+  { href: "/assistant", label: "Study assistant" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/become-a-tutor", label: "Become a tutor" },
   { href: "/pricing", label: "Pricing" },

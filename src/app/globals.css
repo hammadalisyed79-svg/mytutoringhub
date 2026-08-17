@@ -819,6 +819,44 @@ select:focus {
   gap: 0.75rem;
 }
 
+.assistant-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.assistant-thread {
+  display: grid;
+  gap: 0.75rem;
+  max-height: min(55vh, 520px);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 252, 247, 0.9);
+}
+
+.assistant-bubble {
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  max-width: 92%;
+}
+
+.assistant-bubble.mine {
+  justify-self: end;
+  background: rgba(8, 70, 60, 0.12);
+}
+
+.assistant-bubble.theirs {
+  justify-self: start;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.assistant-compose {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .steps {
   display: grid;
   gap: 1rem;

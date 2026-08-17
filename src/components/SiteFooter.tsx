@@ -20,6 +20,7 @@ export function SiteFooter() {
             <Link href="/search">Find tutors</Link>
             <Link href="/subjects">Subjects</Link>
             <Link href="/ads">Student requests</Link>
+            <Link href="/assistant">Study assistant</Link>
             <Link href="/pricing">Student Pass</Link>
             <Link href="/how-it-works">How it works</Link>
           </div>

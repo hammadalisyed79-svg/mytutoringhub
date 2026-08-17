@@ -31,6 +31,7 @@ model User {
   reportsFiled         Report[]              @relation("ReportsFiled")
   reviewRequestsSent   ReviewRequest[]       @relation("ReviewRequestsSent")
   reviewRequestsRecv   ReviewRequest[]       @relation("ReviewRequestsRecv")
+  aiMessages           AiMessage[]
 }
 
 model Subject {
@@ -208,4 +209,15 @@ model Report {
   updatedAt  DateTime @updatedAt
 
   @@index([status, createdAt])
+}
+
+model AiMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

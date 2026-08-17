@@ -29,6 +29,19 @@ export async function PUT(req: Request) {
   }
 
   const data = schema.parse(await req.json());
+
+  const rawPhoto = (data.photoUrl || "").trim();
+  if (rawPhoto.startsWith("data:")) {
+    return NextResponse.json(
+      { error: "Upload photos via the file picker (Blob). Data URLs are not stored." },
+      { status: 400 },
+    );
+  }
+  if (rawPhoto && !/^https:\/\//i.test(rawPhoto)) {
+    return NextResponse.json({ error: "Photo must be an https:// URL" }, { status: 400 });
+  }
+  const photoUrl = rawPhoto || null;
+
   const profile = await prisma.tutorProfile.upsert({
     where: { userId: session.user.id },
     update: {
@@ -39,7 +52,7 @@ export async function PUT(req: Request) {
       location: data.location,
       online: data.online,
       inPerson: data.inPerson,
-      photoUrl: data.photoUrl || null,
+      photoUrl,
       qualifications: data.qualifications || null,
       teachingMethod: data.teachingMethod || null,
       languages: data.languages || null,
@@ -58,7 +71,7 @@ export async function PUT(req: Request) {
       location: data.location,
       online: data.online,
       inPerson: data.inPerson,
-      photoUrl: data.photoUrl || null,
+      photoUrl,
       qualifications: data.qualifications || null,
       teachingMethod: data.teachingMethod || null,
       languages: data.languages || null,

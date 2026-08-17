@@ -27,17 +27,29 @@ export function TutorProfileForm({ initial }: { initial: Initial }) {
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
+  const [uploading, setUploading] = useState(false);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 900_000) {
-      setError("Photo must be under ~900KB for upload");
-      return;
+    setError("");
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Upload failed");
+        return;
+      }
+      setPhotoUrl(data.url);
+      setMsg("Photo uploaded. Save profile to keep it.");
+    } catch {
+      setError("Upload failed");
+    } finally {
+      setUploading(false);
     }
-    const reader = new FileReader();
-    reader.onload = () => setPhotoUrl(String(reader.result || ""));
-    reader.readAsDataURL(file);
   }
 
   async function save(e: React.FormEvent<HTMLFormElement>) {
@@ -137,12 +149,28 @@ export function TutorProfileForm({ initial }: { initial: Initial }) {
       <label>
         Photo URL or upload
         <input
-          value={photoUrl.startsWith("data:") ? "" : photoUrl}
+          value={photoUrl}
           onChange={(e) => setPhotoUrl(e.target.value)}
           placeholder="https://…"
         />
-        <input type="file" accept="image/*" onChange={onFile} style={{ marginTop: "0.4rem" }} />
-        {photoUrl.startsWith("data:") && <span className="muted">Image ready to save</span>}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onFile}
+          disabled={uploading}
+          style={{ marginTop: "0.4rem" }}
+        />
+        {uploading && <span className="muted">Uploading…</span>}
+        {photoUrl.startsWith("http") && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoUrl}
+            alt=""
+            width={64}
+            height={64}
+            style={{ marginTop: "0.5rem", borderRadius: "50%", objectFit: "cover" }}
+          />
+        )}
       </label>
       <div className="checks">
         <label className="radio">
@@ -158,7 +186,7 @@ export function TutorProfileForm({ initial }: { initial: Initial }) {
       </div>
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
-      <button className="btn" type="submit">
+      <button className="btn" type="submit" disabled={uploading}>
         Save profile
       </button>
     </form>

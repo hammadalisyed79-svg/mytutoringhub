@@ -27,6 +27,10 @@ const FAQS = [
     q: "How do I report a problem?",
     a: "Use the Report button on a tutor profile or student ad, or email admin@mytutoringhub.com.",
   },
+  {
+    q: "What is the Study assistant?",
+    a: "Logged-in students and tutors can use an AI study coach for explanations and practice. It is not a live tutor and has a daily message limit. For human help, search Find tutors.",
+  },
 ];
 
 export default function HelpPage() {
