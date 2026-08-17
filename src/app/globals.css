@@ -99,14 +99,22 @@ a {
 
 .brand-logo-text {
   font-family: var(--font-display), serif;
-  font-size: 1.28rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--brand-deep);
-  line-height: 1;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  white-space: nowrap;
 }
 
-.brand-logo-text span {
+.brand-word {
+  display: inline;
+}
+
+.brand-word-accent {
   color: var(--accent);
 }
 
