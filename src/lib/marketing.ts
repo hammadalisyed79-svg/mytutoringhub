@@ -1,6 +1,6 @@
 export const SUBJECT_CATEGORIES = [
   {
-    title: "Pakistan boards (Matric / FSc)",
+    title: "School & boards",
     items: [
       { name: "Mathematics", slug: "Mathematics" },
       { name: "Physics", slug: "Physics" },
@@ -13,7 +13,7 @@ export const SUBJECT_CATEGORIES = [
     ],
   },
   {
-    title: "International exams & languages",
+    title: "Exams & languages",
     items: [
       { name: "O Level Maths", slug: "O Level Maths" },
       { name: "A Level Physics", slug: "A Level Physics" },
@@ -27,7 +27,7 @@ export const SUBJECT_CATEGORIES = [
     ],
   },
   {
-    title: "University, CSS & skills",
+    title: "University & skills",
     items: [
       { name: "CSS Prep", slug: "CSS Prep" },
       { name: "Computer Science", slug: "Computer Science" },
@@ -62,20 +62,20 @@ export const POPULAR_SUBJECTS = [
 export const TESTIMONIALS = [
   {
     quote:
-      "Our Matric tutor in Karachi used board past papers and weekly tests. Marks improved a lot before finals.",
+      "Our maths tutor used past papers and weekly tests. Marks improved a lot before finals.",
     name: "Ahmed Khan",
-    role: "Parent · Karachi · Maths",
+    role: "Parent · Maths",
   },
   {
     quote:
-      "I booked an IELTS tutor online from Lahore while studying in Dubai. Flexible timings and clear feedback.",
+      "I booked an IELTS tutor online while studying abroad. Flexible timings and clear feedback.",
     name: "Fatima Rizvi",
     role: "Student · Online · IELTS",
   },
   {
     quote:
-      "Found an A Level Chemistry tutor who teaches worldwide via Zoom. Easy to compare rates in Rs and USD.",
+      "Found an A Level Chemistry tutor via Zoom. Easy to compare rates in my local currency.",
     name: "James Carter",
-    role: "Parent · London · A Levels",
+    role: "Parent · A Levels",
   },
 ];

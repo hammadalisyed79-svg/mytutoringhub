@@ -37,8 +37,7 @@ export function ContactTutorForm({
     <form className="contact-form" onSubmit={send}>
       <h3>Contact {tutorName}</h3>
       <p className="muted">
-        Lesson fees are arranged directly with your tutor (usually PKR in Pakistan, or agreed
-        currency for international online lessons).
+        Lesson fees are arranged directly with your tutor in a currency you both agree on.
       </p>
       <textarea
         value={body}

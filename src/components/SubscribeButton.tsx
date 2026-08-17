@@ -6,9 +6,11 @@ import type { SubscriptionPlan } from "@/lib/types";
 export function SubscribeButton({
   plan,
   label = "Subscribe",
+  currency,
 }: {
   plan: SubscriptionPlan;
   label?: string;
+  currency?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,11 +19,10 @@ export function SubscribeButton({
     setLoading(true);
     setError("");
 
-    // Prefer Safepay; fall back to Stripe/dev checkout if Safepay is not configured.
     let res = await fetch("/api/safepay/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, currency }),
     });
 
     if (res.status === 503) {

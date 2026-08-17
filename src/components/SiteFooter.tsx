@@ -10,8 +10,8 @@ export function SiteFooter() {
             <Logo />
           </Link>
           <p className="muted footer-blurb">
-            Private tutors in Pakistan and worldwide. Lesson fees stay between you — shown in PKR
-            with a USD estimate.
+            Private tutors worldwide. Lesson fees stay between you — prices shown in your local
+            currency.
           </p>
         </div>
         <div>

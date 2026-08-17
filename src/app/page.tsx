@@ -2,10 +2,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { LogoMark } from "@/components/Logo";
-import { formatHourly } from "@/lib/pakistan";
+import { formatHourly } from "@/lib/currency";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 
 export default async function HomePage() {
+  const currency = await getVisitorCurrency();
   const [tutorCount, studentCount, openAds] = await Promise.all([
     prisma.tutorProfile.count({ where: { active: true } }),
     prisma.user.count({ where: { role: "STUDENT" } }),
@@ -32,8 +34,8 @@ export default async function HomePage() {
           </div>
           <h1>My Tutoring Hub</h1>
           <p>
-            Connect with trusted private tutors in Pakistan and worldwide — boards, languages, and
-            exam prep. Online or at home. Rates in PKR with a USD guide.
+            Connect with trusted private tutors worldwide — boards, languages, and exam prep.
+            Online or at home. Prices shown in your local currency.
           </p>
           <HeroSearch />
         </div>
@@ -71,7 +73,7 @@ export default async function HomePage() {
             <article>
               <h3>Choose the perfect tutor</h3>
               <p className="muted">
-                Filter by subject, city or online worldwide, budget in PKR, and verified badges.
+                Filter by subject, city or online, budget, and verified badges.
               </p>
             </article>
             <article>
@@ -121,7 +123,7 @@ export default async function HomePage() {
                       <h3>{t.user.name}</h3>
                       <p>{t.headline || t.subjects}</p>
                       <div className="meta">
-                        <span>{formatHourly(t.hourlyRate)}</span>
+                        <span>{formatHourly(t.hourlyRate, currency)}</span>
                         {avg !== null && <span>{avg.toFixed(1)} ★</span>}
                       </div>
                     </div>
@@ -135,10 +137,10 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Private lessons — Pakistan & international</h2>
+          <h2>Private lessons for every goal</h2>
           <p className="section-lead">
-            Local board exams and global programmes: Matric/FSc, O/A Levels, IELTS, SAT, languages,
-            and university subjects.
+            School boards, O/A Levels, IELTS, SAT, languages, and university subjects — learn online
+            or in person.
           </p>
           <div className="subject-chips">
             {POPULAR_SUBJECTS.map((s) => (

@@ -1,0 +1,227 @@
+/** Global currency helpers — amounts in the DB are stored in PKR (legacy base unit). */
+
+export type CurrencyCode =
+  | "USD"
+  | "PKR"
+  | "GBP"
+  | "EUR"
+  | "AED"
+  | "SAR"
+  | "CAD"
+  | "AUD"
+  | "INR"
+  | "QAR"
+  | "KWD"
+  | "BHD"
+  | "OMR"
+  | "MYR"
+  | "SGD"
+  | "NZD"
+  | "ZAR"
+  | "TRY"
+  | "EGP"
+  | "NGN"
+  | "KES"
+  | "BDT"
+  | "PHP"
+  | "THB"
+  | "IDR"
+  | "HKD"
+  | "JPY"
+  | "CNY"
+  | "CHF"
+  | "SEK"
+  | "NOK"
+  | "DKK"
+  | "PLN"
+  | "BRL"
+  | "MXN";
+
+/** Approximate units of each currency per 1 USD (for display + Safepay conversion). */
+export const FX_PER_USD: Record<CurrencyCode, number> = {
+  USD: 1,
+  PKR: 278,
+  GBP: 0.79,
+  EUR: 0.92,
+  AED: 3.67,
+  SAR: 3.75,
+  CAD: 1.36,
+  AUD: 1.53,
+  INR: 83.5,
+  QAR: 3.64,
+  KWD: 0.31,
+  BHD: 0.38,
+  OMR: 0.38,
+  MYR: 4.7,
+  SGD: 1.34,
+  NZD: 1.66,
+  ZAR: 18.2,
+  TRY: 32.5,
+  EGP: 48,
+  NGN: 1550,
+  KES: 129,
+  BDT: 110,
+  PHP: 56,
+  THB: 35.5,
+  IDR: 15800,
+  HKD: 7.82,
+  JPY: 151,
+  CNY: 7.25,
+  CHF: 0.88,
+  SEK: 10.5,
+  NOK: 10.7,
+  DKK: 6.9,
+  PLN: 3.95,
+  BRL: 5.1,
+  MXN: 17.2,
+};
+
+/** Currencies Safepay commonly accepts for checkout (fallback USD). */
+export const SAFEPAY_CURRENCIES = new Set<CurrencyCode>([
+  "PKR",
+  "USD",
+  "GBP",
+  "EUR",
+  "AED",
+  "SAR",
+  "CAD",
+  "AUD",
+  "QAR",
+  "KWD",
+  "BHD",
+  "OMR",
+]);
+
+const COUNTRY_CURRENCY: Record<string, CurrencyCode> = {
+  PK: "PKR",
+  US: "USD",
+  GB: "GBP",
+  UK: "GBP",
+  IE: "EUR",
+  DE: "EUR",
+  FR: "EUR",
+  ES: "EUR",
+  IT: "EUR",
+  NL: "EUR",
+  BE: "EUR",
+  AT: "EUR",
+  PT: "EUR",
+  FI: "EUR",
+  GR: "EUR",
+  AE: "AED",
+  SA: "SAR",
+  QA: "QAR",
+  KW: "KWD",
+  BH: "BHD",
+  OM: "OMR",
+  CA: "CAD",
+  AU: "AUD",
+  NZ: "NZD",
+  IN: "INR",
+  MY: "MYR",
+  SG: "SGD",
+  ZA: "ZAR",
+  TR: "TRY",
+  EG: "EGP",
+  NG: "NGN",
+  KE: "KES",
+  BD: "BDT",
+  PH: "PHP",
+  TH: "THB",
+  ID: "IDR",
+  HK: "HKD",
+  JP: "JPY",
+  CN: "CNY",
+  CH: "CHF",
+  SE: "SEK",
+  NO: "NOK",
+  DK: "DKK",
+  PL: "PLN",
+  BR: "BRL",
+  MX: "MXN",
+};
+
+const ZERO_DECIMAL = new Set<CurrencyCode>(["JPY"]);
+
+export function currencyFromCountry(countryCode: string | null | undefined): CurrencyCode {
+  if (!countryCode) return "USD";
+  return COUNTRY_CURRENCY[countryCode.toUpperCase()] || "USD";
+}
+
+export function currencyFromAcceptLanguage(header: string | null | undefined): CurrencyCode {
+  if (!header) return "USD";
+  const primary = header.split(",")[0]?.trim() || "";
+  const region = primary.split("-")[1]?.toUpperCase();
+  if (region && COUNTRY_CURRENCY[region]) return COUNTRY_CURRENCY[region];
+  const lang = primary.split("-")[0]?.toLowerCase();
+  if (lang === "ur" || lang === "pa") return "PKR";
+  if (lang === "ar") return "AED";
+  if (lang === "en") return "USD";
+  if (lang === "de" || lang === "fr" || lang === "es" || lang === "it" || lang === "nl") return "EUR";
+  return "USD";
+}
+
+export function pkrToUsd(amountPkr: number) {
+  return amountPkr / FX_PER_USD.PKR;
+}
+
+export function usdToCurrency(amountUsd: number, currency: CurrencyCode) {
+  return amountUsd * FX_PER_USD[currency];
+}
+
+export function pkrToCurrency(amountPkr: number, currency: CurrencyCode) {
+  return usdToCurrency(pkrToUsd(amountPkr), currency);
+}
+
+export function formatMoney(amount: number, currency: CurrencyCode, locale = "en") {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: ZERO_DECIMAL.has(currency) ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+}
+
+/** Tutor/ad fees are stored in PKR base units; show in the visitor currency. */
+export function formatHourly(amountPkr: number | null | undefined, currency: CurrencyCode = "USD") {
+  if (amountPkr == null || Number.isNaN(amountPkr)) return "—";
+  const local = pkrToCurrency(amountPkr, currency);
+  return `${formatMoney(local, currency)}/hr`;
+}
+
+export function formatPlanPrice(amountPkr: number, currency: CurrencyCode) {
+  const local = pkrToCurrency(amountPkr, currency);
+  return `${formatMoney(local, currency)}/mo`;
+}
+
+/** Minor units for Safepay (cents/paisa). */
+export function toSafepayMinorUnits(amountMajor: number, currency: CurrencyCode) {
+  if (ZERO_DECIMAL.has(currency)) return Math.round(amountMajor);
+  return Math.round(amountMajor * 100);
+}
+
+export function checkoutCurrency(preferred: CurrencyCode): CurrencyCode {
+  return SAFEPAY_CURRENCIES.has(preferred) ? preferred : "USD";
+}
+
+export const MARKET_CITIES = [
+  "Online",
+  "Karachi",
+  "Lahore",
+  "Islamabad",
+  "Dubai",
+  "Riyadh",
+  "London",
+  "New York",
+  "Toronto",
+  "Sydney",
+  "Singapore",
+  "Mumbai",
+  "Delhi",
+  "Cairo",
+  "Lagos",
+  "Nairobi",
+];

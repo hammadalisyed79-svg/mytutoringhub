@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatHourly } from "@/lib/pakistan";
+import { formatHourly } from "@/lib/currency";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 
 export const metadata = { title: "Student ads" };
 
 export default async function AdsPage() {
   const session = await auth();
+  const currency = await getVisitorCurrency();
   const ads = await prisma.studentAd.findMany({
     where: { status: "OPEN" },
     orderBy: { createdAt: "desc" },
@@ -36,7 +38,7 @@ export default async function AdsPage() {
                 <span className="badge">{ad.subject}</span>
                 <span>{ad.level}</span>
                 <span>{ad.location}</span>
-                {ad.budget != null && <span>~{formatHourly(ad.budget)}</span>}
+                {ad.budget != null && <span>~{formatHourly(ad.budget, currency)}</span>}
               </div>
               <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
               <p style={{ margin: 0 }}>{ad.description}</p>

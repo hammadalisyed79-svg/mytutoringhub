@@ -5,8 +5,7 @@ export type PlanDefinition = {
   name: string;
   description: string;
   audience: "student" | "tutor";
-  priceLabel: string;
-  /** Monthly price in PKR (whole rupees). */
+  /** Monthly price stored in PKR base units (converted to visitor currency at display/checkout). */
   pricePkr: number;
   features: string[];
   envPriceId: string;
@@ -17,12 +16,11 @@ export const PLANS: PlanDefinition[] = [
   {
     id: "STUDENT_PASS",
     name: "Student Pass",
-    description: "Unlimited contact with tutors in Pakistan and worldwide. Post student request ads.",
+    description: "Unlimited contact with tutors worldwide. Post student request ads.",
     audience: "student",
-    priceLabel: "Rs 1,999/mo · ~$7",
     pricePkr: 1999,
     features: [
-      "Message unlimited tutors (PK & international)",
+      "Message unlimited tutors",
       "Post “need a tutor” ads",
       "Browse verified tutors",
       "Online or local lessons",
@@ -32,13 +30,12 @@ export const PLANS: PlanDefinition[] = [
   {
     id: "TUTOR_BASIC",
     name: "Tutor Basic",
-    description: "Publish your profile for students in Pakistan and abroad.",
+    description: "Publish your profile for students around the world.",
     audience: "tutor",
-    priceLabel: "Rs 1,499/mo · ~$5",
     pricePkr: 1499,
     features: [
       "Public tutor profile",
-      "Appear in Pakistan & global search",
+      "Appear in global search",
       "Receive student messages",
       "Respond to student ads",
     ],
@@ -47,14 +44,13 @@ export const PLANS: PlanDefinition[] = [
   {
     id: "VERIFIED_TUTOR",
     name: "Verified Tutor",
-    description: "Trusted badge and higher placement for serious families worldwide.",
+    description: "Trusted badge and higher placement for serious families.",
     audience: "tutor",
-    priceLabel: "Rs 2,999/mo · ~$11",
     pricePkr: 2999,
     features: [
       "Verified badge on profile",
       "Higher trust ranking",
-      "Stand out in PK cities & international search",
+      "Stand out in search results",
     ],
     envPriceId: "STRIPE_PRICE_VERIFIED_TUTOR",
     isAddOn: true,
@@ -64,13 +60,8 @@ export const PLANS: PlanDefinition[] = [
     name: "Highlighted Listing",
     description: "Boosted placement at the top of search results.",
     audience: "tutor",
-    priceLabel: "Rs 1,299/mo · ~$5",
     pricePkr: 1299,
-    features: [
-      "Highlighted in search",
-      "More profile views",
-      "Priority visibility",
-    ],
+    features: ["Highlighted in search", "More profile views", "Priority visibility"],
     envPriceId: "STRIPE_PRICE_HIGHLIGHTED_AD",
     isAddOn: true,
   },

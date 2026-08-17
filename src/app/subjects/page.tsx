@@ -10,10 +10,10 @@ export default async function SubjectsPage() {
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">Subjects — Pakistan & international</h1>
+        <h1 className="page-title">Subjects</h1>
         <p className="section-lead">
-          Pakistani boards, O/A Levels, IELTS, SAT, languages, CSS, and more — learn locally or
-          online from anywhere.
+          School boards, O/A Levels, IELTS, SAT, languages, and more — learn locally or online from
+          anywhere.
         </p>
 
         <div className="subject-cats">

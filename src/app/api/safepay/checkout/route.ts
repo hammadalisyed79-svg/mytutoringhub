@@ -2,14 +2,37 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/plans";
-import { getSafepayClient, getSafepayEnv, safepayConfigured, toSafepayAmount } from "@/lib/safepay";
+import {
+  checkoutCurrency,
+  currencyFromAcceptLanguage,
+  currencyFromCountry,
+  pkrToCurrency,
+  toSafepayMinorUnits,
+  type CurrencyCode,
+} from "@/lib/currency";
+import { getSafepayClient, getSafepayEnv, safepayConfigured } from "@/lib/safepay";
 import { z } from "zod";
 
 export const runtime = "nodejs";
 
 const schema = z.object({
   plan: z.enum(["STUDENT_PASS", "TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD"]),
+  currency: z.string().optional(),
 });
+
+function resolveCurrency(req: Request, bodyCurrency?: string): CurrencyCode {
+  if (bodyCurrency && bodyCurrency.length === 3) {
+    return checkoutCurrency(bodyCurrency.toUpperCase() as CurrencyCode);
+  }
+  const country =
+    req.headers.get("x-vercel-ip-country") ||
+    req.headers.get("cf-ipcountry") ||
+    req.headers.get("x-country-code");
+  if (country && country !== "XX" && country !== "T1") {
+    return checkoutCurrency(currencyFromCountry(country));
+  }
+  return checkoutCurrency(currencyFromAcceptLanguage(req.headers.get("accept-language")));
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -24,7 +47,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { plan } = schema.parse(await req.json());
+  const body = schema.parse(await req.json());
+  const { plan } = body;
   const def = PLANS.find((p) => p.id === plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
@@ -35,11 +59,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
+  const currency = resolveCurrency(req, body.currency);
+  const amountMajor = pkrToCurrency(def.pricePkr, currency);
+  const amount = toSafepayMinorUnits(amountMajor, currency);
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const apiKey = process.env.SAFEPAY_API_KEY!;
   const safepay = getSafepayClient();
   const env = getSafepayEnv();
-  const amount = toSafepayAmount(def.pricePkr);
   const orderId = `mth_${session.user.id}_${plan}_${Date.now()}`;
 
   try {
@@ -48,13 +75,15 @@ export async function POST(req: Request) {
       intent: process.env.SAFEPAY_INTENT || "CYBERSOURCE",
       mode: "payment",
       entry_mode: "raw",
-      currency: "PKR",
+      currency,
       amount,
       metadata: {
         order_id: orderId,
         user_id: session.user.id,
         plan,
         plan_name: def.name,
+        display_currency: currency,
+        base_pkr: String(def.pricePkr),
       },
       include_fees: false,
     });
@@ -80,14 +109,14 @@ export async function POST(req: Request) {
         userId: session.user.id,
         plan,
         status: "INCOMPLETE",
-        stripePriceId: `safepay_pkr_${def.pricePkr}`,
+        stripePriceId: `safepay_${currency}_${amount}`,
       },
       create: {
         userId: session.user.id,
         plan,
         status: "INCOMPLETE",
         stripeSubscriptionId: tracker,
-        stripePriceId: `safepay_pkr_${def.pricePkr}`,
+        stripePriceId: `safepay_${currency}_${amount}`,
       },
     });
 
@@ -101,7 +130,7 @@ export async function POST(req: Request) {
       cancel_url: `${appUrl}/pricing?checkout=cancel`,
     });
 
-    return NextResponse.json({ url, tracker, provider: "safepay" });
+    return NextResponse.json({ url, tracker, provider: "safepay", currency, amount });
   } catch (err) {
     console.error("Safepay checkout error", err);
     const message = err instanceof Error ? err.message : "Safepay checkout failed";

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatHourly } from "@/lib/pakistan";
+import { formatHourly } from "@/lib/currency";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 
 export const metadata = { title: "Find tutors" };
 
@@ -15,6 +16,7 @@ type SearchParams = Promise<{
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
+  const currency = await getVisitorCurrency();
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
 
   const tutors = await prisma.tutorProfile.findMany({
@@ -51,8 +53,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       <div className="container">
         <h1 className="page-title">Find private tutors</h1>
         <p className="section-lead">
-          Pakistan (home tuition) and international online lessons. Rates shown in{" "}
-          <strong>Rs (PKR)</strong> with an approximate <strong>USD</strong> guide.
+          Online or in-person lessons worldwide. Rates shown in your local currency (
+          <strong>{currency}</strong>).
         </p>
 
         <form className="filters filters-wide" method="get">
@@ -76,26 +78,26 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             <input
               name="location"
               defaultValue={sp.location || ""}
-              placeholder="Karachi, Lahore, Dubai, Online…"
+              placeholder="City or Online…"
             />
           </label>
           <label>
             Format
             <select name="mode" defaultValue={sp.mode || ""}>
               <option value="">Online or in person</option>
-              <option value="online">Online (Pakistan & worldwide)</option>
-              <option value="inperson">Home / in-person</option>
+              <option value="online">Online</option>
+              <option value="inperson">In person / home</option>
             </select>
           </label>
           <label>
-            Max Rs/hr
+            Max budget (base)
             <input
               name="max"
               type="number"
               min={500}
               step={100}
               defaultValue={sp.max || ""}
-              placeholder="e.g. 2500"
+              placeholder="Optional"
             />
           </label>
           <label className="radio filter-check">
@@ -148,10 +150,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <p className="tutor-headline">{t.headline || t.subjects}</p>
                   <p className="muted clamp-2">{t.bio}</p>
                   <div className="meta">
-                    <strong className="price-tag">{formatHourly(t.hourlyRate)}</strong>
-                    <span>{t.location || "Pakistan / Online"}</span>
+                    <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
+                    <span>{t.location || "Online"}</span>
                     <span>
-                      {[t.online && "Online", t.inPerson && "In person / home"]
+                      {[t.online && "Online", t.inPerson && "In person"]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>

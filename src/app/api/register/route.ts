@@ -37,7 +37,7 @@ export async function POST(req: Request) {
           bio: "New tutor — update your profile in the dashboard.",
           subjects: "",
           hourlyRate: 1500,
-          location: "Pakistan",
+          location: "Online",
           online: true,
           inPerson: false,
           active: false,

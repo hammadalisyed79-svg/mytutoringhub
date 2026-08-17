@@ -3,7 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
 import { ReviewForm } from "@/components/ReviewForm";
-import { formatHourly } from "@/lib/pakistan";
+import { formatHourly } from "@/lib/currency";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 import Link from "next/link";
 
 type Params = { params: Promise<{ id: string }> };
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Params) {
 export default async function TutorProfilePage({ params }: Params) {
   const { id } = await params;
   const session = await auth();
+  const currency = await getVisitorCurrency();
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
     include: {
@@ -53,7 +55,7 @@ export default async function TutorProfilePage({ params }: Params) {
           <h1 className="page-title">{tutor.user.name}</h1>
           {tutor.headline && <p className="profile-headline">{tutor.headline}</p>}
           <div className="meta">
-            <span className="price-tag">{formatHourly(tutor.hourlyRate)}</span>
+            <span className="price-tag">{formatHourly(tutor.hourlyRate, currency)}</span>
             <span>{tutor.location}</span>
             <span>
               {tutor.online ? "Online" : ""}
