@@ -5,7 +5,7 @@ import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { authConfig } from "@/lib/auth.config";
+import { authConfig, SESSION_MAX_AGE_SEC } from "@/lib/auth.config";
 import { googleConfigured, handleGoogleSignIn } from "@/lib/oauth";
 import { sendLoginConfirmationEmail } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
@@ -133,7 +133,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id!;
         token.role = user.role as Role;
         token.onboardingComplete = user.onboardingComplete ?? true;
-      } else if (trigger === "update" && token.sub) {
+        return token;
+      }
+      const issued = Number(token.iat || 0);
+      if (issued && Date.now() / 1000 - issued > SESSION_MAX_AGE_SEC) {
+        return null;
+      }
+      if (trigger === "update" && token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub as string },
           select: { role: true, onboardingComplete: true },

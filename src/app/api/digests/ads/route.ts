@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, studentAdDigestHtml } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -59,16 +59,24 @@ export async function GET(req: Request) {
       .slice(0, 8)
       .map(
         (ad) =>
-          `<li><strong>${ad.title}</strong> — ${ad.subject}, ${ad.location} (<a href="${appUrl}/ads">${ad.level}</a>)</li>`,
+          `<li><strong>${ad.title}</strong> — ${ad.subject}, ${ad.location} (${ad.level})</li>`,
       )
       .join("");
 
-    await sendEmail({
-      to: tutor.email,
-      subject: `${matches.length} new student request${matches.length === 1 ? "" : "s"} on My Tutoring Hub`,
-      html: `<p>Hi ${tutor.name},</p><p>New student ads matching your subjects:</p><ul>${list}</ul><p><a href="${appUrl}/ads">Browse all student ads</a></p>`,
-    });
-    sent += 1;
+    try {
+      await sendEmail({
+        to: tutor.email,
+        subject: `${matches.length} new student request${matches.length === 1 ? "" : "s"} on My Tutoring Hub`,
+        html: studentAdDigestHtml({
+          name: tutor.name,
+          listHtml: list,
+          adsUrl: `${appUrl}/ads`,
+        }),
+      });
+      sent += 1;
+    } catch (err) {
+      console.error("[digest] failed", tutor.email, err);
+    }
   }
 
   return NextResponse.json({ ok: true, sent, ads: ads.length, tutors: tutors.length });

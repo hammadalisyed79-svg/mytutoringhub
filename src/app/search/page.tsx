@@ -8,6 +8,7 @@ import { SearchFiltersForm } from "@/components/SearchFiltersForm";
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
+import { formatTutorPlace } from "@/lib/tutor-catalog";
 
 export const metadata = {
   title: "Find tutors",
@@ -183,7 +184,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <p className="muted clamp-2">{t.bio}</p>
                   <div className="meta">
                     <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
-                    <span>{t.location || "Online"}</span>
+                    <span>{formatTutorPlace(t.location, t.country) || "Online"}</span>
                     <span>
                       {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ")}
                     </span>

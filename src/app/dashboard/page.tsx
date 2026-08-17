@@ -11,6 +11,8 @@ import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
+import { uniqueCurriculumSubjects, curriculumLevels } from "@/lib/curriculum";
+import { allMarketSubjects } from "@/lib/markets";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -53,6 +55,12 @@ export default async function DashboardPage({
       },
     },
   });
+  const dbSubjects = (await prisma.subject.findMany({ orderBy: { name: "asc" }, select: { name: true } })).map(
+    (row) => row.name,
+  );
+  const catalogSubjects = [...new Set([...dbSubjects, ...uniqueCurriculumSubjects(), ...allMarketSubjects()])].sort(
+    (a, b) => a.localeCompare(b),
+  );
 
   const visibleSubs = user.subscriptions.filter((s) =>
     ["ACTIVE", "TRIALING"].includes(s.status),
@@ -189,8 +197,8 @@ export default async function DashboardPage({
                     : "Standard listing"}
                 </p>
                 <p className="muted">
-                  Fill the required fields first. A photo, headline, and teaching details help
-                  students choose you.
+                  Select your country, city, subjects, and matching expertise from the catalog.
+                  Add more levels and languages as needed — students see this on your public listing.
                 </p>
                 {!user.tutorProfile.active && (
                   <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)", marginBottom: "1rem" }}>
@@ -199,7 +207,11 @@ export default async function DashboardPage({
                     public profile link.
                   </p>
                 )}
-                <TutorProfileForm initial={user.tutorProfile} />
+                <TutorProfileForm
+                  initial={user.tutorProfile}
+                  subjects={catalogSubjects}
+                  extraLevels={curriculumLevels()}
+                />
                 <p style={{ marginTop: "1rem" }}>
                   {user.tutorProfile.active ? (
                     <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
@@ -213,7 +225,7 @@ export default async function DashboardPage({
               </section>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Subject ads</h2>
-                <TutorAdsManager />
+                <TutorAdsManager subjects={catalogSubjects} extraLevels={curriculumLevels()} />
               </section>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Get verified</h2>

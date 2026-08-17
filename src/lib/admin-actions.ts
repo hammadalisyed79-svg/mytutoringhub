@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { COMPANY_ADMIN_EMAIL, isCompanyAdminEmail, writeAdminAudit } from "@/lib/admin";
 import { invalidateSiteSettingsCache, savePastPaperFee, savePlanPrices, SITE_SETTINGS_ID } from "@/lib/site-settings";
 import { parsePastPaperKey } from "@/lib/past-papers";
+import { pastPaperVisibility } from "@/lib/past-papers/import-service";
 import { slugify } from "@/lib/search-tutors";
 import { syncTutorBadges } from "@/lib/subscription";
 import {
@@ -664,10 +665,13 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const listing = parsePastPaperKey(catalogKey);
       if (!listing) throw new AdminActionError("Unknown past paper");
       targetType = "PastPaper";
+      const flags =
+        payload.published !== undefined ? pastPaperVisibility(payload.published, payload.published) : {};
       const saved = await prisma.pastPaper.upsert({
         where: { catalogKey },
         update: {
           ...(payload.fileUrl !== undefined ? { fileUrl: payload.fileUrl || null } : {}),
+          ...flags,
           ...(payload.published !== undefined ? { published: payload.published } : {}),
           title: listing.title,
           subject: listing.subject,
@@ -683,7 +687,7 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           paperType: listing.paperType,
           title: listing.title,
           fileUrl: payload.fileUrl || null,
-          published: payload.published !== false,
+          ...pastPaperVisibility(payload.published !== false, payload.published !== false),
         },
       });
       targetId = saved.id;

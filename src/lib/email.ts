@@ -185,6 +185,21 @@ ${amountLine}${periodLine}
   });
 }
 
+export function studentAdDigestHtml(opts: {
+  name: string;
+  listHtml: string;
+  adsUrl: string;
+}) {
+  return emailLayout({
+    preheader: "New student requests matching your subjects.",
+    title: "New student requests",
+    body: `<p>Hi ${opts.name},</p>
+<p>New student ads matching your subjects:</p>
+<ul>${opts.listHtml}</ul>`,
+    cta: { label: "Browse student requests", href: opts.adsUrl },
+  });
+}
+
 export function verifyEmailHtml(name: string, verifyUrl: string) {
   return emailLayout({
     preheader: "Confirm your email to unlock messaging and ads.",

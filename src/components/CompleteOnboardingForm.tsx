@@ -55,7 +55,9 @@ export function CompleteOnboardingForm() {
             onChange={() => setRole("TUTOR")}
           />
           <strong>Tutor</strong>
-          <span className="muted">Publish a profile and receive student messages</span>
+          <span className="muted">
+            Publish a profile, upload a photo ID, and receive student messages
+          </span>
         </label>
       </fieldset>
       {error && <p className="form-error">{error}</p>}

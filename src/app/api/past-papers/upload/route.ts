@@ -1,6 +1,7 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { validatePdfBuffer } from "@/lib/past-papers/file-validate";
 
 export const runtime = "nodejs";
 
@@ -27,13 +28,15 @@ export async function POST(req: Request) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: "PDF must be under 12MB" }, { status: 400 });
   }
-  if (file.type !== "application/pdf") {
-    return NextResponse.json({ error: "Upload a PDF" }, { status: 400 });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const validated = validatePdfBuffer(buffer, file.name, file.type);
+  if (!validated.ok) {
+    return NextResponse.json({ error: validated.error }, { status: 400 });
   }
 
   const key = String(form.get("catalogKey") || "paper").replace(/[^a-z0-9_-]/gi, "-");
   const pathname = `past-papers/${key}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.pdf`;
-  const blob = await put(pathname, file, {
+  const blob = await put(pathname, validated.buffer, {
     access: "public",
     contentType: "application/pdf",
     token: process.env.BLOB_READ_WRITE_TOKEN,

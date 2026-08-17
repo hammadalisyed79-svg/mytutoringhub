@@ -38,7 +38,24 @@ export default async function AdsPage() {
         </div>
 
         <div className="results">
-          {ads.length === 0 && <p className="muted">No open requests right now.</p>}
+          {ads.length === 0 && (
+            <div className="panel empty-state">
+              <h2>No open requests right now</h2>
+              <p className="muted">
+                Students with a Pass can post what they need. Tutors with Tutor Basic can message
+                them from this board.
+              </p>
+              {session?.user?.role === "STUDENT" ? (
+                <Link href="/ads/new" className="btn">
+                  Post a request
+                </Link>
+              ) : (
+                <Link href="/register?role=student" className="btn">
+                  Join as student
+                </Link>
+              )}
+            </div>
+          )}
           {ads.map((ad) => (
             <article key={ad.id} className="ad-row">
               <div className="meta">

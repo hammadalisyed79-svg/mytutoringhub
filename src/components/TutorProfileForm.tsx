@@ -1,7 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
+import {
+  citiesForCountry,
+  expertiseForSubjects,
+  GENERIC_EXPERTISE,
+  inferTutorCountry,
+  joinCsv,
+  splitCsv,
+  tutorCountries,
+  tutorLanguageOptions,
+  tutorLevelOptions,
+} from "@/lib/tutor-catalog";
+import {
+  availabilityTimeOptions,
+  emptyAvailabilitySlot,
+  EXPERIENCE_YEAR_OPTIONS,
+  parseAvailability,
+  serializeAvailability,
+  WEEKDAYS,
+  type AvailabilitySlot,
+} from "@/lib/availability";
+import { embedVideoSrc } from "@/lib/media";
 
 type Initial = {
   headline?: string | null;
@@ -9,10 +31,13 @@ type Initial = {
   subjects: string;
   hourlyRate: number;
   location: string;
+  country?: string | null;
+  expertise?: string | null;
   online: boolean;
   inPerson: boolean;
   photoUrl?: string | null;
   qualifications?: string | null;
+  experienceYears?: number | null;
   teachingMethod?: string | null;
   languages?: string | null;
   levels?: string | null;
@@ -22,12 +47,124 @@ type Initial = {
   phone?: string | null;
 };
 
-export function TutorProfileForm({ initial }: { initial: Initial }) {
+const TIMES = availabilityTimeOptions();
+
+export function TutorProfileForm({
+  initial,
+  subjects: catalogSubjects,
+  extraLevels = [],
+}: {
+  initial: Initial;
+  subjects: string[];
+  extraLevels?: string[];
+}) {
   const router = useRouter();
+  const photoInput = useRef<HTMLInputElement>(null);
+  const countries = useMemo(() => tutorCountries(), []);
+  const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
+  const languageCatalog = useMemo(() => tutorLanguageOptions(), []);
+
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
   const [uploading, setUploading] = useState(false);
+  const [headline, setHeadline] = useState(initial.headline || "");
+  const [bio, setBio] = useState(initial.bio || "");
+  const [subjectList, setSubjectList] = useState(splitCsv(initial.subjects));
+  const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
+  const [levelList, setLevelList] = useState(splitCsv(initial.levels));
+  const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
+  const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
+  const [location, setLocation] = useState(initial.location || "");
+  const [hourlyRate, setHourlyRate] = useState(String(initial.hourlyRate || 1500));
+  const [online, setOnline] = useState(initial.online);
+  const [inPerson, setInPerson] = useState(initial.inPerson);
+  const [qualifications, setQualifications] = useState(initial.qualifications || "");
+  const [experienceYears, setExperienceYears] = useState(
+    initial.experienceYears == null ? "" : String(initial.experienceYears),
+  );
+  const [teachingMethod, setTeachingMethod] = useState(initial.teachingMethod || "");
+  const [slots, setSlots] = useState<AvailabilitySlot[]>(() => parseAvailability(initial.availability));
+  const [videoUrl, setVideoUrl] = useState(initial.videoUrl || "");
+  const [phone, setPhone] = useState(initial.phone || "");
+  const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
+
+  const videoSrc = embedVideoSrc(videoUrl);
+  const cities = useMemo(() => citiesForCountry(country), [country]);
+  const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
+  const listedSubjects = useMemo(() => {
+    const extra = subjectList.filter(
+      (name) => !catalogSubjects.some((item) => item.toLowerCase() === name.toLowerCase()),
+    );
+    return [...catalogSubjects, ...extra];
+  }, [catalogSubjects, subjectList]);
+
+  const checks = useMemo(
+    () => [
+      { label: "Photo", ok: photoUrl.startsWith("https://"), required: false },
+      { label: "Headline", ok: headline.trim().length >= 8, required: true },
+      { label: "About you", ok: bio.trim().length >= 40, required: true },
+      { label: "Country", ok: country.trim().length >= 2, required: true },
+      { label: "City", ok: location.trim().length >= 2, required: true },
+      { label: "Subjects", ok: subjectList.length > 0, required: true },
+      { label: "Expertise", ok: expertiseList.length > 0, required: false },
+      { label: "Levels", ok: levelList.length > 0, required: false },
+      { label: "Languages", ok: languageList.length > 0, required: false },
+      { label: "Hourly rate", ok: Number(hourlyRate) >= 500, required: true },
+      { label: "Lesson type", ok: online || inPerson, required: true },
+      { label: "Qualifications", ok: qualifications.trim().length > 0, required: false },
+      { label: "Experience", ok: experienceYears !== "", required: false },
+      { label: "Availability", ok: slots.length > 0, required: false },
+      { label: "Phone", ok: phone.trim().length > 0, required: false },
+    ],
+    [
+      photoUrl,
+      headline,
+      bio,
+      country,
+      location,
+      subjectList,
+      expertiseList,
+      levelList,
+      languageList,
+      hourlyRate,
+      online,
+      inPerson,
+      qualifications,
+      experienceYears,
+      slots,
+      phone,
+    ],
+  );
+
+  const requiredDone = checks.filter((c) => c.required && c.ok).length;
+  const requiredTotal = checks.filter((c) => c.required).length;
+  const recommendedDone = checks.filter((c) => !c.required && c.ok).length;
+  const progress = Math.round(
+    ((requiredDone + recommendedDone * 0.5) / (requiredTotal + checks.filter((c) => !c.required).length * 0.5)) *
+      100,
+  );
+
+  function setCountryAndCity(nextCountry: string) {
+    setCountry(nextCountry);
+    const nextCities = citiesForCountry(nextCountry);
+    if (location && !nextCities.some((city) => city.toLowerCase() === location.toLowerCase())) {
+      setLocation(nextCities.includes("Online") ? "Online" : nextCities[0] || "");
+    }
+  }
+
+  function setSubjects(next: string[]) {
+    setSubjectList(next);
+    const allowed = new Set(
+      [...expertiseForSubjects(next), ...GENERIC_EXPERTISE].map((item) => item.toLowerCase()),
+    );
+    setExpertiseList((current) => current.filter((item) => allowed.has(item.toLowerCase())));
+  }
+
+  function updateSlot(index: number, patch: Partial<AvailabilitySlot>) {
+    setSlots((current) => current.map((slot, i) => (i === index ? { ...slot, ...patch } : slot)));
+  }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -40,15 +177,16 @@ export function TutorProfileForm({ initial }: { initial: Initial }) {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Upload failed");
+        setError(data.error || "Photo upload failed");
         return;
       }
       setPhotoUrl(data.url);
-      setMsg("Photo uploaded. Save profile to keep it.");
+      setMsg("Photo updated. Save profile to keep it on your listing.");
     } catch {
-      setError("Upload failed");
+      setError("Photo upload failed");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   }
 
@@ -56,138 +194,433 @@ export function TutorProfileForm({ initial }: { initial: Initial }) {
     e.preventDefault();
     setMsg("");
     setError("");
-    const fd = new FormData(e.currentTarget);
-    const payload = {
-      headline: String(fd.get("headline") || ""),
-      bio: String(fd.get("bio")),
-      subjects: String(fd.get("subjects")),
-      hourlyRate: Number(fd.get("hourlyRate")),
-      location: String(fd.get("location")),
-      online: fd.get("online") === "on",
-      inPerson: fd.get("inPerson") === "on",
-      photoUrl,
-      qualifications: String(fd.get("qualifications") || ""),
-      teachingMethod: String(fd.get("teachingMethod") || ""),
-      languages: String(fd.get("languages") || ""),
-      levels: String(fd.get("levels") || ""),
-      availability: String(fd.get("availability") || ""),
-      videoUrl: String(fd.get("videoUrl") || ""),
-      offersFreeTrial: fd.get("offersFreeTrial") === "on",
-      phone: String(fd.get("phone") || ""),
-    };
-    const res = await fetch("/api/profile/tutor", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Save failed");
+    if (!online && !inPerson) {
+      setError("Choose online, in person, or both.");
       return;
     }
-    setMsg("Profile saved.");
-    router.refresh();
+    if (!country) {
+      setError("Select the country you teach from.");
+      return;
+    }
+    if (!subjectList.length) {
+      setError("Select at least one subject from the catalog.");
+      return;
+    }
+    const payload = {
+      headline: headline.trim(),
+      bio: bio.trim(),
+      subjects: joinCsv(subjectList),
+      expertise: joinCsv(expertiseList),
+      country,
+      hourlyRate: Number(hourlyRate),
+      location: location.trim(),
+      online,
+      inPerson,
+      photoUrl,
+      qualifications: qualifications.trim(),
+      experienceYears: experienceYears === "" ? null : Number(experienceYears),
+      teachingMethod: teachingMethod.trim(),
+      languages: joinCsv(languageList),
+      levels: joinCsv(levelList),
+      availability: serializeAvailability(slots),
+      videoUrl: videoUrl.trim(),
+      offersFreeTrial,
+      phone: phone.trim(),
+    };
+    setSaving(true);
+    try {
+      const res = await fetch("/api/profile/tutor", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Save failed");
+        return;
+      }
+      setMsg("Profile saved. You can edit any of these details anytime.");
+      router.refresh();
+    } catch {
+      setError("Save failed. Try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <form className="stack-form" onSubmit={save}>
-      <label>
-        Headline
-        <input name="headline" defaultValue={initial.headline || ""} />
-      </label>
-      <label>
-        Bio
-        <textarea name="bio" required minLength={20} rows={5} defaultValue={initial.bio} />
-      </label>
-      <label>
-        Subjects (comma-separated)
-        <input name="subjects" required defaultValue={initial.subjects} />
-      </label>
-      <label>
-        Levels (e.g. Primary, GCSE, A Level, University)
-        <input name="levels" defaultValue={initial.levels || ""} />
-      </label>
-      <label>
-        Languages
-        <input name="languages" defaultValue={initial.languages || ""} placeholder="English, Urdu…" />
-      </label>
-      <label>
-        Qualifications
-        <textarea name="qualifications" rows={3} defaultValue={initial.qualifications || ""} />
-      </label>
-      <label>
-        Teaching method
-        <textarea name="teachingMethod" rows={3} defaultValue={initial.teachingMethod || ""} />
-      </label>
-      <label>
-        Availability
-        <input name="availability" defaultValue={initial.availability || ""} placeholder="Weeknights, weekends…" />
-      </label>
-      <label>
-        Intro video URL
-        <input name="videoUrl" defaultValue={initial.videoUrl || ""} />
-      </label>
-      <label>
-        Phone (shown only if verified)
-        <input name="phone" defaultValue={initial.phone || ""} />
-      </label>
-      <label>
-        Hourly rate (base units)
-        <input
-          name="hourlyRate"
-          type="number"
-          min={500}
-          step={100}
-          required
-          defaultValue={initial.hourlyRate}
-        />
-      </label>
-      <label>
-        City / area
-        <input name="location" required defaultValue={initial.location} placeholder="City or Online…" />
-      </label>
-      <label>
-        Photo URL or upload
-        <input
-          value={photoUrl}
-          onChange={(e) => setPhotoUrl(e.target.value)}
-          placeholder="https://…"
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={onFile}
-          disabled={uploading}
-          style={{ marginTop: "0.4rem" }}
-        />
-        {uploading && <span className="muted">Uploading…</span>}
-        {photoUrl.startsWith("http") && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoUrl}
-            alt=""
-            width={64}
-            height={64}
-            style={{ marginTop: "0.5rem", borderRadius: "50%", objectFit: "cover" }}
-          />
-        )}
-      </label>
-      <div className="checks">
-        <label className="radio">
-          <input name="online" type="checkbox" defaultChecked={initial.online} /> Online
-        </label>
-        <label className="radio">
-          <input name="inPerson" type="checkbox" defaultChecked={initial.inPerson} /> In person
-        </label>
-        <label className="radio">
-          <input name="offersFreeTrial" type="checkbox" defaultChecked={initial.offersFreeTrial} />{" "}
-          Offers free first lesson
-        </label>
+    <form className="stack-form profile-form" onSubmit={save}>
+      <section className="form-section profile-photo-top">
+        <div className="profile-photo-hero">
+          <div className="profile-photo-preview profile-photo-preview-lg" aria-hidden>
+            {photoUrl.startsWith("http") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoUrl} alt="" />
+            ) : (
+              <span>Add photo</span>
+            )}
+          </div>
+          <div className="profile-photo-hero-copy">
+            <h3>Display picture</h3>
+            <p className="field-hint">Shown at the top of your public listing. Change it whenever you like.</p>
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => photoInput.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? "Uploading…" : photoUrl ? "Edit photo" : "Add photo"}
+            </button>
+            <input ref={photoInput} type="file" accept="image/*" onChange={onFile} hidden />
+            <details className="profile-photo-link">
+              <summary>Or paste a photo link</summary>
+              <input
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder="https://"
+                inputMode="url"
+              />
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <div className="profile-complete">
+        <div className="profile-complete-head">
+          <strong>
+            {requiredDone}/{requiredTotal} required fields complete
+          </strong>
+          <span className="muted">{progress}% listing strength</span>
+        </div>
+        <div className="profile-progress" aria-hidden>
+          <span style={{ width: `${Math.min(100, progress)}%` }} />
+        </div>
+        <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
+          Every field on this listing stays editable after you save. Only accepted verification
+          documents are locked.
+        </p>
+        <ul className="profile-complete-list">
+          {checks.map((c) => (
+            <li key={c.label} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
+              {c.ok ? "✓" : c.required ? "•" : "○"} {c.label}
+              {c.required ? "" : " (recommended)"}
+            </li>
+          ))}
+        </ul>
       </div>
+
+      <section className="form-section">
+        <h3>Listing basics</h3>
+        <p className="field-hint">Students use these to decide whether to message you.</p>
+
+        <label>
+          <span>
+            Headline <abbr className="req" title="Required">*</abbr>
+          </span>
+          <input
+            name="headline"
+            required
+            minLength={8}
+            maxLength={120}
+            value={headline}
+            onChange={(e) => setHeadline(e.target.value)}
+            placeholder="A Level Chemistry · 8 years · exam specialist"
+          />
+          <span className="field-hint">{headline.trim().length}/120 · One line that says who you teach.</span>
+        </label>
+
+        <label>
+          <span>
+            About you <abbr className="req" title="Required">*</abbr>
+          </span>
+          <textarea
+            name="bio"
+            required
+            minLength={40}
+            maxLength={4000}
+            rows={6}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Who you teach, how you run lessons, and what results students can expect."
+          />
+          <span className="field-hint">{bio.trim().length}/4000 · At least 40 characters.</span>
+        </label>
+      </section>
+
+      <section className="form-section">
+        <h3>Where you teach</h3>
+        <p className="field-hint">Country and city are shown on your public profile and used in search.</p>
+        <div className="form-grid-2">
+          <label>
+            <span>
+              Country <abbr className="req" title="Required">*</abbr>
+            </span>
+            <select required value={country} onChange={(e) => setCountryAndCity(e.target.value)}>
+              <option value="">Select country…</option>
+              {countries.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>
+              City <abbr className="req" title="Required">*</abbr>
+            </span>
+            <select required value={location} onChange={(e) => setLocation(e.target.value)} disabled={!country}>
+              <option value="">{country ? "Select city…" : "Choose a country first"}</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+              {location && !cities.some((city) => city.toLowerCase() === location.toLowerCase()) && (
+                <option value={location}>{location}</option>
+              )}
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section className="form-section">
+        <h3>Subjects & expertise</h3>
+        <CatalogMultiSelect
+          label="Subjects you teach"
+          required
+          searchable
+          directory
+          max={12}
+          selected={subjectList}
+          onChange={setSubjects}
+          options={listedSubjects}
+          addLabel="Add another listed subject"
+          hint="Choose from the My Tutoring Hub subject catalog. Search or tap a subject — no free typing."
+        />
+
+        <CatalogMultiSelect
+          label="Expertise"
+          selected={expertiseList}
+          onChange={setExpertiseList}
+          options={expertiseOptions}
+          extraOptions={GENERIC_EXPERTISE}
+          max={16}
+          addLabel="Add more expertise"
+          emptyHint="Select subjects first — expertise follows those subjects."
+          hint={
+            subjectList.length
+              ? "Skills are matched to the subjects you selected. Add more for exam technique, SEN, or crash courses."
+              : "Select subjects first — expertise options follow those subjects."
+          }
+        />
+
+        <CatalogMultiSelect
+          label="Levels"
+          selected={levelList}
+          onChange={setLevelList}
+          options={levelCatalog.core}
+          extraOptions={levelCatalog.more}
+          max={10}
+          addLabel="Add more levels"
+          hint="Tap every stage you teach. Use Add more for board years and extra curricula."
+        />
+
+        <CatalogMultiSelect
+          label="Languages"
+          selected={languageList}
+          onChange={setLanguageList}
+          options={languageCatalog.core}
+          extraOptions={languageCatalog.more}
+          max={8}
+          addLabel="Add more languages"
+          hint="Languages you can teach in. Core languages are listed; add more from the full list."
+        />
+      </section>
+
+      <section className="form-section">
+        <h3>Lessons</h3>
+        <label>
+          <span>
+            Hourly rate (PKR) <abbr className="req" title="Required">*</abbr>
+          </span>
+          <input
+            name="hourlyRate"
+            type="number"
+            min={500}
+            step={100}
+            required
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(e.target.value)}
+          />
+          <span className="field-hint">Students see this converted to their local currency. Minimum 500 PKR.</span>
+        </label>
+
+        <fieldset className="form-fieldset">
+          <legend>
+            Lesson type <abbr className="req" title="Required">*</abbr>
+          </legend>
+          <div className="checks">
+            <label className="radio">
+              <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Online
+            </label>
+            <label className="radio">
+              <input type="checkbox" checked={inPerson} onChange={(e) => setInPerson(e.target.checked)} /> In person
+            </label>
+            <label className="radio">
+              <input
+                type="checkbox"
+                checked={offersFreeTrial}
+                onChange={(e) => setOffersFreeTrial(e.target.checked)}
+              />{" "}
+              Free first lesson
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset className="catalog-pick">
+          <legend>Weekly availability</legend>
+          <p className="field-hint">
+            Add the days and times you can teach. Students see this calendar on your public profile.
+          </p>
+          <div className="schedule-rows">
+            {slots.map((slot, index) => (
+              <div key={`${slot.day}-${index}`} className="schedule-row">
+                <select
+                  aria-label="Day"
+                  value={slot.day}
+                  onChange={(e) => updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })}
+                >
+                  {WEEKDAYS.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Start time"
+                  value={slot.start}
+                  onChange={(e) => updateSlot(index, { start: e.target.value })}
+                >
+                  {TIMES.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+                <span className="muted">to</span>
+                <select
+                  aria-label="End time"
+                  value={slot.end}
+                  onChange={(e) => updateSlot(index, { end: e.target.value })}
+                >
+                  {TIMES.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
+          >
+            Add time slot
+          </button>
+        </fieldset>
+      </section>
+
+      <section className="form-section">
+        <h3>Background</h3>
+        <label>
+          Qualifications
+          <textarea
+            name="qualifications"
+            rows={3}
+            value={qualifications}
+            onChange={(e) => setQualifications(e.target.value)}
+            placeholder="MSc Chemistry, examiner experience, teaching licence…"
+          />
+        </label>
+        <label>
+          Experience in years
+          <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
+            <option value="">Select years…</option>
+            {EXPERIENCE_YEAR_OPTIONS.map((row) => (
+              <option key={row.value} value={row.value}>
+                {row.label}
+              </option>
+            ))}
+          </select>
+          <span className="field-hint">How long you have been teaching or tutoring.</span>
+        </label>
+        <label>
+          How you teach
+          <textarea
+            name="teachingMethod"
+            rows={3}
+            value={teachingMethod}
+            onChange={(e) => setTeachingMethod(e.target.value)}
+            placeholder="Past papers, weekly homework, lesson notes after each session…"
+          />
+        </label>
+      </section>
+
+      <section className="form-section">
+        <h3>Optional</h3>
+        <label>
+          Intro video link
+          <input
+            name="videoUrl"
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="YouTube or Vimeo URL"
+            inputMode="url"
+          />
+          <span className="field-hint">Paste a YouTube or Vimeo link. A preview appears below.</span>
+        </label>
+        {videoSrc ? (
+          <div className="media-embed-wrap profile-video-preview">
+            <iframe
+              className="media-embed"
+              title="Intro video preview"
+              src={videoSrc}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+        ) : videoUrl.trim() ? (
+          <p className="muted">Enter a full YouTube or Vimeo URL to see the video here.</p>
+        ) : null}
+        <label>
+          Phone
+          <input
+            name="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+92 …"
+            inputMode="tel"
+          />
+          <span className="field-hint">
+            You can update this anytime. Shown on your public profile only after you are verified.
+          </span>
+        </label>
+      </section>
+
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
-      <button className="btn" type="submit" disabled={uploading}>
-        Save profile
+      <button className="btn" type="submit" disabled={uploading || saving}>
+        {saving ? "Saving…" : "Save profile"}
       </button>
     </form>
   );

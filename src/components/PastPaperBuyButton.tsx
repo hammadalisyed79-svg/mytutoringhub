@@ -60,7 +60,7 @@ export function PastPaperBuyButton({
   return (
     <div className="paper-buy">
       <button className="btn btn-sm" type="button" onClick={buy} disabled={busy}>
-        {busy ? "Opening checkout…" : `Download · ${feeLabel}`}
+        {busy ? "Opening…" : `View / Download · ${feeLabel}`}
       </button>
       {error ? <p className="form-error">{error}</p> : null}
     </div>

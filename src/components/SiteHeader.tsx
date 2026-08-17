@@ -26,7 +26,16 @@ export async function SiteHeader() {
           <Logo />
         </Link>
         <SiteNav
-          user={session?.user ? { role: session.user.role, unreadCount: unread } : null}
+          user={
+            session?.user
+              ? {
+                  name: session.user.name,
+                  email: session.user.email,
+                  role: session.user.role,
+                  unreadCount: unread,
+                }
+              : null
+          }
         />
       </div>
     </header>

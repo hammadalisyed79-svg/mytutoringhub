@@ -41,7 +41,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })),
       ];
     });
-    return [...staticRoutes, ...subjectRoutes];
+    const papers = await prisma.pastPaper.findMany({
+      where: { published: true, isActive: true, fileUrl: { not: null } },
+      select: { board: true, qualification: true, subject: true, syllabusCode: true, updatedAt: true },
+      take: 200,
+    });
+    const paperRoutes = papers.map((paper) => {
+      const boardSlug = /cambridge/i.test(paper.board) ? "cambridge" : slugify(paper.board);
+      const levelSlug = slugify(paper.qualification || "paper");
+      const subjectSlug = paper.syllabusCode
+        ? `${slugify(paper.subject)}-${paper.syllabusCode.toLowerCase()}`
+        : slugify(paper.subject);
+      return {
+        url: `${base}/past-papers/${boardSlug}/${levelSlug}/${subjectSlug}`,
+        lastModified: paper.updatedAt,
+      };
+    });
+    const seen = new Set<string>();
+    const uniquePaperRoutes = paperRoutes.filter((row) => {
+      if (seen.has(row.url)) return false;
+      seen.add(row.url);
+      return true;
+    });
+    return [...staticRoutes, ...subjectRoutes, ...uniquePaperRoutes];
   } catch {
     return staticRoutes;
   }

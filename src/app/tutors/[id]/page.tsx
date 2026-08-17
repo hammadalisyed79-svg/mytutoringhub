@@ -6,21 +6,42 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { similarTutors } from "@/lib/search-tutors";
+import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc, openStreetMapEmbed } from "@/lib/media";
+import { formatTutorPlace } from "@/lib/tutor-catalog";
+import { formatAvailabilityLines, formatExperienceYears } from "@/lib/availability";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
+function splitList(value?: string | null) {
+  return (value || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function stars(rating: number) {
+  const n = Math.max(0, Math.min(5, Math.round(rating)));
+  return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(n);
+}
+
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
-    include: { user: true },
+    include: { user: { select: { name: true } } },
   });
-  return { title: tutor ? tutor.user.name : "Tutor" };
+  if (!tutor) return { title: "Tutor" };
+  const description =
+    tutor.headline ||
+    `${tutor.user.name} — ${tutor.subjects} tutor in ${formatTutorPlace(tutor.location, tutor.country)}. Private lessons on My Tutoring Hub.`;
+  return {
+    title: `${tutor.user.name} — private tutor`,
+    description: description.slice(0, 160),
+  };
 }
 
 export default async function TutorProfilePage({ params }: Params) {
@@ -54,20 +75,33 @@ export default async function TutorProfilePage({ params }: Params) {
   const highlighted =
     tutor.highlighted || (tutor.highlightedUntil && tutor.highlightedUntil > new Date());
 
+  const subjects = splitList(tutor.subjects);
+  const expertise = splitList(tutor.expertise);
+  const levels = splitList(tutor.levels);
+  const languages = splitList(tutor.languages);
+  const place = formatTutorPlace(tutor.location, tutor.country);
+  const availabilityLines = formatAvailabilityLines(tutor.availability);
+  const experienceLabel = formatExperienceYears(tutor.experienceYears);
   const videoSrc = embedVideoSrc(tutor.videoUrl);
-  const mapSrc = openStreetMapEmbed(tutor.location);
+  const mapSrc = openStreetMapEmbed(place);
   const similar = await similarTutors({
     id: tutor.id,
     subjects: tutor.subjects,
     location: tutor.location,
     take: 4,
   });
+  const modes = [tutor.online ? "Online" : null, tutor.inPerson ? "In person" : null].filter(
+    Boolean,
+  ) as string[];
+  const showPhone = Boolean(tutor.verified && tutor.phone && (isOwner || isAdmin || session?.user?.role === "STUDENT"));
+  const canMessage = session?.user?.role === "STUDENT";
+  const initial = tutor.user.name.slice(0, 1).toUpperCase();
 
   return (
     <div className="page">
       <div className="container stack">
         {!tutor.active && (isOwner || isAdmin) && (
-          <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)" }}>
+          <p className="panel profile-notice">
             This listing is hidden from search until{" "}
             {isOwner ? (
               <>
@@ -79,162 +113,276 @@ export default async function TutorProfilePage({ params }: Params) {
             .
           </p>
         )}
-        <div className="panel">
-          <div className="meta" style={{ marginBottom: "0.65rem" }}>
-            {highlighted && <span className="badge accent">Highlighted</span>}
-            {tutor.verified && <span className="badge">Verified</span>}
-            {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
-            {avg !== null && (
-              <span>
-                {avg.toFixed(1)} ★ · {tutor.reviews.length} reviews
-              </span>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-            {tutor.photoUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={tutor.photoUrl}
-                alt=""
-                width={72}
-                height={72}
-                style={{ borderRadius: "50%", objectFit: "cover" }}
-              />
-            )}
-            <div>
-              <h1 className="page-title">{tutor.user.name}</h1>
-              {tutor.headline && <p className="profile-headline">{tutor.headline}</p>}
-            </div>
-          </div>
-          <div className="meta">
-            <span className="price-tag">{formatHourly(tutor.hourlyRate, currency)}</span>
-            <span>{tutor.location}</span>
-            <span>
-              {tutor.online ? "Online" : ""}
-              {tutor.online && tutor.inPerson ? " · " : ""}
-              {tutor.inPerson ? "In person" : ""}
-            </span>
-            {tutor.verified && tutor.phone && <span>Phone: {tutor.phone}</span>}
-          </div>
-          <p className="prose-block">{tutor.bio}</p>
-          <p>
-            <strong>Subjects:</strong> {tutor.subjects}
+        {isOwner && (
+          <p className="panel profile-notice">
+            This is your public listing.{" "}
+            <Link href="/dashboard">Edit profile</Link>
           </p>
-          {tutor.levels && (
-            <p>
-              <strong>Levels:</strong> {tutor.levels}
-            </p>
-          )}
-          {tutor.languages && (
-            <p>
-              <strong>Languages:</strong> {tutor.languages}
-            </p>
-          )}
-          {tutor.qualifications && (
-            <p>
-              <strong>Qualifications:</strong> {tutor.qualifications}
-            </p>
-          )}
-          {tutor.teachingMethod && (
-            <p>
-              <strong>Method:</strong> {tutor.teachingMethod}
-            </p>
-          )}
-          {tutor.availability && (
-            <p>
-              <strong>Availability:</strong> {tutor.availability}
-            </p>
-          )}
-          {tutor.videoUrl && !videoSrc && (
-            <p>
-              <strong>Video:</strong>{" "}
-              <a href={tutor.videoUrl} target="_blank" rel="noreferrer">
-                Intro video
-              </a>
-            </p>
-          )}
-          {videoSrc && (
-            <div className="media-embed-wrap">
-              <h3>Intro video</h3>
-              <iframe
-                className="media-embed"
-                title={`Intro video from ${tutor.user.name}`}
-                src={videoSrc}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            </div>
-          )}
-          {mapSrc && (
-            <div className="media-embed-wrap">
-              <h3>Area</h3>
-              <p className="muted" style={{ marginTop: 0 }}>
-                City map for this listing — not live GPS tracking.
-              </p>
-              <iframe
-                className="media-embed map-embed"
-                title={`Map of ${tutor.location}`}
-                src={mapSrc}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-              <p className="muted">
-                <a
-                  href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(tutor.location.replace(/online/gi, "").trim() || tutor.location)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open in OpenStreetMap
-                </a>
-              </p>
-            </div>
-          )}
-          {tutor.ads.length > 0 && (
-            <div style={{ marginTop: "1rem" }}>
-              <h3>Subject ads</h3>
-              <ul className="sub-list">
-                {tutor.ads.map((ad) => (
-                  <li key={ad.id}>
-                    {ad.title} — {ad.subject} · {ad.level} · {formatHourly(ad.rate, currency)}
-                  </li>
+        )}
+
+        <div className="profile-layout">
+          <div className="profile-main stack">
+            <section className="panel profile-hero">
+              <div className="profile-hero-top">
+                <div className="profile-photo" aria-hidden>
+                  {tutor.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={tutor.photoUrl} alt="" />
+                  ) : (
+                    initial
+                  )}
+                </div>
+                <div className="profile-hero-copy">
+                  <div className="meta">
+                    {highlighted && <span className="badge accent">Highlighted</span>}
+                    {tutor.verified && <span className="badge">Verified</span>}
+                    {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
+                    {avg !== null && (
+                      <span className="profile-rating">
+                        {stars(avg)} {avg.toFixed(1)} · {tutor.reviews.length}{" "}
+                        {tutor.reviews.length === 1 ? "review" : "reviews"}
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="page-title">{tutor.user.name}</h1>
+                  {tutor.headline && <p className="profile-headline">{tutor.headline}</p>}
+                  <div className="profile-hero-facts">
+                    <span className="price-tag">{formatHourly(tutor.hourlyRate, currency)}</span>
+                    <span>{place}</span>
+                    {modes.length > 0 && <span>{modes.join(" · ")}</span>}
+                  </div>
+                  {canMessage && (
+                    <a className="btn btn-sm profile-hero-cta" href="#message-tutor">
+                      Message {tutor.user.name.split(" ")[0]}
+                    </a>
+                  )}
+                  {!session && (
+                    <Link className="btn btn-sm profile-hero-cta" href="/register?role=student">
+                      Join to message
+                    </Link>
+                  )}
+                </div>
+              </div>
+              {subjects.length > 0 && (
+                <div className="profile-chips">
+                  {subjects.map((s) => (
+                    <Link key={s} href={`/search?subject=${encodeURIComponent(s)}`} className="chip">
+                      {s}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {expertise.length > 0 && (
+                <div className="profile-chips profile-expertise">
+                  {expertise.map((skill) => (
+                    <span key={skill} className="chip">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="panel profile-section">
+              <h2>About</h2>
+              <p className="prose-block">{tutor.bio}</p>
+            </section>
+
+            <section className="panel profile-section">
+              <h2>Teaching details</h2>
+              <dl className="profile-facts">
+                {tutor.country && (
+                  <div>
+                    <dt>Country</dt>
+                    <dd>{tutor.country}</dd>
+                  </div>
+                )}
+                {levels.length > 0 && (
+                  <div>
+                    <dt>Levels</dt>
+                    <dd>{levels.join(" · ")}</dd>
+                  </div>
+                )}
+                {expertise.length > 0 && (
+                  <div>
+                    <dt>Expertise</dt>
+                    <dd>{expertise.join(" · ")}</dd>
+                  </div>
+                )}
+                {languages.length > 0 && (
+                  <div>
+                    <dt>Languages</dt>
+                    <dd>{languages.join(" · ")}</dd>
+                  </div>
+                )}
+                {tutor.qualifications && (
+                  <div>
+                    <dt>Qualifications</dt>
+                    <dd className="prose-block">{tutor.qualifications}</dd>
+                  </div>
+                )}
+                {experienceLabel && (
+                  <div>
+                    <dt>Experience</dt>
+                    <dd>{experienceLabel}</dd>
+                  </div>
+                )}
+                {tutor.teachingMethod && (
+                  <div>
+                    <dt>How lessons work</dt>
+                    <dd className="prose-block">{tutor.teachingMethod}</dd>
+                  </div>
+                )}
+                {availabilityLines.length > 0 && (
+                  <div>
+                    <dt>Availability</dt>
+                    <dd>
+                      <ul className="schedule-public">
+                        {availabilityLines.map((line) => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              {!tutor.qualifications && !tutor.teachingMethod && !availabilityLines.length && !experienceLabel && levels.length === 0 && languages.length === 0 && expertise.length === 0 && !tutor.country && (
+                <p className="muted">This tutor has not added extra teaching details yet.</p>
+              )}
+            </section>
+
+            {tutor.ads.length > 0 && (
+              <section className="panel profile-section">
+                <h2>Subject ads</h2>
+                <div className="profile-ads">
+                  {tutor.ads.map((ad) => (
+                    <article key={ad.id} className="profile-ad">
+                      <h3>{ad.title}</h3>
+                      <p className="muted">
+                        {ad.subject} · {ad.level} · {formatHourly(ad.rate, currency)}
+                      </p>
+                      {ad.description && <p>{ad.description}</p>}
+                      <Link href={`/s/${slugify(ad.subject)}`} className="muted">
+                        More {ad.subject} tutors
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {videoSrc && (
+              <section className="panel profile-section">
+                <h2>Intro video</h2>
+                <div className="media-embed-wrap">
+                  <iframe
+                    className="media-embed"
+                    title={`Intro video from ${tutor.user.name}`}
+                    src={videoSrc}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+              </section>
+            )}
+            {tutor.videoUrl && !videoSrc && (
+              <section className="panel profile-section">
+                <h2>Intro video</h2>
+                <p>
+                  <a href={tutor.videoUrl} target="_blank" rel="noreferrer">
+                    Watch intro video
+                  </a>
+                </p>
+              </section>
+            )}
+
+            {mapSrc && (
+              <section className="panel profile-section">
+                <h2>Area</h2>
+                <p className="muted" style={{ marginTop: 0 }}>
+                  City map for this listing — not live GPS tracking.
+                </p>
+                <iframe
+                  className="media-embed map-embed"
+                  title={`Map of ${tutor.location}`}
+                  src={mapSrc}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+                <p className="muted">
+                  <a
+                    href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(tutor.location.replace(/online/gi, "").trim() || tutor.location)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open in OpenStreetMap
+                  </a>
+                </p>
+              </section>
+            )}
+
+            <section className="panel profile-section" id="reviews">
+              <h2>Reviews</h2>
+              {avg !== null && (
+                <p className="profile-rating" style={{ marginTop: 0 }}>
+                  {stars(avg)} {avg.toFixed(1)} from {tutor.reviews.length}{" "}
+                  {tutor.reviews.length === 1 ? "review" : "reviews"}
+                </p>
+              )}
+              {tutor.reviews.length === 0 && <p className="muted">No published reviews yet.</p>}
+              <div className="profile-reviews">
+                {tutor.reviews.map((r) => (
+                  <article key={r.id} className="profile-review">
+                    <p className="profile-rating">{stars(r.rating)}</p>
+                    <strong>{r.student.name}</strong>
+                    <p>{r.comment}</p>
+                  </article>
                 ))}
-              </ul>
-            </div>
-          )}
-          <p className="muted">
-            Lesson payments are arranged directly with {tutor.user.name}. My Tutoring Hub does not
-            process lesson fees.
-          </p>
-          {session?.user && (
-            <ReportButton targetType="TUTOR" targetId={tutor.id} />
-          )}
-        </div>
-
-        {session?.user?.role === "STUDENT" ? (
-          <ContactTutorForm recipientId={tutor.user.id} tutorName={tutor.user.name} />
-        ) : !session ? (
-          <p className="panel muted">
-            <Link href="/login">Log in</Link> with a Student Pass to message this tutor.
-          </p>
-        ) : null}
-
-        <section className="panel">
-          <h2>Reviews</h2>
-          {tutor.reviews.length === 0 && <p className="muted">No published reviews yet.</p>}
-          <div className="results">
-            {tutor.reviews.map((r) => (
-              <article key={r.id} className="ad-row">
-                <strong>
-                  {r.rating}/5 — {r.student.name}
-                </strong>
-                <p style={{ margin: 0 }}>{r.comment}</p>
-              </article>
-            ))}
+              </div>
+              {session?.user?.role === "STUDENT" && <ReviewForm tutorProfileId={tutor.id} />}
+            </section>
           </div>
-          {session?.user?.role === "STUDENT" && <ReviewForm tutorProfileId={tutor.id} />}
-        </section>
+
+          <aside className="profile-aside stack">
+            <section className="panel profile-book" id="message-tutor">
+              <p className="eyebrow">Lesson rate</p>
+              <p className="profile-book-price">{formatHourly(tutor.hourlyRate, currency)}</p>
+              <p className="muted">
+                {tutor.location}
+                {modes.length ? ` · ${modes.join(" · ")}` : ""}
+              </p>
+              {showPhone && <p>Phone: {tutor.phone}</p>}
+              {canMessage ? (
+                <ContactTutorForm recipientId={tutor.user.id} tutorName={tutor.user.name} />
+              ) : isOwner ? (
+                <p className="muted">Students with a Pass can message you from this page.</p>
+              ) : !session ? (
+                <div className="profile-book-cta">
+                  <p className="muted">Create a student account and subscribe to message this tutor.</p>
+                  <Link href="/register?role=student" className="btn btn-block">
+                    Join as student
+                  </Link>
+                  <p className="muted">
+                    Already registered? <Link href="/login">Sign in</Link>
+                  </p>
+                </div>
+              ) : (
+                <p className="muted">Switch to a student account with a Student Pass to send a message.</p>
+              )}
+              <p className="muted profile-fee-note">
+                Lesson fees are arranged directly with {tutor.user.name}. My Tutoring Hub does not
+                process lesson payments.
+              </p>
+            </section>
+            {session?.user && (
+              <div className="panel">
+                <ReportButton targetType="TUTOR" targetId={tutor.id} />
+              </div>
+            )}
+          </aside>
+        </div>
 
         {similar.length > 0 && (
           <section>
@@ -270,7 +418,7 @@ export default async function TutorProfilePage({ params }: Params) {
                     <p className="tutor-headline">{t.headline || t.subjects}</p>
                     <div className="meta">
                       <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
-                      <span>{t.location || "Online"}</span>
+                      <span>{formatTutorPlace(t.location, t.country) || "Online"}</span>
                     </div>
                   </div>
                 </Link>

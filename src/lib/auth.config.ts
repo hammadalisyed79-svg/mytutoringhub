@@ -1,9 +1,22 @@
 import type { NextAuthConfig } from "next-auth";
 import type { Role } from "@/lib/types";
 
+/** Signed-in session lasts 1 hour on every device, then the user must log in again. */
+export const SESSION_MAX_AGE_SEC = 60 * 60;
+
+function sessionStillValid(token: { iat?: number } | null | undefined) {
+  const issued = Number(token?.iat || 0);
+  if (!issued) return true;
+  return Date.now() / 1000 - issued < SESSION_MAX_AGE_SEC;
+}
+
 export const authConfig = {
   trustHost: true,
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE_SEC,
+    updateAge: SESSION_MAX_AGE_SEC,
+  },
   pages: {
     signIn: "/login",
   },
@@ -61,7 +74,9 @@ export const authConfig = {
         token.sub = user.id!;
         token.role = (user as { role?: Role }).role as Role;
         token.onboardingComplete = (user as { onboardingComplete?: boolean }).onboardingComplete ?? true;
+        return token;
       }
+      if (!sessionStillValid(token)) return null;
       return token;
     },
     async session({ session, token }) {

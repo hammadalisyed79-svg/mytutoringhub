@@ -6,7 +6,7 @@ import { NewAdForm } from "@/components/NewAdForm";
 import type { Role } from "@/lib/types";
 import Link from "next/link";
 
-export const metadata = { title: "Post a request" };
+export const metadata = { title: "Post a request", description: "Post a student request for a private tutor. Student Pass required." };
 
 export default async function NewAdPage() {
   const session = await auth();
@@ -26,6 +26,10 @@ export default async function NewAdPage() {
     <div className="page">
       <div className="narrow">
         <h1 className="page-title">Post a tutor request</h1>
+        <p className="muted">
+          Describe the subject, level, and city. Tutors with Tutor Basic can message you. An active
+          Student Pass is required.
+        </p>
         {!allowed ? (
           <div className="panel">
             <p>An active Student Pass is required to post ads.</p>

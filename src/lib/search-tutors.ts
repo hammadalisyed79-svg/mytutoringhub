@@ -80,6 +80,7 @@ export async function searchTutors(
                       {
                         OR: expandSubjectTerms(subject).flatMap((term) => [
                           { subjects: contains(term) },
+                          { expertise: contains(term) },
                           {
                             ads: {
                               some: { status: "ACTIVE" as const, subject: contains(term) },
@@ -94,6 +95,8 @@ export async function searchTutors(
                       {
                         OR: [
                           { subjects: contains(keyword) },
+                          { expertise: contains(keyword) },
+                          { country: contains(keyword) },
                           { bio: contains(keyword) },
                           { location: contains(keyword) },
                           { headline: contains(keyword) },

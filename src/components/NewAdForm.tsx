@@ -40,12 +40,17 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
 
   return (
     <form className="stack-form" onSubmit={submit}>
+      <p className="field-hint">Required fields are marked with *</p>
       <label>
-        Title
-        <input name="title" required minLength={5} />
+        <span>
+          Title <abbr className="req" title="Required">*</abbr>
+        </span>
+        <input name="title" required minLength={5} placeholder="Need an A Level Chemistry tutor in Lahore" />
       </label>
       <label>
-        Subject
+        <span>
+          Subject <abbr className="req" title="Required">*</abbr>
+        </span>
         <select name="subject" required defaultValue={subjects[0] || "Mathematics"}>
           {subjects.map((s) => (
             <option key={s} value={s}>
@@ -55,29 +60,47 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
         </select>
       </label>
       <label>
-        Level
+        <span>
+          Level <abbr className="req" title="Required">*</abbr>
+        </span>
         <input name="level" required placeholder="e.g. Matric / FSc / O Level" />
       </label>
       <label>
-        City
+        <span>
+          City <abbr className="req" title="Required">*</abbr>
+        </span>
         <input name="location" required placeholder="City or Online…" />
       </label>
       <label>
-        Budget per hour (optional)
+        Budget per hour (PKR, optional)
         <input name="budget" type="number" min={500} step={100} placeholder="e.g. 1500" />
+        <span className="field-hint">Tutors see this converted to their local currency.</span>
       </label>
       <label>
-        Description
-        <textarea name="description" required minLength={20} rows={5} />
+        <span>
+          What you need <abbr className="req" title="Required">*</abbr>
+        </span>
+        <textarea
+          name="description"
+          required
+          minLength={20}
+          rows={5}
+          placeholder="Goals, exam board, preferred days, online or in person…"
+        />
       </label>
-      <div className="checks">
-        <label className="radio">
-          <input name="online" type="checkbox" defaultChecked /> Online
-        </label>
-        <label className="radio">
-          <input name="inPerson" type="checkbox" /> In person
-        </label>
-      </div>
+      <fieldset className="form-fieldset">
+        <legend>
+          Lesson type <abbr className="req" title="Required">*</abbr>
+        </legend>
+        <div className="checks">
+          <label className="radio">
+            <input name="online" type="checkbox" defaultChecked /> Online
+          </label>
+          <label className="radio">
+            <input name="inPerson" type="checkbox" /> In person
+          </label>
+        </div>
+      </fieldset>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={loading}>
         {loading ? "Posting…" : "Post request"}

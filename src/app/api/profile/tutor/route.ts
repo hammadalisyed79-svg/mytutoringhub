@@ -2,25 +2,67 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import {
+  citiesForCountry,
+  expertiseForSubjects,
+  GENERIC_EXPERTISE,
+  joinCsv,
+  splitCsv,
+  tutorCountries,
+  tutorLanguageOptions,
+  tutorLevelOptions,
+} from "@/lib/tutor-catalog";
+import { curriculumLevels, uniqueCurriculumSubjects } from "@/lib/curriculum";
+import { allMarketSubjects } from "@/lib/markets";
+import { parseAvailability, serializeAvailability } from "@/lib/availability";
 
-const schema = z.object({
-  headline: z.string().max(120).optional(),
-  bio: z.string().min(20),
-  subjects: z.string().min(1),
-  hourlyRate: z.number().min(500).max(50000),
-  location: z.string().min(1),
-  online: z.boolean(),
-  inPerson: z.boolean(),
-  photoUrl: z.string().optional().or(z.literal("")),
-  qualifications: z.string().max(2000).optional(),
-  teachingMethod: z.string().max(2000).optional(),
-  languages: z.string().max(200).optional(),
-  levels: z.string().max(200).optional(),
-  availability: z.string().max(500).optional(),
-  videoUrl: z.string().optional().or(z.literal("")),
-  offersFreeTrial: z.boolean().optional(),
-  phone: z.string().max(40).optional(),
-});
+const schema = z
+  .object({
+    headline: z
+      .string()
+      .trim()
+      .min(8, "Write a short headline (at least 8 characters)")
+      .max(120, "Headline must be 120 characters or less"),
+    bio: z
+      .string()
+      .trim()
+      .min(40, "Tell students a bit more about how you teach (at least 40 characters)")
+      .max(4000, "Bio must be 4000 characters or less"),
+    subjects: z.string().trim().min(2, "Select at least one subject"),
+    hourlyRate: z
+      .number()
+      .min(500, "Hourly rate must be at least 500 PKR")
+      .max(50000, "Hourly rate is too high"),
+    location: z.string().trim().min(2, "Select your city, or Online"),
+    country: z.string().trim().min(2, "Select your country").max(80),
+    expertise: z.string().max(1000).optional(),
+    online: z.boolean(),
+    inPerson: z.boolean(),
+    photoUrl: z.string().optional().or(z.literal("")),
+    qualifications: z.string().max(2000).optional(),
+    teachingMethod: z.string().max(2000).optional(),
+    languages: z.string().max(500).optional(),
+    levels: z.string().max(500).optional(),
+    availability: z.string().max(4000).optional(),
+    experienceYears: z.coerce.number().int().min(0).max(40).optional().nullable(),
+    videoUrl: z.string().max(500).optional().or(z.literal("")),
+    offersFreeTrial: z.boolean().optional(),
+    phone: z.string().max(40).optional(),
+  })
+  .refine((d) => d.online || d.inPerson, {
+    message: "Choose online, in person, or both",
+    path: ["online"],
+  });
+
+function pickKnown(values: string[], catalog: string[]) {
+  const canon = new Map(catalog.map((item) => [item.toLowerCase(), item]));
+  const out: string[] = [];
+  for (const value of values) {
+    const match = canon.get(value.toLowerCase());
+    if (match && !out.some((item) => item.toLowerCase() === match.toLowerCase())) out.push(match);
+  }
+  return out;
+}
 
 export async function PUT(req: Request) {
   const session = await auth();
@@ -28,81 +70,147 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const data = schema.parse(await req.json());
+  try {
+    const data = schema.parse(await req.json());
 
-  const rawPhoto = (data.photoUrl || "").trim();
-  if (rawPhoto.startsWith("data:")) {
-    return NextResponse.json(
-      { error: "Upload photos via the file picker (Blob). Data URLs are not stored." },
-      { status: 400 },
+    const rawPhoto = (data.photoUrl || "").trim();
+    if (rawPhoto.startsWith("data:")) {
+      return NextResponse.json(
+        { error: "Upload photos via the file picker. Data URLs are not stored." },
+        { status: 400 },
+      );
+    }
+    if (rawPhoto && !/^https:\/\//i.test(rawPhoto)) {
+      return NextResponse.json({ error: "Photo must be an https:// URL" }, { status: 400 });
+    }
+    const photoUrl = rawPhoto || null;
+
+    const listed = await prisma.subject.findMany({ select: { name: true } });
+    const existing = await prisma.tutorProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { subjects: true, levels: true, languages: true, expertise: true, location: true },
+    });
+    const subjectCatalog = [
+      ...new Set([
+        ...listed.map((row) => row.name),
+        ...uniqueCurriculumSubjects(),
+        ...allMarketSubjects(),
+        ...splitCsv(existing?.subjects),
+      ]),
+    ];
+    const subjectParts = splitCsv(data.subjects);
+    if (!subjectParts.length) {
+      return NextResponse.json({ error: "Select at least one subject from the catalog" }, { status: 400 });
+    }
+    const subjects = pickKnown(subjectParts, subjectCatalog);
+    if (subjects.length !== subjectParts.length) {
+      return NextResponse.json({ error: "Choose subjects from the listed catalog only" }, { status: 400 });
+    }
+
+    if (!tutorCountries().includes(data.country)) {
+      return NextResponse.json({ error: "Select a listed country" }, { status: 400 });
+    }
+    const cityOptions = [...citiesForCountry(data.country), ...splitCsv(existing?.location)];
+    const location =
+      pickKnown([data.location], cityOptions)[0] ||
+      (data.location.toLowerCase() === "online" ? "Online" : data.location);
+
+    const levelCatalog = tutorLevelOptions(curriculumLevels());
+    const languageCatalog = tutorLanguageOptions();
+    const skillCatalog = [
+      ...expertiseForSubjects(subjects),
+      ...GENERIC_EXPERTISE,
+      ...splitCsv(existing?.expertise),
+    ];
+    const expertise = joinCsv(pickKnown(splitCsv(data.expertise), skillCatalog));
+    const levels = joinCsv(
+      pickKnown(splitCsv(data.levels), [...levelCatalog.core, ...levelCatalog.more, ...splitCsv(existing?.levels)]),
     );
-  }
-  if (rawPhoto && !/^https:\/\//i.test(rawPhoto)) {
-    return NextResponse.json({ error: "Photo must be an https:// URL" }, { status: 400 });
-  }
-  const photoUrl = rawPhoto || null;
+    const languages = joinCsv(
+      pickKnown(splitCsv(data.languages), [
+        ...languageCatalog.core,
+        ...languageCatalog.more,
+        ...splitCsv(existing?.languages),
+      ]),
+    );
+    const subjectCsv = joinCsv(subjects);
+    const availability = serializeAvailability(parseAvailability(data.availability));
+    const experienceYears =
+      data.experienceYears == null || Number.isNaN(data.experienceYears) ? null : data.experienceYears;
 
-  const profile = await prisma.tutorProfile.upsert({
-    where: { userId: session.user.id },
-    update: {
-      headline: data.headline || null,
-      bio: data.bio,
-      subjects: data.subjects,
-      hourlyRate: data.hourlyRate,
-      location: data.location,
-      online: data.online,
-      inPerson: data.inPerson,
-      photoUrl,
-      qualifications: data.qualifications || null,
-      teachingMethod: data.teachingMethod || null,
-      languages: data.languages || null,
-      levels: data.levels || null,
-      availability: data.availability || null,
-      videoUrl: data.videoUrl || null,
-      offersFreeTrial: Boolean(data.offersFreeTrial),
-      phone: data.phone || null,
-    },
-    create: {
-      userId: session.user.id,
-      headline: data.headline || null,
-      bio: data.bio,
-      subjects: data.subjects,
-      hourlyRate: data.hourlyRate,
-      location: data.location,
-      online: data.online,
-      inPerson: data.inPerson,
-      photoUrl,
-      qualifications: data.qualifications || null,
-      teachingMethod: data.teachingMethod || null,
-      languages: data.languages || null,
-      levels: data.levels || null,
-      availability: data.availability || null,
-      videoUrl: data.videoUrl || null,
-      offersFreeTrial: Boolean(data.offersFreeTrial),
-      phone: data.phone || null,
-      active: false,
-    },
-  });
-
-  // Ensure at least one subject ad exists for search coverage.
-  const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
-  if (adCount === 0) {
-    const firstSubject = profile.subjects.split(",")[0]?.trim() || "General";
-    await prisma.tutorAd.create({
-      data: {
-        tutorProfileId: profile.id,
-        subject: firstSubject,
-        title: profile.headline || `${firstSubject} lessons`,
-        level: profile.levels || "All levels",
-        location: profile.location,
-        online: profile.online,
-        inPerson: profile.inPerson,
-        rate: profile.hourlyRate,
-        description: profile.bio.slice(0, 500),
-        status: "ACTIVE",
+    const profile = await prisma.tutorProfile.upsert({
+      where: { userId: session.user.id },
+      update: {
+        headline: data.headline,
+        bio: data.bio,
+        subjects: subjectCsv,
+        hourlyRate: data.hourlyRate,
+        location,
+        country: data.country,
+        expertise: expertise || null,
+        online: data.online,
+        inPerson: data.inPerson,
+        photoUrl,
+        qualifications: data.qualifications?.trim() || null,
+        experienceYears,
+        teachingMethod: data.teachingMethod?.trim() || null,
+        languages: languages || null,
+        levels: levels || null,
+        availability: availability || null,
+        videoUrl: data.videoUrl?.trim() || null,
+        offersFreeTrial: Boolean(data.offersFreeTrial),
+        phone: data.phone?.trim() || null,
+      },
+      create: {
+        userId: session.user.id,
+        headline: data.headline,
+        bio: data.bio,
+        subjects: subjectCsv,
+        hourlyRate: data.hourlyRate,
+        location,
+        country: data.country,
+        expertise: expertise || null,
+        online: data.online,
+        inPerson: data.inPerson,
+        photoUrl,
+        qualifications: data.qualifications?.trim() || null,
+        experienceYears,
+        teachingMethod: data.teachingMethod?.trim() || null,
+        languages: languages || null,
+        levels: levels || null,
+        availability: availability || null,
+        videoUrl: data.videoUrl?.trim() || null,
+        offersFreeTrial: Boolean(data.offersFreeTrial),
+        phone: data.phone?.trim() || null,
+        active: false,
       },
     });
-  }
 
-  return NextResponse.json(profile);
+    const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
+    if (adCount === 0) {
+      const firstSubject = profile.subjects.split(",")[0]?.trim() || "General";
+      await prisma.tutorAd.create({
+        data: {
+          tutorProfileId: profile.id,
+          subject: firstSubject,
+          title: profile.headline || `${firstSubject} lessons`,
+          level: profile.levels || "All levels",
+          location: profile.location,
+          online: profile.online,
+          inPerson: profile.inPerson,
+          rate: profile.hourlyRate,
+          description: profile.bio.slice(0, 500),
+          status: "ACTIVE",
+        },
+      });
+    }
+
+    return NextResponse.json(profile);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json({ error: e.issues[0]?.message || "Check the required fields" }, { status: 400 });
+    }
+    console.error("Tutor profile save failed:", e);
+    return NextResponse.json({ error: "Could not save profile" }, { status: 500 });
+  }
 }

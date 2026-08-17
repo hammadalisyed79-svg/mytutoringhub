@@ -1,6 +1,8 @@
 import { CURRICULUM } from "@/lib/curriculum";
 import { slugify } from "@/lib/search-tutors";
 import { getSiteSettings } from "@/lib/site-settings";
+import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
+import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
 
 export const PAST_PAPER_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016] as const;
 export const PAST_PAPER_TYPES = ["Question paper", "Marking scheme"] as const;
@@ -10,7 +12,7 @@ export type PastPaperListing = {
   subject: string;
   board: string;
   year: number;
-  paperType: (typeof PAST_PAPER_TYPES)[number];
+  paperType: string;
   title: string;
 };
 
@@ -53,23 +55,43 @@ export function pastPaperKey(board: string, subject: string, year: number, paper
   return [slugify(board), slugify(subject), year, slugify(paperType)].join("__");
 }
 
+function paperTypeFromSlug(typeSlug: string) {
+  const known = PAST_PAPER_TYPES.find((type) => slugify(type) === typeSlug);
+  if (known) return known;
+  return Object.values(DOCUMENT_TYPE_LABELS).find((label) => slugify(label) === typeSlug) || null;
+}
+
 export function parsePastPaperKey(key: string): PastPaperListing | null {
-  const [boardSlug, subjectSlug, yearStr, typeSlug] = key.split("__");
+  if (!isSafeCatalogKey(key)) return null;
+  const parts = key.split("__");
+  if (parts.length < 4) return null;
+  const [boardSlug, subjectSlug, yearStr, typeSlug] = parts;
   const year = Number(yearStr);
-  const paperType = PAST_PAPER_TYPES.find((type) => slugify(type) === typeSlug);
+  const paperType = paperTypeFromSlug(typeSlug);
   const pair = pastPaperPairs().find(
     (row) => slugify(row.board) === boardSlug && slugify(row.subject) === subjectSlug,
   );
-  if (!pair || !paperType || !PAST_PAPER_YEARS.includes(year as (typeof PAST_PAPER_YEARS)[number])) {
+  const board = pair?.board || CURRICULUM.find((row) => slugify(row.board) === boardSlug)?.board || null;
+  const subject =
+    pair?.subject || CURRICULUM.find((row) => slugify(row.subject) === subjectSlug)?.subject || null;
+  if (!board || !subject || !paperType || !Number.isFinite(year) || year < 1990 || year > 2035) {
     return null;
   }
+  if (parts.length === 4 && !pair) return null;
+  if (parts.length === 4 && !PAST_PAPER_YEARS.includes(year as (typeof PAST_PAPER_YEARS)[number])) {
+    return null;
+  }
+  const session = parts[4] ? parts[4].replace(/-/g, " ") : "";
+  const component = parts[5] && parts[5] !== "na" ? parts[5] : "";
   return {
     key,
-    subject: pair.subject,
-    board: pair.board,
+    subject,
+    board,
     year,
     paperType,
-    title: `${pair.subject} · ${pair.board} · ${year} ${paperType}`,
+    title: [subject, board, year, session, component && `Paper ${component}`, paperType]
+      .filter(Boolean)
+      .join(" · "),
   };
 }
 

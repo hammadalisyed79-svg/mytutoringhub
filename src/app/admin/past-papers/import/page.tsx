@@ -1,0 +1,35 @@
+import Link from "next/link";
+import { requireAdminPage } from "@/lib/admin";
+import { curriculumLevels, uniqueCurriculumSubjects } from "@/lib/curriculum";
+import { uniqueCurriculumBoards } from "@/lib/past-papers/browse";
+import { listSourceAdapters } from "@/lib/past-papers/sources";
+import { PastPaperImportClient } from "@/components/PastPaperImportClient";
+
+export const metadata = { title: "Past paper import · Admin" };
+export const dynamic = "force-dynamic";
+
+export default async function AdminPastPaperImportPage() {
+  await requireAdminPage();
+  const boards = uniqueCurriculumBoards();
+  const levels = curriculumLevels();
+  const subjects = uniqueCurriculumSubjects();
+  const sources = listSourceAdapters();
+
+  return (
+    <>
+      <div>
+        <p className="muted">
+          <Link href="/admin/past-papers">Past papers</Link>
+          {" · "}
+          <Link href="/admin/past-papers/imports">Import history</Link>
+        </p>
+        <h1 className="page-title">Past paper auto import</h1>
+        <p className="muted">
+          Upload PDFs you are allowed to host, or paste specific HTTPS PDF URLs. Cambridge filenames such as
+          0620_s24_qp_42.pdf are parsed automatically. Board websites are not scraped.
+        </p>
+      </div>
+      <PastPaperImportClient boards={boards} levels={levels} subjects={subjects} sources={sources} />
+    </>
+  );
+}

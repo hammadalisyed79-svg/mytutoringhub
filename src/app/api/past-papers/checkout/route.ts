@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPastPaperFeePkr, parsePastPaperKey } from "@/lib/past-papers";
+import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
 import {
   checkoutCurrency,
   currencyFromAcceptLanguage,
@@ -41,19 +42,22 @@ export async function POST(req: Request) {
   }
 
   const body = schema.parse(await req.json());
+  if (!isSafeCatalogKey(body.catalogKey)) {
+    return NextResponse.json({ error: "Unknown past paper" }, { status: 404 });
+  }
   const listing = parsePastPaperKey(body.catalogKey);
-  if (!listing) return NextResponse.json({ error: "Unknown past paper" }, { status: 404 });
+  const catalogKey = listing?.key || body.catalogKey;
 
-  const paper = await prisma.pastPaper.findUnique({ where: { catalogKey: listing.key } });
-  if (!paper?.fileUrl || !paper.published) {
+  const paper = await prisma.pastPaper.findUnique({ where: { catalogKey } });
+  if (!paper?.fileUrl || !paper.published || paper.isActive === false) {
     return NextResponse.json({ error: "This paper is not available for download yet" }, { status: 404 });
   }
 
   const paid = await prisma.pastPaperPurchase.findFirst({
-    where: { userId: session.user.id, catalogKey: listing.key, status: "PAID" },
+    where: { userId: session.user.id, catalogKey, status: "PAID" },
   });
   if (paid) {
-    return NextResponse.json({ url: `/api/past-papers/download?key=${encodeURIComponent(listing.key)}` });
+    return NextResponse.json({ url: `/api/past-papers/download?key=${encodeURIComponent(catalogKey)}` });
   }
 
   const feePkr = await getPastPaperFeePkr();
@@ -64,13 +68,13 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         paperId: paper.id,
-        catalogKey: listing.key,
+        catalogKey,
         amountPkr: 0,
         status: "PAID",
       },
     });
     return NextResponse.json({
-      url: `/api/past-papers/download?key=${encodeURIComponent(listing.key)}`,
+      url: `/api/past-papers/download?key=${encodeURIComponent(catalogKey)}`,
       granted: true,
     });
   }
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
       entry_mode: "raw",
       currency,
       amount,
-      metadata: { order_id: orderId, catalog_key: listing.key },
+      metadata: { order_id: orderId, catalog_key: catalogKey },
       include_fees: false,
     });
 
@@ -120,7 +124,7 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         paperId: paper.id,
-        catalogKey: listing.key,
+        catalogKey,
         tracker,
         amountPkr: feePkr,
         status: "PENDING",
@@ -133,8 +137,8 @@ export async function POST(req: Request) {
       tbt,
       source: "hosted",
       order_id: orderId,
-      redirect_url: `${appUrl}/api/safepay/complete?kind=paper&key=${encodeURIComponent(listing.key)}`,
-      cancel_url: `${appUrl}/past-papers?checkout=cancel&subject=${encodeURIComponent(listing.subject)}`,
+      redirect_url: `${appUrl}/api/safepay/complete?kind=paper&key=${encodeURIComponent(catalogKey)}`,
+      cancel_url: `${appUrl}/past-papers?checkout=cancel&subject=${encodeURIComponent(listing?.subject || paper.subject)}`,
     });
 
     return NextResponse.json({ url, tracker, provider: "safepay", currency, amount });

@@ -61,9 +61,10 @@ model Account {
 }
 
 model Subject {
-  id   String @id @default(cuid())
-  name String @unique
-  slug String @unique
+  id         String      @id @default(cuid())
+  name       String      @unique
+  slug       String      @unique
+  pastPapers PastPaper[]
 }
 
 model TutorProfile {
@@ -83,6 +84,9 @@ model TutorProfile {
   languages       String?
   levels          String?
   availability    String?
+  country         String?
+  expertise       String?
+  experienceYears Int?
   videoUrl        String?
   offersFreeTrial Boolean   @default(false)
   phone           String?
@@ -283,13 +287,114 @@ model PastPaper {
   paperType  String
   title      String
   fileUrl    String?
+  /// Public visibility. Kept in sync with isPublic && isActive on write.
   published  Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   purchases  PastPaperPurchase[]
+  importItems ImportJobItem[]
+
+  /// Optional Prisma Subject row matched by name — never created during import.
+  subjectId        String?
+  subjectRef       Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  country          String?
+  qualification    String?
+  /// curriculum.json `code` (e.g. CIGC-IGCSE-CHEM), not a numeric FK.
+  curriculumCode   String?
+  /// Official syllabus / subject code when known (e.g. 0620).
+  syllabusCode     String?
+  session          String?
+  paperNumber      String?
+  componentCode    String?
+  variant          String?
+  documentType     String?
+  originalFilename String?
+  storedFilename   String?
+  sourceUrl        String?
+  sourceDomain     String?
+  storageKey       String?
+  fileSize         Int?
+  mimeType         String?
+  isPublic         Boolean  @default(true)
+  isActive         Boolean  @default(true)
+  downloadCount    Int      @default(0)
+  importStatus     String?
+  checksum         String?
 
   @@index([subject, year])
   @@index([board, year])
+  @@index([subject, year, session, documentType])
+  @@index([componentCode])
+  @@index([checksum])
+  @@index([catalogKey])
+  @@index([curriculumCode, year, session, documentType, componentCode])
+  @@index([syllabusCode, year, session])
+}
+
+model ImportJob {
+  id            String   @id @default(cuid())
+  adminId       String?
+  source        String
+  status        String   @default("PENDING")
+  board         String?
+  qualification String?
+  subject       String?
+  subjectCode   String?
+  yearFrom      Int?
+  yearTo        Int?
+  session       String?
+  documentType  String?
+  totalItems    Int      @default(0)
+  newCount      Int      @default(0)
+  existsCount   Int      @default(0)
+  importedCount Int      @default(0)
+  failedCount   Int      @default(0)
+  skippedCount  Int      @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  items         ImportJobItem[]
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+model ImportJobItem {
+  id               String     @id @default(cuid())
+  jobId            String
+  job              ImportJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  pastPaperId      String?
+  pastPaper        PastPaper? @relation(fields: [pastPaperId], references: [id], onDelete: SetNull)
+  originalFilename String
+  storedFilename   String?
+  sourceUrl        String?
+  sourceDomain     String?
+  stagingUrl       String?
+  stagingKey       String?
+  status           String     @default("NEW")
+  year             Int?
+  session          String?
+  subject          String?
+  board            String?
+  qualification    String?
+  country          String?
+  curriculumCode   String?
+  syllabusCode     String?
+  componentCode    String?
+  paperNumber      String?
+  variant          String?
+  documentType     String?
+  catalogKey       String?
+  checksum         String?
+  fileSize         Int?
+  mimeType         String?
+  error            String?
+  selected         Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([jobId, status])
+  @@index([checksum])
 }
 
 model PastPaperPurchase {

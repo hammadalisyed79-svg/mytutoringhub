@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import {
@@ -39,7 +40,10 @@ export default async function AdminPastPapersPage({
         <h1 className="page-title">Past papers</h1>
         <p className="muted">
           Catalog covers 2016–2025 for every subject and board. Upload a PDF to make a paper
-          downloadable. {uploaded} file{uploaded === 1 ? "" : "s"} uploaded.
+          downloadable. {uploaded} file{uploaded === 1 ? "" : "s"} uploaded.{" "}
+          <Link href="/admin/past-papers/import">Auto import</Link>
+          {" · "}
+          <Link href="/admin/past-papers/imports">Import history</Link>
         </p>
       </div>
       <section className="panel">

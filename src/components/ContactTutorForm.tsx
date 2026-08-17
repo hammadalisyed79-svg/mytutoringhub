@@ -34,8 +34,8 @@ export function ContactTutorForm({
   }
 
   return (
-    <form className="contact-form" onSubmit={send}>
-      <h3>Contact {tutorName}</h3>
+    <form className="contact-form contact-form-embedded" onSubmit={send}>
+      <h3>Message {tutorName}</h3>
       <p className="muted">
         Lesson fees are arranged directly with your tutor in a currency you both agree on.
       </p>

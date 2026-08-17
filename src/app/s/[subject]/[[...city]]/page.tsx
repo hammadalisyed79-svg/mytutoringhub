@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
+import { formatTutorPlace } from "@/lib/tutor-catalog";
 
 type Params = { params: Promise<{ subject: string; city?: string[] }> };
 
@@ -85,7 +86,7 @@ export default async function SeoTutorsPage({ params }: Params) {
                 <p className="muted">{t.headline || t.subjects}</p>
                 <div className="meta">
                   <span className="price-tag">{formatHourly(t.hourlyRate, currency)}</span>
-                  <span>{t.location}</span>
+                  <span>{formatTutorPlace(t.location, t.country)}</span>
                 </div>
               </div>
             </Link>
