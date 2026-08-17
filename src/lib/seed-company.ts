@@ -1,5 +1,6 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { uniqueCurriculumSubjects } from "@/lib/curriculum";
 import { allMarketSubjects } from "@/lib/markets";
 
 function subjectSlug(name: string) {
@@ -16,11 +17,17 @@ const extraSubjects = [
   "Primary School",
   "Music Piano",
   "Guitar",
+  "IELTS",
+  "CSS Prep",
+  "Quran Nazra",
+  "SAT Prep",
+  "Spoken English",
+  "Urdu",
 ];
 
-const subjects = [...new Set([...allMarketSubjects(), ...extraSubjects])].map(
-  (name) => [name, subjectSlug(name)] as const,
-);
+const subjects = [
+  ...new Set([...uniqueCurriculumSubjects(), ...allMarketSubjects(), ...extraSubjects]),
+].map((name) => [name, subjectSlug(name)] as const);
 
 export const COMPANY_ACCOUNTS = [
   {

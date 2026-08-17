@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SUBJECT_CATEGORIES } from "@/lib/marketing";
-import { CountryMarkets } from "@/components/CountryMarkets";
+import { CurriculumBrowser } from "@/components/CurriculumBrowser";
 import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { subjectCode } from "@/lib/markets";
+import { CURRICULUM } from "@/lib/curriculum";
 
 export const metadata = {
   title: "Subjects",
   description:
-    "Browse tutoring subjects with short subject codes across 15 countries, including Pakistan.",
+    "Browse 1,200+ curriculum subject codes across 15 countries, including Pakistan boards, Cambridge, IB, and CBSE.",
 };
 
 function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {
@@ -25,8 +26,13 @@ function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {
   return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
-export default async function SubjectsPage() {
+export default async function SubjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ country?: string; q?: string }>;
+}) {
   const currency = await getVisitorCurrency();
+  const { country, q } = await searchParams;
   const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const averages = await Promise.all(
     dbSubjects.map(async (s) => ({
@@ -43,15 +49,16 @@ export default async function SubjectsPage() {
         <h1 className="page-title">Subjects</h1>
         <p className="section-lead">
           School boards, exams, languages, and university subjects across 15 countries — including
-          Pakistan. Each subject has a short code such as MATH, IELTS, or CSS.
+          Pakistan. Each listing uses a subject code such as FBISE-HSSC-MATH or IB-DP-PHY.
         </p>
 
         <section style={{ marginBottom: "2.5rem" }}>
-          <h2>Top 15 countries</h2>
+          <h2>Curriculum subject codes</h2>
           <p className="muted">
-            Each card lists that market’s top subjects with subject codes (MATH, PHY, IELTS…).
+            {CURRICULUM.length.toLocaleString()} subject codes from national boards, Cambridge, IB,
+            and other curricula. Pick a country, then open a code to find tutors.
           </p>
-          <CountryMarkets />
+          <CurriculumBrowser country={country} query={q} />
         </section>
 
         <div className="subject-cats">

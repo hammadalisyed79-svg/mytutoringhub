@@ -88,8 +88,8 @@ export default async function HomePage() {
             <span>Open student requests</span>
           </div>
           <div>
-            <strong>350+</strong>
-            <span>Subjects & skills</span>
+            <strong>1,200+</strong>
+            <span>Subject codes</span>
           </div>
         </div>
       </section>
@@ -209,13 +209,13 @@ export default async function HomePage() {
         <div className="container">
           <h2>Top subjects by country</h2>
           <p className="section-lead">
-            Popular subjects with codes such as MATH, IELTS, and CSS — Pakistan first, then 14 other
-            high-demand markets. Open a chip to search tutors in that country.
+            Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — Pakistan first, then
+            other high-demand markets. Open a chip to search tutors in that country.
           </p>
           <CountryMarkets compact />
           <p className="section-actions">
             <Link href="/subjects" className="btn btn-secondary">
-              See all 15 countries
+              Browse subject codes
             </Link>
           </p>
         </div>

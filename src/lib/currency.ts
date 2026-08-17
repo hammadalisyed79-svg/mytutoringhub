@@ -256,4 +256,9 @@ export const MARKET_CITIES = [
   "Doha",
   "Johannesburg",
   "Cape Town",
+  "Auckland",
+  "Wellington",
+  "Berlin",
+  "Munich",
+  "Hong Kong",
 ];
