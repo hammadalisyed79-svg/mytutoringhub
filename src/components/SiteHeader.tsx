@@ -2,9 +2,22 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { SiteNav } from "@/components/SiteNav";
+import { prisma } from "@/lib/prisma";
 
 export async function SiteHeader() {
   const session = await auth();
+  let unread = 0;
+  if (session?.user?.id) {
+    unread = await prisma.message.count({
+      where: {
+        readAt: null,
+        senderId: { not: session.user.id },
+        conversation: {
+          OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+        },
+      },
+    });
+  }
 
   return (
     <header className="site-header">
@@ -12,7 +25,9 @@ export async function SiteHeader() {
         <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
           <Logo />
         </Link>
-        <SiteNav user={session?.user ? { role: session.user.role } : null} />
+        <SiteNav
+          user={session?.user ? { role: session.user.role, unreadCount: unread } : null}
+        />
       </div>
     </header>
   );

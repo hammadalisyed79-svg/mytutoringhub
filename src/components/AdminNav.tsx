@@ -1,0 +1,37 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/admin", label: "Overview" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/tutors", label: "Tutors" },
+  { href: "/admin/ads", label: "Ads" },
+  { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/reports", label: "Reports" },
+  { href: "/admin/verifications", label: "Verifications" },
+  { href: "/admin/reviews", label: "Reviews" },
+  { href: "/admin/messages", label: "Messages" },
+  { href: "/admin/subjects", label: "Subjects" },
+  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/audit", label: "Audit log" },
+] as const;
+
+export function AdminNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="admin-nav" aria-label="Admin">
+      {LINKS.map((item) => {
+        const active =
+          item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+        return (
+          <Link key={item.href} href={item.href} className={active ? "is-active" : undefined}>
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

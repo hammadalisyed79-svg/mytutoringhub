@@ -1,0 +1,601 @@
+import { prisma } from "@/lib/prisma";
+import { COMPANY_ADMIN_EMAIL, isCompanyAdminEmail, writeAdminAudit } from "@/lib/admin";
+import { invalidateSiteSettingsCache, SITE_SETTINGS_ID } from "@/lib/site-settings";
+import { slugify } from "@/lib/search-tutors";
+import { syncTutorBadges } from "@/lib/subscription";
+import {
+  activatePaidSafepaySubscription,
+  fetchSafepayTrackerState,
+  isSafepayTrackerPaid,
+} from "@/lib/safepay-complete";
+import { safepayConfigured } from "@/lib/safepay";
+import { PLANS } from "@/lib/plans";
+import type { Role, SubscriptionPlan } from "@/lib/types";
+import { z } from "zod";
+
+const PLANS_SET = new Set(PLANS.map((p) => p.id));
+const ROLES = ["STUDENT", "TUTOR", "ADMIN"] as const;
+
+const payloadSchema = z.object({
+  action: z.string().min(1),
+  id: z.string().optional(),
+  adminNote: z.string().max(2000).optional().nullable(),
+  verified: z.boolean().optional(),
+  role: z.enum(ROLES).optional(),
+  confirmAdmin: z.boolean().optional(),
+  confirmEmail: z.string().email().optional(),
+  plan: z.string().optional(),
+  days: z.coerce.number().int().min(1).max(730).optional(),
+  until: z.string().optional().nullable(),
+  emailVerified: z.boolean().optional(),
+  active: z.boolean().optional(),
+  forceActive: z.boolean().optional(),
+  highlighted: z.boolean().optional(),
+  status: z.string().optional(),
+  name: z.string().max(120).optional(),
+  slug: z.string().max(120).optional(),
+  maintenanceMode: z.boolean().optional(),
+  homepageAnnouncement: z.string().max(500).optional(),
+  disableSignups: z.boolean().optional(),
+  disableAiAssistant: z.boolean().optional(),
+  headline: z.string().max(120).optional().nullable(),
+  bio: z.string().max(8000).optional(),
+  subjects: z.string().max(500).optional(),
+  hourlyRate: z.coerce.number().min(0).max(50000).optional(),
+  location: z.string().max(200).optional(),
+  online: z.boolean().optional(),
+  inPerson: z.boolean().optional(),
+  tracker: z.string().optional(),
+  conversationId: z.string().optional(),
+  messageId: z.string().optional(),
+  email: z.string().email().optional(),
+});
+
+export type AdminActionPayload = z.infer<typeof payloadSchema>;
+
+class AdminActionError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function needId(id: string | undefined) {
+  if (!id) throw new AdminActionError("id is required");
+  return id;
+}
+
+function detailOf(payload: AdminActionPayload) {
+  const { action, id, ...rest } = payload;
+  const slim: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(rest)) {
+    if (v !== undefined && v !== null && v !== "") slim[k] = v;
+  }
+  return Object.keys(slim).length ? JSON.stringify({ action, id, ...slim }) : action;
+}
+
+async function resolveReportedUserId(targetType: string, targetId: string) {
+  if (targetType === "USER") return targetId;
+  if (targetType === "TUTOR") {
+    const profile = await prisma.tutorProfile.findUnique({
+      where: { id: targetId },
+      select: { userId: true },
+    });
+    return profile?.userId || null;
+  }
+  if (targetType === "STUDENT_AD") {
+    const ad = await prisma.studentAd.findUnique({
+      where: { id: targetId },
+      select: { userId: true },
+    });
+    return ad?.userId || null;
+  }
+  return null;
+}
+
+async function grantPlan(userId: string, plan: SubscriptionPlan, days: number) {
+  const existing = await prisma.subscription.findFirst({
+    where: { userId, plan, status: { in: ["ACTIVE", "TRIALING"] } },
+    orderBy: { createdAt: "desc" },
+  });
+  const now = new Date();
+  if (existing) {
+    const base =
+      existing.currentPeriodEnd && existing.currentPeriodEnd > now
+        ? existing.currentPeriodEnd
+        : now;
+    return prisma.subscription.update({
+      where: { id: existing.id },
+      data: {
+        status: "ACTIVE",
+        currentPeriodEnd: new Date(base.getTime() + days * 86400000),
+      },
+    });
+  }
+  return prisma.subscription.create({
+    data: {
+      userId,
+      plan,
+      status: "ACTIVE",
+      currentPeriodEnd: new Date(now.getTime() + days * 86400000),
+      stripeSubscriptionId: `admin_comp_${crypto.randomUUID()}`,
+    },
+  });
+}
+
+const ACTION_ALIASES: Record<string, string> = {
+  verify_email: "set_email_verified",
+  change_role: "set_role",
+  open_tutor_ad: "restore_tutor_ad",
+  create_subject: "subject_create",
+  delete_subject: "subject_delete",
+};
+
+export async function runAdminAction(adminId: string, raw: unknown) {
+  const payload = payloadSchema.parse(raw);
+  const action = ACTION_ALIASES[payload.action] || payload.action;
+  let targetType = "unknown";
+  let targetId = payload.id || payload.conversationId || payload.messageId || "none";
+
+  switch (action) {
+    case "hide_ad":
+    case "open_ad": {
+      const id = needId(payload.id);
+      targetType = "StudentAd";
+      targetId = id;
+      await prisma.studentAd.update({
+        where: { id },
+        data: { status: action === "hide_ad" ? "HIDDEN" : "OPEN" },
+      });
+      break;
+    }
+    case "delete_student_ad": {
+      const id = needId(payload.id);
+      targetType = "StudentAd";
+      targetId = id;
+      await prisma.studentAd.delete({ where: { id } });
+      break;
+    }
+    case "hide_tutor_ad":
+    case "restore_tutor_ad": {
+      const id = needId(payload.id);
+      targetType = "TutorAd";
+      targetId = id;
+      await prisma.tutorAd.update({
+        where: { id },
+        data: { status: action === "hide_tutor_ad" ? "HIDDEN" : "ACTIVE" },
+      });
+      break;
+    }
+    case "pause_tutor_ad": {
+      const id = needId(payload.id);
+      targetType = "TutorAd";
+      targetId = id;
+      await prisma.tutorAd.update({ where: { id }, data: { status: "PAUSED" } });
+      break;
+    }
+    case "delete_tutor_ad": {
+      const id = needId(payload.id);
+      targetType = "TutorAd";
+      targetId = id;
+      await prisma.tutorAd.delete({ where: { id } });
+      break;
+    }
+    case "deactivate_tutor":
+    case "activate_tutor": {
+      const id = needId(payload.id);
+      targetType = "TutorProfile";
+      targetId = id;
+      const active = action === "activate_tutor";
+      await prisma.tutorProfile.update({
+        where: { id },
+        data: { active, forceActive: active },
+      });
+      break;
+    }
+    case "set_verified": {
+      const id = needId(payload.id);
+      targetType = "TutorProfile";
+      targetId = id;
+      await prisma.tutorProfile.update({
+        where: { id },
+        data: { verified: Boolean(payload.verified) },
+      });
+      break;
+    }
+    case "set_highlight": {
+      const id = needId(payload.id);
+      targetType = "TutorProfile";
+      targetId = id;
+      const until = payload.until
+        ? new Date(payload.until)
+        : payload.days
+          ? new Date(Date.now() + payload.days * 86400000)
+          : null;
+      const on = Boolean(until && until > new Date());
+      await prisma.$transaction([
+        prisma.tutorProfile.update({
+          where: { id },
+          data: {
+            highlighted: on,
+            highlightedUntil: until,
+          },
+        }),
+        prisma.tutorAd.updateMany({
+          where: { tutorProfileId: id, status: "ACTIVE" },
+          data: { highlightedUntil: until },
+        }),
+      ]);
+      break;
+    }
+    case "set_boost": {
+      const id = needId(payload.id);
+      targetType = "TutorProfile";
+      targetId = id;
+      const until = payload.until
+        ? new Date(payload.until)
+        : payload.days
+          ? new Date(Date.now() + payload.days * 86400000)
+          : null;
+      await prisma.$transaction([
+        prisma.tutorProfile.update({
+          where: { id },
+          data: { boostUntil: until },
+        }),
+        prisma.tutorAd.updateMany({
+          where: { tutorProfileId: id, status: "ACTIVE" },
+          data: { boostUntil: until },
+        }),
+      ]);
+      break;
+    }
+    case "update_tutor": {
+      const id = needId(payload.id);
+      targetType = "TutorProfile";
+      targetId = id;
+      await prisma.tutorProfile.update({
+        where: { id },
+        data: {
+          ...(payload.headline !== undefined ? { headline: payload.headline || null } : {}),
+          ...(payload.bio !== undefined ? { bio: payload.bio } : {}),
+          ...(payload.subjects !== undefined ? { subjects: payload.subjects } : {}),
+          ...(payload.hourlyRate !== undefined ? { hourlyRate: payload.hourlyRate } : {}),
+          ...(payload.location !== undefined ? { location: payload.location } : {}),
+          ...(payload.online !== undefined ? { online: payload.online } : {}),
+          ...(payload.inPerson !== undefined ? { inPerson: payload.inPerson } : {}),
+          ...(payload.verified !== undefined ? { verified: payload.verified } : {}),
+          ...(payload.active !== undefined
+            ? { active: payload.active, forceActive: payload.active }
+            : {}),
+        },
+      });
+      break;
+    }
+    case "verify_approve":
+    case "verify_reject": {
+      const id = needId(payload.id);
+      targetType = "VerificationRequest";
+      targetId = id;
+      const reqItem = await prisma.verificationRequest.update({
+        where: { id },
+        data: {
+          status: action === "verify_approve" ? "APPROVED" : "REJECTED",
+          adminNote: payload.adminNote ? String(payload.adminNote) : null,
+        },
+      });
+      if (action === "verify_approve") {
+        await prisma.tutorProfile.updateMany({
+          where: { userId: reqItem.userId },
+          data: { verified: true },
+        });
+      }
+      break;
+    }
+    case "review_publish":
+    case "review_hide": {
+      const id = needId(payload.id);
+      targetType = "Review";
+      targetId = id;
+      await prisma.review.update({
+        where: { id },
+        data: { status: action === "review_publish" ? "PUBLISHED" : "HIDDEN" },
+      });
+      break;
+    }
+    case "review_delete": {
+      const id = needId(payload.id);
+      targetType = "Review";
+      targetId = id;
+      await prisma.review.delete({ where: { id } });
+      break;
+    }
+    case "report_resolve":
+    case "report_dismiss": {
+      const id = needId(payload.id);
+      targetType = "Report";
+      targetId = id;
+      await prisma.report.update({
+        where: { id },
+        data: { status: action === "report_resolve" ? "RESOLVED" : "DISMISSED" },
+      });
+      break;
+    }
+    case "report_suspend": {
+      const id = needId(payload.id);
+      targetType = "Report";
+      targetId = id;
+      const report = await prisma.report.findUnique({ where: { id } });
+      if (!report) throw new AdminActionError("Report not found", 404);
+      const userId = await resolveReportedUserId(report.targetType, report.targetId);
+      if (!userId) throw new AdminActionError("Could not resolve reported user");
+      const target = await prisma.user.findUnique({ where: { id: userId } });
+      if (target && isCompanyAdminEmail(target.email)) {
+        throw new AdminActionError("Cannot suspend the company admin");
+      }
+      await prisma.$transaction([
+        prisma.user.update({ where: { id: userId }, data: { suspended: true } }),
+        prisma.tutorProfile.updateMany({ where: { userId }, data: { active: false, forceActive: false } }),
+        prisma.report.update({ where: { id }, data: { status: "RESOLVED" } }),
+      ]);
+      break;
+    }
+    case "suspend_user":
+    case "unsuspend_user": {
+      const id = needId(payload.id);
+      targetType = "User";
+      targetId = id;
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) throw new AdminActionError("User not found", 404);
+      if (action === "suspend_user" && isCompanyAdminEmail(user.email)) {
+        throw new AdminActionError("Cannot suspend the company admin");
+      }
+      await prisma.user.update({
+        where: { id },
+        data: { suspended: action === "suspend_user" },
+      });
+      if (action === "suspend_user") {
+        await prisma.tutorProfile.updateMany({
+          where: { userId: id },
+          data: { active: false, forceActive: false },
+        });
+      }
+      break;
+    }
+    case "set_email_verified": {
+      const id = needId(payload.id);
+      targetType = "User";
+      targetId = id;
+      const verified = payload.emailVerified !== false && payload.verified !== false;
+      await prisma.user.update({
+        where: { id },
+        data: { emailVerified: verified ? new Date() : null },
+      });
+      break;
+    }
+    case "set_role": {
+      const id = needId(payload.id);
+      targetType = "User";
+      targetId = id;
+      const role = payload.role as Role | undefined;
+      if (!role) throw new AdminActionError("role is required");
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) throw new AdminActionError("User not found", 404);
+      if (isCompanyAdminEmail(user.email) && role !== "ADMIN") {
+        throw new AdminActionError("Cannot change the company admin role");
+      }
+      if (role === "ADMIN" && !payload.confirmAdmin) {
+        throw new AdminActionError("Confirm promoting this user to ADMIN");
+      }
+      if (user.role === "ADMIN" && role !== "ADMIN") {
+        const otherAdmins = await prisma.user.count({
+          where: { role: "ADMIN", id: { not: id } },
+        });
+        if (otherAdmins === 0) {
+          throw new AdminActionError("Cannot demote the last admin");
+        }
+      }
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({ where: { id }, data: { role } });
+        if (role === "TUTOR") {
+          const profile = await tx.tutorProfile.findUnique({ where: { userId: id } });
+          if (!profile) {
+            await tx.tutorProfile.create({
+              data: {
+                userId: id,
+                bio: "New tutor — update this profile.",
+                subjects: "",
+                hourlyRate: 1500,
+                location: "Online",
+                online: true,
+                inPerson: false,
+                active: false,
+              },
+            });
+          }
+        }
+      });
+      break;
+    }
+    case "grant_plan": {
+      let id = payload.id;
+      if (!id && payload.email) {
+        const found = await prisma.user.findUnique({
+          where: { email: payload.email.trim().toLowerCase() },
+          select: { id: true },
+        });
+        if (!found) throw new AdminActionError("User not found", 404);
+        id = found.id;
+      }
+      id = needId(id);
+      targetType = "User";
+      targetId = id;
+      const plan = payload.plan as SubscriptionPlan | undefined;
+      if (!plan || !PLANS_SET.has(plan)) throw new AdminActionError("Valid plan is required");
+      const days = payload.days || 30;
+      await grantPlan(id, plan, days);
+      await syncTutorBadges(id);
+      break;
+    }
+    case "revoke_subscription": {
+      const id = needId(payload.id);
+      targetType = "Subscription";
+      targetId = id;
+      const sub = await prisma.subscription.update({
+        where: { id },
+        data: { status: "CANCELED" },
+      });
+      await syncTutorBadges(sub.userId);
+      break;
+    }
+    case "complete_payment": {
+      const id = needId(payload.id);
+      targetType = "Subscription";
+      targetId = id;
+      const sub = await prisma.subscription.update({
+        where: { id },
+        data: {
+          status: "ACTIVE",
+          currentPeriodEnd: new Date(Date.now() + (payload.days || 30) * 86400000),
+        },
+      });
+      await prisma.subscription.updateMany({
+        where: {
+          userId: sub.userId,
+          plan: sub.plan,
+          status: "INCOMPLETE",
+          id: { not: sub.id },
+        },
+        data: { status: "CANCELED" },
+      });
+      await syncTutorBadges(sub.userId);
+      break;
+    }
+    case "recover_payment": {
+      const id = needId(payload.id);
+      targetType = "Subscription";
+      targetId = id;
+      if (!safepayConfigured()) throw new AdminActionError("Safepay is not configured", 503);
+      const sub = await prisma.subscription.findUnique({ where: { id } });
+      if (!sub?.stripeSubscriptionId) throw new AdminActionError("No tracker on this payment");
+      const { state, report, tracker } = await fetchSafepayTrackerState(sub.stripeSubscriptionId);
+      if (!isSafepayTrackerPaid(state, report)) {
+        throw new AdminActionError(`Safepay has not marked this payment complete (${state || "unknown"})`, 409);
+      }
+      const result = await activatePaidSafepaySubscription({
+        tracker,
+        planHint: sub.plan as SubscriptionPlan,
+      });
+      if (!result.ok) throw new AdminActionError("Could not activate payment");
+      break;
+    }
+    case "delete_user": {
+      const id = needId(payload.id);
+      targetType = "User";
+      targetId = id;
+      const user = await prisma.user.findUnique({ where: { id } });
+      if (!user) throw new AdminActionError("User not found", 404);
+      if (isCompanyAdminEmail(user.email)) {
+        throw new AdminActionError("Cannot delete the company admin");
+      }
+      if (user.id === adminId) throw new AdminActionError("Cannot delete your own account");
+      if (!payload.confirmEmail || payload.confirmEmail.toLowerCase() !== user.email.toLowerCase()) {
+        throw new AdminActionError("Type the user email to confirm hard delete");
+      }
+      if (user.role === "ADMIN") {
+        const otherAdmins = await prisma.user.count({
+          where: { role: "ADMIN", id: { not: id } },
+        });
+        if (otherAdmins === 0) throw new AdminActionError("Cannot delete the last admin");
+      }
+      await prisma.user.delete({ where: { id } });
+      break;
+    }
+    case "delete_message": {
+      const id = needId(payload.messageId || payload.id);
+      targetType = "Message";
+      targetId = id;
+      await prisma.message.delete({ where: { id } });
+      break;
+    }
+    case "delete_conversation": {
+      const id = needId(payload.conversationId || payload.id);
+      targetType = "Conversation";
+      targetId = id;
+      await prisma.conversation.delete({ where: { id } });
+      break;
+    }
+    case "subject_create": {
+      const name = (payload.name || "").trim();
+      if (!name) throw new AdminActionError("Subject name is required");
+      const slug = (payload.slug || slugify(name)).trim();
+      targetType = "Subject";
+      const created = await prisma.subject.create({ data: { name, slug } });
+      targetId = created.id;
+      break;
+    }
+    case "subject_rename": {
+      const id = needId(payload.id);
+      targetType = "Subject";
+      targetId = id;
+      const name = (payload.name || "").trim();
+      if (!name) throw new AdminActionError("Subject name is required");
+      await prisma.subject.update({
+        where: { id },
+        data: { name, slug: (payload.slug || slugify(name)).trim() },
+      });
+      break;
+    }
+    case "subject_delete": {
+      const id = needId(payload.id);
+      targetType = "Subject";
+      targetId = id;
+      await prisma.subject.delete({ where: { id } });
+      break;
+    }
+    case "update_settings": {
+      targetType = "SiteSettings";
+      targetId = SITE_SETTINGS_ID;
+      await prisma.siteSettings.upsert({
+        where: { id: SITE_SETTINGS_ID },
+        update: {
+          ...(payload.maintenanceMode !== undefined
+            ? { maintenanceMode: payload.maintenanceMode }
+            : {}),
+          ...(payload.homepageAnnouncement !== undefined
+            ? { homepageAnnouncement: payload.homepageAnnouncement }
+            : {}),
+          ...(payload.disableSignups !== undefined
+            ? { disableSignups: payload.disableSignups }
+            : {}),
+          ...(payload.disableAiAssistant !== undefined
+            ? { disableAiAssistant: payload.disableAiAssistant }
+            : {}),
+        },
+        create: {
+          id: SITE_SETTINGS_ID,
+          maintenanceMode: Boolean(payload.maintenanceMode),
+          homepageAnnouncement: payload.homepageAnnouncement || "",
+          disableSignups: Boolean(payload.disableSignups),
+          disableAiAssistant: Boolean(payload.disableAiAssistant),
+        },
+      });
+      invalidateSiteSettingsCache();
+      break;
+    }
+    default:
+      throw new AdminActionError(`Unknown action: ${action}`);
+  }
+
+  await writeAdminAudit({
+    adminId,
+    action,
+    targetType,
+    targetId,
+    detail: detailOf(payload),
+  });
+
+  return { ok: true as const, action, targetType, targetId };
+}
+
+export { AdminActionError, COMPANY_ADMIN_EMAIL };

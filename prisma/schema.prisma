@@ -34,6 +34,7 @@ model User {
   reviewRequestsSent   ReviewRequest[]       @relation("ReviewRequestsSent")
   reviewRequestsRecv   ReviewRequest[]       @relation("ReviewRequestsRecv")
   aiMessages           AiMessage[]
+  adminAuditLogs       AdminAuditLog[]
 }
 
 model Subject {
@@ -67,6 +68,7 @@ model TutorProfile {
   highlightedUntil DateTime?
   boostUntil      DateTime?
   active          Boolean   @default(true)
+  forceActive     Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -152,6 +154,7 @@ model Message {
   senderId       String
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   body           String
+  attachmentUrl  String?
   readAt         DateTime?
   createdAt      DateTime     @default(now())
 
@@ -233,4 +236,27 @@ model EmailVerificationToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model SiteSettings {
+  id                   String   @id @default("default")
+  maintenanceMode      Boolean  @default(false)
+  homepageAnnouncement String   @default("")
+  disableSignups       Boolean  @default(false)
+  disableAiAssistant   Boolean  @default(false)
+  updatedAt            DateTime @updatedAt
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  admin      User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String
+  targetId   String
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adminId, createdAt])
 }

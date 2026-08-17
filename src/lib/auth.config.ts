@@ -25,7 +25,8 @@ export const authConfig = {
 
       if (isAuthPage) {
         if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", request.nextUrl));
+          const dest = auth?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
+          return Response.redirect(new URL(dest, request.nextUrl));
         }
         return true;
       }

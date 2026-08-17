@@ -124,3 +124,33 @@ export function slugify(input: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+export async function similarTutors(opts: {
+  id: string;
+  subjects: string;
+  location: string;
+  take?: number;
+}) {
+  const first = opts.subjects
+    .split(/[,;/|]/)
+    .map((s) => s.trim())
+    .filter(Boolean)[0];
+  const city = opts.location.split(/[/|,]/)[0]?.trim();
+  const or = [
+    ...(first ? [{ subjects: { contains: first, mode: "insensitive" as const } }] : []),
+    ...(city ? [{ location: { contains: city, mode: "insensitive" as const } }] : []),
+  ];
+  if (or.length === 0) return [];
+
+  return prisma.tutorProfile.findMany({
+    where: {
+      active: true,
+      id: { not: opts.id },
+      user: { suspended: false },
+      OR: or,
+    },
+    include: { user: { select: { name: true } } },
+    take: opts.take ?? 4,
+    orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],
+  });
+}

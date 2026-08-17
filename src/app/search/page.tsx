@@ -109,13 +109,25 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           {sp.subject ? ` for ${sp.subject}` : ""}
         </p>
 
-        <div className="tutor-grid tutor-grid-list">
-          {tutors.length === 0 && (
+        {tutors.length === 0 && (
+          <div className="panel empty-state">
+            <h2>No tutors match this search</h2>
             <p className="muted">
-              No tutors match yet.{" "}
-              <Link href="/ads/new">Post a student request</Link> so tutors can find you.
+              Try a broader city, drop a filter, or post a student request so tutors can find you.
+              Listings appear after a tutor activates Tutor Basic.
             </p>
-          )}
+            <p>
+              <Link href="/ads/new" className="btn">
+                Post a student request
+              </Link>{" "}
+              <Link href="/search" className="btn btn-secondary">
+                Clear filters
+              </Link>
+            </p>
+          </div>
+        )}
+
+        <div className="tutor-grid tutor-grid-list">
           {tutors.map((t) => {
             const avg =
               t.reviews.length > 0

@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export const runtime = "nodejs";
 
@@ -126,6 +127,10 @@ export async function GET() {
   if (session.user.role !== "ADMIN" && !user?.emailVerified) {
     return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
   }
+  const settings = await getSiteSettings();
+  if (settings.disableAiAssistant && session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Study assistant is temporarily disabled" }, { status: 403 });
+  }
 
   const configured = Boolean(process.env.OPENAI_API_KEY?.trim());
   const since = new Date(Date.now() - WINDOW_MS);
@@ -162,6 +167,10 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== "ADMIN" && !user.emailVerified) {
     return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
+  }
+  const settings = await getSiteSettings();
+  if (settings.disableAiAssistant && session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Study assistant is temporarily disabled" }, { status: 403 });
   }
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();

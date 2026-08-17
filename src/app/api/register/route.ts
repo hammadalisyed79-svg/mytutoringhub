@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueEmailVerification } from "@/lib/email-verification";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -13,6 +14,10 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const settings = await getSiteSettings();
+    if (settings.disableSignups) {
+      return NextResponse.json({ error: "New registrations are temporarily closed" }, { status: 403 });
+    }
     const body = await req.json();
     const data = schema.parse(body);
     const email = data.email.toLowerCase();

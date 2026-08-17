@@ -8,27 +8,33 @@ import { z } from "zod";
 
 type Params = { params: Promise<{ id: string }> };
 
+const postSchema = z
+  .object({
+    body: z.string().max(4000).optional(),
+    attachmentUrl: z
+      .string()
+      .url()
+      .refine((u) => u.startsWith("https://"), { message: "Attachment must be an https URL" })
+      .optional(),
+  })
+  .refine((d) => Boolean(d.body?.trim() || d.attachmentUrl), {
+    message: "Message text or an image is required",
+  });
+
 export async function GET(_req: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await params;
-  const conversation = await prisma.conversation.findUnique({
+  const existing = await prisma.conversation.findUnique({
     where: { id },
-    include: {
-      userA: { select: { id: true, name: true, role: true } },
-      userB: { select: { id: true, name: true, role: true } },
-      messages: {
-        orderBy: { createdAt: "asc" },
-        include: { sender: { select: { id: true, name: true } } },
-      },
-    },
+    select: { userAId: true, userBId: true },
   });
-  if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (
-    conversation.userAId !== session.user.id &&
-    conversation.userBId !== session.user.id &&
+    existing.userAId !== session.user.id &&
+    existing.userBId !== session.user.id &&
     session.user.role !== "ADMIN"
   ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -42,6 +48,19 @@ export async function GET(_req: Request, { params }: Params) {
     },
     data: { readAt: new Date() },
   });
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id },
+    include: {
+      userA: { select: { id: true, name: true, role: true } },
+      userB: { select: { id: true, name: true, role: true } },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { sender: { select: { id: true, name: true } } },
+      },
+    },
+  });
+  if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   let reviewRequest: { studentId: string; tutorProfileId: string } | null = null;
   if (session.user.role === "TUTOR") {
@@ -72,18 +91,20 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   const { id } = await params;
-  const body = z.object({ body: z.string().min(1).max(4000) }).parse(await req.json());
+  const data = postSchema.parse(await req.json());
   const conversation = await prisma.conversation.findUnique({ where: { id } });
   if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (conversation.userAId !== session.user.id && conversation.userBId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const text = data.body?.trim() || "";
   const message = await prisma.message.create({
     data: {
       conversationId: id,
       senderId: session.user.id,
-      body: body.body,
+      body: text,
+      attachmentUrl: data.attachmentUrl || null,
     },
   });
   await prisma.conversation.update({
@@ -98,7 +119,7 @@ export async function POST(req: Request, { params }: Params) {
     await sendEmail({
       to: other.email,
       subject: "New message on MyTutoringHub",
-      html: newMessageEmailHtml(session.user.name, body.body),
+      html: newMessageEmailHtml(session.user.name, text || "Sent a photo"),
     });
   }
 

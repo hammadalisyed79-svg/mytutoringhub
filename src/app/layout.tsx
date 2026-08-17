@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { MaintenanceGate } from "@/components/MaintenanceGate";
+import { SiteAnnouncement } from "@/components/SiteAnnouncement";
 import "./globals.css";
 
 const display = Fraunces({
@@ -54,7 +56,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full flex flex-col antialiased">
         <Providers>
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <SiteAnnouncement />
+          <main className="flex-1">
+            <MaintenanceGate>{children}</MaintenanceGate>
+          </main>
           <SiteFooter />
           <ServiceWorkerRegister />
           <Analytics />

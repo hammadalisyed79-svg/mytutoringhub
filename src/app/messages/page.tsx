@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StartMessageFromQuery } from "@/components/StartMessageFromQuery";
+import { isImageAttachment } from "@/lib/media";
 
 export const metadata = { title: "Messages" };
 
@@ -29,6 +30,11 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
       userA: { select: { id: true, name: true } },
       userB: { select: { id: true, name: true } },
       messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      _count: {
+        select: {
+          messages: { where: { readAt: null, senderId: { not: uid } } },
+        },
+      },
     },
   });
 
@@ -36,22 +42,65 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
-        <p className="section-lead">Chat with tutors and students after you both have active plans.</p>
+        <p className="section-lead">
+          Chat with tutors and students after you both have active plans. Photos stay on the
+          thread; lesson fees stay off-platform.
+        </p>
 
         {sp.to && <StartMessageFromQuery recipientId={sp.to} relatedAdId={sp.ad} />}
 
+        {conversations.length === 0 && !sp.to && (
+          <div className="panel empty-state">
+            <h2>No conversations yet</h2>
+            <p className="muted">
+              Find a tutor and send a message with Student Pass. Tutors need Tutor Basic to
+              reply. You can attach a photo once a thread is open.
+            </p>
+            <p>
+              <Link href="/search" className="btn">
+                Find tutors
+              </Link>{" "}
+              <Link href="/ads" className="btn btn-secondary">
+                Browse student requests
+              </Link>
+            </p>
+          </div>
+        )}
+
         <div className="results">
-          {conversations.length === 0 && <p className="muted">No conversations yet.</p>}
           {conversations.map((c) => {
             const other = c.userAId === uid ? c.userB : c.userA;
-            const preview = c.messages[0]?.body || "No messages";
+            const last = c.messages[0];
+            const unread = c._count.messages;
+            const preview = last?.body?.trim()
+              ? last.body
+              : last?.attachmentUrl
+                ? "Photo"
+                : "No messages";
             return (
-              <Link key={c.id} href={`/messages/${c.id}`} className="ad-row">
-                <strong>{other.name}</strong>
-                <p className="muted" style={{ margin: 0 }}>
-                  {preview.slice(0, 120)}
-                </p>
-                <span className="muted">{c.lastMessageAt.toLocaleString()}</span>
+              <Link
+                key={c.id}
+                href={`/messages/${c.id}`}
+                className={`ad-row conv-row ${unread ? "unread" : ""}`}
+              >
+                {last?.attachmentUrl && isImageAttachment(last.attachmentUrl) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className="msg-preview-thumb" src={last.attachmentUrl} alt="" />
+                )}
+                <div className="conv-row-body">
+                  <strong>
+                    {other.name}
+                    {unread > 0 && (
+                      <span className="nav-badge" aria-label={`${unread} unread`}>
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    )}
+                  </strong>
+                  <p className="muted" style={{ margin: 0 }}>
+                    {preview.slice(0, 120)}
+                  </p>
+                  <span className="muted">{c.lastMessageAt.toLocaleString()}</span>
+                </div>
               </Link>
             );
           })}

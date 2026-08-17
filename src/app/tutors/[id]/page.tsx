@@ -6,6 +6,8 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { similarTutors } from "@/lib/search-tutors";
+import { embedVideoSrc, openStreetMapEmbed } from "@/lib/media";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +53,15 @@ export default async function TutorProfilePage({ params }: Params) {
 
   const highlighted =
     tutor.highlighted || (tutor.highlightedUntil && tutor.highlightedUntil > new Date());
+
+  const videoSrc = embedVideoSrc(tutor.videoUrl);
+  const mapSrc = openStreetMapEmbed(tutor.location);
+  const similar = await similarTutors({
+    id: tutor.id,
+    subjects: tutor.subjects,
+    location: tutor.location,
+    take: 4,
+  });
 
   return (
     <div className="page">
@@ -134,13 +145,51 @@ export default async function TutorProfilePage({ params }: Params) {
               <strong>Availability:</strong> {tutor.availability}
             </p>
           )}
-          {tutor.videoUrl && (
+          {tutor.videoUrl && !videoSrc && (
             <p>
               <strong>Video:</strong>{" "}
               <a href={tutor.videoUrl} target="_blank" rel="noreferrer">
                 Intro video
               </a>
             </p>
+          )}
+          {videoSrc && (
+            <div className="media-embed-wrap">
+              <h3>Intro video</h3>
+              <iframe
+                className="media-embed"
+                title={`Intro video from ${tutor.user.name}`}
+                src={videoSrc}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          )}
+          {mapSrc && (
+            <div className="media-embed-wrap">
+              <h3>Area</h3>
+              <p className="muted" style={{ marginTop: 0 }}>
+                City map for this listing — not live GPS tracking.
+              </p>
+              <iframe
+                className="media-embed map-embed"
+                title={`Map of ${tutor.location}`}
+                src={mapSrc}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <p className="muted">
+                <a
+                  href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(tutor.location.replace(/online/gi, "").trim() || tutor.location)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open in OpenStreetMap
+                </a>
+              </p>
+            </div>
           )}
           {tutor.ads.length > 0 && (
             <div style={{ marginTop: "1rem" }}>
@@ -186,6 +235,49 @@ export default async function TutorProfilePage({ params }: Params) {
           </div>
           {session?.user?.role === "STUDENT" && <ReviewForm tutorProfileId={tutor.id} />}
         </section>
+
+        {similar.length > 0 && (
+          <section>
+            <h2 className="page-title" style={{ fontSize: "1.45rem" }}>
+              Similar tutors
+            </h2>
+            <p className="muted">More tutors in the same subject or city.</p>
+            <div className="tutor-grid similar-tutors">
+              {similar.map((t) => (
+                <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
+                  <div className="tutor-avatar" aria-hidden>
+                    {t.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={t.photoUrl}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    ) : (
+                      t.user.name.slice(0, 1)
+                    )}
+                  </div>
+                  <div className="tutor-card-body">
+                    <div className="meta">
+                      {t.verified && <span className="badge">Verified</span>}
+                    </div>
+                    <h3>{t.user.name}</h3>
+                    <p className="tutor-headline">{t.headline || t.subjects}</p>
+                    <div className="meta">
+                      <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
+                      <span>{t.location || "Online"}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

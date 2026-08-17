@@ -6,11 +6,20 @@ import { sendEmail, newMessageEmailHtml } from "@/lib/email";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
-const startSchema = z.object({
-  recipientId: z.string(),
-  body: z.string().min(1).max(4000),
-  relatedAdId: z.string().optional(),
-});
+const startSchema = z
+  .object({
+    recipientId: z.string(),
+    body: z.string().max(4000).optional(),
+    attachmentUrl: z
+      .string()
+      .url()
+      .refine((u) => u.startsWith("https://"), { message: "Attachment must be an https URL" })
+      .optional(),
+    relatedAdId: z.string().optional(),
+  })
+  .refine((d) => Boolean(d.body?.trim() || d.attachmentUrl), {
+    message: "Message text or an image is required",
+  });
 
 function orderedPair(a: string, b: string) {
   return a < b ? ([a, b] as const) : ([b, a] as const);
@@ -29,6 +38,11 @@ export async function GET() {
       userA: { select: { id: true, name: true, role: true } },
       userB: { select: { id: true, name: true, role: true } },
       messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      _count: {
+        select: {
+          messages: { where: { readAt: null, senderId: { not: uid } } },
+        },
+      },
     },
   });
   return NextResponse.json(conversations);
@@ -77,11 +91,13 @@ export async function POST(req: Request) {
     });
   }
 
+  const text = data.body?.trim() || "";
   const message = await prisma.message.create({
     data: {
       conversationId: conversation.id,
       senderId: session.user.id,
-      body: data.body,
+      body: text,
+      attachmentUrl: data.attachmentUrl || null,
     },
   });
 
@@ -93,7 +109,7 @@ export async function POST(req: Request) {
   await sendEmail({
     to: recipient.email,
     subject: "New message on MyTutoringHub",
-    html: newMessageEmailHtml(session.user.name, data.body),
+    html: newMessageEmailHtml(session.user.name, text || "Sent a photo"),
   });
 
   return NextResponse.json({ conversationId: conversation.id, message });

@@ -22,8 +22,9 @@ export function LoginForm() {
       setError("Invalid email or password. If you are new, create an account first.");
       return;
     }
-    // Hard navigation so session cookie is applied reliably
-    window.location.href = "/dashboard";
+    const sessionRes = await fetch("/api/auth/session");
+    const session = await sessionRes.json().catch(() => null);
+    window.location.href = session?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
   }
 
   return (

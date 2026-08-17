@@ -99,6 +99,12 @@ export async function syncTutorBadges(userId: string) {
 
   // Do not clear admin-approved verified when Verified plan lapses — only set true from plan.
   const verified = profile.verified || plans.has("VERIFIED_TUTOR");
+  const hasPaidListing =
+    plans.has("TUTOR_BASIC") ||
+    plans.has("VERIFIED_TUTOR") ||
+    plans.has("HIGHLIGHTED_AD") ||
+    plans.has("AD_BOOST") ||
+    plans.has("UNLIMITED_ADS");
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },
@@ -107,12 +113,7 @@ export async function syncTutorBadges(userId: string) {
       highlighted: Boolean(periodEnd && periodEnd > now) || plans.has("HIGHLIGHTED_AD"),
       highlightedUntil: periodEnd && periodEnd > now ? periodEnd : profile.highlightedUntil,
       boostUntil: boostEnd && boostEnd > now ? boostEnd : profile.boostUntil,
-      active:
-        plans.has("TUTOR_BASIC") ||
-        plans.has("VERIFIED_TUTOR") ||
-        plans.has("HIGHLIGHTED_AD") ||
-        plans.has("AD_BOOST") ||
-        plans.has("UNLIMITED_ADS"),
+      active: profile.forceActive || hasPaidListing,
     },
   });
 

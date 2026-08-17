@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 
 type NavUser = {
   role?: string | null;
+  unreadCount?: number;
 } | null;
 
 const PRIMARY = [
@@ -18,7 +19,7 @@ const PRIMARY = [
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
-export function SiteNav({ user }: { user: NavUser }) {
+export function SiteNav({ user, unreadCount = 0 }: { user: NavUser; unreadCount?: number }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -43,20 +44,27 @@ export function SiteNav({ user }: { user: NavUser }) {
       ))}
       {user ? (
         <>
-          <Link href="/messages" onClick={() => setOpen(false)}>
-            Messages
-          </Link>
-          <Link href="/dashboard" onClick={() => setOpen(false)}>
-            Dashboard
-          </Link>
-          <Link href="/settings" onClick={() => setOpen(false)}>
-            Settings
-          </Link>
           {user.role === "ADMIN" && (
-            <Link href="/admin" onClick={() => setOpen(false)}>
+            <Link href="/admin" className="btn btn-sm" onClick={() => setOpen(false)}>
               Admin
             </Link>
           )}
+          <Link href="/messages" onClick={() => setOpen(false)}>
+            Messages
+            {user.unreadCount ? (
+              <span className="nav-badge" aria-label={`${user.unreadCount} unread messages`}>
+                {user.unreadCount > 99 ? "99+" : user.unreadCount}
+              </span>
+            ) : null}
+          </Link>
+          {user.role !== "ADMIN" && (
+            <Link href="/dashboard" onClick={() => setOpen(false)}>
+              Dashboard
+            </Link>
+          )}
+          <Link href="/settings" onClick={() => setOpen(false)}>
+            Settings
+          </Link>
           <SignOutButton />
         </>
       ) : (

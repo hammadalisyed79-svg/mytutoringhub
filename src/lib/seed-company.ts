@@ -270,6 +270,12 @@ export async function seedCompanyData() {
     data: { emailVerified: now },
   });
 
+  await prisma.siteSettings.upsert({
+    where: { id: "default" },
+    update: {},
+    create: { id: "default" },
+  });
+
   return COMPANY_ACCOUNTS.map(({ email, password, role, name }) => ({
     email,
     password,
