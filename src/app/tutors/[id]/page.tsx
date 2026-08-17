@@ -35,7 +35,11 @@ export default async function TutorProfilePage({ params }: Params) {
       ads: { where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" } },
     },
   });
-  if (!tutor || (!tutor.active && session?.user?.role !== "ADMIN")) notFound();
+  if (!tutor) notFound();
+
+  const isOwner = session?.user?.id === tutor.user.id;
+  const isAdmin = session?.user?.role === "ADMIN";
+  if (!tutor.active && !isOwner && !isAdmin) notFound();
 
   const avg =
     tutor.reviews.length > 0
@@ -48,6 +52,19 @@ export default async function TutorProfilePage({ params }: Params) {
   return (
     <div className="page">
       <div className="container stack">
+        {!tutor.active && (isOwner || isAdmin) && (
+          <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)" }}>
+            This listing is hidden from search until{" "}
+            {isOwner ? (
+              <>
+                you activate <Link href="/pricing">Tutor Basic</Link>
+              </>
+            ) : (
+              "Tutor Basic is active"
+            )}
+            .
+          </p>
+        )}
         <div className="panel">
           <div className="meta" style={{ marginBottom: "0.65rem" }}>
             {highlighted && <span className="badge accent">Highlighted</span>}

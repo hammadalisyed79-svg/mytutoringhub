@@ -6,6 +6,7 @@ import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { getPlan } from "@/lib/plans";
+import { syncTutorBadges } from "@/lib/subscription";
 
 export const metadata = { title: "Dashboard" };
 
@@ -17,6 +18,10 @@ export default async function DashboardPage({
   const session = await auth();
   if (!session?.user) redirect("/login");
   const sp = await searchParams;
+
+  if (session.user.role === "TUTOR") {
+    await syncTutorBadges(session.user.id);
+  }
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
