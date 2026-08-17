@@ -47,10 +47,12 @@ export function StudyAssistantChat({ initiallyConfigured }: { initiallyConfigure
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({} as { error?: string; code?: string }));
     setBusy(false);
     if (!res.ok) {
-      setError(data.error || "Send failed");
+      const detail = typeof data.error === "string" ? data.error : "Send failed";
+      const code = typeof data.code === "string" ? data.code : "";
+      setError(code ? `${detail} [${code}]` : detail);
       await load();
       return;
     }
