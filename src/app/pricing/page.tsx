@@ -15,19 +15,6 @@ export const metadata = {
     "Student Pass, Tutor Basic, and visibility add-ons. Lesson fees stay off-platform. Tutor Basic listing is complimentary until 30 September 2026.",
 };
 
-function GuestJoinButtons() {
-  return (
-    <div className="plan-join">
-      <Link href="/register?role=student" className="btn">
-        Join as student
-      </Link>
-      <Link href="/register?role=tutor" className="btn btn-secondary">
-        Join as tutor
-      </Link>
-    </div>
-  );
-}
-
 function PlanActions({
   plan,
   currency,
@@ -56,7 +43,23 @@ function PlanActions({
       />
     );
   }
-  return <GuestJoinButtons />;
+
+  if (plan.audience === "student") {
+    return (
+      <Link href="/register?role=student" className="btn btn-block">
+        Join as student
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href="/register?role=tutor"
+      className={`btn btn-block ${plan.isAddOn && !featured ? "btn-secondary" : ""}`}
+    >
+      Join as tutor
+    </Link>
+  );
 }
 
 function PlanPrice({ plan, currency }: { plan: ResolvedPlan; currency: CurrencyCode }) {
