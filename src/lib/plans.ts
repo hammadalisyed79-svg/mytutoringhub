@@ -5,11 +5,37 @@ export type PlanDefinition = {
   name: string;
   description: string;
   audience: "student" | "tutor";
-  /** Monthly price stored in PKR base units (converted to visitor currency at display/checkout). */
+  /** Monthly list price stored in PKR base units (converted at display/checkout). */
   pricePkr: number;
   features: string[];
   envPriceId: string;
   isAddOn?: boolean;
+  promoEnabled?: boolean;
+  promoPricePkr?: number;
+  /** Inclusive end date, YYYY-MM-DD. */
+  promoUntil?: string;
+  promoLabel?: string;
+  promoNote?: string;
+};
+
+export type PlanPriceOverride = {
+  pricePkr?: number;
+  name?: string;
+  description?: string;
+  promoEnabled?: boolean;
+  promoPricePkr?: number;
+  promoUntil?: string;
+  promoLabel?: string;
+  promoNote?: string;
+};
+
+export type ResolvedPlan = PlanDefinition & {
+  listPricePkr: number;
+  chargePricePkr: number;
+  isPromoActive: boolean;
+  isComplimentary: boolean;
+  promoEndsAt: Date | null;
+  savingsPercent: number;
 };
 
 export const DEFAULT_PLANS: PlanDefinition[] = [
@@ -23,7 +49,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
       "Message unlimited tutors",
       "Post “need a tutor” ads",
       "Browse verified tutors",
-      "Online or local lessons",
+      "Online or in-person lessons",
     ],
     envPriceId: "STRIPE_PRICE_STUDENT_PASS",
   },
@@ -40,6 +66,12 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
       "Respond to student ads",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
+    promoEnabled: true,
+    promoPricePkr: 0,
+    promoUntil: "2026-09-30",
+    promoLabel: "Launch offer",
+    promoNote:
+      "Complimentary listing until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",
@@ -90,11 +122,27 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
 /** Code defaults. Live checkout/pricing uses `getLivePlans()` so admin can override amounts. */
 export const PLANS = DEFAULT_PLANS;
 
-export type PlanPriceOverride = {
-  pricePkr?: number;
-  name?: string;
-  description?: string;
-};
+export function endOfPromoDay(isoDate: string | null | undefined) {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  const ends = new Date(`${isoDate}T23:59:59.999Z`);
+  return Number.isNaN(ends.getTime()) ? null : ends;
+}
+
+export function formatPromoUntil(isoDate: string | Date | null | undefined) {
+  const date =
+    isoDate instanceof Date
+      ? isoDate
+      : typeof isoDate === "string"
+        ? endOfPromoDay(isoDate)
+        : null;
+  if (!date) return "";
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 export function applyPlanOverrides(
   overrides: Record<string, PlanPriceOverride> | null | undefined,
@@ -102,26 +150,58 @@ export function applyPlanOverrides(
   return DEFAULT_PLANS.map((plan) => {
     const over = overrides?.[plan.id];
     const price = Number(over?.pricePkr);
+    const promoPrice = Number(over?.promoPricePkr);
     return {
       ...plan,
       pricePkr: Number.isFinite(price) && price >= 0 ? Math.round(price) : plan.pricePkr,
       name: over?.name?.trim() || plan.name,
       description: over?.description?.trim() || plan.description,
+      promoEnabled: over?.promoEnabled ?? plan.promoEnabled ?? false,
+      promoPricePkr: Number.isFinite(promoPrice) && promoPrice >= 0 ? Math.round(promoPrice) : plan.promoPricePkr,
+      promoUntil: over?.promoUntil || plan.promoUntil,
+      promoLabel: over?.promoLabel?.trim() || plan.promoLabel,
+      promoNote: over?.promoNote?.trim() || plan.promoNote,
     };
   });
+}
+
+export function resolvePlan(plan: PlanDefinition, now = new Date()): ResolvedPlan {
+  const endsAt = plan.promoEnabled ? endOfPromoDay(plan.promoUntil) : null;
+  const isPromoActive = Boolean(
+    plan.promoEnabled &&
+      endsAt &&
+      now.getTime() <= endsAt.getTime() &&
+      plan.promoPricePkr != null &&
+      plan.promoPricePkr >= 0 &&
+      plan.promoPricePkr < plan.pricePkr,
+  );
+  const chargePricePkr = isPromoActive ? Number(plan.promoPricePkr) : plan.pricePkr;
+  const savingsPercent =
+    isPromoActive && plan.pricePkr > 0
+      ? Math.round(((plan.pricePkr - chargePricePkr) / plan.pricePkr) * 100)
+      : 0;
+  return {
+    ...plan,
+    listPricePkr: plan.pricePkr,
+    chargePricePkr,
+    isPromoActive,
+    isComplimentary: isPromoActive && chargePricePkr === 0,
+    promoEndsAt: isPromoActive ? endsAt : null,
+    savingsPercent,
+  };
 }
 
 export function getPlan(id: string) {
   return PLANS.find((p) => p.id === id);
 }
 
-export async function getLivePlans() {
+export async function getLivePlans(now = new Date()) {
   const { getPlanPriceOverrides } = await import("@/lib/site-settings");
-  return applyPlanOverrides(await getPlanPriceOverrides());
+  return applyPlanOverrides(await getPlanPriceOverrides()).map((plan) => resolvePlan(plan, now));
 }
 
-export async function getLivePlan(id: string) {
-  return (await getLivePlans()).find((p) => p.id === id);
+export async function getLivePlan(id: string, now = new Date()) {
+  return (await getLivePlans(now)).find((p) => p.id === id);
 }
 
 export function getPriceId(plan: SubscriptionPlan): string | undefined {

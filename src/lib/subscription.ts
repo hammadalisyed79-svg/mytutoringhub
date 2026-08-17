@@ -5,15 +5,27 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 const ACTIVE = new Set(["ACTIVE", "TRIALING"]);
 
 export async function hasActivePlan(userId: string, plan: SubscriptionPlan) {
+  const now = new Date();
   const sub = await prisma.subscription.findFirst({
-    where: { userId, plan, status: { in: ["ACTIVE", "TRIALING"] } },
+    where: {
+      userId,
+      plan,
+      status: { in: ["ACTIVE", "TRIALING"] },
+      OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gt: now } }],
+    },
   });
   return Boolean(sub);
 }
 
 export async function hasAnyActivePlan(userId: string, plans: SubscriptionPlan[]) {
+  const now = new Date();
   const sub = await prisma.subscription.findFirst({
-    where: { userId, plan: { in: plans }, status: { in: ["ACTIVE", "TRIALING"] } },
+    where: {
+      userId,
+      plan: { in: plans },
+      status: { in: ["ACTIVE", "TRIALING"] },
+      OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gt: now } }],
+    },
   });
   return Boolean(sub);
 }
@@ -85,11 +97,15 @@ export async function syncTutorBadges(userId: string) {
   });
   if (!profile) return;
 
+  const now = new Date();
   const subs = await prisma.subscription.findMany({
-    where: { userId, status: { in: ["ACTIVE", "TRIALING"] } },
+    where: {
+      userId,
+      status: { in: ["ACTIVE", "TRIALING"] },
+      OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gt: now } }],
+    },
   });
   const plans = new Set(subs.map((s) => s.plan));
-  const now = new Date();
   const periodEnd =
     subs.find((s) => s.plan === "HIGHLIGHTED_AD")?.currentPeriodEnd ||
     (plans.has("HIGHLIGHTED_AD") ? new Date(now.getTime() + 30 * 86400000) : null);

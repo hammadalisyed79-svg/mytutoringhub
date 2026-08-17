@@ -1,5 +1,5 @@
 import { requireAdminPage } from "@/lib/admin";
-import { getLivePlans } from "@/lib/plans";
+import { formatPromoUntil, getLivePlans } from "@/lib/plans";
 import { formatPlanPrice } from "@/lib/currency";
 import { AdminPlanPricesForm } from "@/components/AdminActions";
 import Link from "next/link";
@@ -16,15 +16,22 @@ export default async function AdminPlansPage() {
       <div>
         <h1 className="page-title">Plans & prices</h1>
         <p className="muted">
-          These amounts power <Link href="/pricing">/pricing</Link> and Safepay checkout. Store the
-          monthly price in PKR (site base). Visitors still see their local currency. Lesson fees stay
-          off-platform — this is only the Student Pass / Tutor Basic catalog.
+          Standard monthly prices power <Link href="/pricing">/pricing</Link> and Safepay checkout.
+          Limited-time offers can discount or waive a listing fee until a date you set. Add-ons such
+          as Verified, Highlight, and Ad Boost stay independent — they are not included in a
+          complimentary Tutor Basic period.
         </p>
       </div>
       <div className="panel">
-        <p style={{ marginTop: 0 }}>
-          Current public prices:{" "}
-          {plans.map((p) => `${p.name} ${formatPlanPrice(p.pricePkr, "PKR")}`).join(" · ")}
+        <p style={{ marginTop: 0, marginBottom: 0 }}>
+          {plans.map((p) => {
+            const live = p.isComplimentary
+              ? `complimentary until ${formatPromoUntil(p.promoEndsAt)}`
+              : p.isPromoActive
+                ? `${formatPlanPrice(p.chargePricePkr, "PKR")} until ${formatPromoUntil(p.promoEndsAt)} (was ${formatPlanPrice(p.listPricePkr, "PKR")})`
+                : formatPlanPrice(p.listPricePkr, "PKR");
+            return `${p.name}: ${live}`;
+          }).join(" · ")}
         </p>
       </div>
       <AdminPlanPricesForm plans={plans} />

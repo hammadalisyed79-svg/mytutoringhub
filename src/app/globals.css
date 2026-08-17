@@ -851,6 +851,47 @@ svg {
 .plan-billing {
   margin: -0.35rem 0 0;
   font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.price-block {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.price-was {
+  margin: 0;
+  color: var(--muted);
+  text-decoration: line-through;
+  font-size: 0.95rem;
+}
+
+.promo-banner {
+  margin: 0 0 1.25rem;
+  padding: 1.05rem 1.2rem;
+  border: 1px solid rgba(13, 95, 82, 0.28);
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, rgba(13, 95, 82, 0.1), rgba(255, 252, 247, 0.95));
+}
+
+.promo-banner strong {
+  display: block;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: var(--brand-deep);
+  margin-bottom: 0.35rem;
+}
+
+.promo-banner p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.promo-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--brand-deep);
 }
 
 .eyebrow {
@@ -2095,6 +2136,23 @@ select:focus {
   flex-direction: column;
   gap: 0.35rem;
   margin-bottom: 0.75rem;
+}
+
+.admin-plan-promo {
+  margin-top: 0.25rem;
+  padding: 0.9rem;
+  border: 1px dashed rgba(13, 95, 82, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(13, 95, 82, 0.04);
+}
+
+.admin-plan-promo-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-deep);
 }
 
 .admin-quick-links {

@@ -52,6 +52,11 @@ const payloadSchema = z.object({
         pricePkr: z.coerce.number().min(0).max(10_000_000),
         name: z.string().min(1).max(80),
         description: z.string().max(300),
+        promoEnabled: z.boolean().optional(),
+        promoPricePkr: z.coerce.number().min(0).max(10_000_000).optional(),
+        promoUntil: z.string().max(10).optional(),
+        promoLabel: z.string().max(60).optional(),
+        promoNote: z.string().max(280).optional(),
       }),
     )
     .optional(),
@@ -604,10 +609,28 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "SiteSettings";
       targetId = SITE_SETTINGS_ID;
       if (!payload.plans?.length) throw new AdminActionError("plans are required");
+      for (const p of payload.plans) {
+        if (p.promoEnabled && p.promoUntil && !/^\d{4}-\d{2}-\d{2}$/.test(p.promoUntil)) {
+          throw new AdminActionError("Promo end date must be YYYY-MM-DD");
+        }
+        if (p.promoEnabled && !p.promoUntil) {
+          throw new AdminActionError(`Set an end date for the ${p.name} offer`);
+        }
+      }
       const planPrices = Object.fromEntries(
         payload.plans.map((p) => [
           p.id,
-          { pricePkr: Math.round(p.pricePkr), name: p.name.trim(), description: p.description.trim() },
+          {
+            pricePkr: Math.round(p.pricePkr),
+            name: p.name.trim(),
+            description: p.description.trim(),
+            promoEnabled: Boolean(p.promoEnabled),
+            promoPricePkr:
+              p.promoPricePkr == null ? undefined : Math.round(p.promoPricePkr),
+            promoUntil: p.promoUntil || undefined,
+            promoLabel: p.promoLabel?.trim() || undefined,
+            promoNote: p.promoNote?.trim() || undefined,
+          },
         ]),
       );
       await savePlanPrices(planPrices);

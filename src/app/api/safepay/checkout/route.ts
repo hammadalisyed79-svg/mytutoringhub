@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getLivePlan } from "@/lib/plans";
+import { grantComplimentaryPlan } from "@/lib/plan-checkout";
 import {
   checkoutCurrency,
   currencyFromAcceptLanguage,
@@ -48,13 +49,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!safepayConfigured()) {
-    return NextResponse.json(
-      { error: "Safepay is not configured. Add SAFEPAY_API_KEY and SAFEPAY_SECRET_KEY." },
-      { status: 503 },
-    );
-  }
-
   const body = schema.parse(await req.json());
   const { plan } = body;
   const def = await getLivePlan(plan);
@@ -67,15 +61,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  if (def.isComplimentary) {
+    const granted = await grantComplimentaryPlan({ userId: session.user.id, plan: def });
+    return NextResponse.json({
+      granted: true,
+      complimentary: true,
+      alreadyActive: granted.alreadyActive,
+      url: `${appUrl}/dashboard?checkout=success&plan=${plan}`,
+    });
+  }
+
+  if (!safepayConfigured()) {
+    return NextResponse.json(
+      { error: "Safepay is not configured. Add SAFEPAY_API_KEY and SAFEPAY_SECRET_KEY." },
+      { status: 503 },
+    );
+  }
+
   // Sandbox Cybersource 3DS dummy cards are most reliable in PKR.
   // Production/live uses the visitor or preferred currency (never forced to PKR).
   const preferred = resolveCurrency(req, body.currency);
-  const currency: CurrencyCode =
-    getSafepayEnv() === "sandbox" ? "PKR" : preferred;
-  const amountMajor = pkrToCurrency(def.pricePkr, currency);
+  const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
+  const amountMajor = pkrToCurrency(def.chargePricePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const apiKey = process.env.SAFEPAY_API_KEY!;
   const safepay = getSafepayClient();
   const env = getSafepayEnv();
@@ -112,7 +122,6 @@ export async function POST(req: Request) {
 
     await reconcileUserSafepayPayments(session.user.id);
 
-    // Only drop unpaid leftovers. Paid INCOMPLETE rows were just activated.
     await prisma.subscription.updateMany({
       where: {
         userId: session.user.id,

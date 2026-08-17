@@ -429,6 +429,13 @@ export function AdminPlanPricesForm({
     audience: string;
     pricePkr: number;
     isAddOn?: boolean;
+    promoEnabled?: boolean;
+    promoPricePkr?: number;
+    promoUntil?: string;
+    promoLabel?: string;
+    promoNote?: string;
+    isPromoActive?: boolean;
+    isComplimentary?: boolean;
   }[];
 }) {
   const [busy, setBusy] = useState(false);
@@ -447,6 +454,11 @@ export function AdminPlanPricesForm({
           name: String(fd.get(`${plan.id}-name`) || "").trim(),
           description: String(fd.get(`${plan.id}-description`) || "").trim(),
           pricePkr: Number(fd.get(`${plan.id}-pricePkr`)),
+          promoEnabled: fd.get(`${plan.id}-promoEnabled`) === "on",
+          promoPricePkr: Number(fd.get(`${plan.id}-promoPricePkr`) || 0),
+          promoUntil: String(fd.get(`${plan.id}-promoUntil`) || ""),
+          promoLabel: String(fd.get(`${plan.id}-promoLabel`) || "").trim(),
+          promoNote: String(fd.get(`${plan.id}-promoNote`) || "").trim(),
         })),
       });
       window.location.reload();
@@ -463,14 +475,15 @@ export function AdminPlanPricesForm({
           <article key={plan.id} className="panel admin-plan-card">
             <p className="muted" style={{ marginTop: 0 }}>
               {plan.audience === "student" ? "Student" : "Tutor"}
-              {plan.isAddOn ? " add-on" : " plan"} · {plan.id}
+              {plan.isAddOn ? " add-on" : " listing"} · {plan.id}
+              {plan.isComplimentary ? " · Complimentary now" : plan.isPromoActive ? " · Promo live" : ""}
             </p>
             <label>
               Display name
               <input name={`${plan.id}-name`} defaultValue={plan.name} required maxLength={80} />
             </label>
             <label>
-              Price (PKR / month)
+              Standard price (PKR / month)
               <input
                 name={`${plan.id}-pricePkr`}
                 type="number"
@@ -489,12 +502,63 @@ export function AdminPlanPricesForm({
                 maxLength={300}
               />
             </label>
+            <div className="admin-plan-promo">
+              <p className="admin-plan-promo-title">Limited-time offer</p>
+              <label className="radio">
+                <input
+                  name={`${plan.id}-promoEnabled`}
+                  type="checkbox"
+                  defaultChecked={Boolean(plan.promoEnabled)}
+                />
+                Enable promotional pricing
+              </label>
+              <label>
+                Promo price (PKR / month)
+                <input
+                  name={`${plan.id}-promoPricePkr`}
+                  type="number"
+                  min={0}
+                  step={1}
+                  defaultValue={plan.promoPricePkr ?? 0}
+                />
+                <span className="muted" style={{ fontWeight: 400, fontSize: "0.82rem" }}>
+                  Use 0 for a complimentary period. After the end date, the standard price applies automatically.
+                </span>
+              </label>
+              <label>
+                Offer valid until
+                <input
+                  name={`${plan.id}-promoUntil`}
+                  type="date"
+                  defaultValue={plan.promoUntil || ""}
+                />
+              </label>
+              <label>
+                Offer label
+                <input
+                  name={`${plan.id}-promoLabel`}
+                  defaultValue={plan.promoLabel || ""}
+                  maxLength={60}
+                  placeholder="Launch offer"
+                />
+              </label>
+              <label>
+                Customer-facing note
+                <textarea
+                  name={`${plan.id}-promoNote`}
+                  rows={2}
+                  defaultValue={plan.promoNote || ""}
+                  maxLength={280}
+                  placeholder="Complimentary listing until 30 September. Badges and boosts remain paid."
+                />
+              </label>
+            </div>
           </article>
         ))}
       </div>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={busy}>
-        {busy ? "Saving…" : "Save plans & prices"}
+        {busy ? "Saving…" : "Save plans, prices & offers"}
       </button>
     </form>
   );

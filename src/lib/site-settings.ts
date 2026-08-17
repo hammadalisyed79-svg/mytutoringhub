@@ -36,10 +36,16 @@ function parsePlanPrices(value: unknown): Record<string, PlanPriceOverride> {
   for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
     const row = raw as PlanPriceOverride;
+    const promoPrice = Number(row.promoPricePkr);
     out[key] = {
       ...(typeof row.pricePkr === "number" ? { pricePkr: row.pricePkr } : {}),
       ...(typeof row.name === "string" ? { name: row.name } : {}),
       ...(typeof row.description === "string" ? { description: row.description } : {}),
+      ...(typeof row.promoEnabled === "boolean" ? { promoEnabled: row.promoEnabled } : {}),
+      ...(Number.isFinite(promoPrice) ? { promoPricePkr: promoPrice } : {}),
+      ...(typeof row.promoUntil === "string" ? { promoUntil: row.promoUntil } : {}),
+      ...(typeof row.promoLabel === "string" ? { promoLabel: row.promoLabel } : {}),
+      ...(typeof row.promoNote === "string" ? { promoNote: row.promoNote } : {}),
     };
   }
   return out;

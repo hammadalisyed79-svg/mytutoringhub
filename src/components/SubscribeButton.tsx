@@ -8,11 +8,13 @@ export function SubscribeButton({
   label = "Subscribe securely",
   currency,
   featured,
+  complimentary,
 }: {
   plan: SubscriptionPlan;
   label?: string;
   currency?: string;
   featured?: boolean;
+  complimentary?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -52,10 +54,16 @@ export function SubscribeButton({
         onClick={subscribe}
         disabled={loading}
       >
-        {loading ? "Opening secure checkout…" : label}
+        {loading
+          ? complimentary
+            ? "Activating complimentary listing…"
+            : "Opening secure checkout…"
+          : label}
       </button>
       <p className="checkout-trust muted">
-        Encrypted checkout · Receipt emailed · Cancel anytime before renewal
+        {complimentary
+          ? "No payment required for this offer · Badges and boosts remain paid"
+          : "Encrypted checkout · Receipt emailed · Cancel anytime before renewal"}
       </p>
       {error && <p className="form-error">{error}</p>}
     </div>
