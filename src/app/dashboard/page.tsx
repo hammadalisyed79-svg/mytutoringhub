@@ -9,6 +9,7 @@ import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
+import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 
 export const metadata = { title: "Dashboard" };
 
@@ -28,8 +29,12 @@ export default async function DashboardPage({
   if (!session?.user) redirect("/login");
   const sp = await searchParams;
 
+  const justActivated = await reconcileUserSafepayPayments(session.user.id);
   if (session.user.role === "TUTOR") {
     await syncTutorBadges(session.user.id);
+  }
+  if (justActivated[0] && !sp.checkout) {
+    redirect(`/receipt/${justActivated[0]}`);
   }
 
   const user = await prisma.user.findUniqueOrThrow({
@@ -111,10 +116,26 @@ export default async function DashboardPage({
               ))}
             </ul>
             {pendingSubs.length > 0 && (
-              <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.9rem" }}>
-                {pendingSubs.length} unfinished checkout
-                {pendingSubs.length === 1 ? "" : "s"} ignored. Start again from Pricing if needed.
-              </p>
+              <div style={{ marginTop: "0.75rem" }}>
+                <p className="muted" style={{ fontSize: "0.9rem" }}>
+                  {pendingSubs.length} unfinished checkout
+                  {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, open
+                  Dashboard again to confirm, or tap confirm below.
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                  {pendingSubs
+                    .filter((s) => s.stripeSubscriptionId?.startsWith("track_"))
+                    .map((s) => (
+                      <a
+                        key={s.id}
+                        className="btn btn-secondary btn-sm"
+                        href={`/api/safepay/complete?tracker=${encodeURIComponent(s.stripeSubscriptionId!)}&plan=${encodeURIComponent(s.plan)}`}
+                      >
+                        Confirm {getPlan(s.plan as never)?.name || s.plan}
+                      </a>
+                    ))}
+                </div>
+              </div>
             )}
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
               <Link href="/pricing" className="btn btn-sm">

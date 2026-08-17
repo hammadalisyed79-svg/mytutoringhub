@@ -41,6 +41,7 @@ export function paymentReceiptHtml(opts: {
   planName: string;
   amountLabel?: string | null;
   periodEnd?: Date | null;
+  receiptId?: string;
 }) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const amountLine = opts.amountLabel
@@ -53,11 +54,12 @@ export function paymentReceiptHtml(opts: {
         day: "numeric",
       })}</strong></p>`
     : "";
+  const slipUrl = opts.receiptId ? `${appUrl}/receipt/${opts.receiptId}` : `${appUrl}/dashboard`;
   return `<p>Hi ${opts.name},</p>
 <p>This is your receipt for <strong>${opts.planName}</strong> on MyTutoringHub.</p>
 ${amountLine}${periodLine}
 <p>Lesson fees stay off-platform between you and the other party. This charge is only for your platform subscription.</p>
-<p><a href="${appUrl}/dashboard">Open your dashboard</a> to view or print your payment slip.</p>
+<p><a href="${slipUrl}">View or print your payment slip</a></p>
 <p>Questions? Email <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.</p>`;
 }
 
