@@ -363,6 +363,7 @@ export function AdminSettingsForm({
     homepageAnnouncement: string;
     disableSignups: boolean;
     disableAiAssistant: boolean;
+    pastPaperFeePkr: number;
   };
 }) {
   const [busy, setBusy] = useState(false);
@@ -380,6 +381,7 @@ export function AdminSettingsForm({
         disableSignups: fd.get("disableSignups") === "on",
         disableAiAssistant: fd.get("disableAiAssistant") === "on",
         homepageAnnouncement: String(fd.get("homepageAnnouncement") || ""),
+        pastPaperFeePkr: Number(fd.get("pastPaperFeePkr") || 100),
       });
       window.location.reload();
     } catch (err) {
@@ -410,6 +412,16 @@ export function AdminSettingsForm({
       <label className="radio">
         <input name="disableAiAssistant" type="checkbox" defaultChecked={settings.disableAiAssistant} />
         Disable study assistant
+      </label>
+      <label>
+        Past paper download fee (PKR)
+        <input
+          name="pastPaperFeePkr"
+          type="number"
+          min={0}
+          step={1}
+          defaultValue={settings.pastPaperFeePkr}
+        />
       </label>
       {error && <p className="form-error">{error}</p>}
       <p className="muted">

@@ -1651,6 +1651,93 @@ select:focus {
   flex-shrink: 0;
 }
 
+.page-tabs,
+.year-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1.5rem;
+}
+
+.page-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-weight: 650;
+  font-size: 0.92rem;
+}
+
+.page-tab.is-active,
+.page-tab[aria-current="page"] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.year-tabs {
+  margin: 0.75rem 0 1.25rem;
+}
+
+.paper-board {
+  margin-bottom: 1rem;
+}
+
+.paper-board h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.paper-rows {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.paper-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.paper-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.paper-row h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.paper-soon {
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.paper-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.paper-upload input[type="file"] {
+  width: auto;
+  max-width: 14rem;
+  padding: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.paper-buy .form-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+}
+
 .country-subject-chips {
   margin-bottom: 0;
 }
@@ -2685,6 +2772,11 @@ a.chip-btn {
   .search-primary,
   .search-grid {
     grid-template-columns: 1fr;
+  }
+
+  .paper-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .search-clear {

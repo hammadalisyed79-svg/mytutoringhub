@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { COMPANY_ADMIN_EMAIL, isCompanyAdminEmail, writeAdminAudit } from "@/lib/admin";
-import { invalidateSiteSettingsCache, savePlanPrices, SITE_SETTINGS_ID } from "@/lib/site-settings";
+import { invalidateSiteSettingsCache, savePastPaperFee, savePlanPrices, SITE_SETTINGS_ID } from "@/lib/site-settings";
+import { parsePastPaperKey } from "@/lib/past-papers";
 import { slugify } from "@/lib/search-tutors";
 import { syncTutorBadges } from "@/lib/subscription";
 import {
@@ -38,6 +39,14 @@ const payloadSchema = z.object({
   homepageAnnouncement: z.string().max(500).optional(),
   disableSignups: z.boolean().optional(),
   disableAiAssistant: z.boolean().optional(),
+  pastPaperFeePkr: z.coerce.number().min(0).max(100_000).optional(),
+  catalogKey: z.string().max(200).optional(),
+  fileUrl: z.string().max(2000).optional().nullable(),
+  published: z.boolean().optional(),
+  board: z.string().max(120).optional(),
+  year: z.coerce.number().int().min(1990).max(2035).optional(),
+  paperType: z.string().max(80).optional(),
+  title: z.string().max(200).optional(),
   plans: z
     .array(
       z.object({
@@ -593,6 +602,9 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           ...(payload.disableAiAssistant !== undefined
             ? { disableAiAssistant: payload.disableAiAssistant }
             : {}),
+          ...(payload.pastPaperFeePkr !== undefined
+            ? { pastPaperFeePkr: Math.round(payload.pastPaperFeePkr) }
+            : {}),
         },
         create: {
           id: SITE_SETTINGS_ID,
@@ -600,6 +612,9 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           homepageAnnouncement: payload.homepageAnnouncement || "",
           disableSignups: Boolean(payload.disableSignups),
           disableAiAssistant: Boolean(payload.disableAiAssistant),
+          ...(payload.pastPaperFeePkr !== undefined
+            ? { pastPaperFeePkr: Math.round(payload.pastPaperFeePkr) }
+            : {}),
         },
       });
       invalidateSiteSettingsCache();
@@ -634,6 +649,51 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         ]),
       );
       await savePlanPrices(planPrices);
+      break;
+    }
+    case "update_past_paper_fee": {
+      targetType = "SiteSettings";
+      targetId = SITE_SETTINGS_ID;
+      if (payload.pastPaperFeePkr == null) throw new AdminActionError("Fee is required");
+      await savePastPaperFee(payload.pastPaperFeePkr);
+      break;
+    }
+    case "past_paper_save": {
+      const catalogKey = (payload.catalogKey || "").trim();
+      if (!catalogKey) throw new AdminActionError("catalogKey is required");
+      const listing = parsePastPaperKey(catalogKey);
+      if (!listing) throw new AdminActionError("Unknown past paper");
+      targetType = "PastPaper";
+      const saved = await prisma.pastPaper.upsert({
+        where: { catalogKey },
+        update: {
+          ...(payload.fileUrl !== undefined ? { fileUrl: payload.fileUrl || null } : {}),
+          ...(payload.published !== undefined ? { published: payload.published } : {}),
+          title: listing.title,
+          subject: listing.subject,
+          board: listing.board,
+          year: listing.year,
+          paperType: listing.paperType,
+        },
+        create: {
+          catalogKey,
+          subject: listing.subject,
+          board: listing.board,
+          year: listing.year,
+          paperType: listing.paperType,
+          title: listing.title,
+          fileUrl: payload.fileUrl || null,
+          published: payload.published !== false,
+        },
+      });
+      targetId = saved.id;
+      break;
+    }
+    case "past_paper_delete": {
+      const id = needId(payload.id);
+      targetType = "PastPaper";
+      targetId = id;
+      await prisma.pastPaper.delete({ where: { id } });
       break;
     }
     default:

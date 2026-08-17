@@ -10,6 +10,7 @@ export type SiteSettingsRow = {
   disableSignups: boolean;
   disableAiAssistant: boolean;
   planPrices: Record<string, PlanPriceOverride>;
+  pastPaperFeePkr: number;
   updatedAt: Date;
 };
 
@@ -20,6 +21,7 @@ const DEFAULTS: SiteSettingsRow = {
   disableSignups: false,
   disableAiAssistant: false,
   planPrices: {},
+  pastPaperFeePkr: 100,
   updatedAt: new Date(0),
 };
 
@@ -59,7 +61,9 @@ function normalizeRow(row: {
   disableAiAssistant: boolean;
   updatedAt: Date;
   planPrices?: unknown;
+  pastPaperFeePkr?: number;
 }): SiteSettingsRow {
+  const fee = Number(row.pastPaperFeePkr);
   return {
     id: row.id,
     maintenanceMode: row.maintenanceMode,
@@ -67,6 +71,7 @@ function normalizeRow(row: {
     disableSignups: row.disableSignups,
     disableAiAssistant: row.disableAiAssistant,
     planPrices: parsePlanPrices(row.planPrices),
+    pastPaperFeePkr: Number.isFinite(fee) && fee >= 0 ? Math.round(fee) : 100,
     updatedAt: row.updatedAt,
   };
 }
@@ -96,11 +101,24 @@ export async function saveSiteSettings(data: {
   homepageAnnouncement: string;
   disableSignups: boolean;
   disableAiAssistant: boolean;
+  pastPaperFeePkr?: number;
 }) {
   const row = await prisma.siteSettings.upsert({
     where: { id: SITE_SETTINGS_ID },
     create: { id: SITE_SETTINGS_ID, ...data },
     update: data,
+  });
+  const value = normalizeRow(row);
+  cached = { at: Date.now(), value };
+  return value;
+}
+
+export async function savePastPaperFee(pastPaperFeePkr: number) {
+  const fee = Math.max(0, Math.round(pastPaperFeePkr));
+  const row = await prisma.siteSettings.upsert({
+    where: { id: SITE_SETTINGS_ID },
+    create: { id: SITE_SETTINGS_ID, pastPaperFeePkr: fee },
+    update: { pastPaperFeePkr: fee },
   });
   const value = normalizeRow(row);
   cached = { at: Date.now(), value };

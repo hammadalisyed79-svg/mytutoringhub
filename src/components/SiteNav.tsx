@@ -12,6 +12,7 @@ type NavUser = {
 const PRIMARY = [
   { href: "/search", label: "Find tutors" },
   { href: "/subjects", label: "Subjects" },
+  { href: "/past-papers", label: "Past papers" },
   { href: "/ads", label: "Student ads" },
   { href: "/assistant", label: "Study assistant" },
   { href: "/how-it-works", label: "How it works" },

@@ -6,6 +6,7 @@ import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { subjectCode } from "@/lib/markets";
+import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { CURRICULUM } from "@/lib/curriculum";
 
 export const metadata = {
@@ -29,10 +30,11 @@ function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {
 export default async function SubjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ country?: string; q?: string }>;
+  searchParams: Promise<{ country?: string; q?: string; tab?: string }>;
 }) {
   const currency = await getVisitorCurrency();
-  const { country, q } = await searchParams;
+  const { country, q, tab } = await searchParams;
+  const showCodes = tab === "codes";
   const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const averages = await Promise.all(
     dbSubjects.map(async (s) => ({
@@ -51,16 +53,19 @@ export default async function SubjectsPage({
           School boards, exams, languages, and university subjects across 15 countries — including
           Pakistan. Each listing uses a subject code such as FBISE-HSSC-MATH or IB-DP-PHY.
         </p>
+        <SubjectHubTabs active={showCodes ? "codes" : "directory"} />
 
-        <section style={{ marginBottom: "2.5rem" }}>
-          <h2>Curriculum subject codes</h2>
-          <p className="muted">
-            {CURRICULUM.length.toLocaleString()} subject codes from national boards, Cambridge, IB,
-            and other curricula. Pick a country, then open a code to find tutors.
-          </p>
-          <CurriculumBrowser country={country} query={q} />
-        </section>
-
+        {showCodes ? (
+          <section style={{ marginBottom: "2.5rem" }}>
+            <h2>Curriculum subject codes</h2>
+            <p className="muted">
+              {CURRICULUM.length.toLocaleString()} subject codes from national boards, Cambridge, IB,
+              and other curricula. Pick a country, then open a code to find tutors.
+            </p>
+            <CurriculumBrowser country={country} query={q} />
+          </section>
+        ) : (
+          <>
         <div className="subject-cats">
           {SUBJECT_CATEGORIES.map((cat) => (
             <div key={cat.title} className="panel">
@@ -99,6 +104,8 @@ export default async function SubjectsPage({
             </div>
           ))}
         </section>
+          </>
+        )}
       </div>
     </div>
   );

@@ -38,6 +38,7 @@ model User {
   reviewRequestsRecv   ReviewRequest[]       @relation("ReviewRequestsRecv")
   aiMessages           AiMessage[]
   adminAuditLogs       AdminAuditLog[]
+  pastPaperPurchases   PastPaperPurchase[]
 }
 
 model Account {
@@ -268,7 +269,42 @@ model SiteSettings {
   disableAiAssistant   Boolean  @default(false)
   /// Overrides for catalog prices/names: { STUDENT_PASS: { pricePkr, name, description } }
   planPrices           Json     @default("{}")
+  /// One-off past paper download fee in PKR base units.
+  pastPaperFeePkr      Int      @default(100)
   updatedAt            DateTime @updatedAt
+}
+
+model PastPaper {
+  id         String   @id @default(cuid())
+  catalogKey String   @unique
+  subject    String
+  board      String
+  year       Int
+  paperType  String
+  title      String
+  fileUrl    String?
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  purchases  PastPaperPurchase[]
+
+  @@index([subject, year])
+  @@index([board, year])
+}
+
+model PastPaperPurchase {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paperId    String?
+  paper      PastPaper? @relation(fields: [paperId], references: [id], onDelete: SetNull)
+  catalogKey String
+  tracker    String?    @unique
+  amountPkr  Float
+  status     String     @default("PENDING")
+  createdAt  DateTime   @default(now())
+
+  @@index([userId, catalogKey])
 }
 
 model AdminAuditLog {

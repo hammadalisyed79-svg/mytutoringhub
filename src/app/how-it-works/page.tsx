@@ -49,6 +49,7 @@ export default function HowItWorksPage() {
             <li>Browse verified, highlighted, and boosted tutors</li>
             <li>Report abuse from profiles or student ads</li>
             <li>Leave reviews after messaging (moderated before publish)</li>
+            <li>Download past papers (2016–2025) by subject — one-time fee set by admin</li>
             <li>Manage account details anytime in Settings</li>
           </ul>
           <Link href="/register?role=student" className="btn" style={{ marginTop: "1rem" }}>
@@ -60,7 +61,10 @@ export default function HowItWorksPage() {
           <h2>For tutors</h2>
           <ul className="check-list">
             <li>Tutor Basic lists your profile and up to 3 subject ads (complimentary until 30 September 2026)</li>
-            <li>Upload documents for verification; optional paid Verified add-on for priority</li>
+            <li>
+              Upload a government photo ID (passport, national ID / CNIC, or driving licence) for
+              verification; a qualification certificate is recommended
+            </li>
             <li>Boost or Highlight listings for timed search placement</li>
             <li>Request reviews from students you’ve messaged</li>
           </ul>

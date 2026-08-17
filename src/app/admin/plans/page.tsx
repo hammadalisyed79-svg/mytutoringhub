@@ -2,6 +2,8 @@ import { requireAdminPage } from "@/lib/admin";
 import { formatPromoUntil, getLivePlans } from "@/lib/plans";
 import { formatPlanPrice } from "@/lib/currency";
 import { AdminPlanPricesForm } from "@/components/AdminActions";
+import { AdminPastPaperFeeForm } from "@/components/AdminPastPapers";
+import { getPastPaperFeePkr } from "@/lib/past-papers";
 import Link from "next/link";
 
 export const metadata = { title: "Plans & prices · Admin" };
@@ -10,6 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPlansPage() {
   await requireAdminPage();
   const plans = await getLivePlans();
+  const paperFee = await getPastPaperFeePkr();
 
   return (
     <>
@@ -35,6 +38,13 @@ export default async function AdminPlansPage() {
         </p>
       </div>
       <AdminPlanPricesForm plans={plans} />
+      <section className="panel">
+        <h2>Past paper downloads</h2>
+        <p className="muted">
+          One-time fee per paper. Upload files on <Link href="/admin/past-papers">Past papers</Link>.
+        </p>
+        <AdminPastPaperFeeForm feePkr={paperFee} />
+      </section>
     </>
   );
 }

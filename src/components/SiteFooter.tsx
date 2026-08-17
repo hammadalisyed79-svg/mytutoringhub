@@ -19,6 +19,7 @@ export function SiteFooter() {
           <div className="footer-col">
             <Link href="/search">Find tutors</Link>
             <Link href="/subjects">Subjects</Link>
+            <Link href="/past-papers">Past papers</Link>
             <Link href="/ads">Student requests</Link>
             <Link href="/assistant">Study assistant</Link>
             <Link href="/pricing">Student Pass</Link>

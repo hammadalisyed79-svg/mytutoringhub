@@ -69,6 +69,10 @@ export default async function SeoTutorsPage({ params }: Params) {
           >
             Open full search filters
           </Link>
+          {" "}
+          <Link href={`/past-papers?subject=${encodeURIComponent(label)}`} className="btn btn-secondary btn-sm">
+            Past papers 2016–2025
+          </Link>
         </p>
         <div className="tutor-grid" style={{ marginTop: "1.25rem" }}>
           {tutors.map((t) => (
