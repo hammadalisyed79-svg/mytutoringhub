@@ -30,7 +30,7 @@ export default async function HomePage() {
             <LogoMark className="hero-brand-mark" />
             <p className="hero-kicker">Private lessons & tutors</p>
           </div>
-          <h1>MyTutoringHub</h1>
+          <h1>My Tutoring Hub</h1>
           <p>
             Connect with trusted private tutors in Pakistan and worldwide — boards, languages, and
             exam prep. Online or at home. Rates in PKR with a USD guide.

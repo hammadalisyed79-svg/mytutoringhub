@@ -36,6 +36,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 html,
@@ -54,6 +55,7 @@ body {
   font-size: 1.025rem;
   line-height: 1.6;
   letter-spacing: 0.01em;
+  overflow-x: clip;
 }
 
 body.nav-open {
@@ -359,12 +361,13 @@ svg {
   line-height: 1.02;
   letter-spacing: -0.03em;
   margin: 0 0 0.9rem;
-  max-width: 12ch;
+  max-width: 14ch;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.2);
+  overflow-wrap: break-word;
 }
 
 .hero-findtutor h1 {
-  max-width: 14ch;
+  max-width: min(14ch, 100%);
 }
 
 .hero p {
@@ -1191,13 +1194,17 @@ select:focus {
     background: var(--white);
     border-left: 1px solid var(--line);
     box-shadow: var(--shadow);
-    transform: translateX(105%);
-    transition: transform 0.28s var(--ease);
+    transform: translateX(100%);
+    transition: transform 0.28s var(--ease), visibility 0.28s var(--ease);
     overflow-y: auto;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .nav-drawer.is-open {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .nav-drawer-inner {
@@ -1278,7 +1285,21 @@ select:focus {
   }
 
   .hero h1 {
-    font-size: clamp(2.15rem, 9.5vw, 2.85rem);
+    font-size: clamp(2rem, 9vw, 2.65rem);
+    max-width: none;
+    line-height: 1.08;
+  }
+
+  .hero p {
+    max-width: none;
+  }
+
+  .hero-content {
+    width: min(var(--container), calc(100% - 1.5rem));
+    padding: 2.5rem 0 2.75rem;
+  }
+
+  .hero-search {
     max-width: none;
   }
 
