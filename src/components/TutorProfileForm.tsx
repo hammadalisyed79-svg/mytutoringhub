@@ -65,19 +65,24 @@ export function TutorProfileForm({
         <input name="subjects" required defaultValue={initial.subjects} />
       </label>
       <label>
-        Hourly rate (USD)
+        Hourly rate (PKR / Rs)
         <input
           name="hourlyRate"
           type="number"
-          min={5}
-          step={1}
+          min={500}
+          step={100}
           required
           defaultValue={initial.hourlyRate}
         />
       </label>
       <label>
-        Location
-        <input name="location" required defaultValue={initial.location} />
+        City / area
+        <input
+          name="location"
+          required
+          defaultValue={initial.location}
+          placeholder="Karachi, Lahore, Islamabad, Online…"
+        />
       </label>
       <label>
         Photo URL
@@ -87,9 +92,9 @@ export function TutorProfileForm({
         <label className="radio">
           <input name="online" type="checkbox" defaultChecked={initial.online} /> Online
         </label>
-        <label className="radio">
-          <input name="inPerson" type="checkbox" defaultChecked={initial.inPerson} /> In person
-        </label>
+          <label className="radio">
+            <input name="inPerson" type="checkbox" defaultChecked={initial.inPerson} /> Home tuition
+          </label>
       </div>
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}

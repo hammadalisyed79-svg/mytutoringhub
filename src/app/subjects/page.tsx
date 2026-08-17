@@ -10,9 +10,9 @@ export default async function SubjectsPage() {
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">Private lessons by subject</h1>
+        <h1 className="page-title">Private lessons by subject (Pakistan)</h1>
         <p className="section-lead">
-          Hundreds of subjects and skills — school support, languages, music, tech, and more.
+          Board exams, O/A Levels, IELTS, CSS, and more — find tutors in major cities or online.
         </p>
 
         <div className="subject-cats">

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
 import { ReviewForm } from "@/components/ReviewForm";
+import { formatHourly } from "@/lib/pakistan";
 import Link from "next/link";
 
 type Params = { params: Promise<{ id: string }> };
@@ -52,7 +53,7 @@ export default async function TutorProfilePage({ params }: Params) {
           <h1 className="page-title">{tutor.user.name}</h1>
           <p style={{ fontSize: "1.15rem", marginTop: 0 }}>{tutor.headline}</p>
           <div className="meta">
-            <span>${tutor.hourlyRate}/hr</span>
+            <span>{formatHourly(tutor.hourlyRate)}</span>
             <span>{tutor.location}</span>
             <span>
               {tutor.online ? "Online" : ""}

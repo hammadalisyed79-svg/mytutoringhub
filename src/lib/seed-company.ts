@@ -3,17 +3,24 @@ import { prisma } from "@/lib/prisma";
 
 const subjects = [
   ["Mathematics", "mathematics"],
-  ["English", "english"],
   ["Physics", "physics"],
   ["Chemistry", "chemistry"],
   ["Biology", "biology"],
-  ["Spanish", "spanish"],
-  ["French", "french"],
+  ["English", "english"],
+  ["Urdu", "urdu"],
+  ["Islamiyat", "islamiyat"],
+  ["Pakistan Studies", "pakistan-studies"],
   ["Computer Science", "computer-science"],
-  ["Music Piano", "music-piano"],
-  ["SAT Prep", "sat-prep"],
+  ["Accounting", "accounting"],
+  ["Economics", "economics"],
+  ["IELTS", "ielts"],
+  ["Spoken English", "spoken-english"],
+  ["CSS Prep", "css-prep"],
+  ["O Level Maths", "o-level-maths"],
+  ["A Level Physics", "a-level-physics"],
+  ["A Level Chemistry", "a-level-chemistry"],
+  ["Quran Nazra", "quran-nazra"],
   ["Primary School", "primary-school"],
-  ["Guitar", "guitar"],
 ] as const;
 
 export const COMPANY_ACCOUNTS = [
@@ -27,13 +34,13 @@ export const COMPANY_ACCOUNTS = [
     role: "TUTOR" as const,
     email: "tutor@mytutoringhub.com",
     password: "tutor123456",
-    name: "Alex Rivera",
+    name: "Ali Raza",
   },
   {
     role: "STUDENT" as const,
     email: "student@mytutoringhub.com",
     password: "student123456",
-    name: "Jamie Chen",
+    name: "Ayesha Khan",
   },
 ];
 
@@ -66,13 +73,13 @@ export async function seedCompanyData() {
   const tutor = await prisma.user.upsert({
     where: { email: "tutor@mytutoringhub.com" },
     update: {
-      name: "Alex Rivera",
+      name: "Ali Raza",
       passwordHash: tutorHash,
       role: "TUTOR",
     },
     create: {
       email: "tutor@mytutoringhub.com",
-      name: "Alex Rivera",
+      name: "Ali Raza",
       passwordHash: tutorHash,
       role: "TUTOR",
     },
@@ -84,21 +91,21 @@ export async function seedCompanyData() {
       verified: true,
       highlighted: true,
       active: true,
-      headline: "Patient Maths & Physics tutor",
-      bio: "I help secondary and college students build confidence in STEM. Online or in-person sessions available.",
-      subjects: "Mathematics,Physics,SAT Prep",
-      hourlyRate: 35,
-      location: "Austin, TX",
+      headline: "FSc & Matric Physics / Maths tutor — Lahore & Online",
+      bio: "I teach Matric and Intermediate (FSc Pre-Engineering) Physics and Mathematics with board-focused notes, past papers, and weekly tests. Available for home tuition in Lahore and online across Pakistan.",
+      subjects: "Mathematics,Physics,O Level Maths",
+      hourlyRate: 2000,
+      location: "Lahore",
       online: true,
       inPerson: true,
     },
     create: {
       userId: tutor.id,
-      headline: "Patient Maths & Physics tutor",
-      bio: "I help secondary and college students build confidence in STEM. Online or in-person sessions available.",
-      subjects: "Mathematics,Physics,SAT Prep",
-      hourlyRate: 35,
-      location: "Austin, TX",
+      headline: "FSc & Matric Physics / Maths tutor — Lahore & Online",
+      bio: "I teach Matric and Intermediate (FSc Pre-Engineering) Physics and Mathematics with board-focused notes, past papers, and weekly tests. Available for home tuition in Lahore and online across Pakistan.",
+      subjects: "Mathematics,Physics,O Level Maths",
+      hourlyRate: 2000,
+      location: "Lahore",
       online: true,
       inPerson: true,
       verified: true,
@@ -129,13 +136,13 @@ export async function seedCompanyData() {
   const student = await prisma.user.upsert({
     where: { email: "student@mytutoringhub.com" },
     update: {
-      name: "Jamie Chen",
+      name: "Ayesha Khan",
       passwordHash: studentHash,
       role: "STUDENT",
     },
     create: {
       email: "student@mytutoringhub.com",
-      name: "Jamie Chen",
+      name: "Ayesha Khan",
       passwordHash: studentHash,
       role: "STUDENT",
     },
@@ -154,21 +161,21 @@ export async function seedCompanyData() {
   });
 
   const existingAd = await prisma.studentAd.findFirst({
-    where: { userId: student.id, title: "Looking for GCSE-level Maths help" },
+    where: { userId: student.id, title: "Looking for FSc Chemistry tutor (Karachi)" },
   });
   if (!existingAd) {
     await prisma.studentAd.create({
       data: {
         userId: student.id,
-        title: "Looking for GCSE-level Maths help",
-        subject: "Mathematics",
-        level: "Secondary",
-        location: "Online",
+        title: "Looking for FSc Chemistry tutor (Karachi)",
+        subject: "Chemistry",
+        level: "Intermediate / FSc",
+        location: "Karachi",
         description:
-          "Need weekly support with algebra and exam technique. Prefer evenings.",
-        budget: 30,
+          "Need weekly support for 1st year FSc Chemistry (Sindh Board). Prefer evenings, home tuition in Gulshan or online Zoom.",
+        budget: 1800,
         online: true,
-        inPerson: false,
+        inPerson: true,
         status: "OPEN",
       },
     });

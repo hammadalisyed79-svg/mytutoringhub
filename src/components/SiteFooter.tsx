@@ -10,7 +10,8 @@ export function SiteFooter() {
             <Logo />
           </Link>
           <p className="muted" style={{ marginTop: "0.75rem" }}>
-            Find private tutors online or in person. Lesson payments stay between student and tutor.
+            Find private tutors online or at home across Pakistan. Lesson fees stay between student
+            and tutor (PKR).
           </p>
         </div>
         <div>

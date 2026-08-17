@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatHourly } from "@/lib/pakistan";
 
 export const metadata = { title: "Student ads" };
 
@@ -35,7 +36,7 @@ export default async function AdsPage() {
                 <span className="badge">{ad.subject}</span>
                 <span>{ad.level}</span>
                 <span>{ad.location}</span>
-                {ad.budget != null && <span>~${ad.budget}/hr</span>}
+                {ad.budget != null && <span>~{formatHourly(ad.budget)}</span>}
               </div>
               <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
               <p style={{ margin: 0 }}>{ad.description}</p>

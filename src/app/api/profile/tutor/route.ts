@@ -7,7 +7,7 @@ const schema = z.object({
   headline: z.string().max(120).optional(),
   bio: z.string().min(20),
   subjects: z.string().min(1),
-  hourlyRate: z.number().min(5).max(500),
+  hourlyRate: z.number().min(500).max(20000),
   location: z.string().min(1),
   online: z.boolean(),
   inPerson: z.boolean(),

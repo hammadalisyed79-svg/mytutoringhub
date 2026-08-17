@@ -36,7 +36,7 @@ export function ContactTutorForm({
   return (
     <form className="contact-form" onSubmit={send}>
       <h3>Contact {tutorName}</h3>
-      <p className="muted">Lesson fees are arranged directly with your tutor.</p>
+      <p className="muted">Lesson fees are arranged directly with your tutor in PKR (Rs).</p>
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}

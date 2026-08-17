@@ -22,7 +22,7 @@ export function HeroSearch() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="What do you want to learn? e.g. Maths, Spanish, Piano…"
+          placeholder="What do you want to learn? e.g. FSc Maths, IELTS, CSS…"
           aria-label="Search subject or tutor"
         />
         <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Lesson mode">

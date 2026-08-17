@@ -56,15 +56,15 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
       </label>
       <label>
         Level
-        <input name="level" required placeholder="e.g. Secondary / College" />
+        <input name="level" required placeholder="e.g. Matric / FSc / O Level" />
       </label>
       <label>
-        Location
-        <input name="location" required placeholder="City or Online" />
+        City
+        <input name="location" required placeholder="Karachi, Lahore, Online…" />
       </label>
       <label>
-        Budget per hour (optional)
-        <input name="budget" type="number" min={0} step={1} />
+        Budget per hour in PKR (optional)
+        <input name="budget" type="number" min={500} step={100} placeholder="e.g. 1500" />
       </label>
       <label>
         Description

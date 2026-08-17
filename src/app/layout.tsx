@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · MyTutoringHub",
   },
   description:
-    "MyTutoringHub connects students and private tutors. Subscribe to message, post requests, and arrange lessons directly.",
+    "MyTutoringHub connects students and private tutors across Pakistan. Subscribe to message, post requests, and arrange lessons in PKR.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://mytutoringhub.com"),
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],

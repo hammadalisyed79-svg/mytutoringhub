@@ -1,66 +1,74 @@
 export const SUBJECT_CATEGORIES = [
   {
-    title: "School & exam prep",
+    title: "Matric & Intermediate (FBISE / Boards)",
     items: [
       { name: "Mathematics", slug: "Mathematics" },
-      { name: "English", slug: "English" },
       { name: "Physics", slug: "Physics" },
       { name: "Chemistry", slug: "Chemistry" },
       { name: "Biology", slug: "Biology" },
-      { name: "Primary School", slug: "Primary School" },
-      { name: "SAT Prep", slug: "SAT Prep" },
-    ],
-  },
-  {
-    title: "Languages",
-    items: [
-      { name: "Spanish", slug: "Spanish" },
-      { name: "French", slug: "French" },
       { name: "English", slug: "English" },
+      { name: "Urdu", slug: "Urdu" },
+      { name: "Islamiyat", slug: "Islamiyat" },
+      { name: "Pakistan Studies", slug: "Pakistan Studies" },
     ],
   },
   {
-    title: "Tech & creative",
+    title: "O / A Levels & IELTS",
     items: [
+      { name: "O Level Maths", slug: "O Level Maths" },
+      { name: "A Level Physics", slug: "A Level Physics" },
+      { name: "A Level Chemistry", slug: "A Level Chemistry" },
+      { name: "IELTS", slug: "IELTS" },
+      { name: "Spoken English", slug: "Spoken English" },
+    ],
+  },
+  {
+    title: "CSS / Competitive & University",
+    items: [
+      { name: "CSS Prep", slug: "CSS Prep" },
+      { name: "Accounting", slug: "Accounting" },
+      { name: "Economics", slug: "Economics" },
       { name: "Computer Science", slug: "Computer Science" },
-      { name: "Music Piano", slug: "Music Piano" },
-      { name: "Guitar", slug: "Guitar" },
+      { name: "Quran Nazra", slug: "Quran Nazra" },
     ],
   },
 ];
 
 export const POPULAR_SUBJECTS = [
   "Mathematics",
-  "English",
   "Physics",
   "Chemistry",
-  "Spanish",
-  "French",
-  "Computer Science",
-  "SAT Prep",
-  "Primary School",
-  "Music Piano",
-  "Guitar",
   "Biology",
+  "English",
+  "Urdu",
+  "Islamiyat",
+  "Pakistan Studies",
+  "IELTS",
+  "CSS Prep",
+  "O Level Maths",
+  "Computer Science",
+  "Accounting",
+  "Spoken English",
+  "Quran Nazra",
 ];
 
 export const TESTIMONIALS = [
   {
     quote:
-      "The tutor was patient and tailored lessons to my child’s needs. Grades improved within weeks.",
-    name: "Patrick",
-    role: "Parent · Maths student",
+      "Our tutor helped my son prepare for Matric board exams with clear notes and weekly tests. Alhamdulillah, his marks improved a lot.",
+    name: "Ahmed Khan",
+    role: "Parent · Karachi · Maths",
   },
   {
     quote:
-      "I found a Spanish tutor who matched my schedule and learning style. Conversations feel natural now.",
-    name: "Christine",
-    role: "Adult learner · Spanish",
+      "I found an IELTS tutor in Lahore who understood the British Council pattern. Scored 7.5 overall after two months.",
+    name: "Fatima Rizvi",
+    role: "Student · Lahore · IELTS",
   },
   {
     quote:
-      "MyTutoringHub made it easy to compare tutors, message a few, and choose the best fit.",
-    name: "Gilian",
-    role: "Parent · Chemistry",
+      "MyTutoring Hub made it easy to compare FSc Chemistry tutors online and in Islamabad before choosing one.",
+    name: "Sana Malik",
+    role: "Parent · Islamabad · Chemistry",
   },
 ];

@@ -19,8 +19,8 @@ export default async function PricingPage() {
       <div className="container">
         <h1 className="page-title">Subscriptions</h1>
         <p className="section-lead">
-          Platform access is subscription-based. Lesson fees are paid directly between tutor and
-          student — MyTutoringHub never takes a commission on lessons.
+          Platform subscriptions in PKR. Lesson fees are paid directly to tutors in rupees —
+          MyTutoringHub never takes a commission on lessons.
         </p>
         {!session?.user && (
           <p className="muted" style={{ marginBottom: "1.25rem" }}>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { LogoMark } from "@/components/Logo";
+import { formatHourly } from "@/lib/pakistan";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 
 export default async function HomePage() {
@@ -30,7 +31,10 @@ export default async function HomePage() {
             <p className="hero-kicker">Private lessons & tutors</p>
           </div>
           <h1>MyTutoringHub</h1>
-          <p>Find private tutors that unlock your potential — online or near you.</p>
+          <p>
+            Find private tutors across Pakistan — Matric, FSc, O/A Levels, IELTS & more. Online or
+            home tuition.
+          </p>
           <HeroSearch />
         </div>
       </section>
@@ -117,7 +121,7 @@ export default async function HomePage() {
                       <h3>{t.user.name}</h3>
                       <p>{t.headline || t.subjects}</p>
                       <div className="meta">
-                        <span>${t.hourlyRate}/hr</span>
+                        <span>{formatHourly(t.hourlyRate)}</span>
                         {avg !== null && <span>{avg.toFixed(1)} ★</span>}
                       </div>
                     </div>
@@ -131,9 +135,9 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Private lessons for hundreds of subjects</h2>
+          <h2>Private lessons for Pakistani boards & exams</h2>
           <p className="section-lead">
-            School support, languages, music, coding, and exam prep — for every level.
+            Matric, Intermediate, O/A Levels, IELTS, CSS, and university subjects — fees in PKR.
           </p>
           <div className="subject-chips">
             {POPULAR_SUBJECTS.map((s) => (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { formatHourly } from "@/lib/pakistan";
 
 export const metadata = { title: "Find tutors" };
 
@@ -48,10 +49,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">Find private tutors</h1>
+        <h1 className="page-title">Find private tutors in Pakistan</h1>
         <p className="section-lead">
-          Choose by subject, price, and format. Contact tutors with a Student Pass — lesson fees
-          stay between you.
+          Matric, FSc, O/A Levels, IELTS, CSS — online or home tuition. Fees shown in PKR (Rs).
         </p>
 
         <form className="filters filters-wide" method="get">
@@ -71,20 +71,31 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             </select>
           </label>
           <label>
-            Location
-            <input name="location" defaultValue={sp.location || ""} placeholder="City or Online" />
+            City
+            <input
+              name="location"
+              defaultValue={sp.location || ""}
+              placeholder="Karachi, Lahore, Online…"
+            />
           </label>
           <label>
             Format
             <select name="mode" defaultValue={sp.mode || ""}>
-              <option value="">Online or in person</option>
+              <option value="">Online or home tuition</option>
               <option value="online">Online lessons</option>
-              <option value="inperson">In-person lessons</option>
+              <option value="inperson">Home / in-person</option>
             </select>
           </label>
           <label>
-            Max $/hr
-            <input name="max" type="number" min={5} defaultValue={sp.max || ""} placeholder="40" />
+            Max Rs/hr
+            <input
+              name="max"
+              type="number"
+              min={500}
+              step={100}
+              defaultValue={sp.max || ""}
+              placeholder="e.g. 2500"
+            />
           </label>
           <label className="radio" style={{ alignSelf: "end", marginBottom: "0.55rem" }}>
             <input type="checkbox" name="verified" value="1" defaultChecked={sp.verified === "1"} />
@@ -136,10 +147,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <p className="tutor-headline">{t.headline || t.subjects}</p>
                   <p className="muted clamp-2">{t.bio}</p>
                   <div className="meta">
-                    <strong className="price-tag">${t.hourlyRate}/hr</strong>
-                    <span>{t.location || "Flexible location"}</span>
+                    <strong className="price-tag">{formatHourly(t.hourlyRate)}</strong>
+                    <span>{t.location || "Pakistan"}</span>
                     <span>
-                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ")}
+                      {[t.online && "Online", t.inPerson && "Home tuition"]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   </div>
                 </div>
