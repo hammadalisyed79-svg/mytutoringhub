@@ -59,7 +59,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
-  const currency = resolveCurrency(req, body.currency);
+  // Sandbox Cybersource payer-auth is most reliable in PKR with Safepay dummy cards.
+  const preferred = resolveCurrency(req, body.currency);
+  const currency: CurrencyCode =
+    getSafepayEnv() === "sandbox" ? "PKR" : preferred;
   const amountMajor = pkrToCurrency(def.pricePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
 
