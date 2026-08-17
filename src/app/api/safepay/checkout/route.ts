@@ -79,11 +79,6 @@ export async function POST(req: Request) {
       amount,
       metadata: {
         order_id: orderId,
-        user_id: session.user.id,
-        plan,
-        plan_name: def.name,
-        display_currency: currency,
-        base_pkr: String(def.pricePkr),
       },
       include_fees: false,
     });
