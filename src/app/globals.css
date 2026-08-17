@@ -1634,6 +1634,34 @@ select:focus {
   color: var(--muted);
 }
 
+.verify-summary {
+  margin-bottom: 1.1rem;
+}
+
+.verify-doc {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.verify-doc h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.verify-doc-head .field-hint {
+  margin: 0.2rem 0 0;
+}
+
+.verify-files {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+}
+
 .dash-links {
   display: grid;
   gap: 0.55rem;

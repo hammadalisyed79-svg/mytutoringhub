@@ -25,6 +25,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const data = schema.parse(await req.json());
+  if (!/photo id/i.test(data.docUrls)) {
+    return NextResponse.json(
+      { error: "A government photo ID (passport, national ID, or driving licence) is required." },
+      { status: 400 },
+    );
+  }
   const pending = await prisma.verificationRequest.findFirst({
     where: { userId: session.user.id, status: "PENDING" },
   });

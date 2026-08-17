@@ -38,7 +38,7 @@ const FAQS = [
   },
   {
     q: "What is a Verified tutor?",
-    a: "Verified tutors have submitted documents for review (and/or purchased Verified). Admins approve the badge after checking details.",
+    a: "Verified tutors upload a government photo ID (passport, national ID / CNIC, or driving licence). A qualification certificate is recommended. Admins review the files privately and then approve the badge. Purchasing Verified Tutor only prioritises the queue.",
   },
   {
     q: "How do reviews work?",

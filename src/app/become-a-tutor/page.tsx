@@ -38,8 +38,8 @@ export default function BecomeATutorPage() {
             <span>3</span>
             <h3>Verify & boost</h3>
             <p className="muted">
-              Upload ID/credentials for a Verified badge. Optional Highlighted and Ad Boost plans
-              improve placement for 30 days.
+              Upload a government photo ID (passport, national ID, or driving licence) plus your
+              qualifications for a Verified badge. Highlighted and Ad Boost plans stay optional.
             </p>
           </div>
         </div>

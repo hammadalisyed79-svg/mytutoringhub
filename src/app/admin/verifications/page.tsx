@@ -16,7 +16,7 @@ export default async function AdminVerificationsPage() {
   return (
     <section className="panel">
       <h2>Verification requests</h2>
-      <p className="muted">Approve ID or certificate submissions to grant the verified tutor badge.</p>
+      <p className="muted">Approve photo ID and certificate submissions to grant the verified tutor badge.</p>
       {verifications.length === 0 && <p className="muted">No requests yet.</p>}
       <div className="results">
         {verifications.map((v) => (

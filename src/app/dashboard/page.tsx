@@ -188,6 +188,10 @@ export default async function DashboardPage({
                     ? "Highlighted"
                     : "Standard listing"}
                 </p>
+                <p className="muted">
+                  Fill the required fields first. A photo, headline, and teaching details help
+                  students choose you.
+                </p>
                 {!user.tutorProfile.active && (
                   <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)", marginBottom: "1rem" }}>
                     Students cannot see this listing yet.{" "}
@@ -214,8 +218,9 @@ export default async function DashboardPage({
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Get verified</h2>
                 <p className="muted">
-                  Submit ID or certificate links for admin review. Purchasing Verified Tutor also
-                  prioritises your request.
+                  Required: a government photo ID (passport, national ID / CNIC, or driving licence).
+                  Recommended: your highest qualification. Documents stay private — admins only.
+                  Purchasing Verified Tutor also prioritises your request.
                 </p>
                 <VerificationForm />
               </section>
