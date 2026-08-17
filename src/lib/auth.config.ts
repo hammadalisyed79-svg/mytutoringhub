@@ -11,7 +11,7 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
-      const isLoggedIn = Boolean(auth?.user);
+      const isLoggedIn = Boolean(auth?.user?.email || auth?.user?.id);
 
       const isAuthPage = pathname === "/login" || pathname === "/register";
       const isProtected =
@@ -37,15 +37,22 @@ export const authConfig = {
     },
     async jwt({ token, user }) {
       if (user) {
+        // Prefer explicit id; Auth.js also sets token.sub from user.id.
         token.id = user.id!;
+        token.sub = user.id!;
         token.role = (user as { role?: Role }).role as Role;
+        token.emailVerified = Boolean(
+          (user as { emailVerified?: Date | string | boolean | null }).emailVerified,
+        );
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        // token.sub is the stable Auth.js subject; token.id is our custom claim.
+        session.user.id = (token.sub || token.id) as string;
         session.user.role = token.role as Role;
+        session.user.emailVerified = Boolean(token.emailVerified);
       }
       return session;
     },

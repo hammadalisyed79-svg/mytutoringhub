@@ -8,6 +8,8 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Params) {
@@ -37,7 +39,8 @@ export default async function TutorProfilePage({ params }: Params) {
   });
   if (!tutor) notFound();
 
-  const isOwner = session?.user?.id === tutor.user.id;
+  const viewerId = session?.user?.id;
+  const isOwner = Boolean(viewerId && viewerId === tutor.userId);
   const isAdmin = session?.user?.role === "ADMIN";
   if (!tutor.active && !isOwner && !isAdmin) notFound();
 

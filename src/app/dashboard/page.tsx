@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
+import { CheckoutNotice } from "@/components/CheckoutNotice";
+import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
 
@@ -13,7 +15,14 @@ export const metadata = { title: "Dashboard" };
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string; subscribed?: string; plan?: string }>;
+  searchParams: Promise<{
+    checkout?: string;
+    subscribed?: string;
+    plan?: string;
+    state?: string;
+    verify?: string;
+    verified?: string;
+  }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -49,7 +58,35 @@ export default async function DashboardPage({
         <p className="muted">
           Role: {user.role.toLowerCase()} · Manage your profile, subscriptions, and activity.
         </p>
-        {(sp.checkout === "success" || sp.subscribed === "1") && (
+        {sp.verified === "1" && (
+          <p className="success panel" style={{ marginTop: "1rem" }}>
+            Email verified. You can now message, post ads, and use the study assistant.
+          </p>
+        )}
+        {user.role !== "ADMIN" && !user.emailVerified && (
+          <div
+            className="panel"
+            style={{
+              marginTop: "1rem",
+              borderColor: "var(--brand)",
+              background: "rgba(15, 90, 70, 0.06)",
+            }}
+          >
+            <p style={{ marginTop: 0 }}>
+              {sp.verify === "1"
+                ? "Verify your email to use messages, ads, and the study assistant."
+                : "Please verify your email to message, post ads, and use the study assistant."}{" "}
+              Check your inbox (and spam).
+            </p>
+            <ResendVerificationButton />
+          </div>
+        )}
+        <CheckoutNotice
+          checkout={sp.checkout}
+          state={sp.state}
+          planLabel={sp.plan ? getPlan(sp.plan as never)?.name || sp.plan : undefined}
+        />
+        {sp.subscribed === "1" && sp.checkout !== "success" && (
           <p className="success panel" style={{ marginTop: "1rem" }}>
             Payment confirmed. Your plan is active
             {sp.plan ? ` (${getPlan(sp.plan as never)?.name || sp.plan})` : ""}.
@@ -127,9 +164,23 @@ export default async function DashboardPage({
                     ? "Highlighted"
                     : "Standard listing"}
                 </p>
+                {!user.tutorProfile.active && (
+                  <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)", marginBottom: "1rem" }}>
+                    Students cannot see this listing yet.{" "}
+                    <Link href="/pricing">Activate Tutor Basic</Link> to appear in search, then share your
+                    public profile link.
+                  </p>
+                )}
                 <TutorProfileForm initial={user.tutorProfile} />
                 <p style={{ marginTop: "1rem" }}>
-                  <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
+                  {user.tutorProfile.active ? (
+                    <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
+                  ) : (
+                    <>
+                      <Link href={`/tutors/${user.tutorProfile.id}`}>Preview your profile</Link>
+                      <span className="muted"> (only you can see it until Tutor Basic is active)</span>
+                    </>
+                  )}
                 </p>
               </section>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
