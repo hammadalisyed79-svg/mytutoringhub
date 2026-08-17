@@ -1,7 +1,8 @@
 import { Resend } from "resend";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const from = process.env.EMAIL_FROM || "MyTutoringHub <onboarding@resend.dev>";
+const MAIL_FROM = "My Tutoring Hub <admin@mytutoringhub.com>";
+const MAIL_REPLY_TO = "admin@mytutoringhub.com";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const brand = "My Tutoring Hub";
 
@@ -62,7 +63,8 @@ export async function sendEmail(opts: {
     return { ok: true as const, skipped: true };
   }
   await resend.emails.send({
-    from,
+    from: MAIL_FROM,
+    replyTo: MAIL_REPLY_TO,
     to: opts.to,
     subject: opts.subject,
     html: opts.html,
