@@ -98,11 +98,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               placeholder="e.g. 2500"
             />
           </label>
-          <label className="radio" style={{ alignSelf: "end", marginBottom: "0.55rem" }}>
+          <label className="radio filter-check">
             <input type="checkbox" name="verified" value="1" defaultChecked={sp.verified === "1"} />
             Verified tutors only
           </label>
-          <button className="btn" type="submit" style={{ alignSelf: "end" }}>
+          <button className="btn" type="submit">
             Search
           </button>
         </form>

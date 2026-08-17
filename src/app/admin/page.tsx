@@ -40,7 +40,7 @@ export default async function AdminPage() {
 
   return (
     <div className="page">
-      <div className="container" style={{ display: "grid", gap: "2rem" }}>
+      <div className="container stack-lg">
         <div>
           <h1 className="page-title">Admin</h1>
           <p className="muted">Moderate users, listings, ads, and subscriptions.</p>
@@ -48,6 +48,7 @@ export default async function AdminPage() {
 
         <section className="panel">
           <h2>Users</h2>
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
@@ -68,10 +69,12 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="panel">
           <h2>Tutor profiles</h2>
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
@@ -101,10 +104,12 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="panel">
           <h2>Student ads</h2>
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
@@ -128,10 +133,12 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="panel">
           <h2>Subscriptions</h2>
+          <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
@@ -155,6 +162,7 @@ export default async function AdminPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
       </div>
     </div>

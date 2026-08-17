@@ -32,8 +32,8 @@ export default async function HomePage() {
           </div>
           <h1>MyTutoringHub</h1>
           <p>
-            Private tutors in Pakistan and worldwide — Matric, FSc, O/A Levels, IELTS, languages &
-            more. Online or home tuition. Fees in PKR (with USD estimate).
+            Connect with trusted private tutors in Pakistan and worldwide — boards, languages, and
+            exam prep. Online or at home. Rates in PKR with a USD guide.
           </p>
           <HeroSearch />
         </div>
@@ -163,7 +163,7 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-          <p style={{ marginTop: "1.25rem" }}>
+          <p className="section-actions">
             <Link href="/subjects" className="btn btn-secondary">
               Browse all subjects
             </Link>
@@ -174,7 +174,7 @@ export default async function HomePage() {
       <section className="section section-alt">
         <div className="container">
           <h2>How MyTutoringHub works</h2>
-          <p className="section-lead">Search · Contact · Learn — same simple flow as FindTutor.</p>
+          <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>
           <div className="steps">
             <div className="step">
               <span>1</span>
@@ -196,7 +196,7 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-          <p style={{ marginTop: "1.5rem" }}>
+          <p className="section-actions">
             <Link href="/how-it-works" className="btn">
               See how it works
             </Link>

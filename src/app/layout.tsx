@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -28,6 +28,12 @@ export const metadata: Metadata = {
     apple: [{ url: "/logo-mark.png" }],
     shortcut: ["/logo.svg"],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#08463c",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -39,9 +39,9 @@ export default async function TutorProfilePage({ params }: Params) {
 
   return (
     <div className="page">
-      <div className="container" style={{ display: "grid", gap: "1.5rem" }}>
+      <div className="container stack">
         <div className="panel">
-          <div className="meta" style={{ marginBottom: "0.5rem" }}>
+          <div className="meta" style={{ marginBottom: "0.65rem" }}>
             {tutor.highlighted && <span className="badge accent">Highlighted</span>}
             {tutor.verified && <span className="badge">Verified</span>}
             {avg !== null && (
@@ -51,9 +51,9 @@ export default async function TutorProfilePage({ params }: Params) {
             )}
           </div>
           <h1 className="page-title">{tutor.user.name}</h1>
-          <p style={{ fontSize: "1.15rem", marginTop: 0 }}>{tutor.headline}</p>
+          {tutor.headline && <p className="profile-headline">{tutor.headline}</p>}
           <div className="meta">
-            <span>{formatHourly(tutor.hourlyRate)}</span>
+            <span className="price-tag">{formatHourly(tutor.hourlyRate)}</span>
             <span>{tutor.location}</span>
             <span>
               {tutor.online ? "Online" : ""}
@@ -61,7 +61,7 @@ export default async function TutorProfilePage({ params }: Params) {
               {tutor.inPerson ? "In person" : ""}
             </span>
           </div>
-          <p style={{ whiteSpace: "pre-wrap" }}>{tutor.bio}</p>
+          <p className="prose-block">{tutor.bio}</p>
           <p>
             <strong>Subjects:</strong> {tutor.subjects}
           </p>

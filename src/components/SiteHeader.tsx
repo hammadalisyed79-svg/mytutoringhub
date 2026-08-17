@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { SignOutButton } from "@/components/SignOutButton";
 import { Logo } from "@/components/Logo";
+import { SiteNav } from "@/components/SiteNav";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -12,29 +12,7 @@ export async function SiteHeader() {
         <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
           <Logo />
         </Link>
-        <nav className="nav">
-          <Link href="/search">Find tutors</Link>
-          <Link href="/subjects">Subjects</Link>
-          <Link href="/ads">Student ads</Link>
-          <Link href="/how-it-works">How it works</Link>
-          <Link href="/become-a-tutor">Become a tutor</Link>
-          <Link href="/pricing">Pricing</Link>
-          {session?.user ? (
-            <>
-              <Link href="/messages">Messages</Link>
-              <Link href="/dashboard">Dashboard</Link>
-              {session.user.role === "ADMIN" && <Link href="/admin">Admin</Link>}
-              <SignOutButton />
-            </>
-          ) : (
-            <>
-              <Link href="/login">Log in</Link>
-              <Link href="/register" className="btn btn-sm">
-                Join free
-              </Link>
-            </>
-          )}
-        </nav>
+        <SiteNav user={session?.user ? { role: session.user.role } : null} />
       </div>
     </header>
   );

@@ -9,9 +9,9 @@ export function SiteFooter() {
           <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
             <Logo />
           </Link>
-          <p className="muted" style={{ marginTop: "0.75rem" }}>
-            Find private tutors in Pakistan and worldwide. Lesson fees stay between you — shown in
-            PKR with a USD estimate.
+          <p className="muted footer-blurb">
+            Private tutors in Pakistan and worldwide. Lesson fees stay between you — shown in PKR
+            with a USD estimate.
           </p>
         </div>
         <div>

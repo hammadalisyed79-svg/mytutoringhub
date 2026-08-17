@@ -22,8 +22,9 @@ export function HeroSearch() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="What do you want to learn? e.g. FSc Maths, IELTS, SAT, Spanish…"
+          placeholder="Subject or skill — FSc Maths, IELTS, SAT…"
           aria-label="Search subject or tutor"
+          autoComplete="off"
         />
         <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Lesson mode">
           <option value="">Any format</option>
@@ -37,9 +38,9 @@ export function HeroSearch() {
       <div className="hero-intent">
         <a href="/register?role=student">I&apos;m looking for a tutor</a>
         <span aria-hidden>·</span>
-        <a href="/register?role=tutor">I want to find students</a>
+        <a href="/register?role=tutor">I want to teach</a>
         <span aria-hidden>·</span>
-        <a href="/ads">Students looking for tutors</a>
+        <a href="/ads">Browse student requests</a>
       </div>
     </form>
   );
