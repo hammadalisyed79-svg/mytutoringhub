@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSafepayClient, safepayConfigured } from "@/lib/safepay";
 import { syncTutorBadges } from "@/lib/subscription";
+import { sendEmail, paymentReceiptHtml } from "@/lib/email";
+import { getPlan } from "@/lib/plans";
+import { formatSafepayPriceId } from "@/lib/currency";
 import type { SubscriptionPlan } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -70,7 +73,26 @@ export async function GET(req: Request) {
       await syncTutorBadges(user.id);
     }
 
-    return NextResponse.redirect(`${appUrl}/dashboard?checkout=success&plan=${plan}`);
+    if (user?.email) {
+      const planName = getPlan(plan)?.name || plan;
+      const amountLabel = formatSafepayPriceId(updated.stripePriceId);
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: `Receipt: ${planName} — MyTutoringHub`,
+          html: paymentReceiptHtml({
+            name: user.name,
+            planName,
+            amountLabel,
+            periodEnd,
+          }),
+        });
+      } catch (emailErr) {
+        console.error("Payment receipt email failed", emailErr);
+      }
+    }
+
+    return NextResponse.redirect(`${appUrl}/receipt/${updated.id}`);
   } catch (err) {
     console.error("Safepay complete error", err);
     return NextResponse.redirect(`${appUrl}/pricing?checkout=error`);

@@ -30,7 +30,40 @@ export function newMessageEmailHtml(fromName: string, preview: string) {
 }
 
 export function subscriptionEmailHtml(planName: string, active: boolean) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   return active
-    ? `<p>Your <strong>${planName}</strong> subscription is now active. Thanks for joining MyTutoringHub.</p>`
+    ? `<p>Your <strong>${planName}</strong> subscription is now active. Thanks for joining MyTutoringHub.</p><p><a href="${appUrl}/dashboard">Open dashboard</a></p>`
     : `<p>Your <strong>${planName}</strong> subscription status changed. Manage billing from your dashboard.</p>`;
+}
+
+export function paymentReceiptHtml(opts: {
+  name: string;
+  planName: string;
+  amountLabel?: string | null;
+  periodEnd?: Date | null;
+}) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const amountLine = opts.amountLabel
+    ? `<p>Amount: <strong>${opts.amountLabel}</strong></p>`
+    : "";
+  const periodLine = opts.periodEnd
+    ? `<p>Access until: <strong>${opts.periodEnd.toLocaleDateString("en", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })}</strong></p>`
+    : "";
+  return `<p>Hi ${opts.name},</p>
+<p>This is your receipt for <strong>${opts.planName}</strong> on MyTutoringHub.</p>
+${amountLine}${periodLine}
+<p>Lesson fees stay off-platform between you and the other party. This charge is only for your platform subscription.</p>
+<p><a href="${appUrl}/dashboard">Open your dashboard</a> to view or print your payment slip.</p>
+<p>Questions? Email <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.</p>`;
+}
+
+export function verifyEmailHtml(name: string, verifyUrl: string) {
+  return `<p>Hi ${name},</p>
+<p>Welcome to <strong>MyTutoringHub</strong>. Please verify this email to message, post ads, and use the study assistant.</p>
+<p><a href="${verifyUrl}">Verify email address</a></p>
+<p>This link expires in 24 hours. If you did not create an account, you can ignore this message.</p>`;
 }

@@ -20,6 +20,7 @@ export const config = {
     "/messages/:path*",
     "/settings/:path*",
     "/assistant/:path*",
+    "/receipt/:path*",
     "/ads/new",
     "/admin/:path*",
     "/login",

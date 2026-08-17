@@ -105,7 +105,8 @@ export default async function DashboardPage({
                   <strong>{getPlan(s.plan as never)?.name || s.plan}</strong> — {s.status}
                   {s.currentPeriodEnd
                     ? ` · until ${s.currentPeriodEnd.toLocaleDateString()}`
-                    : ""}
+                    : ""}{" "}
+                  · <Link href={`/receipt/${s.id}`}>View slip</Link>
                 </li>
               ))}
             </ul>

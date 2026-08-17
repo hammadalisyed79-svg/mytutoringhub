@@ -19,6 +19,7 @@ export const authConfig = {
         pathname.startsWith("/messages") ||
         pathname.startsWith("/settings") ||
         pathname.startsWith("/assistant") ||
+        pathname.startsWith("/receipt") ||
         pathname.startsWith("/admin") ||
         pathname === "/ads/new";
 
