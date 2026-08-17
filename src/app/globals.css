@@ -1820,6 +1820,19 @@ select:focus {
   font-size: 0.85rem;
 }
 
+.admin-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.admin-plan-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
 .admin-quick-links {
   display: flex;
   flex-wrap: wrap;

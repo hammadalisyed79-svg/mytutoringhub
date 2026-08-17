@@ -35,7 +35,8 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
         <h1 className="page-title">Payments & plans</h1>
         <p className="muted">
           Safepay/Stripe checkouts, complimentary grants, and manual recovery. Tracker IDs are stored on
-          each row.
+          each row. Set catalog amounts on{" "}
+          <Link href="/admin/plans">Plans & prices</Link>.
         </p>
       </div>
 

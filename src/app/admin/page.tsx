@@ -82,6 +82,7 @@ export default async function AdminOverviewPage() {
 
       <div className="admin-quick-links">
         <Link href="/admin/users">Find a user</Link>
+        <Link href="/admin/plans">Plans & prices</Link>
         <Link href="/admin/settings">Site settings</Link>
         <Link href="/admin/payments">Recover a payment</Link>
         <Link href="/admin/reports">Safety queue</Link>

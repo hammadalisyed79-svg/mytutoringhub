@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSiteSettings } from "@/lib/site-settings";
 import {
@@ -19,7 +20,10 @@ export default async function AdminContentPage() {
     <>
       <div>
         <h1 className="page-title">Content & site control</h1>
-        <p className="muted">Subjects, maintenance, announcements, and feature switches.</p>
+        <p className="muted">
+          Subjects, maintenance, announcements, and feature switches. Catalog prices are on{" "}
+          <Link href="/admin/plans">Plans & prices</Link>.
+        </p>
       </div>
 
       <section className="panel">

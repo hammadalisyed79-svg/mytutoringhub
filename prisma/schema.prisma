@@ -244,6 +244,8 @@ model SiteSettings {
   homepageAnnouncement String   @default("")
   disableSignups       Boolean  @default(false)
   disableAiAssistant   Boolean  @default(false)
+  /// Overrides for catalog prices/names: { STUDENT_PASS: { pricePkr, name, description } }
+  planPrices           Json     @default("{}")
   updatedAt            DateTime @updatedAt
 }
 

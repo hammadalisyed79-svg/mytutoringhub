@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PLANS } from "@/lib/plans";
+import { getLivePlan } from "@/lib/plans";
 import {
   checkoutCurrency,
   currencyFromAcceptLanguage,
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
   const body = schema.parse(await req.json());
   const { plan } = body;
-  const def = PLANS.find((p) => p.id === plan);
+  const def = await getLivePlan(plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
   if (session.user.role === "STUDENT" && def.audience !== "student") {

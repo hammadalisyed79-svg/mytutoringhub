@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 async function postAdmin(payload: Record<string, unknown>) {
   const res = await fetch("/api/admin", {
@@ -106,7 +106,7 @@ export function AdminGrantPlanForm({ userId }: { userId?: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     const fd = new FormData(e.currentTarget);
@@ -152,7 +152,7 @@ export function AdminRoleForm({ userId, role }: { userId: string; role: string }
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const nextRole = String(fd.get("role"));
@@ -195,7 +195,7 @@ export function AdminDeleteUserForm({ userId, email }: { userId: string; email: 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const typed = String(new FormData(e.currentTarget).get("confirmEmail") || "");
     if (typed.toLowerCase() !== email.toLowerCase()) {
@@ -250,7 +250,7 @@ export function AdminTutorEditForm({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setBusy(true);
@@ -330,7 +330,7 @@ export function AdminBoostForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const days = Number(new FormData(e.currentTarget).get("days") || 30);
     setBusy(true);
@@ -368,7 +368,7 @@ export function AdminSettingsForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setBusy(true);
@@ -419,11 +419,92 @@ export function AdminSettingsForm({
   );
 }
 
+export function AdminPlanPricesForm({
+  plans,
+}: {
+  plans: {
+    id: string;
+    name: string;
+    description: string;
+    audience: string;
+    pricePkr: number;
+    isAddOn?: boolean;
+  }[];
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setBusy(true);
+    setError("");
+    try {
+      await postAdmin({
+        action: "update_plan_prices",
+        plans: plans.map((plan) => ({
+          id: plan.id,
+          name: String(fd.get(`${plan.id}-name`) || "").trim(),
+          description: String(fd.get(`${plan.id}-description`) || "").trim(),
+          pricePkr: Number(fd.get(`${plan.id}-pricePkr`)),
+        })),
+      });
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save plans");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="stack-form" onSubmit={submit}>
+      <div className="admin-plan-grid">
+        {plans.map((plan) => (
+          <article key={plan.id} className="panel admin-plan-card">
+            <p className="muted" style={{ marginTop: 0 }}>
+              {plan.audience === "student" ? "Student" : "Tutor"}
+              {plan.isAddOn ? " add-on" : " plan"} · {plan.id}
+            </p>
+            <label>
+              Display name
+              <input name={`${plan.id}-name`} defaultValue={plan.name} required maxLength={80} />
+            </label>
+            <label>
+              Price (PKR / month)
+              <input
+                name={`${plan.id}-pricePkr`}
+                type="number"
+                min={0}
+                step={1}
+                defaultValue={plan.pricePkr}
+                required
+              />
+            </label>
+            <label>
+              Short description
+              <textarea
+                name={`${plan.id}-description`}
+                rows={2}
+                defaultValue={plan.description}
+                maxLength={300}
+              />
+            </label>
+          </article>
+        ))}
+      </div>
+      {error && <p className="form-error">{error}</p>}
+      <button className="btn" type="submit" disabled={busy}>
+        {busy ? "Saving…" : "Save plans & prices"}
+      </button>
+    </form>
+  );
+}
+
 export function AdminSubjectCreateForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const name = String(new FormData(e.currentTarget).get("name") || "").trim();
     setBusy(true);
@@ -451,7 +532,7 @@ export function AdminSubjectCreateForm() {
 export function AdminSubjectRenameForm({ id, name }: { id: string; name: string }) {
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const next = String(new FormData(e.currentTarget).get("name") || "").trim();
     if (!next || next === name) return;

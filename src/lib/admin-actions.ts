@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { COMPANY_ADMIN_EMAIL, isCompanyAdminEmail, writeAdminAudit } from "@/lib/admin";
-import { invalidateSiteSettingsCache, SITE_SETTINGS_ID } from "@/lib/site-settings";
+import { invalidateSiteSettingsCache, savePlanPrices, SITE_SETTINGS_ID } from "@/lib/site-settings";
 import { slugify } from "@/lib/search-tutors";
 import { syncTutorBadges } from "@/lib/subscription";
 import {
@@ -38,6 +38,23 @@ const payloadSchema = z.object({
   homepageAnnouncement: z.string().max(500).optional(),
   disableSignups: z.boolean().optional(),
   disableAiAssistant: z.boolean().optional(),
+  plans: z
+    .array(
+      z.object({
+        id: z.enum([
+          "STUDENT_PASS",
+          "TUTOR_BASIC",
+          "VERIFIED_TUTOR",
+          "HIGHLIGHTED_AD",
+          "AD_BOOST",
+          "UNLIMITED_ADS",
+        ]),
+        pricePkr: z.coerce.number().min(0).max(10_000_000),
+        name: z.string().min(1).max(80),
+        description: z.string().max(300),
+      }),
+    )
+    .optional(),
   headline: z.string().max(120).optional().nullable(),
   bio: z.string().max(8000).optional(),
   subjects: z.string().max(500).optional(),
@@ -581,6 +598,19 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         },
       });
       invalidateSiteSettingsCache();
+      break;
+    }
+    case "update_plan_prices": {
+      targetType = "SiteSettings";
+      targetId = SITE_SETTINGS_ID;
+      if (!payload.plans?.length) throw new AdminActionError("plans are required");
+      const planPrices = Object.fromEntries(
+        payload.plans.map((p) => [
+          p.id,
+          { pricePkr: Math.round(p.pricePkr), name: p.name.trim(), description: p.description.trim() },
+        ]),
+      );
+      await savePlanPrices(planPrices);
       break;
     }
     default:

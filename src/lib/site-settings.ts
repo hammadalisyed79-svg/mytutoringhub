@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { PlanPriceOverride } from "@/lib/plans";
 
 export const SITE_SETTINGS_ID = "default";
 
@@ -8,6 +9,7 @@ export type SiteSettingsRow = {
   homepageAnnouncement: string;
   disableSignups: boolean;
   disableAiAssistant: boolean;
+  planPrices: Record<string, PlanPriceOverride>;
   updatedAt: Date;
 };
 
@@ -17,6 +19,7 @@ const DEFAULTS: SiteSettingsRow = {
   homepageAnnouncement: "",
   disableSignups: false,
   disableAiAssistant: false,
+  planPrices: {},
   updatedAt: new Date(0),
 };
 
@@ -27,6 +30,41 @@ export function invalidateSiteSettingsCache() {
   cached = null;
 }
 
+function parsePlanPrices(value: unknown): Record<string, PlanPriceOverride> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out: Record<string, PlanPriceOverride> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const row = raw as PlanPriceOverride;
+    out[key] = {
+      ...(typeof row.pricePkr === "number" ? { pricePkr: row.pricePkr } : {}),
+      ...(typeof row.name === "string" ? { name: row.name } : {}),
+      ...(typeof row.description === "string" ? { description: row.description } : {}),
+    };
+  }
+  return out;
+}
+
+function normalizeRow(row: {
+  id: string;
+  maintenanceMode: boolean;
+  homepageAnnouncement: string;
+  disableSignups: boolean;
+  disableAiAssistant: boolean;
+  updatedAt: Date;
+  planPrices?: unknown;
+}): SiteSettingsRow {
+  return {
+    id: row.id,
+    maintenanceMode: row.maintenanceMode,
+    homepageAnnouncement: row.homepageAnnouncement,
+    disableSignups: row.disableSignups,
+    disableAiAssistant: row.disableAiAssistant,
+    planPrices: parsePlanPrices(row.planPrices),
+    updatedAt: row.updatedAt,
+  };
+}
+
 export async function getSiteSettings(): Promise<SiteSettingsRow> {
   if (cached && Date.now() - cached.at < TTL_MS) return cached.value;
   try {
@@ -34,11 +72,17 @@ export async function getSiteSettings(): Promise<SiteSettingsRow> {
     if (!row) {
       row = await prisma.siteSettings.create({ data: { id: SITE_SETTINGS_ID } });
     }
-    cached = { at: Date.now(), value: row };
-    return row;
+    const value = normalizeRow(row);
+    cached = { at: Date.now(), value };
+    return value;
   } catch {
     return DEFAULTS;
   }
+}
+
+export async function getPlanPriceOverrides() {
+  const settings = await getSiteSettings();
+  return settings.planPrices;
 }
 
 export async function saveSiteSettings(data: {
@@ -52,6 +96,18 @@ export async function saveSiteSettings(data: {
     create: { id: SITE_SETTINGS_ID, ...data },
     update: data,
   });
-  cached = { at: Date.now(), value: row };
-  return row;
+  const value = normalizeRow(row);
+  cached = { at: Date.now(), value };
+  return value;
+}
+
+export async function savePlanPrices(planPrices: Record<string, PlanPriceOverride>) {
+  const row = await prisma.siteSettings.upsert({
+    where: { id: SITE_SETTINGS_ID },
+    create: { id: SITE_SETTINGS_ID, planPrices },
+    update: { planPrices },
+  });
+  const value = normalizeRow(row);
+  cached = { at: Date.now(), value };
+  return value;
 }

@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { PLANS } from "@/lib/plans";
+import { getLivePlans } from "@/lib/plans";
 import { formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
@@ -18,8 +18,9 @@ export default async function PricingPage({
   const session = await auth();
   const role = session?.user?.role;
   const currency = await getVisitorCurrency();
+  const allPlans = await getLivePlans();
   const sp = await searchParams;
-  const visible = PLANS.filter((p) => {
+  const visible = allPlans.filter((p) => {
     if (!role || role === "ADMIN") return true;
     if (role === "STUDENT") return p.audience === "student";
     return p.audience === "tutor";

@@ -12,7 +12,7 @@ export type PlanDefinition = {
   isAddOn?: boolean;
 };
 
-export const PLANS: PlanDefinition[] = [
+export const DEFAULT_PLANS: PlanDefinition[] = [
   {
     id: "STUDENT_PASS",
     name: "Student Pass",
@@ -87,8 +87,41 @@ export const PLANS: PlanDefinition[] = [
   },
 ];
 
+/** Code defaults. Live checkout/pricing uses `getLivePlans()` so admin can override amounts. */
+export const PLANS = DEFAULT_PLANS;
+
+export type PlanPriceOverride = {
+  pricePkr?: number;
+  name?: string;
+  description?: string;
+};
+
+export function applyPlanOverrides(
+  overrides: Record<string, PlanPriceOverride> | null | undefined,
+): PlanDefinition[] {
+  return DEFAULT_PLANS.map((plan) => {
+    const over = overrides?.[plan.id];
+    const price = Number(over?.pricePkr);
+    return {
+      ...plan,
+      pricePkr: Number.isFinite(price) && price >= 0 ? Math.round(price) : plan.pricePkr,
+      name: over?.name?.trim() || plan.name,
+      description: over?.description?.trim() || plan.description,
+    };
+  });
+}
+
 export function getPlan(id: string) {
   return PLANS.find((p) => p.id === id);
+}
+
+export async function getLivePlans() {
+  const { getPlanPriceOverrides } = await import("@/lib/site-settings");
+  return applyPlanOverrides(await getPlanPriceOverrides());
+}
+
+export async function getLivePlan(id: string) {
+  return (await getLivePlans()).find((p) => p.id === id);
 }
 
 export function getPriceId(plan: SubscriptionPlan): string | undefined {
