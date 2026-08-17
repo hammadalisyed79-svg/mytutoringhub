@@ -29,6 +29,7 @@ export async function issueEmailVerification(user: {
     to: user.email,
     subject: "Confirm your email · My Tutoring Hub",
     html: verifyEmailHtml(user.name, verifyUrl),
+    text: `Hi ${user.name},\n\nPlease confirm your email for My Tutoring Hub:\n${verifyUrl}\n\nThis link expires in 24 hours.\n\nSent from admin@mytutoringhub.com`,
   });
   return { expiresAt };
 }

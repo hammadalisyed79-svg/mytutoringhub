@@ -81,12 +81,10 @@ export default async function DashboardPage({
             }}
           >
             <p style={{ marginTop: 0 }}>
-              {sp.verify === "1"
-                ? "Verify your email to use messages, ads, and the study assistant."
-                : "Please verify your email to message, post ads, and use the study assistant."}{" "}
-              Check your inbox (and spam).
+              Please verify {user.email}. Mail is sent from admin@mytutoringhub.com. Check inbox,
+              junk, and promotions.
             </p>
-            <ResendVerificationButton />
+            <ResendVerificationButton email={user.email} />
           </div>
         )}
         <CheckoutNotice

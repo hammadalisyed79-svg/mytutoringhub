@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function ResendVerificationButton() {
+export function ResendVerificationButton({ email }: { email?: string }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -15,14 +15,19 @@ export function ResendVerificationButton() {
     const data = await res.json().catch(() => ({}));
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "Could not send verification email");
+      setError((data as { error?: string }).error || "Could not send verification email");
       return;
     }
     if (data.alreadyVerified) {
       setMsg("Your email is already verified.");
       return;
     }
-    setMsg("Verification email sent. Check your inbox and spam folder.");
+    const to = (data as { to?: string }).to || email;
+    setMsg(
+      to
+        ? `Sent to ${to} from admin@mytutoringhub.com. Check inbox, junk, and promotions.`
+        : "Verification email sent. Check inbox, junk, and promotions.",
+    );
   }
 
   return (

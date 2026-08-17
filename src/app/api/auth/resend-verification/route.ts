@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canResendVerification, issueEmailVerification } from "@/lib/email-verification";
+import { emailFromAddress } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,16 @@ export async function POST() {
     );
   }
 
-  await issueEmailVerification(user);
-  return NextResponse.json({ ok: true });
+  try {
+    await issueEmailVerification(user);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not send verification email";
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    to: user.email,
+    from: emailFromAddress(),
+  });
 }

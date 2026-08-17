@@ -84,6 +84,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     async signIn({ user, account }) {
       if (!user.email || !user.id || user.role === "ADMIN") return;
+      if (account?.provider !== "google") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { emailVerified: true },
+        });
+        if (!dbUser?.emailVerified) return;
+      }
       const method = account?.provider === "google" ? "google" : "password";
       await sendLoginConfirmationEmail({
         name: user.name || user.email.split("@")[0],

@@ -1,10 +1,17 @@
 import { Resend } from "resend";
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const MAIL_FROM = "My Tutoring Hub <admin@mytutoringhub.com>";
 const MAIL_REPLY_TO = "admin@mytutoringhub.com";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const brand = "My Tutoring Hub";
+
+export function emailFromAddress() {
+  return MAIL_FROM;
+}
+
+export function emailConfigured() {
+  const key = process.env.RESEND_API_KEY || "";
+  return Boolean(key && !key.includes("replace") && key.startsWith("re_"));
+}
 
 function emailLayout(opts: {
   preheader: string;
@@ -57,23 +64,41 @@ export async function sendEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
 }) {
-  if (!resend) {
+  if (!emailConfigured()) {
+    const prod = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+    console.error("[email] RESEND_API_KEY missing or invalid; not sending", {
+      to: opts.to,
+      from: MAIL_FROM,
+      subject: opts.subject,
+    });
+    if (prod) {
+      throw new Error(
+        "Email is not configured on the server. Add a valid RESEND_API_KEY in Vercel, and verify mytutoringhub.com in Resend so mail can send from admin@mytutoringhub.com.",
+      );
+    }
     console.info("[email:dev]", MAIL_FROM, "→", opts.to, opts.subject);
     return { ok: true as const, skipped: true };
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const result = await resend.emails.send({
     from: MAIL_FROM,
     replyTo: MAIL_REPLY_TO,
     to: opts.to,
     subject: opts.subject,
     html: opts.html,
+    text: opts.text,
   });
   if (result.error) {
     console.error("[email] Resend rejected", { to: opts.to, from: MAIL_FROM, error: result.error });
-    throw new Error(result.error.message || "Email could not be sent");
+    throw new Error(
+      result.error.message ||
+        "Email provider rejected the message. Verify the mytutoringhub.com domain in Resend.",
+    );
   }
-  return { ok: true as const, skipped: false };
+  return { ok: true as const, skipped: false, id: result.data?.id };
 }
 
 export function welcomeEmailHtml(name: string, role: string) {

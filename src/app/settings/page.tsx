@@ -77,7 +77,7 @@ export default function SettingsPage() {
                 Your email is not verified yet. Messaging, ads, and the study assistant stay locked
                 until you confirm the link we sent.
               </p>
-              <ResendVerificationButton />
+              <ResendVerificationButton email={email} />
             </div>
           )}
           {emailVerified === true && <p className="success">Email verified.</p>}

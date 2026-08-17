@@ -62,14 +62,16 @@ export default async function PricingPage({
   const addOns = visible.filter((p) => p.isAddOn);
   const liveOffer = allPlans.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive);
 
+  const me = session?.user
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { emailVerified: true, email: true },
+      })
+    : null;
   const needsVerify =
     session?.user &&
     session.user.role !== "ADMIN" &&
-    (sp.verify === "sent" ||
-      !(await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { emailVerified: true },
-      }))?.emailVerified);
+    (sp.verify === "sent" || !me?.emailVerified);
 
   return (
     <div className="page checkout-page">
@@ -113,11 +115,11 @@ export default async function PricingPage({
           <div className="panel checkout-verify">
             <p style={{ marginTop: 0 }}>
               {sp.verify === "sent"
-                ? "We sent a confirmation email. Verify your address to unlock messaging, ads, and the study assistant."
+                ? `We tried to send a confirmation to ${me?.email || "your email"} from admin@mytutoringhub.com.`
                 : "Verify your email to unlock messaging, ads, and the study assistant."}{" "}
-              Check spam if you do not see it.
+              Check inbox, junk, and promotions. Hotmail can delay mail by several minutes.
             </p>
-            <ResendVerificationButton />
+            <ResendVerificationButton email={me?.email || undefined} />
           </div>
         )}
 
