@@ -1526,6 +1526,67 @@ select:focus {
   text-underline-offset: 2px;
 }
 
+.subject-cat-list {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.subject-cat-list a {
+  display: block;
+  padding: 0.28rem 0;
+}
+
+.all-subjects {
+  margin-top: 2.5rem;
+}
+
+.subject-alpha {
+  margin-top: 1.35rem;
+}
+
+.subject-alpha-letter {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.subject-directory {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.subject-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 4.6rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.subject-tile:hover {
+  border-color: rgba(13, 95, 82, 0.35);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.subject-tile-name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.subject-tile-rate {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .tutor-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2164,6 +2225,10 @@ select:focus {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .subject-directory {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .steps {
     grid-template-columns: 1fr;
   }
@@ -2172,6 +2237,10 @@ select:focus {
 @media (max-width: 960px) {
   .nav-desktop {
     display: none;
+  }
+
+  .subject-directory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .profile-layout {
@@ -2350,6 +2419,10 @@ select:focus {
   .subject-cats,
   .country-markets,
   .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subject-directory {
     grid-template-columns: 1fr;
   }
 
