@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { MARKET_CITIES } from "@/lib/currency";
+import { TOP_COUNTRIES } from "@/lib/markets";
 import { slugify } from "@/lib/search-tutors";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -27,7 +27,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const subjects = await prisma.subject.findMany({ take: 200 });
-    const cities = MARKET_CITIES.filter((c) => c !== "Online").slice(0, 10);
+    const cities = [
+      ...new Set(TOP_COUNTRIES.flatMap((c) => c.cities)),
+    ].slice(0, 18);
     const subjectRoutes = subjects.flatMap((s) => {
       const slug = s.slug || slugify(s.name);
       return [

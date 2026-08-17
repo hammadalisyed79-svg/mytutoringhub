@@ -1,33 +1,26 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { allMarketSubjects } from "@/lib/markets";
 
-const subjects = [
-  ["Mathematics", "mathematics"],
-  ["Physics", "physics"],
-  ["Chemistry", "chemistry"],
-  ["Biology", "biology"],
-  ["English", "english"],
-  ["Urdu", "urdu"],
-  ["Islamiyat", "islamiyat"],
-  ["Pakistan Studies", "pakistan-studies"],
-  ["Computer Science", "computer-science"],
-  ["Accounting", "accounting"],
-  ["Economics", "economics"],
-  ["IELTS", "ielts"],
-  ["Spoken English", "spoken-english"],
-  ["CSS Prep", "css-prep"],
-  ["O Level Maths", "o-level-maths"],
-  ["A Level Physics", "a-level-physics"],
-  ["A Level Chemistry", "a-level-chemistry"],
-  ["SAT Prep", "sat-prep"],
-  ["Spanish", "spanish"],
-  ["French", "french"],
-  ["Arabic", "arabic"],
-  ["Quran Nazra", "quran-nazra"],
-  ["Primary School", "primary-school"],
-  ["Music Piano", "music-piano"],
-  ["Guitar", "guitar"],
-] as const;
+function subjectSlug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+const extraSubjects = [
+  "Islamiyat",
+  "Pakistan Studies",
+  "Spanish",
+  "Primary School",
+  "Music Piano",
+  "Guitar",
+];
+
+const subjects = [...new Set([...allMarketSubjects(), ...extraSubjects])].map(
+  (name) => [name, subjectSlug(name)] as const,
+);
 
 export const COMPANY_ACCOUNTS = [
   {

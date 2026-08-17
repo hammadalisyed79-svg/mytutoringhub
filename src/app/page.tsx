@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
+import { CountryMarkets } from "@/components/CountryMarkets";
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -205,6 +206,22 @@ export default async function HomePage() {
       </section>
 
       <section className="section section-alt">
+        <div className="container">
+          <h2>Top subjects by country</h2>
+          <p className="section-lead">
+            ISO country codes with the subjects families search most — Pakistan first, then 14 other
+            high-demand markets. Open a chip to search tutors in that country.
+          </p>
+          <CountryMarkets compact />
+          <p className="section-actions">
+            <Link href="/subjects" className="btn btn-secondary">
+              See all 15 countries
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="container">
           <h2>How My Tutoring Hub works</h2>
           <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SUBJECT_CATEGORIES } from "@/lib/marketing";
+import { CountryMarkets } from "@/components/CountryMarkets";
 import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -8,7 +9,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 export const metadata = {
   title: "Subjects",
   description:
-    "Browse school, exam, language, and university subjects. Open a subject page for private tutors and typical hourly rates on My Tutoring Hub.",
+    "Top tutoring subjects across 15 countries including Pakistan (PK), India, the UK, UAE, and the US. Browse by country code and subject.",
 };
 
 export default async function SubjectsPage() {
@@ -28,9 +29,17 @@ export default async function SubjectsPage() {
       <div className="container">
         <h1 className="page-title">Subjects</h1>
         <p className="section-lead">
-          School boards, O/A Levels, IELTS, SAT, languages, and more — learn locally or online from
-          anywhere. Open a subject page for tutors and typical hourly rates.
+          School boards, exams, languages, and university subjects across 15 countries — including
+          Pakistan (PK). Open a country below or a subject page for tutors and typical hourly rates.
         </p>
+
+        <section style={{ marginBottom: "2.5rem" }}>
+          <h2>Top 15 countries</h2>
+          <p className="muted">
+            Each card shows the ISO country code and the subjects students search most in that market.
+          </p>
+          <CountryMarkets />
+        </section>
 
         <div className="subject-cats">
           {SUBJECT_CATEGORIES.map((cat) => (
