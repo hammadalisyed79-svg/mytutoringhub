@@ -15,7 +15,49 @@ export const metadata = {
     "Student Pass, Tutor Basic, and visibility add-ons. Lesson fees stay off-platform. Tutor Basic listing is complimentary until 30 September 2026.",
 };
 
-function PlanPrice({ plan, currency }: { plan: ResolvedPlan; currency: CurrencyCode }) {
+function GuestJoinButtons() {
+  return (
+    <div className="plan-join">
+      <Link href="/register?role=student" className="btn">
+        Join as student
+      </Link>
+      <Link href="/register?role=tutor" className="btn btn-secondary">
+        Join as tutor
+      </Link>
+    </div>
+  );
+}
+
+function PlanActions({
+  plan,
+  currency,
+  signedIn,
+  featured,
+}: {
+  plan: ResolvedPlan;
+  currency: CurrencyCode;
+  signedIn: boolean;
+  featured?: boolean;
+}) {
+  if (signedIn) {
+    return (
+      <SubscribeButton
+        plan={plan.id}
+        currency={currency}
+        label={
+          plan.isAddOn
+            ? `Add ${plan.name}`
+            : plan.isComplimentary
+              ? `Activate ${plan.name} free`
+              : `Continue with ${plan.name}`
+        }
+        featured={featured}
+        complimentary={plan.isComplimentary}
+      />
+    );
+  }
+  return <GuestJoinButtons />;
+}
   if (plan.isComplimentary) {
     return (
       <div className="price-block">
@@ -146,41 +188,34 @@ export default async function PricingPage({
                 key={plan.id}
                 className={`plan ${plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" ? "plan-featured" : ""}`}
               >
-                {plan.isPromoActive ? (
-                  <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
-                ) : (
-                  (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
-                    <span className="plan-badge">Most popular</span>
-                  )
-                )}
-                <h3>{plan.name}</h3>
-                <p className="muted">{plan.description}</p>
-                <PlanPrice plan={plan} currency={currency} />
-                {plan.promoNote && plan.isPromoActive && (
-                  <p className="promo-note">{plan.promoNote}</p>
-                )}
-                <ul>
-                  {plan.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-                {session?.user ? (
-                  <SubscribeButton
-                    plan={plan.id}
+                <div className="plan-body">
+                  {plan.isPromoActive ? (
+                    <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
+                  ) : (
+                    (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
+                      <span className="plan-badge">Most popular</span>
+                    )
+                  )}
+                  <h3>{plan.name}</h3>
+                  <p className="muted">{plan.description}</p>
+                  <PlanPrice plan={plan} currency={currency} />
+                  {plan.promoNote && plan.isPromoActive && (
+                    <p className="promo-note">{plan.promoNote}</p>
+                  )}
+                  <ul>
+                    {plan.features.map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="plan-cta">
+                  <PlanActions
+                    plan={plan}
                     currency={currency}
-                    label={
-                      plan.isComplimentary
-                        ? `Activate ${plan.name} free`
-                        : `Continue with ${plan.name}`
-                    }
+                    signedIn={Boolean(session?.user)}
                     featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
-                    complimentary={plan.isComplimentary}
                   />
-                ) : (
-                  <Link href="/register" className="btn btn-block">
-                    Create account to subscribe
-                  </Link>
-                )}
+                </div>
               </article>
             ))}
           </div>
@@ -193,32 +228,25 @@ export default async function PricingPage({
               Optional. These are not included in a complimentary Tutor Basic listing — Verified
               badge, highlight, boost, and extra ads are billed separately.
             </p>
-            <div className="pricing-grid">
+            <div className="pricing-grid pricing-addons">
               {addOns.map((plan) => (
                 <article key={plan.id} className="plan">
-                  {plan.isPromoActive && (
-                    <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
-                  )}
-                  <h3>{plan.name}</h3>
-                  <p className="muted">{plan.description}</p>
-                  <PlanPrice plan={plan} currency={currency} />
-                  <ul>
-                    {plan.features.map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                  </ul>
-                  {session?.user ? (
-                    <SubscribeButton
-                      plan={plan.id}
-                      currency={currency}
-                      label={`Add ${plan.name}`}
-                      complimentary={plan.isComplimentary}
-                    />
-                  ) : (
-                    <Link href="/register?role=tutor" className="btn btn-secondary btn-block">
-                      Join as tutor
-                    </Link>
-                  )}
+                  <div className="plan-body">
+                    {plan.isPromoActive && (
+                      <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
+                    )}
+                    <h3>{plan.name}</h3>
+                    <p className="muted">{plan.description}</p>
+                    <PlanPrice plan={plan} currency={currency} />
+                    <ul>
+                      {plan.features.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="plan-cta">
+                    <PlanActions plan={plan} currency={currency} signedIn={Boolean(session?.user)} />
+                  </div>
                 </article>
               ))}
             </div>
