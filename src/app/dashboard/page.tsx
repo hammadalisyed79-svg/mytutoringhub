@@ -8,9 +8,14 @@ import { getPlan } from "@/lib/plans";
 
 export const metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string; subscribed?: string; plan?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  const sp = await searchParams;
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
@@ -28,6 +33,12 @@ export default async function DashboardPage() {
         <p className="muted">
           Role: {user.role.toLowerCase()} · Manage your profile, subscriptions, and activity.
         </p>
+        {(sp.checkout === "success" || sp.subscribed === "1") && (
+          <p className="success panel" style={{ marginTop: "1rem" }}>
+            Payment confirmed. Your plan is active
+            {sp.plan ? ` (${getPlan(sp.plan as never)?.name || sp.plan})` : ""}.
+          </p>
+        )}
 
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
           <section className="panel">

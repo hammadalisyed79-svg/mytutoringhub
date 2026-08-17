@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getPriceId, PLANS } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
+import { safepayConfigured } from "@/lib/safepay";
 import type { SubscriptionPlan } from "@/lib/types";
 import { z } from "zod";
 
@@ -17,10 +18,20 @@ function stripeConfigured() {
 }
 
 function priceLooksReal(priceId: string | undefined) {
-  return Boolean(priceId && priceId.startsWith("price_") && priceId.length > 12 && !priceId.includes("replace"));
+  return Boolean(
+    priceId && priceId.startsWith("price_") && priceId.length > 12 && !priceId.includes("replace"),
+  );
 }
 
 export async function POST(req: Request) {
+  // Prefer Safepay when configured — clients should hit /api/safepay/checkout first.
+  if (safepayConfigured()) {
+    return NextResponse.json(
+      { error: "Use Safepay checkout", code: "USE_SAFEPAY" },
+      { status: 409 },
+    );
+  }
+
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,7 +51,6 @@ export async function POST(req: Request) {
   const priceId = getPriceId(plan as SubscriptionPlan);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  // Local/dev fallback when Stripe is not configured
   if (!stripeConfigured() || !priceLooksReal(priceId)) {
     await prisma.subscription.upsert({
       where: { stripeSubscriptionId: `dev_${session.user.id}_${plan}` },

@@ -6,6 +6,8 @@ export type PlanDefinition = {
   description: string;
   audience: "student" | "tutor";
   priceLabel: string;
+  /** Monthly price in PKR (whole rupees). */
+  pricePkr: number;
   features: string[];
   envPriceId: string;
   isAddOn?: boolean;
@@ -18,6 +20,7 @@ export const PLANS: PlanDefinition[] = [
     description: "Unlimited contact with tutors in Pakistan and worldwide. Post student request ads.",
     audience: "student",
     priceLabel: "Rs 1,999/mo · ~$7",
+    pricePkr: 1999,
     features: [
       "Message unlimited tutors (PK & international)",
       "Post “need a tutor” ads",
@@ -32,6 +35,7 @@ export const PLANS: PlanDefinition[] = [
     description: "Publish your profile for students in Pakistan and abroad.",
     audience: "tutor",
     priceLabel: "Rs 1,499/mo · ~$5",
+    pricePkr: 1499,
     features: [
       "Public tutor profile",
       "Appear in Pakistan & global search",
@@ -46,6 +50,7 @@ export const PLANS: PlanDefinition[] = [
     description: "Trusted badge and higher placement for serious families worldwide.",
     audience: "tutor",
     priceLabel: "Rs 2,999/mo · ~$11",
+    pricePkr: 2999,
     features: [
       "Verified badge on profile",
       "Higher trust ranking",
@@ -60,7 +65,12 @@ export const PLANS: PlanDefinition[] = [
     description: "Boosted placement at the top of search results.",
     audience: "tutor",
     priceLabel: "Rs 1,299/mo · ~$5",
-    features: ["Highlighted in search", "More profile views", "Priority visibility"],
+    pricePkr: 1299,
+    features: [
+      "Highlighted in search",
+      "More profile views",
+      "Priority visibility",
+    ],
     envPriceId: "STRIPE_PRICE_HIGHLIGHTED_AD",
     isAddOn: true,
   },

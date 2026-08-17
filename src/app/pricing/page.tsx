@@ -20,7 +20,8 @@ export default async function PricingPage() {
         <h1 className="page-title">Subscriptions</h1>
         <p className="section-lead">
           Platform plans priced for Pakistan (PKR) with USD guide. Lesson fees are paid directly to
-          tutors — we never take a lesson commission.
+          tutors — we never take a lesson commission. Checkout is powered by Safepay (sandbox for
+          testing).
         </p>
         {!session?.user && (
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
