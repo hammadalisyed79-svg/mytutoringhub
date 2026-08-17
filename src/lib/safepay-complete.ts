@@ -6,23 +6,41 @@ import { getPlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import type { SubscriptionPlan } from "@/lib/types";
 
-export function isSafepayTrackerPaid(state: string | undefined) {
-  if (!state) return false;
-  const s = state.toUpperCase();
-  return (
-    s === "TRACKER_ENDED" ||
-    s === "TRACKER_SUCCEEDED" ||
-    s.includes("ENDED") ||
-    s.includes("SUCCESS") ||
-    s.includes("CAPTURE") ||
-    s.includes("PAID")
-  );
-}
-
 export async function fetchSafepayTrackerState(tracker: string) {
   const safepay = getSafepayClient();
-  const report = await safepay.reporter.payments.fetch(tracker);
-  return (report?.data?.tracker?.state || report?.data?.state) as string | undefined;
+  const id = tracker.startsWith("track_") ? tracker : `track_${tracker}`;
+  const report = await safepay.reporter.payments.fetch(id);
+  const data = report?.data ?? report;
+  const state = (data?.tracker?.state ||
+    data?.state ||
+    data?.payment?.state ||
+    data?.status ||
+    data?.tracker?.status) as string | undefined;
+  return { state, report: data, tracker: id };
+}
+
+export function isSafepayTrackerPaid(state: string | undefined, report?: unknown) {
+  if (state) {
+    const s = state.toUpperCase();
+    if (
+      s === "TRACKER_ENDED" ||
+      s === "TRACKER_SUCCEEDED" ||
+      s.includes("ENDED") ||
+      s.includes("SUCCESS") ||
+      s.includes("CAPTURE") ||
+      s.includes("PAID") ||
+      s.includes("COMPLETE")
+    ) {
+      return true;
+    }
+  }
+  const data = report as {
+    tracker?: { end_time?: string; state?: string };
+    end_time?: string;
+    captured?: boolean;
+  } | null;
+  if (data?.tracker?.end_time || data?.end_time || data?.captured) return true;
+  return false;
 }
 
 export async function activatePaidSafepaySubscription(opts: {
@@ -39,7 +57,7 @@ export async function activatePaidSafepaySubscription(opts: {
     return { ok: true as const, subscription: existing, alreadyActive: true };
   }
 
-  const periodEnd = existing.currentPeriodEnd || new Date(Date.now() + 30 * 86400000);
+  const periodEnd = new Date(Date.now() + 30 * 86400000);
   const updated = await prisma.subscription.update({
     where: { id: existing.id },
     data: {
@@ -93,11 +111,12 @@ export async function reconcileUserSafepayPayments(userId: string) {
   const pending = await prisma.subscription.findMany({
     where: {
       userId,
-      status: "INCOMPLETE",
+      status: { in: ["INCOMPLETE", "CANCELED"] },
       stripeSubscriptionId: { startsWith: "track_" },
+      createdAt: { gte: new Date(Date.now() - 30 * 86400000) },
     },
     orderBy: { createdAt: "desc" },
-    take: 8,
+    take: 12,
   });
 
   const activated: string[] = [];
@@ -105,10 +124,10 @@ export async function reconcileUserSafepayPayments(userId: string) {
     const tracker = row.stripeSubscriptionId;
     if (!tracker) continue;
     try {
-      const state = await fetchSafepayTrackerState(tracker);
-      if (!isSafepayTrackerPaid(state)) continue;
+      const { state, report, tracker: token } = await fetchSafepayTrackerState(tracker);
+      if (!isSafepayTrackerPaid(state, report)) continue;
       const result = await activatePaidSafepaySubscription({
-        tracker,
+        tracker: token,
         planHint: row.plan as SubscriptionPlan,
       });
       if (result.ok) activated.push(result.subscription.id);

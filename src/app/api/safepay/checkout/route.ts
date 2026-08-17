@@ -11,6 +11,7 @@ import {
   type CurrencyCode,
 } from "@/lib/currency";
 import { getSafepayClient, getSafepayEnv, safepayConfigured } from "@/lib/safepay";
+import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -66,7 +67,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
-  // Sandbox Cybersource payer-auth is most reliable in PKR with Safepay dummy cards.
+  // Sandbox Cybersource 3DS dummy cards are most reliable in PKR.
+  // Production/live uses the visitor or preferred currency (never forced to PKR).
   const preferred = resolveCurrency(req, body.currency);
   const currency: CurrencyCode =
     getSafepayEnv() === "sandbox" ? "PKR" : preferred;
@@ -108,7 +110,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Could not create Safepay auth token" }, { status: 502 });
     }
 
-    // Cancel leftover incomplete checkouts for this plan before creating a new one.
+    await reconcileUserSafepayPayments(session.user.id);
+
+    // Only drop unpaid leftovers. Paid INCOMPLETE rows were just activated.
     await prisma.subscription.updateMany({
       where: {
         userId: session.user.id,

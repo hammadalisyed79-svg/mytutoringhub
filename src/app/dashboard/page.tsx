@@ -7,11 +7,13 @@ import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 
 export const metadata = { title: "Dashboard" };
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage({
   searchParams,
@@ -145,6 +147,7 @@ export default async function DashboardPage({
                 Settings
               </Link>
             </div>
+            {visibleSubs.length === 0 && <RecoverPaymentForm />}
           </section>
 
           <section className="panel">

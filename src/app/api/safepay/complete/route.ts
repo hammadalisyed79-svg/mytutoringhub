@@ -28,14 +28,14 @@ export async function GET(req: Request) {
   }
 
   try {
-    const state = await fetchSafepayTrackerState(tracker);
-    if (!isSafepayTrackerPaid(state)) {
+    const { state, report, tracker: token } = await fetchSafepayTrackerState(tracker);
+    if (!isSafepayTrackerPaid(state, report)) {
       return NextResponse.redirect(
-        `${appUrl}/pricing?checkout=pending&tracker=${encodeURIComponent(tracker)}&state=${encodeURIComponent(state || "unknown")}`,
+        `${appUrl}/pricing?checkout=pending&tracker=${encodeURIComponent(token)}&state=${encodeURIComponent(state || "unknown")}`,
       );
     }
 
-    const result = await activatePaidSafepaySubscription({ tracker, planHint });
+    const result = await activatePaidSafepaySubscription({ tracker: token, planHint });
     if (!result.ok) {
       return NextResponse.redirect(`${appUrl}/pricing?checkout=unknown_order`);
     }
