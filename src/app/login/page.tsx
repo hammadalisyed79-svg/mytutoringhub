@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/LoginForm";
 import { AuthLayout } from "@/components/AuthLayout";
 import { googleConfigured } from "@/lib/oauth";
 
-export const metadata = { title: "Sign in" };
+export const metadata = { title: "Sign in", description: "Sign in to My Tutoring Hub with any email or Google." };
 
 export default async function LoginPage({
   searchParams,

@@ -65,7 +65,7 @@ export async function GET(req: Request) {
 
     await sendEmail({
       to: tutor.email,
-      subject: `${matches.length} new student request${matches.length === 1 ? "" : "s"} on MyTutoringHub`,
+      subject: `${matches.length} new student request${matches.length === 1 ? "" : "s"} on My Tutoring Hub`,
       html: `<p>Hi ${tutor.name},</p><p>New student ads matching your subjects:</p><ul>${list}</ul><p><a href="${appUrl}/ads">Browse all student ads</a></p>`,
     });
     sent += 1;

@@ -108,7 +108,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           </table>
 
           <p className="muted" style={{ fontSize: "0.9rem" }}>
-            Lesson fees are paid directly to tutors. This receipt is only for the MyTutoringHub
+            Lesson fees are paid directly to tutors. This receipt is only for the My Tutoring Hub
             platform plan. Payments processed by Safepay.
           </p>
           <p className="muted" style={{ fontSize: "0.85rem" }}>

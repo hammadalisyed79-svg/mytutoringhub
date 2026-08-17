@@ -108,7 +108,7 @@ export async function POST(req: Request) {
 
   await sendEmail({
     to: recipient.email,
-    subject: "New message on MyTutoringHub",
+    subject: "New message on My Tutoring Hub",
     html: newMessageEmailHtml(session.user.name, text || "Sent a photo"),
   });
 

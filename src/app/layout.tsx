@@ -21,12 +21,35 @@ const body = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: "MyTutoringHub — Find private tutors",
-    template: "%s · MyTutoringHub",
+    default: "My Tutoring Hub — Find private tutors",
+    template: "%s · My Tutoring Hub",
   },
   description:
-    "MyTutoringHub connects students and private tutors worldwide. Subscribe to message, post requests, and arrange lessons — prices shown in your local currency.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://mytutoringhub.com"),
+    "My Tutoring Hub connects students and private tutors worldwide. Subscribe to message, post requests, and arrange lessons — prices shown in your local currency.",
+  keywords: [
+    "private tutors",
+    "find tutors",
+    "online tutoring",
+    "My Tutoring Hub",
+    "Student Pass",
+    "Tutor Basic",
+  ],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com"),
+  openGraph: {
+    type: "website",
+    locale: "en_GB",
+    siteName: "My Tutoring Hub",
+    title: "My Tutoring Hub — Find private tutors",
+    description:
+      "Private tutors worldwide. Lesson fees stay off-platform. Student Pass and Tutor Basic subscriptions unlock messaging.",
+    url: "https://www.mytutoringhub.com",
+  },
+  twitter: {
+    card: "summary",
+    title: "My Tutoring Hub",
+    description: "Find private tutors worldwide. Message after you subscribe.",
+  },
+  robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -34,12 +57,8 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/logo-mark.png" }],
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo.svg" }],
     shortcut: ["/logo.svg"],
   },
 };

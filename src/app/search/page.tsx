@@ -5,7 +5,11 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { searchTutors } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
 
-export const metadata = { title: "Find tutors" };
+export const metadata = {
+  title: "Find tutors",
+  description:
+    "Search private tutors by subject, city, language, and verified badge. Message with a Student Pass. Lesson fees stay off-platform.",
+};
 
 type SearchParams = Promise<{
   q?: string;

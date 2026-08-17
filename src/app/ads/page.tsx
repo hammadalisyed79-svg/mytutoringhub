@@ -5,7 +5,11 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { ReportButton } from "@/components/ReportButton";
 
-export const metadata = { title: "Student ads" };
+export const metadata = {
+  title: "Student ads",
+  description:
+    "Browse open student requests for private tutors. Students with a Pass post what they need. Tutors with Tutor Basic can reply.",
+};
 
 export default async function AdsPage() {
   const session = await auth();

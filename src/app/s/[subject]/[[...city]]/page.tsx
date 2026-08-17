@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Params) {
   const title = cityName ? `${subjectName} tutors in ${cityName}` : `${subjectName} tutors`;
   return {
     title,
-    description: `Find private ${subjectName} tutors${cityName ? ` in ${cityName}` : ""} online or in person on MyTutoringHub.`,
+    description: `Find private ${subjectName} tutors${cityName ? ` in ${cityName}` : ""} online or in person on My Tutoring Hub.`,
   };
 }
 

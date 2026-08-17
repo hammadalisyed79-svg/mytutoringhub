@@ -2,9 +2,16 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { LogoMark } from "@/components/Logo";
+import { JsonLd } from "@/components/JsonLd";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
+
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
 export default async function HomePage() {
   const currency = await getVisitorCurrency();
@@ -26,6 +33,30 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "My Tutoring Hub",
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.svg`,
+              email: "admin@mytutoringhub.com",
+            },
+            {
+              "@type": "WebSite",
+              name: "My Tutoring Hub",
+              url: SITE_URL,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${SITE_URL}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
+        }}
+      />
       <section className="hero hero-findtutor">
         <div className="hero-content">
           <div className="hero-brand-row">
@@ -175,7 +206,7 @@ export default async function HomePage() {
 
       <section className="section section-alt">
         <div className="container">
-          <h2>How MyTutoringHub works</h2>
+          <h2>How My Tutoring Hub works</h2>
           <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>
           <div className="steps">
             <div className="step">
@@ -208,7 +239,7 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Why families choose MyTutoringHub</h2>
+          <h2>Why families choose My Tutoring Hub</h2>
           <div className="testimonial-grid">
             {TESTIMONIALS.map((t) => (
               <blockquote key={t.name} className="testimonial">
@@ -228,8 +259,9 @@ export default async function HomePage() {
           <div>
             <h2>Are you a tutor? Start teaching</h2>
             <p>
-              Create your profile, publish up to 3 subject ads with Tutor Basic, then add
-              Verification, Highlighted, Boost, or Unlimited Ads. You keep 100% of lesson fees.
+              Create your profile and publish up to 3 subject ads. Tutor Basic listing is
+              complimentary until 30 September 2026. Verified, Highlight, and Ad Boost stay paid.
+              You keep 100% of lesson fees.
             </p>
           </div>
           <div className="hero-ctas">

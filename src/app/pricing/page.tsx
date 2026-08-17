@@ -9,7 +9,11 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import Link from "next/link";
 import type { CurrencyCode } from "@/lib/currency";
 
-export const metadata = { title: "Plans & pricing" };
+export const metadata = {
+  title: "Plans & pricing",
+  description:
+    "Student Pass, Tutor Basic, and visibility add-ons. Lesson fees stay off-platform. Tutor Basic listing is complimentary until 30 September 2026.",
+};
 
 function PlanPrice({ plan, currency }: { plan: ResolvedPlan; currency: CurrencyCode }) {
   if (plan.isComplimentary) {

@@ -22,7 +22,7 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
+        <Link href="/" className="logo-link" aria-label="My Tutoring Hub home">
           <Logo />
         </Link>
         <SiteNav

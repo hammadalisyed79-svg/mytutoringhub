@@ -412,6 +412,10 @@ export function AdminSettingsForm({
         Disable study assistant
       </label>
       {error && <p className="form-error">{error}</p>}
+      <p className="muted">
+        For a live site, leave maintenance mode off, keep signups enabled, and clear any “under
+        construction” announcement.
+      </p>
       <button className="btn" type="submit" disabled={busy}>
         {busy ? "Saving…" : "Save site settings"}
       </button>

@@ -6,7 +6,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <Link href="/" className="logo-link" aria-label="MyTutoringHub home">
+          <Link href="/" className="logo-link" aria-label="My Tutoring Hub home">
             <Logo />
           </Link>
           <p className="muted footer-blurb">
@@ -37,17 +37,18 @@ export function SiteFooter() {
         <div>
           <h4>Company</h4>
           <div className="footer-col">
+            <Link href="/about">About</Link>
             <Link href="/help">Help & FAQ</Link>
+            <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/login">Log in</Link>
             <Link href="/register">Join</Link>
-            <a href="https://www.mytutoringhub.com">mytutoringhub.com</a>
           </div>
         </div>
       </div>
       <div className="container footer-note">
-        © {new Date().getFullYear()} MyTutoringHub · Private tutors marketplace
+        © {new Date().getFullYear()} My Tutoring Hub · Private tutors marketplace
       </div>
     </footer>
   );

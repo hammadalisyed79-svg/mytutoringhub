@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata = { title: "Help & FAQ" };
+export const metadata = {
+  title: "Help & FAQ",
+  description:
+    "Answers about contacting tutors, any-mailbox signup, Student Pass, Tutor Basic launch offer, payments, and email from admin@mytutoringhub.com.",
+};
 
 const FAQS = [
   {
@@ -8,20 +13,28 @@ const FAQS = [
     a: "Browse Find tutors, open a profile, and send a message. Students need an active Student Pass to message and to post requests.",
   },
   {
+    q: "Which email can I use to sign up?",
+    a: "Any working mailbox — Gmail, Hotmail, Outlook, Yahoo, and others. Optional Google sign-in is only a shortcut for Gmail accounts.",
+  },
+  {
+    q: "Where do confirmation emails come from?",
+    a: "My Tutoring Hub sends verification, sign-in notices, and receipts from admin@mytutoringhub.com. Check inbox, junk, and promotions.",
+  },
+  {
     q: "Do you take a commission on lessons?",
-    a: "No. Lesson fees stay between you and the tutor. MyTutoringHub only charges optional platform subscriptions and visibility upgrades.",
+    a: "No. Lesson fees stay between you and the tutor. My Tutoring Hub only charges platform subscriptions and visibility upgrades.",
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Tutor Basic, Verified, Highlighted, Ad Boost) are paid via Safepay checkout. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+  },
+  {
+    q: "Is Tutor Basic free?",
+    a: "There is a launch offer: Tutor Basic listing is complimentary until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons. After that date the standard Tutor Basic price applies.",
   },
   {
     q: "Why do I need to verify my email?",
-    a: "After signup we send a verification link. You can log in and manage your dashboard immediately, but messaging, posting ads, and the study assistant unlock after you confirm your email. Resend the link from Dashboard or Settings.",
-  },
-  {
-    q: "Is checkout live or sandbox?",
-    a: "Live payments use Safepay production keys (SAFEPAY_ENV=production). Sandbox is for testing with dummy cards and is charged in PKR. If a payment stays pending, wait a moment or retry from Pricing — never send card details to support.",
+    a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging, ads, and the study assistant unlock after you confirm. Resend the link from Pricing, Dashboard, or Settings.",
   },
   {
     q: "What is a Verified tutor?",
@@ -44,6 +57,17 @@ const FAQS = [
 export default function HelpPage() {
   return (
     <div className="page">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
+        }}
+      />
       <div className="container narrow-prose">
         <h1 className="page-title">Help & FAQ</h1>
         <p className="section-lead">
@@ -59,6 +83,7 @@ export default function HelpPage() {
         </div>
         <p className="muted" style={{ marginTop: "1.5rem" }}>
           Still stuck?{" "}
+          <Link href="/contact">Contact</Link> ·{" "}
           <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a> ·{" "}
           <Link href="/pricing">View pricing</Link> · <Link href="/how-it-works">How it works</Link>
         </p>

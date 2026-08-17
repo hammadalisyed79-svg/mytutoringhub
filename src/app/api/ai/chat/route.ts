@@ -19,7 +19,7 @@ Help with explaining concepts, practice questions, study plans, exam tips, and c
 Be clear, encouraging, and age-appropriate. Use short paragraphs and bullet lists when helpful.
 Do not claim to be a live human tutor or arrange lessons/payments.
 Refuse requests that are unrelated to learning, or that ask for illegal/harmful content.
-If the user needs a real tutor, suggest searching tutors on MyTutoringHub.`;
+If the user needs a real tutor, suggest searching tutors on My Tutoring Hub.`;
 
 const schema = z.object({
   message: z.string().min(1).max(4000),

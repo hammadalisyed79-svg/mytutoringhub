@@ -6,7 +6,11 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { getSiteSettings } from "@/lib/site-settings";
 import { googleConfigured } from "@/lib/oauth";
 
-export const metadata = { title: "Create account" };
+export const metadata = {
+  title: "Create account",
+  description:
+    "Join My Tutoring Hub as a student or tutor with Gmail, Hotmail, Outlook, Yahoo, or any email.",
+};
 
 export default async function RegisterPage() {
   const session = await auth();

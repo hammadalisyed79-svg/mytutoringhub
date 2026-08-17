@@ -5,7 +5,11 @@ import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 
-export const metadata = { title: "Subjects" };
+export const metadata = {
+  title: "Subjects",
+  description:
+    "Browse school, exam, language, and university subjects. Open a subject page for private tutors and typical hourly rates on My Tutoring Hub.",
+};
 
 export default async function SubjectsPage() {
   const currency = await getVisitorCurrency();
@@ -46,7 +50,7 @@ export default async function SubjectsPage() {
         </div>
 
         <section style={{ marginTop: "2.5rem" }}>
-          <h2>All subjects on MyTutoringHub</h2>
+          <h2>All subjects on My Tutoring Hub</h2>
           <div className="subject-chips" style={{ marginTop: "1rem" }}>
             {averages.map((s) => (
               <Link key={s.id} href={`/s/${s.slug}`} className="chip">

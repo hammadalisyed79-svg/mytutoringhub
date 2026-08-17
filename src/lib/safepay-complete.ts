@@ -87,7 +87,7 @@ export async function activatePaidSafepaySubscription(opts: {
     try {
       await sendEmail({
         to: user.email,
-        subject: `Receipt: ${planName} — MyTutoringHub`,
+        subject: `Receipt: ${planName} — My Tutoring Hub`,
         html: paymentReceiptHtml({
           name: user.name,
           planName,

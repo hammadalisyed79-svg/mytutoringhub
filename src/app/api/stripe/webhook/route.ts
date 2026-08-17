@@ -63,7 +63,7 @@ async function upsertFromSubscription(sub: Stripe.Subscription) {
   if (user && planDef) {
     await sendEmail({
       to: user.email,
-      subject: `MyTutoringHub — ${planDef.name}`,
+      subject: `My Tutoring Hub — ${planDef.name}`,
       html: subscriptionEmailHtml(
         planDef.name,
         ["ACTIVE", "TRIALING"].includes(mapStatus(sub.status)),

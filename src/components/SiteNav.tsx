@@ -19,7 +19,7 @@ const PRIMARY = [
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
-export function SiteNav({ user, unreadCount = 0 }: { user: NavUser; unreadCount?: number }) {
+export function SiteNav({ user }: { user: NavUser }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

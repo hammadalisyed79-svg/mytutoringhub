@@ -1,6 +1,10 @@
 import Link from "next/link";
 
-export const metadata = { title: "How it works" };
+export const metadata = {
+  title: "How it works",
+  description:
+    "Search private tutors, subscribe with a Student Pass to message and post ads, then arrange lessons directly. Tutors list with Tutor Basic.",
+};
 
 export default function HowItWorksPage() {
   return (
@@ -55,7 +59,7 @@ export default function HowItWorksPage() {
         <section className="panel">
           <h2>For tutors</h2>
           <ul className="check-list">
-            <li>Tutor Basic lists your profile and up to 3 subject ads</li>
+            <li>Tutor Basic lists your profile and up to 3 subject ads (complimentary until 30 September 2026)</li>
             <li>Upload documents for verification; optional paid Verified add-on for priority</li>
             <li>Boost or Highlight listings for timed search placement</li>
             <li>Request reviews from students you’ve messaged</li>

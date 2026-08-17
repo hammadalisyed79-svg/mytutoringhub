@@ -1,6 +1,6 @@
 {
   "name": "My Tutoring Hub",
-  "short_name": "MyTutoringHub",
+  "short_name": "Tutoring Hub",
   "description": "Find private tutors worldwide. Message, post requests, and study with AI help.",
   "start_url": "/",
   "scope": "/",
@@ -10,22 +10,10 @@
   "theme_color": "#08463c",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }

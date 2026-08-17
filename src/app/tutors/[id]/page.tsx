@@ -204,7 +204,7 @@ export default async function TutorProfilePage({ params }: Params) {
             </div>
           )}
           <p className="muted">
-            Lesson payments are arranged directly with {tutor.user.name}. MyTutoringHub does not
+            Lesson payments are arranged directly with {tutor.user.name}. My Tutoring Hub does not
             process lesson fees.
           </p>
           {session?.user && (
