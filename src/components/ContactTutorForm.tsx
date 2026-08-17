@@ -36,7 +36,10 @@ export function ContactTutorForm({
   return (
     <form className="contact-form" onSubmit={send}>
       <h3>Contact {tutorName}</h3>
-      <p className="muted">Lesson fees are arranged directly with your tutor in PKR (Rs).</p>
+      <p className="muted">
+        Lesson fees are arranged directly with your tutor (usually PKR in Pakistan, or agreed
+        currency for international online lessons).
+      </p>
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}

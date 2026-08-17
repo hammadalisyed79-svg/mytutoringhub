@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-const subjects = [
+  const subjects = [
   ["Mathematics", "mathematics"],
   ["Physics", "physics"],
   ["Chemistry", "chemistry"],
@@ -19,8 +19,14 @@ const subjects = [
   ["O Level Maths", "o-level-maths"],
   ["A Level Physics", "a-level-physics"],
   ["A Level Chemistry", "a-level-chemistry"],
+  ["SAT Prep", "sat-prep"],
+  ["Spanish", "spanish"],
+  ["French", "french"],
+  ["Arabic", "arabic"],
   ["Quran Nazra", "quran-nazra"],
   ["Primary School", "primary-school"],
+  ["Music Piano", "music-piano"],
+  ["Guitar", "guitar"],
 ] as const;
 
 export const COMPANY_ACCOUNTS = [
@@ -91,21 +97,21 @@ export async function seedCompanyData() {
       verified: true,
       highlighted: true,
       active: true,
-      headline: "FSc & Matric Physics / Maths tutor — Lahore & Online",
-      bio: "I teach Matric and Intermediate (FSc Pre-Engineering) Physics and Mathematics with board-focused notes, past papers, and weekly tests. Available for home tuition in Lahore and online across Pakistan.",
+      headline: "FSc, O Level & online Maths/Physics — Pakistan & worldwide",
+      bio: "I teach Matric, Intermediate (FSc), and O Level Mathematics & Physics with board-focused notes and past papers. Home tuition in Lahore and live online classes for students across Pakistan and abroad (Gulf, UK, etc.).",
       subjects: "Mathematics,Physics,O Level Maths",
       hourlyRate: 2000,
-      location: "Lahore",
+      location: "Lahore / Online (Worldwide)",
       online: true,
       inPerson: true,
     },
     create: {
       userId: tutor.id,
-      headline: "FSc & Matric Physics / Maths tutor — Lahore & Online",
-      bio: "I teach Matric and Intermediate (FSc Pre-Engineering) Physics and Mathematics with board-focused notes, past papers, and weekly tests. Available for home tuition in Lahore and online across Pakistan.",
+      headline: "FSc, O Level & online Maths/Physics — Pakistan & worldwide",
+      bio: "I teach Matric, Intermediate (FSc), and O Level Mathematics & Physics with board-focused notes and past papers. Home tuition in Lahore and live online classes for students across Pakistan and abroad (Gulf, UK, etc.).",
       subjects: "Mathematics,Physics,O Level Maths",
       hourlyRate: 2000,
-      location: "Lahore",
+      location: "Lahore / Online (Worldwide)",
       online: true,
       inPerson: true,
       verified: true,

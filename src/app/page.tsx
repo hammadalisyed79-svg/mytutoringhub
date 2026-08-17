@@ -32,8 +32,8 @@ export default async function HomePage() {
           </div>
           <h1>MyTutoringHub</h1>
           <p>
-            Find private tutors across Pakistan — Matric, FSc, O/A Levels, IELTS & more. Online or
-            home tuition.
+            Private tutors in Pakistan and worldwide — Matric, FSc, O/A Levels, IELTS, languages &
+            more. Online or home tuition. Fees in PKR (with USD estimate).
           </p>
           <HeroSearch />
         </div>
@@ -71,7 +71,7 @@ export default async function HomePage() {
             <article>
               <h3>Choose the perfect tutor</h3>
               <p className="muted">
-                Filter by subject, budget, online or in-person, and verified badges.
+                Filter by subject, city or online worldwide, budget in PKR, and verified badges.
               </p>
             </article>
             <article>
@@ -135,9 +135,10 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Private lessons for Pakistani boards & exams</h2>
+          <h2>Private lessons — Pakistan & international</h2>
           <p className="section-lead">
-            Matric, Intermediate, O/A Levels, IELTS, CSS, and university subjects — fees in PKR.
+            Local board exams and global programmes: Matric/FSc, O/A Levels, IELTS, SAT, languages,
+            and university subjects.
           </p>
           <div className="subject-chips">
             {POPULAR_SUBJECTS.map((s) => (

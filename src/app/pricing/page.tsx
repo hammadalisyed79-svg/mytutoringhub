@@ -19,8 +19,8 @@ export default async function PricingPage() {
       <div className="container">
         <h1 className="page-title">Subscriptions</h1>
         <p className="section-lead">
-          Platform subscriptions in PKR. Lesson fees are paid directly to tutors in rupees —
-          MyTutoringHub never takes a commission on lessons.
+          Platform plans priced for Pakistan (PKR) with USD guide. Lesson fees are paid directly to
+          tutors — we never take a lesson commission.
         </p>
         {!session?.user && (
           <p className="muted" style={{ marginBottom: "1.25rem" }}>

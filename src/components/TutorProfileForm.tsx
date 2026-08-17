@@ -65,7 +65,7 @@ export function TutorProfileForm({
         <input name="subjects" required defaultValue={initial.subjects} />
       </label>
       <label>
-        Hourly rate (PKR / Rs)
+        Hourly rate (PKR — shown with ~USD on profile)
         <input
           name="hourlyRate"
           type="number"
@@ -81,7 +81,7 @@ export function TutorProfileForm({
           name="location"
           required
           defaultValue={initial.location}
-          placeholder="Karachi, Lahore, Islamabad, Online…"
+          placeholder="Karachi, Lahore, Islamabad, Dubai, Online (Worldwide)…"
         />
       </label>
       <label>

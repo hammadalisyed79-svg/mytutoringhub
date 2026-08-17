@@ -1,6 +1,6 @@
 export const SUBJECT_CATEGORIES = [
   {
-    title: "Matric & Intermediate (FBISE / Boards)",
+    title: "Pakistan boards (Matric / FSc)",
     items: [
       { name: "Mathematics", slug: "Mathematics" },
       { name: "Physics", slug: "Physics" },
@@ -13,23 +13,30 @@ export const SUBJECT_CATEGORIES = [
     ],
   },
   {
-    title: "O / A Levels & IELTS",
+    title: "International exams & languages",
     items: [
       { name: "O Level Maths", slug: "O Level Maths" },
       { name: "A Level Physics", slug: "A Level Physics" },
       { name: "A Level Chemistry", slug: "A Level Chemistry" },
       { name: "IELTS", slug: "IELTS" },
+      { name: "SAT Prep", slug: "SAT Prep" },
       { name: "Spoken English", slug: "Spoken English" },
+      { name: "Spanish", slug: "Spanish" },
+      { name: "French", slug: "French" },
+      { name: "Arabic", slug: "Arabic" },
     ],
   },
   {
-    title: "CSS / Competitive & University",
+    title: "University, CSS & skills",
     items: [
       { name: "CSS Prep", slug: "CSS Prep" },
+      { name: "Computer Science", slug: "Computer Science" },
       { name: "Accounting", slug: "Accounting" },
       { name: "Economics", slug: "Economics" },
-      { name: "Computer Science", slug: "Computer Science" },
       { name: "Quran Nazra", slug: "Quran Nazra" },
+      { name: "Primary School", slug: "Primary School" },
+      { name: "Music Piano", slug: "Music Piano" },
+      { name: "Guitar", slug: "Guitar" },
     ],
   },
 ];
@@ -41,34 +48,34 @@ export const POPULAR_SUBJECTS = [
   "Biology",
   "English",
   "Urdu",
-  "Islamiyat",
-  "Pakistan Studies",
   "IELTS",
+  "SAT Prep",
   "CSS Prep",
   "O Level Maths",
   "Computer Science",
-  "Accounting",
   "Spoken English",
+  "Spanish",
+  "Arabic",
   "Quran Nazra",
 ];
 
 export const TESTIMONIALS = [
   {
     quote:
-      "Our tutor helped my son prepare for Matric board exams with clear notes and weekly tests. Alhamdulillah, his marks improved a lot.",
+      "Our Matric tutor in Karachi used board past papers and weekly tests. Marks improved a lot before finals.",
     name: "Ahmed Khan",
     role: "Parent · Karachi · Maths",
   },
   {
     quote:
-      "I found an IELTS tutor in Lahore who understood the British Council pattern. Scored 7.5 overall after two months.",
+      "I booked an IELTS tutor online from Lahore while studying in Dubai. Flexible timings and clear feedback.",
     name: "Fatima Rizvi",
-    role: "Student · Lahore · IELTS",
+    role: "Student · Online · IELTS",
   },
   {
     quote:
-      "MyTutoring Hub made it easy to compare FSc Chemistry tutors online and in Islamabad before choosing one.",
-    name: "Sana Malik",
-    role: "Parent · Islamabad · Chemistry",
+      "Found an A Level Chemistry tutor who teaches worldwide via Zoom. Easy to compare rates in Rs and USD.",
+    name: "James Carter",
+    role: "Parent · London · A Levels",
   },
 ];

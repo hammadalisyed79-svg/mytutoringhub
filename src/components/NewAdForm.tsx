@@ -60,10 +60,10 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
       </label>
       <label>
         City
-        <input name="location" required placeholder="Karachi, Lahore, Online…" />
+        <input name="location" required placeholder="Karachi, Lahore, Online (Worldwide)…" />
       </label>
       <label>
-        Budget per hour in PKR (optional)
+        Budget per hour in PKR (optional — international tutors may convert)
         <input name="budget" type="number" min={500} step={100} placeholder="e.g. 1500" />
       </label>
       <label>

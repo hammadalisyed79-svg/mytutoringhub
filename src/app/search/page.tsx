@@ -49,9 +49,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">Find private tutors in Pakistan</h1>
+        <h1 className="page-title">Find private tutors</h1>
         <p className="section-lead">
-          Matric, FSc, O/A Levels, IELTS, CSS — online or home tuition. Fees shown in PKR (Rs).
+          Pakistan (home tuition) and international online lessons. Rates shown in{" "}
+          <strong>Rs (PKR)</strong> with an approximate <strong>USD</strong> guide.
         </p>
 
         <form className="filters filters-wide" method="get">
@@ -75,14 +76,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             <input
               name="location"
               defaultValue={sp.location || ""}
-              placeholder="Karachi, Lahore, Online…"
+              placeholder="Karachi, Lahore, Dubai, Online…"
             />
           </label>
           <label>
             Format
             <select name="mode" defaultValue={sp.mode || ""}>
-              <option value="">Online or home tuition</option>
-              <option value="online">Online lessons</option>
+              <option value="">Online or in person</option>
+              <option value="online">Online (Pakistan & worldwide)</option>
               <option value="inperson">Home / in-person</option>
             </select>
           </label>
@@ -148,9 +149,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <p className="muted clamp-2">{t.bio}</p>
                   <div className="meta">
                     <strong className="price-tag">{formatHourly(t.hourlyRate)}</strong>
-                    <span>{t.location || "Pakistan"}</span>
+                    <span>{t.location || "Pakistan / Online"}</span>
                     <span>
-                      {[t.online && "Online", t.inPerson && "Home tuition"]
+                      {[t.online && "Online", t.inPerson && "In person / home"]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>

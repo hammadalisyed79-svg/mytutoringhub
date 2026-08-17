@@ -1,20 +1,35 @@
-/** Pakistan localization helpers */
+/** Pakistan + international marketplace helpers */
 
-export const CURRENCY_CODE = "PKR";
-export const CURRENCY_SYMBOL = "Rs";
+export const CURRENCY_LOCAL = "PKR";
+export const CURRENCY_INTL = "USD";
 
-export function formatMoney(amount: number | null | undefined) {
+/** Approximate display rate for dual labels (update as needed). */
+export const PKR_PER_USD = 278;
+
+export function formatPkr(amount: number | null | undefined) {
   if (amount == null || Number.isNaN(amount)) return "—";
-  const rounded = Math.round(amount);
-  return `${CURRENCY_SYMBOL} ${rounded.toLocaleString("en-PK")}`;
+  return `Rs ${Math.round(amount).toLocaleString("en-PK")}`;
 }
 
-export function formatHourly(amount: number | null | undefined) {
+export function formatUsd(amount: number | null | undefined) {
   if (amount == null || Number.isNaN(amount)) return "—";
-  return `${formatMoney(amount)}/hr`;
+  return `$${Math.round(amount).toLocaleString("en-US")}`;
 }
 
-export const PAKISTAN_CITIES = [
+/** Primary fee storage is PKR; show PKR + approx USD for international visitors. */
+export function formatHourly(amountPkr: number | null | undefined) {
+  if (amountPkr == null || Number.isNaN(amountPkr)) return "—";
+  const usd = amountPkr / PKR_PER_USD;
+  return `${formatPkr(amountPkr)}/hr · ~${formatUsd(usd)}/hr`;
+}
+
+export function formatHourlyShort(amountPkr: number | null | undefined) {
+  if (amountPkr == null || Number.isNaN(amountPkr)) return "—";
+  return `${formatPkr(amountPkr)}/hr`;
+}
+
+export const MARKET_CITIES = [
+  "Online (Worldwide)",
   "Online (Pakistan)",
   "Karachi",
   "Lahore",
@@ -24,7 +39,9 @@ export const PAKISTAN_CITIES = [
   "Multan",
   "Peshawar",
   "Quetta",
-  "Hyderabad",
-  "Sialkot",
-  "Gujranwala",
+  "London",
+  "Dubai",
+  "Riyadh",
+  "Toronto",
+  "New York",
 ];
