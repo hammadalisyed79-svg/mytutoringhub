@@ -73,3 +73,32 @@ export function groupCurriculumByBoard(
     }))
     .sort((a, b) => a.board.localeCompare(b.board));
 }
+
+export function curriculumLevels() {
+  return [...new Set(CURRICULUM.map((row) => row.level))].sort((a, b) => a.localeCompare(b));
+}
+
+export type CurriculumCodeOption = {
+  code: string;
+  subject: string;
+  level: string;
+  board: string;
+};
+
+export function curriculumCodeOptions(): CurriculumCodeOption[] {
+  return CURRICULUM.map((row) => ({
+    code: row.code,
+    subject: row.subject,
+    level: row.level,
+    board: row.board,
+  }));
+}
+
+export function matchCurriculumCode(query: string) {
+  const needle = query.trim().toUpperCase();
+  if (!needle || needle.length < 4) return null;
+  const exact = CURRICULUM.find((row) => row.code.toUpperCase() === needle);
+  if (exact) return exact;
+  const prefix = CURRICULUM.filter((row) => row.code.toUpperCase().startsWith(needle));
+  return prefix.length === 1 ? prefix[0] : null;
+}

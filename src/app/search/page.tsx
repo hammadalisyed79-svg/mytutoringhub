@@ -4,6 +4,10 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { searchTutors } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
+import { SearchFiltersForm } from "@/components/SearchFiltersForm";
+import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
+import { POPULAR_SUBJECTS } from "@/lib/marketing";
+import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 
 export const metadata = {
   title: "Find tutors",
@@ -37,89 +41,80 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const sp = await searchParams;
   const currency = await getVisitorCurrency();
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
-  const { tutors, total, page, pages } = await searchTutors(sp);
+  const subjectNames = subjects.map((s) => s.name);
+  const { tutors, total, page, pages, resolved, locationRelaxed } = await searchTutors(sp, {
+    currency,
+    subjectNames,
+  });
+  const city = resolveCity(sp.location);
+  const related = resolved.subject ? relatedSubjects(resolved.subject, subjectNames) : [];
+
+  const summary = [
+    total.toLocaleString(),
+    total === 1 ? "tutor" : "tutors",
+    resolved.subject ? `for ${resolved.subject}` : "",
+    locationRelaxed
+      ? `— none in ${resolved.location}, showing all locations`
+      : resolved.location
+        ? `in ${resolved.location}`
+        : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="page">
       <div className="container">
         <h1 className="page-title">Find private tutors</h1>
         <p className="section-lead">
-          Online or in-person lessons worldwide. Rates shown in your local currency (
-          <strong>{currency}</strong>).
+          Search by subject, code, or city. Rates are shown in {currency}. Lesson fees stay between
+          you and the tutor.
         </p>
 
-        <form className="filters filters-wide" method="get">
-          <label>
-            Keyword
-            <input name="q" defaultValue={sp.q || ""} placeholder="Tutor name, topic…" />
-          </label>
-          <label>
-            Subject
-            <select name="subject" defaultValue={sp.subject || ""}>
-              <option value="">Any subject</option>
-              {subjects.map((s) => (
-                <option key={s.id} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            City
-            <input name="location" defaultValue={sp.location || ""} placeholder="City or Online…" />
-          </label>
-          <label>
-            Level
-            <input name="level" defaultValue={sp.level || ""} placeholder="GCSE, A Level…" />
-          </label>
-          <label>
-            Language
-            <input name="language" defaultValue={sp.language || ""} placeholder="English…" />
-          </label>
-          <label>
-            Format
-            <select name="mode" defaultValue={sp.mode || ""}>
-              <option value="">Online or in person</option>
-              <option value="online">Online</option>
-              <option value="inperson">In person / home</option>
-            </select>
-          </label>
-          <label>
-            Max budget (base)
-            <input
-              name="max"
-              type="number"
-              min={500}
-              step={100}
-              defaultValue={sp.max || ""}
-              placeholder="Optional"
-            />
-          </label>
-          <label className="radio filter-check">
-            <input type="checkbox" name="verified" value="1" defaultChecked={sp.verified === "1"} />
-            Verified only
-          </label>
-          <label className="radio filter-check">
-            <input type="checkbox" name="trial" value="1" defaultChecked={sp.trial === "1"} />
-            Free trial offered
-          </label>
-          <button className="btn" type="submit">
-            Search
-          </button>
-        </form>
+        <SearchFiltersForm
+          initial={sp}
+          subjects={subjectNames}
+          levels={curriculumLevels()}
+          codes={curriculumCodeOptions()}
+          currency={currency}
+        />
 
-        <p className="muted" style={{ marginBottom: "1rem" }}>
-          {total} tutor{total === 1 ? "" : "s"} found
-          {sp.subject ? ` for ${sp.subject}` : ""}
-        </p>
+        <div className="search-quick" aria-label="Popular subjects">
+          {POPULAR_SUBJECTS.slice(0, 8).map((name) => (
+            <Link
+              key={name}
+              href={`/search?subject=${encodeURIComponent(name)}`}
+              className={`chip-btn ${resolved.subject === name ? "is-on" : ""}`}
+            >
+              {name}
+            </Link>
+          ))}
+        </div>
+
+        <p className="muted search-summary">{summary}</p>
+        {city.matched && sp.location && city.value.toLowerCase() !== sp.location.trim().toLowerCase() && (
+          <p className="search-didyoumean">
+            Showing results for <strong>{city.value}</strong> instead of “{sp.location}”.
+          </p>
+        )}
 
         {tutors.length === 0 && (
           <div className="panel empty-state">
             <h2>No tutors match this search</h2>
             <p className="muted">
-              Try a broader city, drop a filter, or post a student request so tutors can find you.
+              Try a nearby city, search Online, or post a student request so tutors can find you.
               Listings appear after a tutor activates Tutor Basic.
             </p>
+            {related.length > 0 && (
+              <p className="search-related">
+                Related subjects:{" "}
+                {related.map((name) => (
+                  <Link key={name} href={`/search?subject=${encodeURIComponent(name)}`}>
+                    {name}
+                  </Link>
+                ))}
+              </p>
+            )}
             <p>
               <Link href="/ads/new" className="btn">
                 Post a student request
@@ -129,6 +124,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               </Link>
             </p>
           </div>
+        )}
+
+        {locationRelaxed && tutors.length > 0 && (
+          <p className="search-note">
+            No {resolved.subject || "matching"} tutors in {resolved.location}. Showing tutors who
+            teach this subject in other cities and online.
+          </p>
         )}
 
         <div className="tutor-grid tutor-grid-list">

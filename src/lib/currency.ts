@@ -173,6 +173,12 @@ export function pkrToCurrency(amountPkr: number, currency: CurrencyCode) {
   return usdToCurrency(pkrToUsd(amountPkr), currency);
 }
 
+export function currencyToPkr(amount: number, currency: CurrencyCode) {
+  if (!Number.isFinite(amount)) return 0;
+  if (currency === "PKR") return amount;
+  return (amount / FX_PER_USD[currency]) * FX_PER_USD.PKR;
+}
+
 export function formatMoney(amount: number, currency: CurrencyCode, locale = "en") {
   try {
     return new Intl.NumberFormat(locale, {
@@ -261,4 +267,9 @@ export const MARKET_CITIES = [
   "Berlin",
   "Munich",
   "Hong Kong",
+  "Rawalpindi",
+  "Faisalabad",
+  "Peshawar",
+  "Quetta",
+  "Multan",
 ];

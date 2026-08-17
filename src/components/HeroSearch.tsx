@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { parseSearchQuery } from "@/lib/search-smart";
 
 export function HeroSearch() {
   const router = useRouter();
@@ -10,9 +11,14 @@ export function HeroSearch() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const parsed = parseSearchQuery(q);
     const params = new URLSearchParams();
-    if (q.trim()) params.set("q", q.trim());
-    if (mode) params.set("mode", mode);
+    if (parsed.subject) params.set("subject", parsed.subject);
+    if (parsed.location) params.set("location", parsed.location);
+    if (parsed.q) params.set("q", parsed.q);
+    else if (q.trim() && !parsed.subject && !parsed.location) params.set("q", q.trim());
+    const lessonMode = mode || parsed.mode || "";
+    if (lessonMode) params.set("mode", lessonMode);
     router.push(`/search?${params.toString()}`);
   }
 
@@ -22,9 +28,10 @@ export function HeroSearch() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Subject or skill — FSc Maths, IELTS, SAT…"
-          aria-label="Search subject or tutor"
+          placeholder="Maths Islamabad, IELTS online, FBISE-HSSC-MATH…"
+          aria-label="Search subject, city, or subject code"
           autoComplete="off"
+          spellCheck={false}
         />
         <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Lesson mode">
           <option value="">Any format</option>
