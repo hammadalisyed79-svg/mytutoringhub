@@ -2,6 +2,55 @@ import { Resend } from "resend";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const from = process.env.EMAIL_FROM || "MyTutoringHub <onboarding@resend.dev>";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const brand = "My Tutoring Hub";
+
+function emailLayout(opts: {
+  preheader: string;
+  title: string;
+  body: string;
+  cta?: { label: string; href: string };
+  footer?: string;
+}) {
+  const cta = opts.cta
+    ? `<p style="margin:28px 0 0"><a href="${opts.cta.href}" style="display:inline-block;background:#0d5f52;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">${opts.cta.label}</a></p>`
+    : "";
+  const footer =
+    opts.footer ||
+    `If you did not request this, you can ignore this email or contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${opts.title}</title>
+</head>
+<body style="margin:0;background:#f6f1e8;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#1f2933">
+  <div style="display:none;max-height:0;overflow:hidden">${opts.preheader}</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f1e8;padding:32px 16px">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fff;border:1px solid #e7dfd1;border-radius:14px;overflow:hidden">
+          <tr>
+            <td style="padding:28px 28px 8px">
+              <div style="font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0d5f52">${brand}</div>
+              <h1 style="margin:12px 0 0;font-size:24px;line-height:1.25;color:#102a43">${opts.title}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 28px 28px;font-size:16px;line-height:1.6;color:#334e68">
+              ${opts.body}
+              ${cta}
+              <p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#829ab1">${footer}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
 
 export async function sendEmail(opts: {
   to: string;
@@ -22,18 +71,58 @@ export async function sendEmail(opts: {
 }
 
 export function welcomeEmailHtml(name: string, role: string) {
-  return `<p>Hi ${name},</p><p>Welcome to <strong>MyTutoringHub</strong>. Your ${role.toLowerCase()} account is ready.</p><p>Subscribe to start connecting — lesson payments stay between you and the other party.</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing">View plans</a></p>`;
+  const roleLabel = role === "TUTOR" ? "tutor" : "student";
+  return emailLayout({
+    preheader: "Your My Tutoring Hub account is ready.",
+    title: "Welcome aboard",
+    body: `<p>Hi ${name},</p>
+<p>Thanks for joining <strong>${brand}</strong> as a ${roleLabel}. Your account is ready.</p>
+<p>Next step: choose a subscription plan to unlock messaging and connect with tutors or students worldwide. Lesson fees always stay off-platform between you and the other party.</p>`,
+    cta: { label: "View plans & pricing", href: `${appUrl}/pricing` },
+  });
+}
+
+export function loginConfirmationEmailHtml(opts: {
+  name: string;
+  method: "password" | "google";
+  when: Date;
+}) {
+  const when = opts.when.toLocaleString("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "UTC",
+  });
+  const methodLabel = opts.method === "google" ? "Google" : "email and password";
+  return emailLayout({
+    preheader: "New sign-in to your My Tutoring Hub account.",
+    title: "Sign-in confirmation",
+    body: `<p>Hi ${opts.name},</p>
+<p>We recorded a new sign-in to your ${brand} account using <strong>${methodLabel}</strong>.</p>
+<p><strong>When:</strong> ${when} UTC</p>
+<p>If this was you, no action is needed. If you do not recognise this activity, change your password immediately and contact support.</p>`,
+    cta: { label: "Open account settings", href: `${appUrl}/settings` },
+  });
 }
 
 export function newMessageEmailHtml(fromName: string, preview: string) {
-  return `<p>You have a new message from <strong>${fromName}</strong> on MyTutoringHub.</p><p>“${preview.slice(0, 160)}”</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/messages">Open inbox</a></p>`;
+  return emailLayout({
+    preheader: `New message from ${fromName}`,
+    title: "New message",
+    body: `<p>You have a new message from <strong>${fromName}</strong>.</p>
+<p style="padding:12px 14px;background:#f6f1e8;border-radius:8px;color:#486581">“${preview.slice(0, 160)}”</p>`,
+    cta: { label: "Open inbox", href: `${appUrl}/messages` },
+  });
 }
 
 export function subscriptionEmailHtml(planName: string, active: boolean) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return active
-    ? `<p>Your <strong>${planName}</strong> subscription is now active. Thanks for joining MyTutoringHub.</p><p><a href="${appUrl}/dashboard">Open dashboard</a></p>`
-    : `<p>Your <strong>${planName}</strong> subscription status changed. Manage billing from your dashboard.</p>`;
+  return emailLayout({
+    preheader: active ? `${planName} is now active` : `${planName} status changed`,
+    title: active ? "Subscription active" : "Subscription update",
+    body: active
+      ? `<p>Your <strong>${planName}</strong> subscription is now active. Thank you for supporting ${brand}.</p>`
+      : `<p>Your <strong>${planName}</strong> subscription status changed. You can review billing from your dashboard.</p>`,
+    cta: { label: "Open dashboard", href: `${appUrl}/dashboard` },
+  });
 }
 
 export function paymentReceiptHtml(opts: {
@@ -43,29 +132,51 @@ export function paymentReceiptHtml(opts: {
   periodEnd?: Date | null;
   receiptId?: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const amountLine = opts.amountLabel
-    ? `<p>Amount: <strong>${opts.amountLabel}</strong></p>`
+    ? `<p><strong>Amount paid:</strong> ${opts.amountLabel}</p>`
     : "";
   const periodLine = opts.periodEnd
-    ? `<p>Access until: <strong>${opts.periodEnd.toLocaleDateString("en", {
+    ? `<p><strong>Access until:</strong> ${opts.periodEnd.toLocaleDateString("en-GB", {
         year: "numeric",
         month: "long",
         day: "numeric",
-      })}</strong></p>`
+      })}</p>`
     : "";
   const slipUrl = opts.receiptId ? `${appUrl}/receipt/${opts.receiptId}` : `${appUrl}/dashboard`;
-  return `<p>Hi ${opts.name},</p>
-<p>This is your receipt for <strong>${opts.planName}</strong> on MyTutoringHub.</p>
+  return emailLayout({
+    preheader: `Receipt for ${opts.planName}`,
+    title: "Payment receipt",
+    body: `<p>Hi ${opts.name},</p>
+<p>Thank you for your payment for <strong>${opts.planName}</strong>.</p>
 ${amountLine}${periodLine}
-<p>Lesson fees stay off-platform between you and the other party. This charge is only for your platform subscription.</p>
-<p><a href="${slipUrl}">View or print your payment slip</a></p>
-<p>Questions? Email <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.</p>`;
+<p>Lesson fees stay off-platform between you and the other party. This charge is only for your platform subscription.</p>`,
+    cta: { label: "View or print receipt", href: slipUrl },
+  });
 }
 
 export function verifyEmailHtml(name: string, verifyUrl: string) {
-  return `<p>Hi ${name},</p>
-<p>Welcome to <strong>MyTutoringHub</strong>. Please verify this email to message, post ads, and use the study assistant.</p>
-<p><a href="${verifyUrl}">Verify email address</a></p>
-<p>This link expires in 24 hours. If you did not create an account, you can ignore this message.</p>`;
+  return emailLayout({
+    preheader: "Confirm your email to unlock messaging and ads.",
+    title: "Confirm your email",
+    body: `<p>Hi ${name},</p>
+<p>Please confirm your email address to unlock messaging, student ads, and the study assistant on ${brand}.</p>
+<p>This link expires in 24 hours.</p>`,
+    cta: { label: "Confirm email address", href: verifyUrl },
+  });
+}
+
+export async function sendLoginConfirmationEmail(opts: {
+  name: string;
+  email: string;
+  method: "password" | "google";
+}) {
+  await sendEmail({
+    to: opts.email,
+    subject: "Sign-in confirmation · My Tutoring Hub",
+    html: loginConfirmationEmailHtml({
+      name: opts.name,
+      method: opts.method,
+      when: new Date(),
+    }),
+  });
 }

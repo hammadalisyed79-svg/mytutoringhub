@@ -12,15 +12,18 @@ model User {
   id               String    @id @default(cuid())
   name             String
   email            String    @unique
-  passwordHash     String
+  passwordHash     String?
   role             String    @default("STUDENT")
   phone            String?
+  image            String?
   suspended        Boolean   @default(false)
   emailVerified    DateTime?
+  onboardingComplete Boolean @default(true)
   stripeCustomerId String?   @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  accounts                 Account[]
   tutorProfile             TutorProfile?
   emailVerificationTokens  EmailVerificationToken[]
   subscriptions            Subscription[]
@@ -35,6 +38,25 @@ model User {
   reviewRequestsRecv   ReviewRequest[]       @relation("ReviewRequestsRecv")
   aiMessages           AiMessage[]
   adminAuditLogs       AdminAuditLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Subject {

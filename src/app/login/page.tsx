@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
+import { AuthLayout } from "@/components/AuthLayout";
+import { googleConfigured } from "@/lib/oauth";
 
-export const metadata = { title: "Log in" };
+export const metadata = { title: "Sign in" };
 
 export default async function LoginPage({
   searchParams,
@@ -12,37 +14,49 @@ export default async function LoginPage({
 }) {
   const session = await auth();
   if (session?.user) {
+    if (session.user.onboardingComplete === false) redirect("/register/complete");
     redirect(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
   }
   const sp = await searchParams;
+  const googleEnabled = googleConfigured();
 
   return (
-    <div className="auth-shell">
-      <h1 className="page-title">Welcome back</h1>
-      <p className="muted">Log in to MyTutoringHub</p>
-      {sp.verified === "1" && (
-        <p className="success panel" style={{ marginBottom: "1rem" }}>
-          Email verified. You can log in and use messaging, ads, and the study assistant.
+    <AuthLayout
+      title="Sign in"
+      lead="Access your dashboard, messages, and subscriptions."
+      notice={
+        <>
+          {sp.verified === "1" && (
+            <p className="success panel auth-notice">Email verified. You can sign in now.</p>
+          )}
+          {sp.verify === "sent" && (
+            <p className="panel auth-notice">
+              Check your inbox for a confirmation email, then sign in below.
+            </p>
+          )}
+          {sp.verify === "expired" && (
+            <p className="panel form-error auth-notice">
+              That verification link expired. Sign in and resend from your dashboard.
+            </p>
+          )}
+          {sp.verify === "invalid" && (
+            <p className="panel form-error auth-notice">
+              That verification link is invalid. Sign in and request a new one from your dashboard.
+            </p>
+          )}
+        </>
+      }
+      footer={
+        <p className="auth-switch muted">
+          New here? <Link href="/register">Create an account</Link>
+          <span aria-hidden="true"> · </span>
+          <Link href="/terms">Terms</Link>
+          <span aria-hidden="true"> · </span>
+          <Link href="/privacy">Privacy</Link>
         </p>
-      )}
-      {sp.verify === "expired" && (
-        <p className="panel form-error" style={{ marginBottom: "1rem" }}>
-          That verification link has expired. Log in and resend a new link from your dashboard.
-        </p>
-      )}
-      {sp.verify === "invalid" && (
-        <p className="panel form-error" style={{ marginBottom: "1rem" }}>
-          That verification link is invalid. Log in and request a new one from your dashboard.
-        </p>
-      )}
-      <LoginForm />
-      <p className="muted" style={{ marginTop: "1rem" }}>
-        New here? <Link href="/register">Create an account</Link>
-      </p>
-      <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-        <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link> ·{" "}
-        <Link href="/help">Help</Link>
-      </p>
-    </div>
+      }
+    >
+      <LoginForm googleEnabled={googleEnabled} />
+    </AuthLayout>
   );
 }

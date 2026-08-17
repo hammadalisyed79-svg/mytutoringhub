@@ -13,7 +13,22 @@ export const authConfig = {
       const { pathname } = request.nextUrl;
       const isLoggedIn = Boolean(auth?.user?.email || auth?.user?.id);
 
-      const isAuthPage = pathname === "/login" || pathname === "/register";
+      const isAuthPage =
+        pathname === "/login" ||
+        pathname === "/register" ||
+        pathname === "/register/complete";
+
+      const needsOnboarding =
+        isLoggedIn &&
+        auth?.user?.role !== "ADMIN" &&
+        auth?.user?.onboardingComplete === false &&
+        pathname !== "/register/complete" &&
+        !pathname.startsWith("/api/");
+
+      if (needsOnboarding) {
+        return Response.redirect(new URL("/register/complete", request.nextUrl));
+      }
+
       const isProtected =
         pathname.startsWith("/dashboard") ||
         pathname.startsWith("/messages") ||
@@ -24,7 +39,10 @@ export const authConfig = {
         pathname === "/ads/new";
 
       if (isAuthPage) {
-        if (isLoggedIn) {
+        if (isLoggedIn && pathname !== "/register/complete") {
+          if (auth?.user?.onboardingComplete === false) {
+            return Response.redirect(new URL("/register/complete", request.nextUrl));
+          }
           const dest = auth?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
           return Response.redirect(new URL(dest, request.nextUrl));
         }
@@ -39,18 +57,18 @@ export const authConfig = {
     },
     async jwt({ token, user }) {
       if (user) {
-        // Prefer explicit id; Auth.js also sets token.sub from user.id.
         token.id = user.id!;
         token.sub = user.id!;
         token.role = (user as { role?: Role }).role as Role;
+        token.onboardingComplete = (user as { onboardingComplete?: boolean }).onboardingComplete ?? true;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // token.sub is the stable Auth.js subject; token.id is our custom claim.
         session.user.id = (token.sub || token.id) as string;
         session.user.role = token.role as Role;
+        session.user.onboardingComplete = Boolean(token.onboardingComplete ?? true);
       }
       return session;
     },

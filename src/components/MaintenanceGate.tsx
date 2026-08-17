@@ -10,7 +10,12 @@ export async function MaintenanceGate({ children }: { children: React.ReactNode 
   if (session?.user?.role === "ADMIN") return <>{children}</>;
 
   const pathname = (await headers()).get("x-pathname") || "";
-  if (pathname === "/login" || pathname.startsWith("/api/auth")) {
+  if (
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/register/complete" ||
+    pathname.startsWith("/api/auth")
+  ) {
     return <>{children}</>;
   }
 

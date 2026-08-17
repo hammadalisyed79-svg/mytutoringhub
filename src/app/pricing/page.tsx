@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import Link from "next/link";
 
-export const metadata = { title: "Pricing" };
+export const metadata = { title: "Plans & pricing" };
 
 export default async function PricingPage({
   searchParams,
@@ -25,6 +25,8 @@ export default async function PricingPage({
     if (role === "STUDENT") return p.audience === "student";
     return p.audience === "tutor";
   });
+  const corePlans = visible.filter((p) => !p.isAddOn);
+  const addOns = visible.filter((p) => p.isAddOn);
 
   const needsVerify =
     session?.user &&
@@ -36,64 +38,123 @@ export default async function PricingPage({
       }))?.emailVerified);
 
   return (
-    <div className="page">
+    <div className="page checkout-page">
       <div className="container">
-        <h1 className="page-title">Subscriptions</h1>
-        <p className="section-lead">
-          Platform plans shown in your local currency ({currency}) are billed through Safepay.
-          Lesson fees stay off-platform between you and the other party — we never take a lesson
-          commission.
-        </p>
+        <div className="checkout-hero">
+          <div>
+            <p className="eyebrow">Platform subscriptions</p>
+            <h1 className="page-title">Plans & pricing</h1>
+            <p className="section-lead">
+              Prices shown in <strong>{currency}</strong>. Secure checkout via Safepay with email
+              receipt. Lesson fees stay off-platform — we never take a lesson commission.
+            </p>
+          </div>
+          <ol className="checkout-steps" aria-label="Checkout steps">
+            <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>
+            <li className={session?.user ? "is-current" : ""}>2. Choose plan</li>
+            <li>3. Secure payment</li>
+          </ol>
+        </div>
+
+        <div className="checkout-trust-bar">
+          <span>256-bit encrypted checkout</span>
+          <span>Email receipt on success</span>
+          <span>Works worldwide</span>
+          <span>Cancel before renewal</span>
+        </div>
+
         <CheckoutNotice checkout={sp.checkout} state={sp.state} />
+
         {needsVerify && (
-          <div
-            className="panel"
-            style={{
-              marginTop: "1rem",
-              marginBottom: "1rem",
-              borderColor: "var(--brand)",
-              background: "rgba(15, 90, 70, 0.06)",
-            }}
-          >
+          <div className="panel checkout-verify">
             <p style={{ marginTop: 0 }}>
               {sp.verify === "sent"
-                ? "We sent a verification link to your email. Confirm it to message, post ads, and use the study assistant."
+                ? "We sent a confirmation email. Verify your address to unlock messaging, ads, and the study assistant."
                 : "Verify your email to unlock messaging, ads, and the study assistant."}{" "}
               Check spam if you do not see it.
             </p>
             <ResendVerificationButton />
           </div>
         )}
+
         {!session?.user && (
-          <p className="muted" style={{ marginBottom: "1.25rem" }}>
-            <Link href="/register">Create an account</Link> to subscribe.
-          </p>
+          <div className="panel checkout-guest">
+            <p style={{ marginTop: 0 }}>
+              <Link href="/register" className="btn btn-sm">
+                Create account
+              </Link>{" "}
+              or <Link href="/login">sign in</Link> to subscribe. Google sign-in is available.
+            </p>
+          </div>
         )}
-        <div className="pricing-grid">
-          {visible.map((plan) => (
-            <article key={plan.id} className="plan">
-              <h3>{plan.name}</h3>
-              <p className="muted">{plan.description}</p>
-              <div className="price">{formatPlanPrice(plan.pricePkr, currency)}</div>
-              <ul>
-                {plan.features.map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
-              {session?.user ? (
-                <SubscribeButton
-                  plan={plan.id}
-                  currency={currency}
-                  label={`Get ${plan.name}`}
-                />
-              ) : (
-                <Link href="/register" className="btn">
-                  Join to subscribe
-                </Link>
-              )}
-            </article>
-          ))}
-        </div>
+
+        <section>
+          <h2 className="checkout-section-title">Core plans</h2>
+          <div className="pricing-grid">
+            {corePlans.map((plan) => (
+              <article
+                key={plan.id}
+                className={`plan ${plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" ? "plan-featured" : ""}`}
+              >
+                {(plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
+                  <span className="plan-badge">Most popular</span>
+                )}
+                <h3>{plan.name}</h3>
+                <p className="muted">{plan.description}</p>
+                <div className="price">{formatPlanPrice(plan.pricePkr, currency)}</div>
+                <p className="plan-billing muted">Billed monthly · shown in {currency}</p>
+                <ul>
+                  {plan.features.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                {session?.user ? (
+                  <SubscribeButton
+                    plan={plan.id}
+                    currency={currency}
+                    label={`Continue with ${plan.name}`}
+                    featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
+                  />
+                ) : (
+                  <Link href="/register" className="btn btn-block">
+                    Create account to subscribe
+                  </Link>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {addOns.length > 0 && (
+          <section style={{ marginTop: "2rem" }}>
+            <h2 className="checkout-section-title">Tutor add-ons</h2>
+            <div className="pricing-grid">
+              {addOns.map((plan) => (
+                <article key={plan.id} className="plan">
+                  <h3>{plan.name}</h3>
+                  <p className="muted">{plan.description}</p>
+                  <div className="price">{formatPlanPrice(plan.pricePkr, currency)}</div>
+                  <ul>
+                    {plan.features.map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                  {session?.user ? (
+                    <SubscribeButton
+                      plan={plan.id}
+                      currency={currency}
+                      label={`Add ${plan.name}`}
+                    />
+                  ) : (
+                    <Link href="/register?role=tutor" className="btn btn-secondary btn-block">
+                      Join as tutor
+                    </Link>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

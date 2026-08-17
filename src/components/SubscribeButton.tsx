@@ -5,12 +5,14 @@ import type { SubscriptionPlan } from "@/lib/types";
 
 export function SubscribeButton({
   plan,
-  label = "Subscribe",
+  label = "Subscribe securely",
   currency,
+  featured,
 }: {
   plan: SubscriptionPlan;
   label?: string;
   currency?: string;
+  featured?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,10 +45,18 @@ export function SubscribeButton({
   }
 
   return (
-    <div>
-      <button className="btn" type="button" onClick={subscribe} disabled={loading}>
-        {loading ? "Redirecting to payment…" : label}
+    <div className="checkout-action">
+      <button
+        className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
+        type="button"
+        onClick={subscribe}
+        disabled={loading}
+      >
+        {loading ? "Opening secure checkout…" : label}
       </button>
+      <p className="checkout-trust muted">
+        Encrypted checkout · Receipt emailed · Cancel anytime before renewal
+      </p>
       {error && <p className="form-error">{error}</p>}
     </div>
   );

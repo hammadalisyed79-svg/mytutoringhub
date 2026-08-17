@@ -3,10 +3,12 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { GoogleSignInButton, AuthDivider } from "@/components/GoogleSignInButton";
 
-function RegisterFormInner() {
+function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "TUTOR" : "STUDENT";
+  const [role, setRole] = useState<"STUDENT" | "TUTOR">(defaultRole);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +21,7 @@ function RegisterFormInner() {
       name: String(fd.get("name")),
       email: String(fd.get("email")),
       password: String(fd.get("password")),
-      role: String(fd.get("role")),
+      role,
     };
     const res = await fetch("/api/register", {
       method: "POST",
@@ -39,54 +41,83 @@ function RegisterFormInner() {
     });
     setLoading(false);
     if (login?.error) {
-      window.location.href = "/login";
+      window.location.href = "/login?verify=sent";
       return;
     }
     window.location.href = "/pricing?verify=sent";
   }
 
   return (
-    <form className="auth-form" onSubmit={onSubmit}>
-      <label>
-        Full name
-        <input name="name" required minLength={2} />
-      </label>
-      <label>
-        Email
-        <input name="email" type="email" required />
-      </label>
-      <label>
-        Password
-        <input name="password" type="password" required minLength={6} />
-      </label>
-      <fieldset className="role-pick">
-        <legend>I am a…</legend>
-        <label className="radio">
+    <div className="auth-stack">
+      <fieldset className="role-pick role-pick-cards">
+        <legend>I am joining as a…</legend>
+        <label className={`role-card ${role === "STUDENT" ? "is-selected" : ""}`}>
           <input
             type="radio"
-            name="role"
+            name="role-ui"
             value="STUDENT"
-            defaultChecked={defaultRole === "STUDENT"}
+            checked={role === "STUDENT"}
+            onChange={() => setRole("STUDENT")}
           />
-          Student / parent looking for a tutor
+          <strong>Student / parent</strong>
+          <span className="muted">Find tutors and post requests</span>
         </label>
-        <label className="radio">
-          <input type="radio" name="role" value="TUTOR" defaultChecked={defaultRole === "TUTOR"} />
-          Tutor looking for students
+        <label className={`role-card ${role === "TUTOR" ? "is-selected" : ""}`}>
+          <input
+            type="radio"
+            name="role-ui"
+            value="TUTOR"
+            checked={role === "TUTOR"}
+            onChange={() => setRole("TUTOR")}
+          />
+          <strong>Tutor</strong>
+          <span className="muted">List your profile and receive messages</span>
         </label>
       </fieldset>
-      {error && <p className="form-error">{error}</p>}
-      <button className="btn" type="submit" disabled={loading}>
-        {loading ? "Creating account…" : "Create account"}
-      </button>
-    </form>
+
+      {googleEnabled && (
+        <>
+          <GoogleSignInButton intent="register" role={role} disabled={loading} />
+          <AuthDivider />
+        </>
+      )}
+
+      <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
+        <label>
+          Full name
+          <input name="name" required minLength={2} autoComplete="name" placeholder="Your name" />
+        </label>
+        <label>
+          Email address
+          <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+        </label>
+        <label>
+          Password
+          <input
+            name="password"
+            type="password"
+            required
+            minLength={6}
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+          />
+        </label>
+        {error && <p className="form-error">{error}</p>}
+        <button className="btn btn-block" type="submit" disabled={loading}>
+          {loading ? "Creating account…" : "Create account with email"}
+        </button>
+      </form>
+      <p className="auth-footnote muted">
+        We send a confirmation email to verify your address before messaging unlocks.
+      </p>
+    </div>
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
   return (
     <Suspense fallback={<p className="muted">Loading…</p>}>
-      <RegisterFormInner />
+      <RegisterFormInner googleEnabled={googleEnabled} />
     </Suspense>
   );
 }
