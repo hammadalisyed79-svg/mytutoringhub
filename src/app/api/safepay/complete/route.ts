@@ -54,6 +54,17 @@ export async function GET(req: Request) {
       },
     });
 
+    // Drop abandoned checkouts for the same plan so the dashboard stays clean.
+    await prisma.subscription.updateMany({
+      where: {
+        userId: updated.userId,
+        plan,
+        status: "INCOMPLETE",
+        id: { not: updated.id },
+      },
+      data: { status: "CANCELED" },
+    });
+
     const user = await prisma.user.findUnique({ where: { id: updated.userId } });
     if (user?.role === "TUTOR") {
       await syncTutorBadges(user.id);

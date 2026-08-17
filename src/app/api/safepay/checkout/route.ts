@@ -98,6 +98,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Could not create Safepay auth token" }, { status: 502 });
     }
 
+    // Cancel leftover incomplete checkouts for this plan before creating a new one.
+    await prisma.subscription.updateMany({
+      where: {
+        userId: session.user.id,
+        plan,
+        status: "INCOMPLETE",
+      },
+      data: { status: "CANCELED" },
+    });
+
     await prisma.subscription.upsert({
       where: { stripeSubscriptionId: tracker },
       update: {

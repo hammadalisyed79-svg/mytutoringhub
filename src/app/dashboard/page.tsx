@@ -3,7 +3,6 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
-import { BillingPortalButton } from "@/components/BillingPortalButton";
 import { getPlan } from "@/lib/plans";
 
 export const metadata = { title: "Dashboard" };
@@ -26,6 +25,11 @@ export default async function DashboardPage({
     },
   });
 
+  const visibleSubs = user.subscriptions.filter((s) =>
+    ["ACTIVE", "TRIALING"].includes(s.status),
+  );
+  const pendingSubs = user.subscriptions.filter((s) => s.status === "INCOMPLETE");
+
   return (
     <div className="page">
       <div className="container">
@@ -43,30 +47,35 @@ export default async function DashboardPage({
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
           <section className="panel">
             <h2>Subscriptions</h2>
-            {user.subscriptions.length === 0 && (
-              <p className="muted">No plans yet. Subscribe to unlock messaging.</p>
+            {visibleSubs.length === 0 && (
+              <p className="muted">No active plans yet. Subscribe to unlock messaging.</p>
             )}
-            <ul>
-              {user.subscriptions.map((s) => (
+            <ul className="sub-list">
+              {visibleSubs.map((s) => (
                 <li key={s.id}>
-                  {getPlan(s.plan as never)?.name || s.plan} — {s.status}
+                  <strong>{getPlan(s.plan as never)?.name || s.plan}</strong> — {s.status}
                   {s.currentPeriodEnd
                     ? ` · until ${s.currentPeriodEnd.toLocaleDateString()}`
                     : ""}
                 </li>
               ))}
             </ul>
+            {pendingSubs.length > 0 && (
+              <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.9rem" }}>
+                {pendingSubs.length} unfinished checkout{pendingSubs.length === 1 ? "" : "s"} ignored.
+                Start again from Pricing if needed.
+              </p>
+            )}
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
               <Link href="/pricing" className="btn btn-sm">
                 View plans
               </Link>
-              <BillingPortalButton />
             </div>
           </section>
 
           <section className="panel">
             <h2>Quick links</h2>
-            <div className="footer-links" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+            <div className="dash-links">
               <Link href="/search">Browse tutors</Link>
               <Link href="/ads">Student ads</Link>
               <Link href="/messages">Messages</Link>

@@ -1113,8 +1113,18 @@ select:focus {
   color: var(--muted);
 }
 
-.section-actions {
-  margin-top: 1.5rem;
+.dash-links {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.dash-links a:hover {
+  color: var(--brand-deep);
+}
+
+.sub-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
 }
 
 .stack {
