@@ -13,7 +13,15 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Tutor Basic, Verified, Highlighted, Ad Boost) are paid via Safepay checkout. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Tutor Basic, Verified, Highlighted, Ad Boost) are paid via Safepay checkout. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+  },
+  {
+    q: "Why do I need to verify my email?",
+    a: "After signup we send a verification link. You can log in and manage your dashboard immediately, but messaging, posting ads, and the study assistant unlock after you confirm your email. Resend the link from Dashboard or Settings.",
+  },
+  {
+    q: "Is checkout live or sandbox?",
+    a: "Live payments use Safepay production keys (SAFEPAY_ENV=production). Sandbox is for testing with dummy cards and is charged in PKR. If a payment stays pending, wait a moment or retry from Pricing — never send card details to support.",
   },
   {
     q: "What is a Verified tutor?",

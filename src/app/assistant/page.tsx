@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { StudyAssistantChat } from "@/components/StudyAssistantChat";
 
 export const metadata = { title: "Study assistant" };
@@ -7,6 +8,15 @@ export const metadata = { title: "Study assistant" };
 export default async function AssistantPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { emailVerified: true, role: true, suspended: true },
+  });
+  if (user?.suspended) redirect("/dashboard");
+  if (session.user.role !== "ADMIN" && !user?.emailVerified) {
+    redirect("/dashboard?verify=1");
+  }
 
   const configured = Boolean(process.env.OPENAI_API_KEY);
 

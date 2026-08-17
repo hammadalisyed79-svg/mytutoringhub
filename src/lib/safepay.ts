@@ -7,7 +7,9 @@ export function safepayConfigured() {
 }
 
 export function getSafepayEnv(): "sandbox" | "production" {
-  return process.env.SAFEPAY_ENV === "production" ? "production" : "sandbox";
+  const raw = (process.env.SAFEPAY_ENV || "sandbox").toLowerCase().trim();
+  if (raw === "production" || raw === "live") return "production";
+  return "sandbox";
 }
 
 export function getSafepayClient() {

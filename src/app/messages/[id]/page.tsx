@@ -12,6 +12,15 @@ export default async function ConversationPage({ params }: Params) {
   if (!session?.user) redirect("/login");
   const { id } = await params;
 
+  if (session.user.role !== "ADMIN") {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { emailVerified: true, suspended: true },
+    });
+    if (me?.suspended) redirect("/dashboard");
+    if (!me?.emailVerified) redirect("/dashboard?verify=1");
+  }
+
   const conversation = await prisma.conversation.findUnique({ where: { id } });
   if (!conversation) notFound();
   if (

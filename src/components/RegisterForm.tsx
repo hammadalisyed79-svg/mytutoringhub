@@ -42,7 +42,7 @@ function RegisterFormInner() {
       window.location.href = "/login";
       return;
     }
-    window.location.href = "/pricing";
+    window.location.href = "/pricing?verify=sent";
   }
 
   return (

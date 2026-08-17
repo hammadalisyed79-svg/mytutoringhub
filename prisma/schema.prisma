@@ -16,12 +16,14 @@ model User {
   role             String    @default("STUDENT")
   phone            String?
   suspended        Boolean   @default(false)
+  emailVerified    DateTime?
   stripeCustomerId String?   @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  tutorProfile         TutorProfile?
-  subscriptions        Subscription[]
+  tutorProfile             TutorProfile?
+  emailVerificationTokens  EmailVerificationToken[]
+  subscriptions            Subscription[]
   studentAds           StudentAd[]
   reviewsGiven         Review[]              @relation("ReviewsGiven")
   conversationsAsA     Conversation[]        @relation("ConversationUserA")
@@ -220,4 +222,15 @@ model AiMessage {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

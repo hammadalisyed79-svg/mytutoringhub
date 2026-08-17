@@ -116,6 +116,17 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { emailVerified: true, role: true, suspended: true },
+  });
+  if (user?.suspended) {
+    return NextResponse.json({ error: "Account suspended" }, { status: 403 });
+  }
+  if (session.user.role !== "ADMIN" && !user?.emailVerified) {
+    return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
+  }
+
   const configured = Boolean(process.env.OPENAI_API_KEY?.trim());
   const since = new Date(Date.now() - WINDOW_MS);
   const used = await prisma.aiMessage.count({
@@ -148,6 +159,9 @@ export async function POST(req: Request) {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user || user.suspended) {
     return NextResponse.json({ error: "Account suspended" }, { status: 403 });
+  }
+  if (session.user.role !== "ADMIN" && !user.emailVerified) {
+    return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
   }
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();

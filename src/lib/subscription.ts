@@ -21,6 +21,11 @@ export async function hasAnyActivePlan(userId: string, plans: SubscriptionPlan[]
 /** Students need Student Pass; tutors need Tutor Basic (or verified which implies paid presence). */
 export async function canMessage(userId: string, role: Role) {
   if (role === "ADMIN") return true;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { suspended: true, emailVerified: true },
+  });
+  if (!user || user.suspended || !user.emailVerified) return false;
   if (role === "STUDENT") return hasActivePlan(userId, "STUDENT_PASS");
   if (role === "TUTOR") {
     return hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR"]);
@@ -30,6 +35,11 @@ export async function canMessage(userId: string, role: Role) {
 
 export async function canPostAd(userId: string, role: Role) {
   if (role === "ADMIN") return true;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { suspended: true, emailVerified: true },
+  });
+  if (!user || user.suspended || !user.emailVerified) return false;
   if (role === "STUDENT") return hasActivePlan(userId, "STUDENT_PASS");
   return false;
 }
@@ -40,6 +50,15 @@ export async function tutorAdLimit(userId: string) {
 }
 
 export async function canCreateTutorAd(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { suspended: true, emailVerified: true, role: true },
+  });
+  if (!user) return { ok: false as const, reason: "Create your tutor profile first" };
+  if (user.suspended) return { ok: false as const, reason: "Account suspended" };
+  if (user.role !== "ADMIN" && !user.emailVerified) {
+    return { ok: false as const, reason: "Verify your email to publish ads" };
+  }
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
   if (!(await hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD"]))) {

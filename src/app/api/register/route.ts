@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { sendEmail, welcomeEmailHtml } from "@/lib/email";
+import { issueEmailVerification } from "@/lib/email-verification";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
         email,
         passwordHash,
         role: data.role,
+        emailVerified: null,
       },
     });
 
@@ -45,11 +46,7 @@ export async function POST(req: Request) {
       });
     }
 
-    await sendEmail({
-      to: email,
-      subject: "Welcome to MyTutoringHub",
-      html: welcomeEmailHtml(data.name, data.role),
-    });
+    await issueEmailVerification({ id: user.id, name: user.name, email: user.email });
 
     return NextResponse.json({ id: user.id, email: user.email, role: user.role });
   } catch (e) {

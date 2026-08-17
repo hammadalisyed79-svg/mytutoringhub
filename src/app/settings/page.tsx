@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -21,6 +23,7 @@ export default function SettingsPage() {
           setName(u.name);
           setPhone(u.phone || "");
           setEmail(u.email || "");
+          setEmailVerified(Boolean(u.emailVerified));
         }
       })
       .catch(() => undefined);
@@ -68,6 +71,16 @@ export default function SettingsPage() {
             Email
             <input value={email} disabled />
           </label>
+          {emailVerified === false && (
+            <div className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)" }}>
+              <p style={{ marginTop: 0 }}>
+                Your email is not verified yet. Messaging, ads, and the study assistant stay locked
+                until you confirm the link we sent.
+              </p>
+              <ResendVerificationButton />
+            </div>
+          )}
+          {emailVerified === true && <p className="success">Email verified.</p>}
           <label>
             Name
             <input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} />

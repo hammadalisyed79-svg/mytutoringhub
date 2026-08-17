@@ -15,7 +15,7 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, role: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, emailVerified: true },
   });
   return NextResponse.json(user);
 }
@@ -33,7 +33,7 @@ export async function PATCH(req: Request) {
         ? { passwordHash: await bcrypt.hash(data.password, 10) }
         : {}),
     },
-    select: { id: true, name: true, email: true, phone: true, role: true },
+    select: { id: true, name: true, email: true, phone: true, role: true, emailVerified: true },
   });
   return NextResponse.json(updated);
 }

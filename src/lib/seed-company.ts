@@ -59,6 +59,7 @@ export async function seedCompanyData() {
     });
   }
 
+  const now = new Date();
   const adminHash = await hash("admin123456", 10);
   await prisma.user.upsert({
     where: { email: "admin@mytutoringhub.com" },
@@ -66,12 +67,14 @@ export async function seedCompanyData() {
       name: "Site Admin",
       passwordHash: adminHash,
       role: "ADMIN",
+      emailVerified: now,
     },
     create: {
       email: "admin@mytutoringhub.com",
       name: "Site Admin",
       passwordHash: adminHash,
       role: "ADMIN",
+      emailVerified: now,
     },
   });
 
@@ -82,12 +85,14 @@ export async function seedCompanyData() {
       name: "Ali Raza",
       passwordHash: tutorHash,
       role: "TUTOR",
+      emailVerified: now,
     },
     create: {
       email: "tutor@mytutoringhub.com",
       name: "Ali Raza",
       passwordHash: tutorHash,
       role: "TUTOR",
+      emailVerified: now,
     },
   });
 
@@ -181,12 +186,14 @@ export async function seedCompanyData() {
       name: "Ayesha Khan",
       passwordHash: studentHash,
       role: "STUDENT",
+      emailVerified: now,
     },
     create: {
       email: "student@mytutoringhub.com",
       name: "Ayesha Khan",
       passwordHash: studentHash,
       role: "STUDENT",
+      emailVerified: now,
     },
   });
 
@@ -252,6 +259,16 @@ export async function seedCompanyData() {
       });
     }
   }
+
+  // Existing accounts created before email verification: keep them usable.
+  // New signups have a pending token, so they stay unverified until they click the link.
+  await prisma.user.updateMany({
+    where: {
+      emailVerified: null,
+      emailVerificationTokens: { none: {} },
+    },
+    data: { emailVerified: now },
+  });
 
   return COMPANY_ACCOUNTS.map(({ email, password, role, name }) => ({
     email,

@@ -42,9 +42,6 @@ export const authConfig = {
         token.id = user.id!;
         token.sub = user.id!;
         token.role = (user as { role?: Role }).role as Role;
-        token.emailVerified = Boolean(
-          (user as { emailVerified?: Date | string | boolean | null }).emailVerified,
-        );
       }
       return token;
     },
@@ -53,7 +50,6 @@ export const authConfig = {
         // token.sub is the stable Auth.js subject; token.id is our custom claim.
         session.user.id = (token.sub || token.id) as string;
         session.user.role = token.role as Role;
-        session.user.emailVerified = Boolean(token.emailVerified);
       }
       return session;
     },

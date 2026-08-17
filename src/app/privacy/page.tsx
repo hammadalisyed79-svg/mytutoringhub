@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             requests.
           </p>
           <h2>6. Cookies</h2>
-          <p>We use essential cookies for authentication and session security.</p>
+          <p>We use essential cookies for authentication and session security. We also use Vercel Analytics for anonymized page-view counts (no advertising cookies).</p>
         </div>
       </div>
     </div>

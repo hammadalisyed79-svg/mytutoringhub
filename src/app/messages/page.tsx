@@ -14,6 +14,14 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
   const sp = await searchParams;
 
   const uid = session.user.id;
+  if (session.user.role !== "ADMIN") {
+    const me = await prisma.user.findUnique({
+      where: { id: uid },
+      select: { emailVerified: true, suspended: true },
+    });
+    if (me?.suspended) redirect("/dashboard");
+    if (!me?.emailVerified) redirect("/dashboard?verify=1");
+  }
   const conversations = await prisma.conversation.findMany({
     where: { OR: [{ userAId: uid }, { userBId: uid }] },
     orderBy: { lastMessageAt: "desc" },

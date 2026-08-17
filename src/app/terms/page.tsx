@@ -25,7 +25,9 @@ export default function TermsPage() {
             Students need an active Student Pass to message tutors and post requests. Tutors need
             Tutor Basic to keep a public listing. Optional upgrades (Verified, Highlighted, Ad
             Boost) improve visibility. Subscriptions renew according to the plan you purchase
-            unless cancelled.
+            unless cancelled. Platform subscriptions are processed by Safepay (Stripe is a
+            fallback only). Lesson fees stay off-platform and are never collected by
+            MyTutoringHub.
           </p>
           <h2>4. Conduct</h2>
           <p>

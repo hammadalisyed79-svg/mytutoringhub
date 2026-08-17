@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   const allowed = await canMessage(session.user.id, session.user.role as Role);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Active subscription required to message" },
+      { error: "Verified email and an active subscription are required to message" },
       { status: 403 },
     );
   }

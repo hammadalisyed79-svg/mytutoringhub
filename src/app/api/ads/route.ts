@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const allowed = await canPostAd(session.user.id, session.user.role as Role);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Active Student Pass required to post ads" },
+      { error: "Verified email and an active Student Pass are required to post ads" },
       { status: 403 },
     );
   }
