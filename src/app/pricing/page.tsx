@@ -58,6 +58,8 @@ function PlanActions({
   }
   return <GuestJoinButtons />;
 }
+
+function PlanPrice({ plan, currency }: { plan: ResolvedPlan; currency: CurrencyCode }) {
   if (plan.isComplimentary) {
     return (
       <div className="price-block">
