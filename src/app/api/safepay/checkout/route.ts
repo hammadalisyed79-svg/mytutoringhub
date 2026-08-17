@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   const apiKey = process.env.SAFEPAY_API_KEY!;
   const safepay = getSafepayClient();
   const env = getSafepayEnv();
-  const orderId = `mth_${session.user.id}_${plan}_${Date.now()}`;
+  const orderId = `mth_${plan}_${Date.now()}`;
 
   try {
     const paymentSession = await safepay.payments.session.setup({
@@ -77,9 +77,6 @@ export async function POST(req: Request) {
       entry_mode: "raw",
       currency,
       amount,
-      metadata: {
-        order_id: orderId,
-      },
       include_fees: false,
     });
 
