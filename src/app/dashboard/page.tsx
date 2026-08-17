@@ -3,6 +3,8 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
+import { VerificationForm } from "@/components/VerificationForm";
+import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { getPlan } from "@/lib/plans";
 
 export const metadata = { title: "Dashboard" };
@@ -22,6 +24,11 @@ export default async function DashboardPage({
       subscriptions: { orderBy: { createdAt: "desc" } },
       tutorProfile: true,
       studentAds: { orderBy: { createdAt: "desc" }, take: 5 },
+      reviewRequestsRecv: {
+        where: { status: "PENDING" },
+        include: { tutorUser: { select: { name: true } } },
+        take: 10,
+      },
     },
   });
 
@@ -62,13 +69,16 @@ export default async function DashboardPage({
             </ul>
             {pendingSubs.length > 0 && (
               <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.9rem" }}>
-                {pendingSubs.length} unfinished checkout{pendingSubs.length === 1 ? "" : "s"} ignored.
-                Start again from Pricing if needed.
+                {pendingSubs.length} unfinished checkout
+                {pendingSubs.length === 1 ? "" : "s"} ignored. Start again from Pricing if needed.
               </p>
             )}
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
               <Link href="/pricing" className="btn btn-sm">
                 View plans
+              </Link>
+              <Link href="/settings" className="btn btn-secondary btn-sm">
+                Settings
               </Link>
             </div>
           </section>
@@ -79,29 +89,65 @@ export default async function DashboardPage({
               <Link href="/search">Browse tutors</Link>
               <Link href="/ads">Student ads</Link>
               <Link href="/messages">Messages</Link>
+              <Link href="/settings">Account settings</Link>
+              <Link href="/help">Help</Link>
               {user.role === "ADMIN" && <Link href="/admin">Admin panel</Link>}
             </div>
           </section>
 
-          {user.role === "TUTOR" && user.tutorProfile && (
+          {user.role === "STUDENT" && user.reviewRequestsRecv.length > 0 && (
             <section className="panel" style={{ gridColumn: "1 / -1" }}>
-              <h2>Your tutor profile</h2>
-              <p className="muted">
-                Status: {user.tutorProfile.active ? "Listed" : "Hidden until Tutor Basic is active"} ·{" "}
-                {user.tutorProfile.verified ? "Verified" : "Not verified"} ·{" "}
-                {user.tutorProfile.highlighted ? "Highlighted" : "Standard listing"}
-              </p>
-              <TutorProfileForm initial={user.tutorProfile} />
-              <p style={{ marginTop: "1rem" }}>
-                <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
-              </p>
+              <h2>Review requests</h2>
+              <ul className="sub-list">
+                {user.reviewRequestsRecv.map((r) => (
+                  <li key={r.id}>
+                    {r.tutorUser.name} asked for a review —{" "}
+                    <Link href={`/tutors/${r.tutorProfileId}`}>Leave a review</Link>
+                  </li>
+                ))}
+              </ul>
             </section>
+          )}
+
+          {user.role === "TUTOR" && user.tutorProfile && (
+            <>
+              <section className="panel" style={{ gridColumn: "1 / -1" }}>
+                <h2>Your tutor profile</h2>
+                <p className="muted">
+                  Status: {user.tutorProfile.active ? "Listed" : "Hidden until Tutor Basic is active"}{" "}
+                  · {user.tutorProfile.verified ? "Verified" : "Not verified"} ·{" "}
+                  {user.tutorProfile.highlighted ||
+                  (user.tutorProfile.highlightedUntil &&
+                    user.tutorProfile.highlightedUntil > new Date())
+                    ? "Highlighted"
+                    : "Standard listing"}
+                </p>
+                <TutorProfileForm initial={user.tutorProfile} />
+                <p style={{ marginTop: "1rem" }}>
+                  <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
+                </p>
+              </section>
+              <section className="panel" style={{ gridColumn: "1 / -1" }}>
+                <h2>Subject ads</h2>
+                <TutorAdsManager />
+              </section>
+              <section className="panel" style={{ gridColumn: "1 / -1" }}>
+                <h2>Get verified</h2>
+                <p className="muted">
+                  Submit ID or certificate links for admin review. Purchasing Verified Tutor also
+                  prioritises your request.
+                </p>
+                <VerificationForm />
+              </section>
+            </>
           )}
 
           {user.role === "STUDENT" && (
             <section className="panel" style={{ gridColumn: "1 / -1" }}>
               <h2>Your ads</h2>
-              {user.studentAds.length === 0 && <p className="muted">You have not posted any requests.</p>}
+              {user.studentAds.length === 0 && (
+                <p className="muted">You have not posted any requests.</p>
+              )}
               <div className="results">
                 {user.studentAds.map((ad) => (
                   <div key={ad.id} className="ad-row">

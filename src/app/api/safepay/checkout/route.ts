@@ -16,7 +16,14 @@ import { z } from "zod";
 export const runtime = "nodejs";
 
 const schema = z.object({
-  plan: z.enum(["STUDENT_PASS", "TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD"]),
+  plan: z.enum([
+    "STUDENT_PASS",
+    "TUTOR_BASIC",
+    "VERIFIED_TUTOR",
+    "HIGHLIGHTED_AD",
+    "AD_BOOST",
+    "UNLIMITED_ADS",
+  ]),
   currency: z.string().optional(),
 });
 

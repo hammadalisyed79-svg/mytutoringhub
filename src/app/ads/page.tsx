@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { ReportButton } from "@/components/ReportButton";
 
 export const metadata = { title: "Student ads" };
 
@@ -21,7 +22,9 @@ export default async function AdsPage() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
           <div>
             <h1 className="page-title">Student requests</h1>
-            <p className="section-lead">Students post what they need. Tutors can reach out to help.</p>
+            <p className="section-lead">
+              Students with a Pass post what they need. Tutors with Tutor Basic can reach out.
+            </p>
           </div>
           {session?.user?.role === "STUDENT" && (
             <Link href="/ads/new" className="btn">
@@ -47,6 +50,7 @@ export default async function AdsPage() {
                 {session?.user?.role === "TUTOR" && (
                   <Link href={`/messages?to=${ad.user.id}&ad=${ad.id}`}>Message student</Link>
                 )}
+                {session?.user && <ReportButton targetType="STUDENT_AD" targetId={ad.id} />}
               </div>
             </article>
           ))}

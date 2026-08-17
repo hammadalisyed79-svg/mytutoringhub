@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RequestReviewButton } from "@/components/RequestReviewButton";
 
 type Msg = {
   id: string;
@@ -10,6 +11,11 @@ type Msg = {
   createdAt: string;
   sender: { id: string; name: string };
 };
+
+type ReviewMeta = {
+  studentId: string;
+  tutorProfileId: string;
+} | null;
 
 export function MessageThread({
   conversationId,
@@ -21,6 +27,7 @@ export function MessageThread({
   const router = useRouter();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [otherName, setOtherName] = useState("");
+  const [reviewMeta, setReviewMeta] = useState<ReviewMeta>(null);
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
 
@@ -34,6 +41,7 @@ export function MessageThread({
     setMessages(data.messages);
     const other = data.userA.id === currentUserId ? data.userB : data.userA;
     setOtherName(other.name);
+    setReviewMeta(data.reviewRequest || null);
   }
 
   useEffect(() => {
@@ -62,6 +70,12 @@ export function MessageThread({
   return (
     <div className="thread">
       <h2>Chat with {otherName || "…"}</h2>
+      {reviewMeta && (
+        <RequestReviewButton
+          studentId={reviewMeta.studentId}
+          tutorProfileId={reviewMeta.tutorProfileId}
+        />
+      )}
       <div className="thread-messages">
         {messages.map((m) => (
           <div

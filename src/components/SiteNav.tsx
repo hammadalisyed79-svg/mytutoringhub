@@ -48,6 +48,9 @@ export function SiteNav({ user }: { user: NavUser }) {
           <Link href="/dashboard" onClick={() => setOpen(false)}>
             Dashboard
           </Link>
+          <Link href="/settings" onClick={() => setOpen(false)}>
+            Settings
+          </Link>
           {user.role === "ADMIN" && (
             <Link href="/admin" onClick={() => setOpen(false)}>
               Admin

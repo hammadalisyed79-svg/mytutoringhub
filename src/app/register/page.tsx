@@ -19,6 +19,10 @@ export default async function RegisterPage() {
       <p className="muted" style={{ marginTop: "1rem" }}>
         Already registered? <Link href="/login">Log in</Link>
       </p>
+      <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+        By joining you agree to our <Link href="/terms">Terms</Link> and{" "}
+        <Link href="/privacy">Privacy Policy</Link>.
+      </p>
     </div>
   );
 }

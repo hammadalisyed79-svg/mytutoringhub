@@ -19,6 +19,10 @@ export default async function LoginPage() {
       <p className="muted" style={{ marginTop: "1rem" }}>
         New here? <Link href="/register">Create an account</Link>
       </p>
+      <p className="muted" style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+        <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link> ·{" "}
+        <Link href="/help">Help</Link>
+      </p>
     </div>
   );
 }

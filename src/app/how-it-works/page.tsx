@@ -8,7 +8,8 @@ export default function HowItWorksPage() {
       <div className="container">
         <h1 className="page-title">How to find a private tutor</h1>
         <p className="section-lead">
-          MyTutoringHub works like FindTutor: search tutors, contact them, then learn your way.
+          Search tutors, subscribe with a Student Pass to message and post ads, then arrange lessons
+          directly with your tutor.
         </p>
 
         <div className="steps" style={{ marginBottom: "2.5rem" }}>
@@ -16,24 +17,24 @@ export default function HowItWorksPage() {
             <span>1</span>
             <h3>Search</h3>
             <p className="muted">
-              Tell us what you want to learn — subject, online or in-person, and budget — then
-              browse matching tutors.
+              Filter by subject, city, level, language, free trial, and verified tutors — or open a
+              subject SEO page like Maths in Lahore.
             </p>
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Contact</h3>
+            <h3>Contact with Student Pass</h3>
             <p className="muted">
-              With a Student Pass, message unlimited tutors, ask about trial lessons, and pick the
-              best fit.
+              A Student Pass unlocks messaging and “need a tutor” ads. Without a Pass you can browse,
+              but you cannot message or post requests.
             </p>
           </div>
           <div className="step">
             <span>3</span>
             <h3>Learn</h3>
             <p className="muted">
-              Start personalised classes. Agree on schedule and pay your tutor directly — we don’t
-              take a cut of lesson fees.
+              Agree on schedule and pay your tutor directly for lessons — we don’t take a lesson
+              commission.
             </p>
           </div>
         </div>
@@ -41,10 +42,10 @@ export default function HowItWorksPage() {
         <section className="panel" style={{ marginBottom: "1.5rem" }}>
           <h2>For students & parents</h2>
           <ul className="check-list">
-            <li>Browse verified and highlighted tutors</li>
-            <li>Post a free-style request ad so tutors can find you</li>
-            <li>Leave reviews after you’ve messaged a tutor</li>
-            <li>Cancel your Student Pass anytime from billing</li>
+            <li>Browse verified, highlighted, and boosted tutors</li>
+            <li>Report abuse from profiles or student ads</li>
+            <li>Leave reviews after messaging (moderated before publish)</li>
+            <li>Manage account details anytime in Settings</li>
           </ul>
           <Link href="/register?role=student" className="btn" style={{ marginTop: "1rem" }}>
             I need a tutor
@@ -54,10 +55,10 @@ export default function HowItWorksPage() {
         <section className="panel">
           <h2>For tutors</h2>
           <ul className="check-list">
-            <li>Publish your profile with subjects and hourly rate</li>
-            <li>Receive student messages with Tutor Basic</li>
-            <li>Stand out with Verified and Highlighted add-ons</li>
-            <li>Respond to student request ads</li>
+            <li>Tutor Basic lists your profile and up to 3 subject ads</li>
+            <li>Upload documents for verification; optional paid Verified add-on for priority</li>
+            <li>Boost or Highlight listings for timed search placement</li>
+            <li>Request reviews from students you’ve messaged</li>
           </ul>
           <Link href="/become-a-tutor" className="btn" style={{ marginTop: "1rem" }}>
             Become a tutor

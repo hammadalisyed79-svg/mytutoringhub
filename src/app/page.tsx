@@ -228,8 +228,8 @@ export default async function HomePage() {
           <div>
             <h2>Are you a tutor? Start teaching</h2>
             <p>
-              Create your profile, get a Tutor Basic plan, and optional Verified / Highlighted
-              upgrades. You keep 100% of lesson fees.
+              Create your profile, publish up to 3 subject ads with Tutor Basic, then add
+              Verification, Highlighted, Boost, or Unlimited Ads. You keep 100% of lesson fees.
             </p>
           </div>
           <div className="hero-ctas">

@@ -1127,6 +1127,55 @@ select:focus {
   padding-left: 1.1rem;
 }
 
+.narrow-prose {
+  width: min(720px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.legal-body h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.legal-body p {
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.faq-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 252, 247, 0.9);
+  padding: 0.85rem 1rem;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.faq-item p {
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
 .stack {
   display: grid;
   gap: 1.5rem;

@@ -42,13 +42,23 @@ export async function POST(req: Request) {
         studentId: session.user.id,
       },
     },
-    update: { rating: data.rating, comment: data.comment },
+    update: { rating: data.rating, comment: data.comment, status: "PENDING" },
     create: {
       tutorProfileId: data.tutorProfileId,
       studentId: session.user.id,
       rating: data.rating,
       comment: data.comment,
+      status: "PENDING",
     },
+  });
+
+  await prisma.reviewRequest.updateMany({
+    where: {
+      tutorProfileId: data.tutorProfileId,
+      studentId: session.user.id,
+      status: "PENDING",
+    },
+    data: { status: "FULFILLED" },
   });
 
   return NextResponse.json(review);

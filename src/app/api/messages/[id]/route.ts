@@ -43,7 +43,22 @@ export async function GET(_req: Request, { params }: Params) {
     data: { readAt: new Date() },
   });
 
-  return NextResponse.json(conversation);
+  let reviewRequest: { studentId: string; tutorProfileId: string } | null = null;
+  if (session.user.role === "TUTOR") {
+    const other =
+      conversation.userAId === session.user.id ? conversation.userB : conversation.userA;
+    if (other.role === "STUDENT") {
+      const profile = await prisma.tutorProfile.findUnique({
+        where: { userId: session.user.id },
+        select: { id: true },
+      });
+      if (profile) {
+        reviewRequest = { studentId: other.id, tutorProfileId: profile.id };
+      }
+    }
+  }
+
+  return NextResponse.json({ ...conversation, reviewRequest });
 }
 
 export async function POST(req: Request, { params }: Params) {

@@ -36,9 +36,12 @@ export function SiteFooter() {
         <div>
           <h4>Company</h4>
           <div className="footer-col">
+            <Link href="/help">Help & FAQ</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
             <Link href="/login">Log in</Link>
             <Link href="/register">Join</Link>
-            <a href="https://mytutoringhub.com">mytutoringhub.com</a>
+            <a href="https://www.mytutoringhub.com">mytutoringhub.com</a>
           </div>
         </div>
       </div>

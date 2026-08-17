@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-  const subjects = [
+const subjects = [
   ["Mathematics", "mathematics"],
   ["Physics", "physics"],
   ["Chemistry", "chemistry"],
@@ -96,6 +96,7 @@ export async function seedCompanyData() {
     update: {
       verified: true,
       highlighted: true,
+      highlightedUntil: new Date(Date.now() + 30 * 86400000),
       active: true,
       headline: "FSc, O Level & online Maths/Physics",
       bio: "I teach Matric, Intermediate (FSc), and O Level Mathematics & Physics with board-focused notes and past papers. Home tuition in Lahore and live online classes for students worldwide.",
@@ -104,6 +105,12 @@ export async function seedCompanyData() {
       location: "Lahore / Online",
       online: true,
       inPerson: true,
+      levels: "Secondary, Intermediate, O Level",
+      languages: "English, Urdu",
+      qualifications: "MSc Physics; 8+ years tutoring",
+      teachingMethod: "Past papers, weekly tests, concept drills",
+      availability: "Weekday evenings and weekends",
+      offersFreeTrial: true,
     },
     create: {
       userId: tutor.id,
@@ -114,11 +121,40 @@ export async function seedCompanyData() {
       location: "Lahore / Online",
       online: true,
       inPerson: true,
+      levels: "Secondary, Intermediate, O Level",
+      languages: "English, Urdu",
+      qualifications: "MSc Physics; 8+ years tutoring",
+      teachingMethod: "Past papers, weekly tests, concept drills",
+      availability: "Weekday evenings and weekends",
+      offersFreeTrial: true,
       verified: true,
       highlighted: true,
+      highlightedUntil: new Date(Date.now() + 30 * 86400000),
       active: true,
     },
   });
+
+  const tutorProfile = await prisma.tutorProfile.findUniqueOrThrow({ where: { userId: tutor.id } });
+  const existingAds = await prisma.tutorAd.count({ where: { tutorProfileId: tutorProfile.id } });
+  if (existingAds === 0) {
+    for (const subject of ["Mathematics", "Physics", "O Level Maths"]) {
+      await prisma.tutorAd.create({
+        data: {
+          tutorProfileId: tutorProfile.id,
+          subject,
+          title: `${subject} private lessons`,
+          level: "Secondary / O Level",
+          location: "Lahore / Online",
+          online: true,
+          inPerson: true,
+          rate: 2000,
+          description: `Board-focused ${subject} tutoring with past papers.`,
+          status: "ACTIVE",
+          highlightedUntil: new Date(Date.now() + 30 * 86400000),
+        },
+      });
+    }
+  }
 
   for (const [id, plan] of [
     ["seed_tutor_basic", "TUTOR_BASIC"],
@@ -185,6 +221,36 @@ export async function seedCompanyData() {
         status: "OPEN",
       },
     });
+  }
+
+  // Migrate legacy profiles: one default TutorAd per subject when none exist.
+  const profilesNeedingAds = await prisma.tutorProfile.findMany({
+    where: { ads: { none: {} } },
+  });
+  for (const profile of profilesNeedingAds) {
+    const subjectList = profile.subjects
+      .split(/[,;/|]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const unique = [...new Set(subjectList.length ? subjectList : ["General"])];
+    for (const subject of unique.slice(0, 3)) {
+      await prisma.tutorAd.create({
+        data: {
+          tutorProfileId: profile.id,
+          subject,
+          title: `${subject} private lessons`,
+          level: profile.levels || "All levels",
+          location: profile.location,
+          online: profile.online,
+          inPerson: profile.inPerson,
+          rate: profile.hourlyRate,
+          description: profile.headline || profile.bio.slice(0, 280),
+          status: "ACTIVE",
+          highlightedUntil: profile.highlightedUntil,
+          boostUntil: profile.boostUntil,
+        },
+      });
+    }
   }
 
   return COMPANY_ACCOUNTS.map(({ email, password, role, name }) => ({

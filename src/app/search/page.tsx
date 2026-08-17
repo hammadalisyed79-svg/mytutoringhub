@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { searchTutors } from "@/lib/search-tutors";
+import { isBoostActive } from "@/lib/subscription";
 
 export const metadata = { title: "Find tutors" };
 
@@ -12,41 +14,26 @@ type SearchParams = Promise<{
   verified?: string;
   max?: string;
   location?: string;
+  level?: string;
+  trial?: string;
+  language?: string;
+  page?: string;
 }>;
+
+function searchQuery(sp: Record<string, string | undefined>, page: number) {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(sp)) {
+    if (v) params.set(k, v);
+  }
+  params.set("page", String(page));
+  return params.toString();
+}
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const currency = await getVisitorCurrency();
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
-
-  const tutors = await prisma.tutorProfile.findMany({
-    where: {
-      active: true,
-      ...(sp.subject
-        ? { subjects: { contains: sp.subject } }
-        : sp.q
-          ? {
-              OR: [
-                { subjects: { contains: sp.q } },
-                { bio: { contains: sp.q } },
-                { location: { contains: sp.q } },
-                { headline: { contains: sp.q } },
-                { user: { name: { contains: sp.q } } },
-              ],
-            }
-          : {}),
-      ...(sp.location ? { location: { contains: sp.location } } : {}),
-      ...(sp.mode === "online" ? { online: true } : {}),
-      ...(sp.mode === "inperson" ? { inPerson: true } : {}),
-      ...(sp.verified === "1" ? { verified: true } : {}),
-      ...(sp.max ? { hourlyRate: { lte: Number(sp.max) } } : {}),
-    },
-    include: {
-      user: { select: { id: true, name: true } },
-      reviews: { select: { rating: true } },
-    },
-    orderBy: [{ highlighted: "desc" }, { verified: "desc" }, { hourlyRate: "asc" }],
-  });
+  const { tutors, total, page, pages } = await searchTutors(sp);
 
   return (
     <div className="page">
@@ -75,11 +62,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           </label>
           <label>
             City
-            <input
-              name="location"
-              defaultValue={sp.location || ""}
-              placeholder="City or Online…"
-            />
+            <input name="location" defaultValue={sp.location || ""} placeholder="City or Online…" />
+          </label>
+          <label>
+            Level
+            <input name="level" defaultValue={sp.level || ""} placeholder="GCSE, A Level…" />
+          </label>
+          <label>
+            Language
+            <input name="language" defaultValue={sp.language || ""} placeholder="English…" />
           </label>
           <label>
             Format
@@ -102,7 +93,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           </label>
           <label className="radio filter-check">
             <input type="checkbox" name="verified" value="1" defaultChecked={sp.verified === "1"} />
-            Verified tutors only
+            Verified only
+          </label>
+          <label className="radio filter-check">
+            <input type="checkbox" name="trial" value="1" defaultChecked={sp.trial === "1"} />
+            Free trial offered
           </label>
           <button className="btn" type="submit">
             Search
@@ -110,7 +105,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         </form>
 
         <p className="muted" style={{ marginBottom: "1rem" }}>
-          {tutors.length} tutor{tutors.length === 1 ? "" : "s"} found
+          {total} tutor{total === 1 ? "" : "s"} found
           {sp.subject ? ` for ${sp.subject}` : ""}
         </p>
 
@@ -126,19 +121,38 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               t.reviews.length > 0
                 ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                 : null;
+            const boosted = isBoostActive(t.boostUntil);
+            const highlighted =
+              t.highlighted || (t.highlightedUntil && t.highlightedUntil > new Date());
             return (
               <Link
                 key={t.id}
                 href={`/tutors/${t.id}`}
-                className={`tutor-card ${t.highlighted ? "highlighted" : ""}`}
+                className={`tutor-card ${highlighted ? "highlighted" : ""}`}
               >
                 <div className="tutor-avatar" aria-hidden>
-                  {t.user.name.slice(0, 1)}
+                  {t.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={t.photoUrl}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  ) : (
+                    t.user.name.slice(0, 1)
+                  )}
                 </div>
                 <div className="tutor-card-body">
                   <div className="meta">
-                    {t.highlighted && <span className="badge accent">Highlighted</span>}
+                    {boosted && <span className="badge accent">Boosted</span>}
+                    {highlighted && <span className="badge accent">Highlighted</span>}
                     {t.verified && <span className="badge">Verified</span>}
+                    {t.offersFreeTrial && <span className="badge">Free trial</span>}
                     {avg !== null && (
                       <span>
                         {avg.toFixed(1)} ★ · {t.reviews.length} review
@@ -153,9 +167,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
                     <span>{t.location || "Online"}</span>
                     <span>
-                      {[t.online && "Online", t.inPerson && "In person"]
-                        .filter(Boolean)
-                        .join(" · ")}
+                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ")}
                     </span>
                   </div>
                 </div>
@@ -163,6 +175,24 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             );
           })}
         </div>
+
+        {pages > 1 && (
+          <div className="pagination">
+            {page > 1 && (
+              <Link className="btn btn-secondary btn-sm" href={`/search?${searchQuery(sp, page - 1)}`}>
+                Previous
+              </Link>
+            )}
+            <span className="muted">
+              Page {page} of {pages}
+            </span>
+            {page < pages && (
+              <Link className="btn btn-secondary btn-sm" href={`/search?${searchQuery(sp, page + 1)}`}>
+                Next
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

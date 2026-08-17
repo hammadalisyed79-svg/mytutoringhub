@@ -9,22 +9,28 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   name             String
-  email            String   @unique
+  email            String    @unique
   passwordHash     String
-  role             String   @default("STUDENT")
-  stripeCustomerId String?  @unique
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  role             String    @default("STUDENT")
+  phone            String?
+  suspended        Boolean   @default(false)
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  tutorProfile       TutorProfile?
-  subscriptions      Subscription[]
-  studentAds         StudentAd[]
-  reviewsGiven       Review[]           @relation("ReviewsGiven")
-  conversationsAsA   Conversation[]     @relation("ConversationUserA")
-  conversationsAsB   Conversation[]     @relation("ConversationUserB")
-  messages           Message[]
+  tutorProfile         TutorProfile?
+  subscriptions        Subscription[]
+  studentAds           StudentAd[]
+  reviewsGiven         Review[]              @relation("ReviewsGiven")
+  conversationsAsA     Conversation[]        @relation("ConversationUserA")
+  conversationsAsB     Conversation[]        @relation("ConversationUserB")
+  messages             Message[]
+  verificationRequests VerificationRequest[]
+  reportsFiled         Report[]              @relation("ReportsFiled")
+  reviewRequestsSent   ReviewRequest[]       @relation("ReviewRequestsSent")
+  reviewRequestsRecv   ReviewRequest[]       @relation("ReviewRequestsRecv")
 }
 
 model Subject {
@@ -34,24 +40,57 @@ model Subject {
 }
 
 model TutorProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline    String?
-  bio         String
-  subjects    String
-  hourlyRate  Float
-  location    String
-  online      Boolean  @default(true)
-  inPerson    Boolean  @default(false)
-  photoUrl    String?
-  verified    Boolean  @default(false)
-  highlighted Boolean  @default(false)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline        String?
+  bio             String
+  subjects        String
+  hourlyRate      Float
+  location        String
+  online          Boolean   @default(true)
+  inPerson        Boolean   @default(false)
+  photoUrl        String?
+  qualifications  String?
+  teachingMethod  String?
+  languages       String?
+  levels          String?
+  availability    String?
+  videoUrl        String?
+  offersFreeTrial Boolean   @default(false)
+  phone           String?
+  verified        Boolean   @default(false)
+  highlighted     Boolean   @default(false)
+  highlightedUntil DateTime?
+  boostUntil      DateTime?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   reviews Review[]
+  ads     TutorAd[]
+}
+
+model TutorAd {
+  id               String       @id @default(cuid())
+  tutorProfileId   String
+  tutorProfile     TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  subject          String
+  title            String
+  level            String       @default("All levels")
+  location         String
+  online           Boolean      @default(true)
+  inPerson         Boolean      @default(false)
+  rate             Float
+  description      String?
+  status           String       @default("ACTIVE")
+  highlightedUntil DateTime?
+  boostUntil       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([status, subject])
+  @@index([boostUntil, highlightedUntil])
 }
 
 model Subscription {
@@ -124,7 +163,49 @@ model Review {
   student        User         @relation("ReviewsGiven", fields: [studentId], references: [id], onDelete: Cascade)
   rating         Int
   comment        String
+  status         String       @default("PUBLISHED")
   createdAt      DateTime     @default(now())
 
   @@unique([tutorProfileId, studentId])
+}
+
+model ReviewRequest {
+  id             String   @id @default(cuid())
+  tutorUserId    String
+  tutorUser      User     @relation("ReviewRequestsSent", fields: [tutorUserId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        User     @relation("ReviewRequestsRecv", fields: [studentId], references: [id], onDelete: Cascade)
+  tutorProfileId String
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+
+  @@unique([tutorProfileId, studentId])
+}
+
+model VerificationRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  docUrls   String
+  notes     String?
+  status    String   @default("PENDING")
+  adminNote String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  reason     String
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, createdAt])
 }

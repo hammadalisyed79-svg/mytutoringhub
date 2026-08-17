@@ -7,11 +7,19 @@ const schema = z.object({
   headline: z.string().max(120).optional(),
   bio: z.string().min(20),
   subjects: z.string().min(1),
-  hourlyRate: z.number().min(500).max(20000),
+  hourlyRate: z.number().min(500).max(50000),
   location: z.string().min(1),
   online: z.boolean(),
   inPerson: z.boolean(),
-  photoUrl: z.string().url().optional().or(z.literal("")),
+  photoUrl: z.string().optional().or(z.literal("")),
+  qualifications: z.string().max(2000).optional(),
+  teachingMethod: z.string().max(2000).optional(),
+  languages: z.string().max(200).optional(),
+  levels: z.string().max(200).optional(),
+  availability: z.string().max(500).optional(),
+  videoUrl: z.string().optional().or(z.literal("")),
+  offersFreeTrial: z.boolean().optional(),
+  phone: z.string().max(40).optional(),
 });
 
 export async function PUT(req: Request) {
@@ -32,6 +40,14 @@ export async function PUT(req: Request) {
       online: data.online,
       inPerson: data.inPerson,
       photoUrl: data.photoUrl || null,
+      qualifications: data.qualifications || null,
+      teachingMethod: data.teachingMethod || null,
+      languages: data.languages || null,
+      levels: data.levels || null,
+      availability: data.availability || null,
+      videoUrl: data.videoUrl || null,
+      offersFreeTrial: Boolean(data.offersFreeTrial),
+      phone: data.phone || null,
     },
     create: {
       userId: session.user.id,
@@ -43,9 +59,37 @@ export async function PUT(req: Request) {
       online: data.online,
       inPerson: data.inPerson,
       photoUrl: data.photoUrl || null,
+      qualifications: data.qualifications || null,
+      teachingMethod: data.teachingMethod || null,
+      languages: data.languages || null,
+      levels: data.levels || null,
+      availability: data.availability || null,
+      videoUrl: data.videoUrl || null,
+      offersFreeTrial: Boolean(data.offersFreeTrial),
+      phone: data.phone || null,
       active: false,
     },
   });
+
+  // Ensure at least one subject ad exists for search coverage.
+  const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
+  if (adCount === 0) {
+    const firstSubject = profile.subjects.split(",")[0]?.trim() || "General";
+    await prisma.tutorAd.create({
+      data: {
+        tutorProfileId: profile.id,
+        subject: firstSubject,
+        title: profile.headline || `${firstSubject} lessons`,
+        level: profile.levels || "All levels",
+        location: profile.location,
+        online: profile.online,
+        inPerson: profile.inPerson,
+        rate: profile.hourlyRate,
+        description: profile.bio.slice(0, 500),
+        status: "ACTIVE",
+      },
+    });
+  }
 
   return NextResponse.json(profile);
 }

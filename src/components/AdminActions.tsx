@@ -1,25 +1,18 @@
 "use client";
 
-export function AdminActions() {
-  async function act(action: string, id: string) {
-    await fetch("/api/admin", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, id }),
-    });
-    window.location.reload();
-  }
-
-  return { act };
-}
-
 export function AdminHideAdButton({ id }: { id: string }) {
   return (
-    <button className="link-btn" type="button" onClick={() => fetch("/api/admin", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "hide_ad", id }),
-    }).then(() => window.location.reload())}>
+    <button
+      className="link-btn"
+      type="button"
+      onClick={() =>
+        fetch("/api/admin", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "hide_ad", id }),
+        }).then(() => window.location.reload())
+      }
+    >
       Hide
     </button>
   );
@@ -42,6 +35,34 @@ export function AdminToggleTutorButton({ id, active }: { id: string; active: boo
       }
     >
       {active ? "Deactivate" : "Activate"}
+    </button>
+  );
+}
+
+export function AdminActionButton({
+  action,
+  id,
+  label,
+  extra,
+}: {
+  action: string;
+  id: string;
+  label: string;
+  extra?: Record<string, unknown>;
+}) {
+  return (
+    <button
+      className="link-btn"
+      type="button"
+      onClick={() =>
+        fetch("/api/admin", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, id, ...extra }),
+        }).then(() => window.location.reload())
+      }
+    >
+      {label}
     </button>
   );
 }
