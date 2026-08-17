@@ -40,6 +40,8 @@ export async function clearOAuthIntent() {
 }
 
 async function linkGoogleAccount(userId: string, account: Account) {
+  const sessionState =
+    typeof account.session_state === "string" ? account.session_state : undefined;
   await prisma.account.upsert({
     where: {
       provider_providerAccountId: {
@@ -52,22 +54,22 @@ async function linkGoogleAccount(userId: string, account: Account) {
       type: account.type,
       provider: account.provider,
       providerAccountId: account.providerAccountId,
-      refresh_token: account.refresh_token,
-      access_token: account.access_token,
-      expires_at: account.expires_at,
-      token_type: account.token_type,
-      scope: account.scope,
-      id_token: account.id_token,
-      session_state: account.session_state,
+      refresh_token: account.refresh_token ?? undefined,
+      access_token: account.access_token ?? undefined,
+      expires_at: account.expires_at ?? undefined,
+      token_type: account.token_type ?? undefined,
+      scope: account.scope ?? undefined,
+      id_token: account.id_token ?? undefined,
+      session_state: sessionState,
     },
     update: {
-      refresh_token: account.refresh_token,
-      access_token: account.access_token,
-      expires_at: account.expires_at,
-      token_type: account.token_type,
-      scope: account.scope,
-      id_token: account.id_token,
-      session_state: account.session_state,
+      refresh_token: account.refresh_token ?? undefined,
+      access_token: account.access_token ?? undefined,
+      expires_at: account.expires_at ?? undefined,
+      token_type: account.token_type ?? undefined,
+      scope: account.scope ?? undefined,
+      id_token: account.id_token ?? undefined,
+      session_state: sessionState,
     },
   });
 }

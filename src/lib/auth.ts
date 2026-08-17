@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -71,9 +72,13 @@ const googleProvider = googleConfigured()
     })
   : null;
 
+const providers: NextAuthConfig["providers"] = googleProvider
+  ? [googleProvider, credentialsProvider]
+  : [credentialsProvider];
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  providers: googleProvider ? [googleProvider, credentialsProvider] : [credentialsProvider],
+  providers,
   events: {
     async signIn({ user, account }) {
       if (!user.email || !user.id || user.role === "ADMIN") return;
