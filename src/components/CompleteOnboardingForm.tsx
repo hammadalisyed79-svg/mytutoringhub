@@ -33,32 +33,32 @@ export function CompleteOnboardingForm() {
 
   return (
     <form className="auth-stack" onSubmit={submit}>
-      <fieldset className="role-pick role-pick-cards">
+      <fieldset className="role-pick">
         <legend>Choose your account type</legend>
-        <label className={`role-card ${role === "STUDENT" ? "is-selected" : ""}`}>
-          <input
-            type="radio"
-            name="role"
-            value="STUDENT"
-            checked={role === "STUDENT"}
-            onChange={() => setRole("STUDENT")}
-          />
-          <strong>Student / parent</strong>
-          <span className="muted">Browse tutors and message after subscribing</span>
-        </label>
-        <label className={`role-card ${role === "TUTOR" ? "is-selected" : ""}`}>
-          <input
-            type="radio"
-            name="role"
-            value="TUTOR"
-            checked={role === "TUTOR"}
-            onChange={() => setRole("TUTOR")}
-          />
-          <strong>Tutor</strong>
-          <span className="muted">
-            Publish a profile, upload a photo ID, and receive student messages
-          </span>
-        </label>
+        <div className="role-pick-cards">
+          <label className={`role-card ${role === "STUDENT" ? "is-selected" : ""}`}>
+            <input
+              type="radio"
+              name="role"
+              value="STUDENT"
+              checked={role === "STUDENT"}
+              onChange={() => setRole("STUDENT")}
+            />
+            <strong>Student / parent</strong>
+            <span className="muted">Find tutors and post requests.</span>
+          </label>
+          <label className={`role-card ${role === "TUTOR" ? "is-selected" : ""}`}>
+            <input
+              type="radio"
+              name="role"
+              value="TUTOR"
+              checked={role === "TUTOR"}
+              onChange={() => setRole("TUTOR")}
+            />
+            <strong>Tutor</strong>
+            <span className="muted">List your profile and get messages.</span>
+          </label>
+        </div>
       </fieldset>
       {error && <p className="form-error">{error}</p>}
       <button className="btn btn-block" type="submit" disabled={loading}>
