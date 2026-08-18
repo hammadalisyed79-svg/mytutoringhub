@@ -3,9 +3,15 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { GoogleSignInButton, AuthDivider } from "@/components/GoogleSignInButton";
+import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
 
-function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
+function RegisterFormInner({
+  googleEnabled,
+  microsoftEnabled,
+}: {
+  googleEnabled: boolean;
+  microsoftEnabled: boolean;
+}) {
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "TUTOR" : "STUDENT";
   const [role, setRole] = useState<"STUDENT" | "TUTOR">(defaultRole);
@@ -108,10 +114,16 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
         </button>
       </form>
 
-      {googleEnabled && (
+      {(googleEnabled || microsoftEnabled) && (
         <>
           <AuthDivider />
-          <GoogleSignInButton intent="register" role={role} disabled={loading} />
+          <OAuthButtons
+            intent="register"
+            role={role}
+            disabled={loading}
+            googleEnabled={googleEnabled}
+            microsoftEnabled={microsoftEnabled}
+          />
         </>
       )}
       <p className="auth-footnote muted">
@@ -122,10 +134,16 @@ function RegisterFormInner({ googleEnabled }: { googleEnabled: boolean }) {
   );
 }
 
-export function RegisterForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function RegisterForm({
+  googleEnabled,
+  microsoftEnabled,
+}: {
+  googleEnabled: boolean;
+  microsoftEnabled: boolean;
+}) {
   return (
     <Suspense fallback={<p className="muted">Loading…</p>}>
-      <RegisterFormInner googleEnabled={googleEnabled} />
+      <RegisterFormInner googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
     </Suspense>
   );
 }

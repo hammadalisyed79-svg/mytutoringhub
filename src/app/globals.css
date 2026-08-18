@@ -862,6 +862,13 @@ svg {
   background: var(--line);
 }
 
+.oauth-block,
+.oauth-buttons {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.btn-oauth,
 .btn-google {
   display: inline-flex;
   align-items: center;
@@ -874,6 +881,7 @@ svg {
   box-shadow: var(--shadow-sm);
 }
 
+.btn-oauth:hover,
 .btn-google:hover {
   border-color: rgba(13, 95, 82, 0.28);
 }

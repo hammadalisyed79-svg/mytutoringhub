@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getSiteSettings } from "@/lib/site-settings";
 import {
   encodeOAuthIntent,
-  googleConfigured,
+  oauthConfigured,
   OAUTH_INTENT_COOKIE,
   type OAuthIntent,
 } from "@/lib/oauth";
@@ -16,8 +16,8 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  if (!googleConfigured()) {
-    return NextResponse.json({ error: "Google sign-in is not configured yet" }, { status: 503 });
+  if (!oauthConfigured()) {
+    return NextResponse.json({ error: "Social sign-in is not configured yet" }, { status: 503 });
   }
 
   const body = schema.parse(await req.json());

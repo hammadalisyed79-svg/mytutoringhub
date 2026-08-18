@@ -3,19 +3,29 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 
+type ProviderId = "google" | "microsoft-entra-id";
+
 type Props = {
   intent: "login" | "register";
   role?: "STUDENT" | "TUTOR";
   disabled?: boolean;
+  googleEnabled?: boolean;
+  microsoftEnabled?: boolean;
 };
 
-export function GoogleSignInButton({ intent, role, disabled }: Props) {
-  const [loading, setLoading] = useState(false);
+export function OAuthButtons({
+  intent,
+  role,
+  disabled,
+  googleEnabled,
+  microsoftEnabled,
+}: Props) {
+  const [loading, setLoading] = useState<ProviderId | null>(null);
   const [error, setError] = useState("");
 
-  async function startGoogle() {
+  async function startOAuth(provider: ProviderId) {
     setError("");
-    setLoading(true);
+    setLoading(provider);
     try {
       const res = await fetch("/api/auth/oauth-intent", {
         method: "POST",
@@ -24,28 +34,47 @@ export function GoogleSignInButton({ intent, role, disabled }: Props) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error((data as { error?: string }).error || "Google sign-in unavailable");
+        throw new Error((data as { error?: string }).error || "Social sign-in unavailable");
       }
-      await signIn("google", {
+      await signIn(provider, {
         callbackUrl: intent === "register" ? "/pricing?verify=sent" : "/dashboard",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
-      setLoading(false);
+      setError(err instanceof Error ? err.message : "Social sign-in failed");
+      setLoading(null);
     }
   }
 
+  if (!googleEnabled && !microsoftEnabled) return null;
+
   return (
     <div className="oauth-block">
-      <button
-        type="button"
-        className="btn btn-google"
-        onClick={startGoogle}
-        disabled={disabled || loading}
-      >
-        <GoogleMark />
-        {loading ? "Connecting to Google…" : "Continue with Google"}
-      </button>
+      <div className="oauth-buttons">
+        {googleEnabled && (
+          <button
+            type="button"
+            className="btn btn-oauth"
+            onClick={() => startOAuth("google")}
+            disabled={disabled || Boolean(loading)}
+          >
+            <GoogleMark />
+            {loading === "google" ? "Connecting to Google…" : "Continue with Google"}
+          </button>
+        )}
+        {microsoftEnabled && (
+          <button
+            type="button"
+            className="btn btn-oauth"
+            onClick={() => startOAuth("microsoft-entra-id")}
+            disabled={disabled || Boolean(loading)}
+          >
+            <MicrosoftMark />
+            {loading === "microsoft-entra-id"
+              ? "Connecting to Microsoft…"
+              : "Continue with Microsoft"}
+          </button>
+        )}
+      </div>
       {error && <p className="form-error">{error}</p>}
     </div>
   );
@@ -74,10 +103,21 @@ function GoogleMark() {
   );
 }
 
+function MicrosoftMark() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 23 23" aria-hidden="true">
+      <path fill="#F35325" d="M1 1h10v10H1z" />
+      <path fill="#81BC06" d="M12 1h10v10H12z" />
+      <path fill="#05A6F0" d="M1 12h10v10H1z" />
+      <path fill="#FFBA08" d="M12 12h10v10H12z" />
+    </svg>
+  );
+}
+
 export function AuthDivider() {
   return (
     <div className="auth-divider" aria-hidden="true">
-      <span>or sign in with Google</span>
+      <span>or continue with</span>
     </div>
   );
 }

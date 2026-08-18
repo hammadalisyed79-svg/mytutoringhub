@@ -15,7 +15,7 @@ export default async function RegisterCompletePage() {
   return (
     <AuthLayout
       title="One last step"
-      lead="You signed in with Google. Tell us whether you are joining as a student or a tutor."
+      lead="You signed in with Google or Microsoft. Tell us whether you are joining as a student or a tutor."
     >
       <CompleteOnboardingForm />
     </AuthLayout>

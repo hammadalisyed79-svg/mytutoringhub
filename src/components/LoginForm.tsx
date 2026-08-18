@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { GoogleSignInButton, AuthDivider } from "@/components/GoogleSignInButton";
+import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
 
-export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function LoginForm({
+  googleEnabled,
+  microsoftEnabled,
+}: {
+  googleEnabled: boolean;
+  microsoftEnabled: boolean;
+}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -63,10 +69,15 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      {googleEnabled && (
+      {(googleEnabled || microsoftEnabled) && (
         <>
           <AuthDivider />
-          <GoogleSignInButton intent="login" disabled={loading} />
+          <OAuthButtons
+            intent="login"
+            disabled={loading}
+            googleEnabled={googleEnabled}
+            microsoftEnabled={microsoftEnabled}
+          />
         </>
       )}
       <p className="auth-footnote muted">

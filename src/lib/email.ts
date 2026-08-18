@@ -115,7 +115,7 @@ export function welcomeEmailHtml(name: string, role: string) {
 
 export function loginConfirmationEmailHtml(opts: {
   name: string;
-  method: "password" | "google";
+  method: "password" | "google" | "microsoft";
   when: Date;
 }) {
   const when = opts.when.toLocaleString("en-GB", {
@@ -123,7 +123,12 @@ export function loginConfirmationEmailHtml(opts: {
     timeStyle: "short",
     timeZone: "UTC",
   });
-  const methodLabel = opts.method === "google" ? "Google" : "email and password";
+  const methodLabel =
+    opts.method === "google"
+      ? "Google"
+      : opts.method === "microsoft"
+        ? "Microsoft"
+        : "email and password";
   return emailLayout({
     preheader: "New sign-in to your My Tutoring Hub account.",
     title: "Sign-in confirmation",
@@ -214,7 +219,7 @@ export function verifyEmailHtml(name: string, verifyUrl: string) {
 export async function sendLoginConfirmationEmail(opts: {
   name: string;
   email: string;
-  method: "password" | "google";
+  method: "password" | "google" | "microsoft";
 }) {
   await sendEmail({
     to: opts.email,

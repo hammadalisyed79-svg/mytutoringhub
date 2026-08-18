@@ -1,12 +1,20 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authConfig, SESSION_MAX_AGE_SEC } from "@/lib/auth.config";
-import { googleConfigured, handleGoogleSignIn } from "@/lib/oauth";
+import {
+  googleConfigured,
+  handleOAuthSignIn,
+  isOAuthProvider,
+  loginConfirmationMethod,
+  microsoftConfigured,
+  resolveOAuthEmail,
+} from "@/lib/oauth";
 import { sendLoginConfirmationEmail } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import type { Role } from "@/lib/types";
@@ -74,9 +82,32 @@ const googleProvider = googleConfigured()
     })
   : null;
 
-const providers: NextAuthConfig["providers"] = googleProvider
-  ? [googleProvider, credentialsProvider]
-  : [credentialsProvider];
+const microsoftProvider = microsoftConfigured()
+  ? MicrosoftEntraID({
+      name: "Microsoft",
+      clientId: process.env.MICROSOFT_CLIENT_ID!,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+      issuer: process.env.MICROSOFT_ISSUER || "https://login.microsoftonline.com/common/v2.0",
+      authorization: { params: { scope: "openid profile email" } },
+      allowDangerousEmailAccountLinking: true,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: resolveOAuthEmail({ email: profile.email, profile }) ?? profile.email ?? "",
+          image: null,
+          role: "STUDENT",
+          onboardingComplete: true,
+        };
+      },
+    })
+  : null;
+
+const providers: NextAuthConfig["providers"] = [
+  ...(googleProvider ? [googleProvider] : []),
+  ...(microsoftProvider ? [microsoftProvider] : []),
+  credentialsProvider,
+];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -84,30 +115,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     async signIn({ user, account }) {
       if (!user.email || !user.id || user.role === "ADMIN") return;
-      if (account?.provider !== "google") {
+      if (!isOAuthProvider(account?.provider)) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: { emailVerified: true },
         });
         if (!dbUser?.emailVerified) return;
       }
-      const method = account?.provider === "google" ? "google" : "password";
       await sendLoginConfirmationEmail({
         name: user.name || user.email.split("@")[0],
         email: user.email,
-        method,
+        method: loginConfirmationMethod(account?.provider),
       }).catch((err) => console.error("[email] login confirmation failed", err));
     },
   },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account, profile }) {
-      if (account?.provider !== "google" || !user.email) {
+      if (!isOAuthProvider(account?.provider)) {
         return true;
       }
 
-      const result = await handleGoogleSignIn({
-        email: user.email,
+      const email = resolveOAuthEmail({ email: user.email, profile });
+      if (!email) return false;
+
+      const result = await handleOAuthSignIn({
+        email,
         name: user.name || (profile as { name?: string })?.name,
         image: user.image || (profile as { picture?: string })?.picture,
         account,

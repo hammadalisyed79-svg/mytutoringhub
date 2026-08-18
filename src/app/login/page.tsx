@@ -3,9 +3,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
 import { AuthLayout } from "@/components/AuthLayout";
-import { googleConfigured } from "@/lib/oauth";
+import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
 
-export const metadata = { title: "Sign in", description: "Sign in to My Tutoring Hub with any email or Google." };
+export const metadata = {
+  title: "Sign in",
+  description: "Sign in to My Tutoring Hub with any email, Google, or Microsoft.",
+};
 
 export default async function LoginPage({
   searchParams,
@@ -19,11 +22,12 @@ export default async function LoginPage({
   }
   const sp = await searchParams;
   const googleEnabled = googleConfigured();
+  const microsoftEnabled = microsoftConfigured();
 
   return (
     <AuthLayout
       title="Sign in"
-      lead="Use any email — Gmail, Hotmail, Outlook, Yahoo, and more. We send confirmations from admin@mytutoringhub.com."
+      lead="Use any email — Gmail, Hotmail, Outlook, Yahoo, and more. Or continue with Google or Microsoft. We send confirmations from admin@mytutoringhub.com."
       notice={
         <>
           {sp.verified === "1" && (
@@ -56,7 +60,7 @@ export default async function LoginPage({
         </p>
       }
     >
-      <LoginForm googleEnabled={googleEnabled} />
+      <LoginForm googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
     </AuthLayout>
   );
 }

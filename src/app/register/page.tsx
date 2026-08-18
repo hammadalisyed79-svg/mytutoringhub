@@ -4,12 +4,12 @@ import { auth } from "@/lib/auth";
 import { RegisterForm } from "@/components/RegisterForm";
 import { AuthLayout } from "@/components/AuthLayout";
 import { getSiteSettings } from "@/lib/site-settings";
-import { googleConfigured } from "@/lib/oauth";
+import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
 
 export const metadata = {
   title: "Create account",
   description:
-    "Join My Tutoring Hub as a student or tutor with Gmail, Hotmail, Outlook, Yahoo, or any email.",
+    "Join My Tutoring Hub as a student or tutor with Google, Microsoft, or any email.",
 };
 
 export default async function RegisterPage() {
@@ -20,11 +20,12 @@ export default async function RegisterPage() {
   }
   const settings = await getSiteSettings();
   const googleEnabled = googleConfigured();
+  const microsoftEnabled = microsoftConfigured();
 
   return (
     <AuthLayout
       title="Create your account"
-      lead="Join as a student or tutor with Gmail, Hotmail, Outlook, Yahoo, or any other email. Confirmations come from admin@mytutoringhub.com."
+      lead="Join as a student or tutor with Google, Microsoft, or any email (Gmail, Hotmail, Outlook, Yahoo). Confirmations come from admin@mytutoringhub.com."
       footer={
         <p className="auth-switch muted">
           Already registered? <Link href="/login">Sign in</Link>
@@ -40,7 +41,7 @@ export default async function RegisterPage() {
           <Link href="/login">sign in</Link> if you already have an account.
         </p>
       ) : (
-        <RegisterForm googleEnabled={googleEnabled} />
+        <RegisterForm googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
       )}
     </AuthLayout>
   );

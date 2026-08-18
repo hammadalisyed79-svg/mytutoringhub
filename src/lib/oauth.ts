@@ -2,9 +2,12 @@ import { cookies } from "next/headers";
 import type { Account } from "@auth/core/types";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmailHtml } from "@/lib/email";
+import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import type { Role } from "@/lib/types";
 
 export const OAUTH_INTENT_COOKIE = "oauth_intent";
+export const OAUTH_PROVIDERS = ["google", "microsoft-entra-id"] as const;
+export type OAuthProviderId = (typeof OAUTH_PROVIDERS)[number];
 
 export type OAuthIntent = {
   intent: "login" | "register";
@@ -13,10 +16,55 @@ export type OAuthIntent = {
 
 type DbUser = Awaited<ReturnType<typeof prisma.user.findUnique>> & {};
 
+function envPairConfigured(id?: string, secret?: string) {
+  const clientId = id || "";
+  const clientSecret = secret || "";
+  return Boolean(
+    clientId &&
+      clientSecret &&
+      !clientId.includes("replace") &&
+      !clientSecret.includes("replace"),
+  );
+}
+
 export function googleConfigured() {
-  const id = process.env.GOOGLE_CLIENT_ID || "";
-  const secret = process.env.GOOGLE_CLIENT_SECRET || "";
-  return Boolean(id && secret && !id.includes("replace") && !secret.includes("replace"));
+  return envPairConfigured(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+}
+
+export function microsoftConfigured() {
+  return envPairConfigured(process.env.MICROSOFT_CLIENT_ID, process.env.MICROSOFT_CLIENT_SECRET);
+}
+
+export function oauthConfigured() {
+  return googleConfigured() || microsoftConfigured();
+}
+
+export function isOAuthProvider(provider?: string | null): provider is OAuthProviderId {
+  return provider === "google" || provider === "microsoft-entra-id";
+}
+
+export function loginConfirmationMethod(
+  provider?: string | null,
+): "password" | "google" | "microsoft" {
+  if (provider === "google") return "google";
+  if (provider === "microsoft-entra-id") return "microsoft";
+  return "password";
+}
+
+export function resolveOAuthEmail(opts: {
+  email?: string | null;
+  profile?: unknown;
+}): string | null {
+  const profile = opts.profile as
+    | { email?: string | null; preferred_username?: string | null }
+    | undefined;
+  const candidates = [opts.email, profile?.email, profile?.preferred_username];
+  for (const raw of candidates) {
+    if (!raw) continue;
+    const email = normalizeEmail(raw);
+    if (isValidEmail(email)) return email;
+  }
+  return null;
 }
 
 export function encodeOAuthIntent(intent: OAuthIntent) {
@@ -39,7 +87,7 @@ export async function clearOAuthIntent() {
   (await cookies()).delete(OAUTH_INTENT_COOKIE);
 }
 
-async function linkGoogleAccount(userId: string, account: Account) {
+async function linkOAuthAccount(userId: string, account: Account) {
   const sessionState =
     typeof account.session_state === "string" ? account.session_state : undefined;
   await prisma.account.upsert({
@@ -91,18 +139,21 @@ async function createTutorProfile(userId: string) {
   });
 }
 
-export async function handleGoogleSignIn(opts: {
+export async function handleOAuthSignIn(opts: {
   email: string;
   name?: string | null;
   image?: string | null;
   account: Account;
 }) {
-  const email = opts.email.toLowerCase();
+  const email = normalizeEmail(opts.email);
+  if (!isValidEmail(email)) return { ok: false as const, reason: "invalid-email" };
+
   const intent = await readOAuthIntent();
   await clearOAuthIntent();
 
   let dbUser = await prisma.user.findUnique({ where: { email } });
   let isNewUser = false;
+  const image = opts.image && !opts.image.startsWith("data:") ? opts.image : null;
 
   if (!dbUser) {
     isNewUser = true;
@@ -115,7 +166,7 @@ export async function handleGoogleSignIn(opts: {
         name: opts.name?.trim() || email.split("@")[0],
         email,
         role,
-        image: opts.image || null,
+        image,
         emailVerified: new Date(),
         onboardingComplete: !needsOnboarding,
       },
@@ -135,14 +186,14 @@ export async function handleGoogleSignIn(opts: {
     await prisma.user.update({
       where: { id: dbUser.id },
       data: {
-        ...(opts.image && !dbUser.image ? { image: opts.image } : {}),
+        ...(image && !dbUser.image ? { image } : {}),
         ...(dbUser.emailVerified ? {} : { emailVerified: new Date() }),
       },
     });
     dbUser = await prisma.user.findUniqueOrThrow({ where: { id: dbUser.id } });
   }
 
-  await linkGoogleAccount(dbUser.id, opts.account);
+  await linkOAuthAccount(dbUser.id, opts.account);
 
   if (isNewUser && intent?.intent === "login") {
     return { ok: true as const, user: dbUser as DbUser, isNewUser, redirect: "/register/complete" };
