@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/SignOutButton";
 
 type NavUser = {
@@ -44,17 +44,14 @@ function NavIdentity({
   );
 }
 
-const PRIMARY = [
+const PUBLIC_LINKS = [
   { href: "/search", label: "Find tutors" },
   { href: "/subjects", label: "Subjects" },
   { href: "/ads", label: "Student ads" },
   { href: "/become-a-tutor", label: "Become a tutor" },
   { href: "/pricing", label: "Pricing" },
-] as const;
-
-const MORE = [
-  { href: "/how-it-works", label: "How it works" },
   { href: "/past-papers", label: "Past papers" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/assistant", label: "Study assistant" },
 ] as const;
 
@@ -108,13 +105,9 @@ function AccountLinks({
 
 export function SiteNav({ user }: { user: NavUser }) {
   const [open, setOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
-  const moreMenuId = useId();
 
-  function closeAll() {
+  function closeMenu() {
     setOpen(false);
-    setMoreOpen(false);
   }
 
   useEffect(() => {
@@ -124,57 +117,26 @@ export function SiteNav({ user }: { user: NavUser }) {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") closeAll();
+      if (e.key === "Escape") closeMenu();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    if (!moreOpen) return;
-    function onPointerDown(e: PointerEvent) {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [moreOpen]);
-
   return (
     <>
       <nav className="nav nav-desktop" aria-label="Primary">
         <div className="nav-primary">
-          {PRIMARY.map((item) => (
-            <Link key={item.href} href={item.href} onClick={closeAll}>
+          {PUBLIC_LINKS.map((item) => (
+            <Link key={item.href} href={item.href} onClick={closeMenu}>
               {item.label}
             </Link>
           ))}
-          <div className={`nav-more ${moreOpen ? "is-open" : ""}`} ref={moreRef}>
-            <button
-              type="button"
-              className="nav-more-toggle"
-              aria-expanded={moreOpen}
-              aria-controls={moreMenuId}
-              aria-haspopup="menu"
-              onClick={() => setMoreOpen((v) => !v)}
-            >
-              More
-              <span className="nav-more-caret" aria-hidden="true" />
-            </button>
-            <div id={moreMenuId} className="nav-more-menu" role="menu" hidden={!moreOpen}>
-              {MORE.map((item) => (
-                <Link key={item.href} href={item.href} role="menuitem" onClick={closeAll}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </nav>
       <div className="header-actions">
         {user ? <NavIdentity name={accountLabel(user)} compact /> : null}
-        <AccountLinks user={user} onNavigate={closeAll} />
+        <AccountLinks user={user} onNavigate={closeMenu} />
       </div>
 
       {user ? (
@@ -187,10 +149,7 @@ export function SiteNav({ user }: { user: NavUser }) {
         aria-expanded={open}
         aria-controls="mobile-nav"
         aria-label={open ? "Close menu" : "Open menu"}
-        onClick={() => {
-          setMoreOpen(false);
-          setOpen((v) => !v);
-        }}
+        onClick={() => setOpen((v) => !v)}
       >
         <span />
         <span />
@@ -205,13 +164,8 @@ export function SiteNav({ user }: { user: NavUser }) {
 
       <nav id="mobile-nav" className={`nav-drawer ${open ? "is-open" : ""}`} aria-label="Mobile">
         <div className="nav-drawer-inner">
-          {PRIMARY.map((item) => (
-            <Link key={item.href} href={item.href} onClick={closeAll}>
-              {item.label}
-            </Link>
-          ))}
-          {MORE.map((item) => (
-            <Link key={item.href} href={item.href} onClick={closeAll}>
+          {PUBLIC_LINKS.map((item) => (
+            <Link key={item.href} href={item.href} onClick={closeMenu}>
               {item.label}
             </Link>
           ))}
@@ -219,7 +173,7 @@ export function SiteNav({ user }: { user: NavUser }) {
             {user ? (
               <NavIdentity name={accountLabel(user)} className="nav-drawer-identity" />
             ) : null}
-            <AccountLinks user={user} onNavigate={closeAll} />
+            <AccountLinks user={user} onNavigate={closeMenu} />
           </div>
         </div>
       </nav>
