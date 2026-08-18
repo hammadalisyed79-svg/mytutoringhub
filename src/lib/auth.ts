@@ -8,6 +8,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authConfig, SESSION_MAX_AGE_SEC } from "@/lib/auth.config";
 import {
+  googleClientId,
+  googleClientSecret,
   googleConfigured,
   handleOAuthSignIn,
   isOAuthProvider,
@@ -76,8 +78,8 @@ const credentialsProvider = Credentials({
 
 const googleProvider = googleConfigured()
   ? Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: googleClientId(),
+      clientSecret: googleClientSecret(),
       allowDangerousEmailAccountLinking: true,
     })
   : null;

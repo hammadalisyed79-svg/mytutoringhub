@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import { RegisterForm } from "@/components/RegisterForm";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { getSiteSettings } from "@/lib/site-settings";
-import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
+import { microsoftConfigured } from "@/lib/oauth";
 
 export const metadata = {
   title: "Sign up",
@@ -13,13 +14,14 @@ export const metadata = {
 };
 
 export default async function RegisterPage() {
+  await connection();
   const session = await auth();
   if (session?.user) {
     if (session.user.onboardingComplete === false) redirect("/register/complete");
     redirect(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
   }
   const settings = await getSiteSettings();
-  const googleEnabled = googleConfigured();
+  const googleEnabled = true;
   const microsoftEnabled = microsoftConfigured();
 
   return (

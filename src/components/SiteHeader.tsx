@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { SiteNav } from "@/components/SiteNav";
 import { prisma } from "@/lib/prisma";
-import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
+import { microsoftConfigured } from "@/lib/oauth";
 
 export async function SiteHeader() {
   await connection();
@@ -39,7 +39,7 @@ export async function SiteHeader() {
                 }
               : null
           }
-          googleEnabled={googleConfigured()}
+          googleEnabled
           microsoftEnabled={microsoftConfigured()}
         />
       </div>

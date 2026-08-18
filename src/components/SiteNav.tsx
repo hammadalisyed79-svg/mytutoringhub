@@ -144,7 +144,7 @@ function AccountLinks({
 
 export function SiteNav({
   user,
-  googleEnabled = false,
+  googleEnabled = true,
   microsoftEnabled = false,
 }: {
   user: NavUser;

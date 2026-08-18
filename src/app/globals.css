@@ -824,6 +824,9 @@ svg {
 .auth-stack {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .auth-form,
@@ -832,6 +835,9 @@ svg {
 .review-form {
   display: grid;
   gap: 0.95rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -887,7 +893,10 @@ svg {
 }
 
 .btn-block {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .auth-footnote,
@@ -1019,6 +1028,8 @@ body.auth-modal-open {
   z-index: 80;
   display: grid;
   place-items: start center;
+  box-sizing: border-box;
+  width: 100%;
   padding: 3.5rem 1rem 2rem;
   overflow: auto;
 }
@@ -1037,12 +1048,16 @@ body.auth-modal-open {
 .auth-modal-card {
   position: relative;
   z-index: 1;
-  width: min(26.75rem, 100%);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 26.75rem;
+  min-width: 0;
   margin: 0 auto 2.5rem;
   background: #fff;
   border-radius: 1.2rem;
-  padding: 2.1rem 1.7rem 1.45rem;
+  padding: 1.85rem clamp(0.95rem, 3.6vw, 1.5rem) 1.35rem;
   box-shadow: 0 28px 70px rgba(16, 28, 24, 0.28);
+  overflow-x: clip;
 }
 
 .auth-modal-title {
@@ -1076,8 +1091,35 @@ body.auth-modal-open {
   color: var(--ink);
 }
 
+.auth-modal-card .auth-stack,
+.auth-modal-card .auth-form,
+.auth-modal-card .oauth-block,
+.auth-modal-card .oauth-buttons,
+.auth-modal-card .password-field,
+.auth-modal-card label {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .auth-modal-card .auth-stack {
   gap: 0.95rem;
+}
+
+.auth-modal-card input,
+.auth-modal-card textarea,
+.auth-modal-card select,
+.auth-modal-card .btn,
+.auth-modal-card .btn-block,
+.auth-modal-card .btn-oauth {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.auth-modal-card .btn-pill {
+  white-space: normal;
 }
 
 .auth-modal-card .auth-notice {
@@ -1093,21 +1135,42 @@ body.auth-modal-open {
   }
 }
 
+.role-pick,
+.role-pick-cards {
+  min-width: 0;
+  min-inline-size: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
 .role-pick-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.55rem;
 }
 
 .role-card {
+  position: relative;
   display: grid;
-  gap: 0.25rem;
-  padding: 0.95rem 1rem;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.75rem 0.7rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: #fff;
   cursor: pointer;
+  overflow-wrap: anywhere;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.role-card strong {
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.role-card .muted {
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .role-card input {
@@ -1276,7 +1339,10 @@ label {
 input,
 textarea,
 select {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 0.7rem 0.85rem;
@@ -1308,6 +1374,9 @@ select:focus {
   border: 0;
   padding: 0;
   margin: 0;
+  min-width: 0;
+  min-inline-size: 0;
+  max-width: 100%;
 }
 
 .radio {

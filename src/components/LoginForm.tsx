@@ -7,12 +7,12 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 
 export function LoginForm({
-  googleEnabled,
-  microsoftEnabled,
+  googleEnabled = true,
+  microsoftEnabled = false,
   onSwitchToRegister,
 }: {
-  googleEnabled: boolean;
-  microsoftEnabled: boolean;
+  googleEnabled?: boolean;
+  microsoftEnabled?: boolean;
   onSwitchToRegister?: () => void;
 }) {
   const [error, setError] = useState("");

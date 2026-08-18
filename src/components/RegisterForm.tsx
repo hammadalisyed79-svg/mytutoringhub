@@ -8,12 +8,12 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 
 function RegisterFormInner({
-  googleEnabled,
-  microsoftEnabled,
+  googleEnabled = true,
+  microsoftEnabled = false,
   onSwitchToLogin,
 }: {
-  googleEnabled: boolean;
-  microsoftEnabled: boolean;
+  googleEnabled?: boolean;
+  microsoftEnabled?: boolean;
   onSwitchToLogin?: () => void;
 }) {
   const searchParams = useSearchParams();
@@ -138,12 +138,12 @@ function RegisterFormInner({
 }
 
 export function RegisterForm({
-  googleEnabled,
-  microsoftEnabled,
+  googleEnabled = true,
+  microsoftEnabled = false,
   onSwitchToLogin,
 }: {
-  googleEnabled: boolean;
-  microsoftEnabled: boolean;
+  googleEnabled?: boolean;
+  microsoftEnabled?: boolean;
   onSwitchToLogin?: () => void;
 }) {
   return (

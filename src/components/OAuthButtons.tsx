@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 
 type ProviderId = "google" | "microsoft-entra-id";
@@ -17,33 +17,13 @@ export function OAuthButtons({
   intent,
   role,
   disabled,
-  googleEnabled,
-  microsoftEnabled,
+  googleEnabled = true,
+  microsoftEnabled = false,
 }: Props) {
-  const [google, setGoogle] = useState(Boolean(googleEnabled));
-  const [microsoft, setMicrosoft] = useState(Boolean(microsoftEnabled));
   const [loading, setLoading] = useState<ProviderId | null>(null);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    setGoogle(Boolean(googleEnabled));
-    setMicrosoft(Boolean(microsoftEnabled));
-  }, [googleEnabled, microsoftEnabled]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/oauth-status")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { google?: boolean; microsoft?: boolean } | null) => {
-        if (cancelled || !data) return;
-        setGoogle(Boolean(data.google));
-        setMicrosoft(Boolean(data.microsoft));
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const google = googleEnabled !== false;
+  const microsoft = Boolean(microsoftEnabled);
 
   async function startOAuth(provider: ProviderId) {
     setError("");

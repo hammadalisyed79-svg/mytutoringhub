@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
 import { AuthModalFrame } from "@/components/AuthModal";
-import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
+import { microsoftConfigured } from "@/lib/oauth";
 
 export const metadata = {
   title: "Log in",
@@ -14,13 +15,14 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ verified?: string; verify?: string }>;
 }) {
+  await connection();
   const session = await auth();
   if (session?.user) {
     if (session.user.onboardingComplete === false) redirect("/register/complete");
     redirect(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
   }
   const sp = await searchParams;
-  const googleEnabled = googleConfigured();
+  const googleEnabled = true;
   const microsoftEnabled = microsoftConfigured();
 
   return (
