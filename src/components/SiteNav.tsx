@@ -47,14 +47,14 @@ function NavIdentity({
 const PRIMARY = [
   { href: "/search", label: "Find tutors" },
   { href: "/subjects", label: "Subjects" },
-  { href: "/past-papers", label: "Past papers" },
   { href: "/ads", label: "Student ads" },
+  { href: "/become-a-tutor", label: "Become a tutor" },
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
 const MORE = [
   { href: "/how-it-works", label: "How it works" },
-  { href: "/become-a-tutor", label: "Become a tutor" },
+  { href: "/past-papers", label: "Past papers" },
   { href: "/assistant", label: "Study assistant" },
 ] as const;
 
