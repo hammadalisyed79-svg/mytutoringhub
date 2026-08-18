@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 
 type ProviderId = "google" | "microsoft-entra-id";
@@ -20,8 +20,30 @@ export function OAuthButtons({
   googleEnabled,
   microsoftEnabled,
 }: Props) {
+  const [google, setGoogle] = useState(Boolean(googleEnabled));
+  const [microsoft, setMicrosoft] = useState(Boolean(microsoftEnabled));
   const [loading, setLoading] = useState<ProviderId | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setGoogle(Boolean(googleEnabled));
+    setMicrosoft(Boolean(microsoftEnabled));
+  }, [googleEnabled, microsoftEnabled]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/oauth-status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { google?: boolean; microsoft?: boolean } | null) => {
+        if (cancelled || !data) return;
+        setGoogle(Boolean(data.google));
+        setMicrosoft(Boolean(data.microsoft));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function startOAuth(provider: ProviderId) {
     setError("");
@@ -30,7 +52,10 @@ export function OAuthButtons({
       const res = await fetch("/api/auth/oauth-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent, ...(role ? { role } : {}) }),
+        body: JSON.stringify({
+          intent,
+          ...(intent === "register" ? { role: role === "TUTOR" ? "TUTOR" : "STUDENT" } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -45,12 +70,12 @@ export function OAuthButtons({
     }
   }
 
-  if (!googleEnabled && !microsoftEnabled) return null;
+  if (!google && !microsoft) return null;
 
   return (
     <div className="oauth-block">
       <div className="oauth-buttons">
-        {googleEnabled && (
+        {google && (
           <button
             type="button"
             className="btn btn-oauth btn-oauth-google"
@@ -65,7 +90,7 @@ export function OAuthButtons({
                 : "Continue with Google"}
           </button>
         )}
-        {microsoftEnabled && (
+        {microsoft && (
           <button
             type="button"
             className="btn btn-oauth"
@@ -82,6 +107,7 @@ export function OAuthButtons({
         )}
       </div>
       {error && <p className="form-error">{error}</p>}
+      <AuthDivider />
     </div>
   );
 }

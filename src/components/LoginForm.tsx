@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
+import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 
 export function LoginForm({
@@ -44,19 +44,14 @@ export function LoginForm({
     window.location.href = session?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
   }
 
-  const social = googleEnabled || microsoftEnabled;
-
   return (
     <div className="auth-stack">
-      {social && (
-        <OAuthButtons
-          intent="login"
-          disabled={loading}
-          googleEnabled={googleEnabled}
-          microsoftEnabled={microsoftEnabled}
-        />
-      )}
-      {social && <AuthDivider />}
+      <OAuthButtons
+        intent="login"
+        disabled={loading}
+        googleEnabled={googleEnabled}
+        microsoftEnabled={microsoftEnabled}
+      />
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>
           Email

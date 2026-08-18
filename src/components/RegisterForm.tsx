@@ -4,7 +4,7 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
+import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 
 function RegisterFormInner({
@@ -57,8 +57,6 @@ function RegisterFormInner({
     window.location.href = "/pricing?verify=sent";
   }
 
-  const social = googleEnabled || microsoftEnabled;
-
   return (
     <div className="auth-stack">
       <fieldset className="role-pick role-pick-cards">
@@ -87,16 +85,13 @@ function RegisterFormInner({
         </label>
       </fieldset>
 
-      {social && (
-        <OAuthButtons
-          intent="register"
-          role={role}
-          disabled={loading}
-          googleEnabled={googleEnabled}
-          microsoftEnabled={microsoftEnabled}
-        />
-      )}
-      {social && <AuthDivider />}
+      <OAuthButtons
+        intent="register"
+        role={role}
+        disabled={loading}
+        googleEnabled={googleEnabled}
+        microsoftEnabled={microsoftEnabled}
+      />
 
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>

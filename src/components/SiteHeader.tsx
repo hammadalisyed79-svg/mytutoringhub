@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
 
 export async function SiteHeader() {
+  await connection();
   const session = await auth();
   let unread = 0;
   if (session?.user?.id) {

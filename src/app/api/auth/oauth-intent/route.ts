@@ -30,7 +30,11 @@ export async function POST(req: Request) {
 
   const intent: OAuthIntent = {
     intent: body.intent,
-    ...(body.role ? { role: body.role } : {}),
+    ...(body.intent === "register"
+      ? { role: body.role === "TUTOR" ? "TUTOR" : "STUDENT" }
+      : body.role
+        ? { role: body.role }
+        : {}),
   };
 
   const res = NextResponse.json({ ok: true });
