@@ -76,44 +76,45 @@ const credentialsProvider = Credentials({
   },
 });
 
-const googleProvider = googleConfigured()
-  ? Google({
-      clientId: googleClientId(),
-      clientSecret: googleClientSecret(),
-      allowDangerousEmailAccountLinking: true,
-    })
-  : null;
+function authProviders(): NextAuthConfig["providers"] {
+  const providers: NextAuthConfig["providers"] = [credentialsProvider];
+  if (googleConfigured()) {
+    providers.unshift(
+      Google({
+        clientId: googleClientId(),
+        clientSecret: googleClientSecret(),
+        allowDangerousEmailAccountLinking: true,
+      }),
+    );
+  }
+  if (microsoftConfigured()) {
+    providers.unshift(
+      MicrosoftEntraID({
+        name: "Microsoft",
+        clientId: process.env.MICROSOFT_CLIENT_ID!,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+        issuer: process.env.MICROSOFT_ISSUER || "https://login.microsoftonline.com/common/v2.0",
+        authorization: { params: { scope: "openid profile email" } },
+        allowDangerousEmailAccountLinking: true,
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: profile.name,
+            email: resolveOAuthEmail({ email: profile.email, profile }) ?? profile.email ?? "",
+            image: null,
+            role: "STUDENT",
+            onboardingComplete: true,
+          };
+        },
+      }),
+    );
+  }
+  return providers;
+}
 
-const microsoftProvider = microsoftConfigured()
-  ? MicrosoftEntraID({
-      name: "Microsoft",
-      clientId: process.env.MICROSOFT_CLIENT_ID!,
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-      issuer: process.env.MICROSOFT_ISSUER || "https://login.microsoftonline.com/common/v2.0",
-      authorization: { params: { scope: "openid profile email" } },
-      allowDangerousEmailAccountLinking: true,
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: resolveOAuthEmail({ email: profile.email, profile }) ?? profile.email ?? "",
-          image: null,
-          role: "STUDENT",
-          onboardingComplete: true,
-        };
-      },
-    })
-  : null;
-
-const providers: NextAuthConfig["providers"] = [
-  ...(googleProvider ? [googleProvider] : []),
-  ...(microsoftProvider ? [microsoftProvider] : []),
-  credentialsProvider,
-];
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   ...authConfig,
-  providers,
+  providers: authProviders(),
   events: {
     async signIn({ user, account }) {
       if (!user.email || !user.id || user.role === "ADMIN") return;
@@ -195,4 +196,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+}));

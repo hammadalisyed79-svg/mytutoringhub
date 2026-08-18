@@ -17,7 +17,14 @@ export type OAuthIntent = {
 type DbUser = Awaited<ReturnType<typeof prisma.user.findUnique>> & {};
 
 function readEnv(name: string) {
-  const value = (process.env[name] || "").trim();
+  const env = process.env;
+  let value = String(env[name] ?? "").trim();
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    value = value.slice(1, -1).trim();
+  }
   if (!value || value.toLowerCase().includes("replace")) return "";
   return value;
 }
