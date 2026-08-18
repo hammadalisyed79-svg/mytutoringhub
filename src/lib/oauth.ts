@@ -16,17 +16,16 @@ export type OAuthIntent = {
 
 type DbUser = Awaited<ReturnType<typeof prisma.user.findUnique>> & {};
 
-function readEnv(name: string) {
-  const env = process.env;
-  let value = String(env[name] ?? "").trim();
+function cleanEnv(value?: string) {
+  let next = String(value ?? "").trim();
   if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
+    (next.startsWith('"') && next.endsWith('"')) ||
+    (next.startsWith("'") && next.endsWith("'"))
   ) {
-    value = value.slice(1, -1).trim();
+    next = next.slice(1, -1).trim();
   }
-  if (!value || value.toLowerCase().includes("replace")) return "";
-  return value;
+  if (!next || next.toLowerCase().includes("replace")) return "";
+  return next;
 }
 
 function envPairConfigured(id?: string, secret?: string) {
@@ -34,11 +33,11 @@ function envPairConfigured(id?: string, secret?: string) {
 }
 
 export function googleClientId() {
-  return readEnv("GOOGLE_CLIENT_ID") || readEnv("AUTH_GOOGLE_ID");
+  return cleanEnv(process.env.GOOGLE_CLIENT_ID) || cleanEnv(process.env.AUTH_GOOGLE_ID);
 }
 
 export function googleClientSecret() {
-  return readEnv("GOOGLE_CLIENT_SECRET") || readEnv("AUTH_GOOGLE_SECRET");
+  return cleanEnv(process.env.GOOGLE_CLIENT_SECRET) || cleanEnv(process.env.AUTH_GOOGLE_SECRET);
 }
 
 export function googleConfigured() {
@@ -50,7 +49,10 @@ export function googleIdConfigured() {
 }
 
 export function microsoftConfigured() {
-  return envPairConfigured(readEnv("MICROSOFT_CLIENT_ID"), readEnv("MICROSOFT_CLIENT_SECRET"));
+  return envPairConfigured(
+    cleanEnv(process.env.MICROSOFT_CLIENT_ID),
+    cleanEnv(process.env.MICROSOFT_CLIENT_SECRET),
+  );
 }
 
 export function oauthConfigured() {
