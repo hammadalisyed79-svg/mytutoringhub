@@ -13,6 +13,7 @@ export async function MaintenanceGate({ children }: { children: React.ReactNode 
   if (
     pathname === "/login" ||
     pathname === "/register" ||
+    pathname === "/forgot-password" ||
     pathname === "/register/complete" ||
     pathname.startsWith("/api/auth")
   ) {

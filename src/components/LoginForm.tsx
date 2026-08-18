@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
+import { PasswordField } from "@/components/PasswordField";
 
 export function LoginForm({
   googleEnabled,
   microsoftEnabled,
+  onSwitchToRegister,
 }: {
   googleEnabled: boolean;
   microsoftEnabled: boolean;
+  onSwitchToRegister?: () => void;
 }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,49 +44,56 @@ export function LoginForm({
     window.location.href = session?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
   }
 
+  const social = googleEnabled || microsoftEnabled;
+
   return (
     <div className="auth-stack">
+      {social && (
+        <OAuthButtons
+          intent="login"
+          disabled={loading}
+          googleEnabled={googleEnabled}
+          microsoftEnabled={microsoftEnabled}
+        />
+      )}
+      {social && <AuthDivider />}
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>
-          Email address
+          Email
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
             inputMode="email"
-            placeholder="you@gmail.com, you@hotmail.com…"
+            placeholder="user@example.com"
           />
         </label>
         <label>
           Password
-          <input
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            placeholder="Your password"
-          />
+          <PasswordField autoComplete="current-password" />
         </label>
+        <p className="auth-forgot">
+          <Link href="/forgot-password">Forgot password?</Link>
+        </p>
         {error && <p className="form-error">{error}</p>}
-        <button className="btn btn-block" type="submit" disabled={loading}>
-          {loading ? "Signing in…" : "Sign in"}
+        <button className="btn btn-block btn-pill" type="submit" disabled={loading}>
+          {loading ? "Logging in…" : "Log in"}
         </button>
       </form>
-      {(googleEnabled || microsoftEnabled) && (
-        <>
-          <AuthDivider />
-          <OAuthButtons
-            intent="login"
-            disabled={loading}
-            googleEnabled={googleEnabled}
-            microsoftEnabled={microsoftEnabled}
-          />
-        </>
-      )}
-      <p className="auth-footnote muted">
-        Use Gmail, Hotmail, Outlook, Yahoo, or any other email. Confirmations are sent from
-        admin@mytutoringhub.com.
+      <p className="auth-switch">
+        Don&apos;t have an account?{" "}
+        {onSwitchToRegister ? (
+          <button type="button" className="auth-text-link" onClick={onSwitchToRegister}>
+            Sign up
+          </button>
+        ) : (
+          <Link href="/register">Sign up</Link>
+        )}
+      </p>
+      <p className="auth-legal">
+        By clicking Log in you agree to the{" "}
+        <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
       </p>
     </div>
   );

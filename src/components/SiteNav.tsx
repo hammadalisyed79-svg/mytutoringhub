@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/SignOutButton";
+import { AuthModalFrame } from "@/components/AuthModal";
+import { LoginForm } from "@/components/LoginForm";
+import { RegisterForm } from "@/components/RegisterForm";
 
 type NavUser = {
   name?: string | null;
@@ -55,20 +59,55 @@ const PUBLIC_LINKS = [
   { href: "/assistant", label: "Study assistant" },
 ] as const;
 
+function shouldOpenAuthDialog(e: React.MouseEvent) {
+  return !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);
+}
+
 function AccountLinks({
   user,
+  pathname,
   onNavigate,
+  onOpenLogin,
+  onOpenRegister,
 }: {
   user: NavUser;
+  pathname: string;
   onNavigate: () => void;
+  onOpenLogin: () => void;
+  onOpenRegister: () => void;
 }) {
   if (!user) {
     return (
       <>
-        <Link href="/login" onClick={onNavigate}>
+        <Link
+          href="/login"
+          onClick={(e) => {
+            if (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password") {
+              onNavigate();
+              return;
+            }
+            if (!shouldOpenAuthDialog(e)) return;
+            e.preventDefault();
+            onNavigate();
+            onOpenLogin();
+          }}
+        >
           Log in
         </Link>
-        <Link href="/register" className="btn btn-sm" onClick={onNavigate}>
+        <Link
+          href="/register"
+          className="btn btn-sm"
+          onClick={(e) => {
+            if (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password") {
+              onNavigate();
+              return;
+            }
+            if (!shouldOpenAuthDialog(e)) return;
+            e.preventDefault();
+            onNavigate();
+            onOpenRegister();
+          }}
+        >
           Join free
         </Link>
       </>
@@ -103,8 +142,18 @@ function AccountLinks({
   );
 }
 
-export function SiteNav({ user }: { user: NavUser }) {
+export function SiteNav({
+  user,
+  googleEnabled = false,
+  microsoftEnabled = false,
+}: {
+  user: NavUser;
+  googleEnabled?: boolean;
+  microsoftEnabled?: boolean;
+}) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<null | "login" | "register">(null);
 
   function closeMenu() {
     setOpen(false);
@@ -123,6 +172,10 @@ export function SiteNav({ user }: { user: NavUser }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    setAuthMode(null);
+  }, [pathname]);
+
   return (
     <>
       <nav className="nav nav-desktop" aria-label="Primary">
@@ -136,7 +189,13 @@ export function SiteNav({ user }: { user: NavUser }) {
       </nav>
       <div className="header-actions">
         {user ? <NavIdentity name={accountLabel(user)} compact /> : null}
-        <AccountLinks user={user} onNavigate={closeMenu} />
+        <AccountLinks
+          user={user}
+          pathname={pathname}
+          onNavigate={closeMenu}
+          onOpenLogin={() => setAuthMode("login")}
+          onOpenRegister={() => setAuthMode("register")}
+        />
       </div>
 
       {user ? (
@@ -173,10 +232,38 @@ export function SiteNav({ user }: { user: NavUser }) {
             {user ? (
               <NavIdentity name={accountLabel(user)} className="nav-drawer-identity" />
             ) : null}
-            <AccountLinks user={user} onNavigate={closeMenu} />
+            <AccountLinks
+              user={user}
+              pathname={pathname}
+              onNavigate={closeMenu}
+              onOpenLogin={() => setAuthMode("login")}
+              onOpenRegister={() => setAuthMode("register")}
+            />
           </div>
         </div>
       </nav>
+
+      {authMode && !user && (
+        <AuthModalFrame
+          title={authMode === "login" ? "Log in to your account" : "Create your account"}
+          titleId={authMode === "login" ? "nav-login-title" : "nav-register-title"}
+          onClose={() => setAuthMode(null)}
+        >
+          {authMode === "login" ? (
+            <LoginForm
+              googleEnabled={googleEnabled}
+              microsoftEnabled={microsoftEnabled}
+              onSwitchToRegister={() => setAuthMode("register")}
+            />
+          ) : (
+            <RegisterForm
+              googleEnabled={googleEnabled}
+              microsoftEnabled={microsoftEnabled}
+              onSwitchToLogin={() => setAuthMode("login")}
+            />
+          )}
+        </AuthModalFrame>
+      )}
     </>
   );
 }

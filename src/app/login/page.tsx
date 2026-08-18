@@ -1,13 +1,12 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
-import { AuthLayout } from "@/components/AuthLayout";
+import { AuthModalFrame } from "@/components/AuthModal";
 import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
 
 export const metadata = {
-  title: "Sign in",
-  description: "Sign in to My Tutoring Hub with any email, Google, or Microsoft.",
+  title: "Log in",
+  description: "Log in to My Tutoring Hub with Google, Microsoft, or any email.",
 };
 
 export default async function LoginPage({
@@ -25,42 +24,24 @@ export default async function LoginPage({
   const microsoftEnabled = microsoftConfigured();
 
   return (
-    <AuthLayout
-      title="Sign in"
-      lead="Use any email — Gmail, Hotmail, Outlook, Yahoo, and more. Or continue with Google or Microsoft. We send confirmations from admin@mytutoringhub.com."
-      notice={
-        <>
-          {sp.verified === "1" && (
-            <p className="success panel auth-notice">Email verified. You can sign in now.</p>
-          )}
-          {sp.verify === "sent" && (
-            <p className="panel auth-notice">
-              Check your inbox for a confirmation email, then sign in below.
-            </p>
-          )}
-          {sp.verify === "expired" && (
-            <p className="panel form-error auth-notice">
-              That verification link expired. Sign in and resend from your dashboard.
-            </p>
-          )}
-          {sp.verify === "invalid" && (
-            <p className="panel form-error auth-notice">
-              That verification link is invalid. Sign in and request a new one from your dashboard.
-            </p>
-          )}
-        </>
-      }
-      footer={
-        <p className="auth-switch muted">
-          New here? <Link href="/register">Create an account</Link>
-          <span aria-hidden="true"> · </span>
-          <Link href="/terms">Terms</Link>
-          <span aria-hidden="true"> · </span>
-          <Link href="/privacy">Privacy</Link>
+    <AuthModalFrame title="Log in to your account" titleId="login-title">
+      {sp.verified === "1" && (
+        <p className="success auth-notice">Email verified. You can log in now.</p>
+      )}
+      {sp.verify === "sent" && (
+        <p className="auth-notice">Check your inbox for a confirmation email, then log in below.</p>
+      )}
+      {sp.verify === "expired" && (
+        <p className="form-error auth-notice">
+          That verification link expired. Log in and resend from your dashboard.
         </p>
-      }
-    >
+      )}
+      {sp.verify === "invalid" && (
+        <p className="form-error auth-notice">
+          That verification link is invalid. Log in and request a new one from your dashboard.
+        </p>
+      )}
       <LoginForm googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
-    </AuthLayout>
+    </AuthModalFrame>
   );
 }

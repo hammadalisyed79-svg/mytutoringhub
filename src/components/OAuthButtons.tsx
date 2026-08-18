@@ -53,12 +53,16 @@ export function OAuthButtons({
         {googleEnabled && (
           <button
             type="button"
-            className="btn btn-oauth"
+            className="btn btn-oauth btn-oauth-google"
             onClick={() => startOAuth("google")}
             disabled={disabled || Boolean(loading)}
           >
             <GoogleMark />
-            {loading === "google" ? "Connecting to Google…" : "Continue with Google"}
+            {loading === "google"
+              ? "Connecting to Google…"
+              : intent === "login"
+                ? "Log in with Google"
+                : "Continue with Google"}
           </button>
         )}
         {microsoftEnabled && (
@@ -71,7 +75,9 @@ export function OAuthButtons({
             <MicrosoftMark />
             {loading === "microsoft-entra-id"
               ? "Connecting to Microsoft…"
-              : "Continue with Microsoft"}
+              : intent === "login"
+                ? "Log in with Microsoft"
+                : "Continue with Microsoft"}
           </button>
         )}
       </div>
@@ -116,8 +122,8 @@ function MicrosoftMark() {
 
 export function AuthDivider() {
   return (
-    <div className="auth-divider" aria-hidden="true">
-      <span>or continue with</span>
+    <div className="auth-divider">
+      <span>or</span>
     </div>
   );
 }

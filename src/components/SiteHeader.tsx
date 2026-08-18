@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { SiteNav } from "@/components/SiteNav";
 import { prisma } from "@/lib/prisma";
+import { googleConfigured, microsoftConfigured } from "@/lib/oauth";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -36,6 +37,8 @@ export async function SiteHeader() {
                 }
               : null
           }
+          googleEnabled={googleConfigured()}
+          microsoftEnabled={microsoftConfigured()}
         />
       </div>
     </header>

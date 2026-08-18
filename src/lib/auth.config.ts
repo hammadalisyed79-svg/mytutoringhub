@@ -29,6 +29,7 @@ export const authConfig = {
       const isAuthPage =
         pathname === "/login" ||
         pathname === "/register" ||
+        pathname === "/forgot-password" ||
         pathname === "/register/complete";
 
       const needsOnboarding =

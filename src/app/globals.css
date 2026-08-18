@@ -900,6 +900,199 @@ svg {
   margin-bottom: 1rem;
 }
 
+.btn-pill {
+  border-radius: 999px;
+  padding: 0.88rem 1.25rem;
+  font-size: 1.02rem;
+}
+
+.auth-forgot {
+  margin: -0.15rem 0 0;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.auth-forgot a {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.auth-forgot a:hover {
+  color: var(--brand-deep);
+  text-decoration: underline;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.auth-switch a,
+.auth-text-link {
+  color: var(--brand);
+  font-weight: 700;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch a:hover,
+.auth-text-link:hover {
+  color: var(--brand-deep);
+  text-decoration: underline;
+}
+
+.auth-legal {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.auth-legal a {
+  color: var(--brand-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 2.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.password-toggle:hover {
+  color: var(--brand-deep);
+  background: rgba(13, 95, 82, 0.08);
+}
+
+.password-toggle svg,
+.auth-modal-close svg,
+.btn-oauth svg {
+  width: 18px;
+  height: 18px;
+  max-width: none;
+  flex-shrink: 0;
+}
+
+.btn-oauth {
+  border-radius: 0.7rem;
+  padding: 0.78rem 1rem;
+  font-weight: 650;
+}
+
+.btn-oauth-google {
+  border-color: rgba(20, 36, 31, 0.18);
+}
+
+body.auth-modal-open {
+  overflow: hidden;
+}
+
+.auth-modal-page {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: start center;
+  padding: 3.5rem 1rem 2rem;
+  overflow: auto;
+}
+
+.auth-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgba(16, 28, 24, 0.55);
+  cursor: pointer;
+}
+
+.auth-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(26.75rem, 100%);
+  margin: 0 auto 2.5rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2.1rem 1.7rem 1.45rem;
+  box-shadow: 0 28px 70px rgba(16, 28, 24, 0.28);
+}
+
+.auth-modal-title {
+  margin: 0 1.8rem 1.35rem;
+  text-align: center;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.4rem, 3vw, 1.7rem);
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.auth-modal-close:hover {
+  background: rgba(13, 95, 82, 0.08);
+  color: var(--ink);
+}
+
+.auth-modal-card .auth-stack {
+  gap: 0.95rem;
+}
+
+.auth-modal-card .auth-notice {
+  margin: -0.4rem 0 0.85rem;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+@media (min-height: 740px) {
+  .auth-modal-page {
+    place-items: center;
+    padding-top: 2rem;
+  }
+}
+
 .role-pick-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;

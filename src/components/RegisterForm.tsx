@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { OAuthButtons, AuthDivider } from "@/components/OAuthButtons";
+import { PasswordField } from "@/components/PasswordField";
 
 function RegisterFormInner({
   googleEnabled,
   microsoftEnabled,
+  onSwitchToLogin,
 }: {
   googleEnabled: boolean;
   microsoftEnabled: boolean;
+  onSwitchToLogin?: () => void;
 }) {
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get("role") === "tutor" ? "TUTOR" : "STUDENT";
@@ -53,6 +57,8 @@ function RegisterFormInner({
     window.location.href = "/pricing?verify=sent";
   }
 
+  const social = googleEnabled || microsoftEnabled;
+
   return (
     <div className="auth-stack">
       <fieldset className="role-pick role-pick-cards">
@@ -81,54 +87,56 @@ function RegisterFormInner({
         </label>
       </fieldset>
 
+      {social && (
+        <OAuthButtons
+          intent="register"
+          role={role}
+          disabled={loading}
+          googleEnabled={googleEnabled}
+          microsoftEnabled={microsoftEnabled}
+        />
+      )}
+      {social && <AuthDivider />}
+
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>
           Full name
           <input name="name" required minLength={2} autoComplete="name" placeholder="Your name" />
         </label>
         <label>
-          Email address
+          Email
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
             inputMode="email"
-            placeholder="you@gmail.com, you@hotmail.com…"
+            placeholder="user@example.com"
           />
         </label>
         <label>
           Password
-          <input
-            name="password"
-            type="password"
-            required
-            minLength={6}
-            autoComplete="new-password"
-            placeholder="At least 6 characters"
-          />
+          <PasswordField autoComplete="new-password" minLength={6} placeholder="At least 6 characters" />
         </label>
         {error && <p className="form-error">{error}</p>}
-        <button className="btn btn-block" type="submit" disabled={loading}>
-          {loading ? "Creating account…" : "Create account"}
+        <button className="btn btn-block btn-pill" type="submit" disabled={loading}>
+          {loading ? "Creating account…" : "Sign up"}
         </button>
       </form>
 
-      {(googleEnabled || microsoftEnabled) && (
-        <>
-          <AuthDivider />
-          <OAuthButtons
-            intent="register"
-            role={role}
-            disabled={loading}
-            googleEnabled={googleEnabled}
-            microsoftEnabled={microsoftEnabled}
-          />
-        </>
-      )}
-      <p className="auth-footnote muted">
-        Gmail, Hotmail, Outlook, Yahoo, and other addresses are welcome. We send your confirmation
-        from admin@mytutoringhub.com.
+      <p className="auth-switch">
+        Already have an account?{" "}
+        {onSwitchToLogin ? (
+          <button type="button" className="auth-text-link" onClick={onSwitchToLogin}>
+            Log in
+          </button>
+        ) : (
+          <Link href="/login">Log in</Link>
+        )}
+      </p>
+      <p className="auth-legal">
+        By clicking Sign up you agree to the{" "}
+        <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
       </p>
     </div>
   );
@@ -137,13 +145,19 @@ function RegisterFormInner({
 export function RegisterForm({
   googleEnabled,
   microsoftEnabled,
+  onSwitchToLogin,
 }: {
   googleEnabled: boolean;
   microsoftEnabled: boolean;
+  onSwitchToLogin?: () => void;
 }) {
   return (
     <Suspense fallback={<p className="muted">Loading…</p>}>
-      <RegisterFormInner googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
+      <RegisterFormInner
+        googleEnabled={googleEnabled}
+        microsoftEnabled={microsoftEnabled}
+        onSwitchToLogin={onSwitchToLogin}
+      />
     </Suspense>
   );
 }
