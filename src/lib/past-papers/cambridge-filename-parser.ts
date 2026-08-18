@@ -2,7 +2,16 @@ import { CAMBRIDGE_SESSIONS, type ParseMetadataResult, type PastPaperDocumentTyp
 import { CAMBRIDGE_TYPE_CODES } from "./constants";
 
 const FILENAME_RE =
-  /^([0-9]{4})_([msw])(\d{2})_(qp|ms|er|in|sf|gt)_(\d{2}(?:\d)?)(?:_([a-z0-9]+))?\.pdf$/i;
+  /^([0-9]{4})_([msw])(\d{2})_([a-z]{2})(?:_([a-z0-9]+))?(?:_([a-z0-9]+))?\.pdf$/i;
+
+export function normalizeCambridgeSession(raw?: string | null) {
+  const value = (raw || "").trim().toLowerCase();
+  if (!value) return null;
+  if (value === "m" || value.includes("feb") || value.includes("mar")) return CAMBRIDGE_SESSIONS.m.label;
+  if (value === "s" || value.includes("may") || value.includes("jun")) return CAMBRIDGE_SESSIONS.s.label;
+  if (value === "w" || value.includes("oct") || value.includes("nov")) return CAMBRIDGE_SESSIONS.w.label;
+  return raw!.trim();
+}
 
 function basename(filename: string) {
   return filename.replace(/\\/g, "/").split("/").pop()?.trim() || filename.trim();
@@ -40,7 +49,7 @@ export function parseCambridgeFilename(filename: string): ParseMetadataResult {
   const sessionCode = match[2].toLowerCase() as keyof typeof CAMBRIDGE_SESSIONS;
   const year = expandYear(Number(match[3]));
   const typeCode = match[4].toLowerCase();
-  const componentCode = match[5];
+  const componentCode = match[5] || "";
   const extra = match[6] || null;
   const session = CAMBRIDGE_SESSIONS[sessionCode];
   const documentType = (CAMBRIDGE_TYPE_CODES[typeCode] || "OTHER") as PastPaperDocumentType;
@@ -75,7 +84,9 @@ export function parseCambridgeFilename(filename: string): ParseMetadataResult {
     confidence = "review";
   }
 
-  const paperNumber = componentCode.length >= 2 ? componentCode[0] : componentCode;
+  const paperNumber = componentCode && /^\d/.test(componentCode) ? componentCode[0] : componentCode;
+  const variant =
+    extra || (/^\d{2}$/.test(componentCode) ? componentCode[1] : null);
 
   return {
     ok: true,
@@ -88,7 +99,7 @@ export function parseCambridgeFilename(filename: string): ParseMetadataResult {
       documentType,
       componentCode,
       paperNumber,
-      variant: extra,
+      variant,
       originalFilename,
       confidence,
       notes,

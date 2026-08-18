@@ -10,6 +10,7 @@ export async function findDuplicatePaper(opts: {
   componentCode?: string | null;
   documentType?: string | null;
   catalogKey?: string | null;
+  storageKey?: string | null;
 }) {
   if (opts.checksum) {
     const byChecksum = await prisma.pastPaper.findFirst({ where: { checksum: opts.checksum } });
@@ -18,6 +19,10 @@ export async function findDuplicatePaper(opts: {
   if (opts.catalogKey) {
     const byKey = await prisma.pastPaper.findUnique({ where: { catalogKey: opts.catalogKey } });
     if (byKey) return { paper: byKey, reason: "catalogKey" as const };
+  }
+  if (opts.storageKey) {
+    const byStorage = await prisma.pastPaper.findFirst({ where: { storageKey: opts.storageKey } });
+    if (byStorage) return { paper: byStorage, reason: "storageKey" as const };
   }
   if (opts.year) {
     const combo = duplicateComboWhere({

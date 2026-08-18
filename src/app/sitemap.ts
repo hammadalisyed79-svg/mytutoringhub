@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { TOP_COUNTRIES } from "@/lib/markets";
+import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -42,9 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     });
     const papers = await prisma.pastPaper.findMany({
-      where: { published: true, isActive: true, fileUrl: { not: null } },
+      where: publicAvailabilityWhere(),
       select: { board: true, qualification: true, subject: true, syllabusCode: true, updatedAt: true },
-      take: 200,
+      take: 2000,
     });
     const paperRoutes = papers.map((paper) => {
       const boardSlug = /cambridge/i.test(paper.board) ? "cambridge" : slugify(paper.board);

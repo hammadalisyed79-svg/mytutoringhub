@@ -64,7 +64,17 @@ export const CAMBRIDGE_TYPE_CODES: Record<string, string> = {
   in: "INSERT",
   sf: "SOURCE_BOOKLET",
   gt: "OTHER",
+  ci: "OTHER",
+  tr: "TRANSCRIPT",
+  ir: "OTHER",
 };
+
+export const PHASE1_SYLLABUS_CODE = "0620";
+export const PHASE1_YEAR_FROM = 2016;
+export const PHASE1_YEAR_TO = 2025;
+export const DEFAULT_R2_PREFIX = "cambridge/igcse/chemistry/0620/";
+export const R2_MANIFEST_SOURCE = "R2_MANIFEST";
+export const SIGNED_GET_TTL_SECONDS = 60;
 
 /**
  * Official Cambridge syllabus codes → curriculum subject/level.

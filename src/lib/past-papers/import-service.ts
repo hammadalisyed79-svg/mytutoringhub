@@ -652,6 +652,7 @@ export async function importSelectedItems(opts: {
         sourceUrl: item.sourceUrl,
         sourceDomain: item.sourceDomain,
         storageKey: uploaded.pathname,
+        storageProvider: "BLOB",
         fileSize: validated.size,
         mimeType: "application/pdf",
         importStatus: dup && opts.replaceExisting ? "REPLACED" : "IMPORTED",

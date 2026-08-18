@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && tsx prisma/seed.ts && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test:past-papers": "tsx src/lib/past-papers/past-papers.test.ts",
@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
+    "@aws-sdk/client-s3": "^3.1112.0",
+    "@aws-sdk/s3-request-presigner": "^3.1112.0",
     "@prisma/client": "^5.22.0",
     "@sfpy/node-core": "^0.3.5",
     "@vercel/analytics": "^2.0.1",

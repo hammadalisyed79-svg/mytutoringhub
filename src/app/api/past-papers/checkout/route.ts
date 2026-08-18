@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPastPaperFeePkr, parsePastPaperKey } from "@/lib/past-papers";
+import { paperHasFile } from "@/lib/past-papers/availability";
 import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
 import {
   checkoutCurrency,
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
   const catalogKey = listing?.key || body.catalogKey;
 
   const paper = await prisma.pastPaper.findUnique({ where: { catalogKey } });
-  if (!paper?.fileUrl || !paper.published || paper.isActive === false) {
+  if (!paper || !paperHasFile(paper) || !paper.published || paper.isActive === false) {
     return NextResponse.json({ error: "This paper is not available for download yet" }, { status: 404 });
   }
 

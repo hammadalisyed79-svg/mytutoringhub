@@ -7,9 +7,11 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { getPastPaperFeePkr } from "@/lib/past-papers";
+import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { resolveSeoCurriculum } from "@/lib/past-papers/browse";
-import { searchPublicPastPapers } from "@/lib/past-papers/public-search";
-import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
+import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
+import { documentTypeShortLabel, groupPapersByYearSessionComponent } from "@/lib/past-papers/group-papers";
+import { listPublicPastPapers } from "@/lib/past-papers/public-search";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/search-tutors";
 
@@ -35,8 +37,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function PastPaperSeoPage({ params }: Params) {
+export default async function PastPaperSeoPage({
+  params,
+  searchParams,
+}: Params & { searchParams: Promise<{ year?: string; session?: string; paper?: string; documentType?: string }> }) {
   const { board, qualification, subject } = await params;
+  const sp = await searchParams;
   const resolved = resolveSeoCurriculum(board, qualification, subject);
   if (!resolved.entry && !resolved.syllabusCode) notFound();
   const entry = resolved.entry;
@@ -44,31 +50,31 @@ export default async function PastPaperSeoPage({ params }: Params) {
   const currency = await getVisitorCurrency();
   const feePkr = await getPastPaperFeePkr();
   const feeLabel = feePkr === 0 ? "Free" : formatPlanPrice(feePkr, currency);
-  const { papers } = await searchPublicPastPapers(
-    {
-      subject: entry?.subject,
-      board: entry?.board || (board === "cambridge" ? "Cambridge" : undefined),
-      qualification: entry?.level,
-      code: resolved.syllabusCode || undefined,
-    },
-    1,
-  );
-  const extra =
-    papers.length < 5 && entry
-      ? await prisma.pastPaper.findMany({
-          where: {
-            published: true,
-            isActive: true,
-            fileUrl: { not: null },
-            subject: entry.subject,
-            board: { contains: "Cambridge", mode: "insensitive" },
-          },
-          take: 40,
-          orderBy: [{ year: "desc" }, { componentCode: "asc" }],
-        })
-      : [];
-  const seen = new Set(papers.map((row) => row.id));
-  const all = [...papers, ...extra.filter((row) => !seen.has(row.id))];
+  const code = resolved.syllabusCode || "";
+  let papers = await listPublicPastPapers({
+    subject: entry?.subject,
+    board: entry?.board || (board === "cambridge" ? "Cambridge" : undefined),
+    qualification: entry?.level,
+    code: code || undefined,
+    year: sp.year ? Number(sp.year) : undefined,
+    session: sp.session || undefined,
+    paper: sp.paper || undefined,
+    documentType: sp.documentType || undefined,
+  });
+  if (papers.length < 5 && entry && !sp.documentType && !sp.paper) {
+    const extra = await prisma.pastPaper.findMany({
+      where: {
+        ...publicAvailabilityWhere(),
+        subject: entry.subject,
+        board: { contains: "Cambridge", mode: "insensitive" },
+        ...(code ? { syllabusCode: code } : {}),
+      },
+      take: 2000,
+      orderBy: [{ year: "desc" }, { componentCode: "asc" }],
+    });
+    const seen = new Set(papers.map((row) => row.id));
+    papers = [...papers, ...extra.filter((row) => !seen.has(row.id))];
+  }
   const purchases = session?.user
     ? await prisma.pastPaperPurchase.findMany({
         where: { userId: session.user.id, status: "PAID" },
@@ -78,7 +84,8 @@ export default async function PastPaperSeoPage({ params }: Params) {
   const owned = new Set(purchases.map((row) => row.catalogKey));
   const titleSubject = entry?.subject || subject.replace(/-/g, " ");
   const titleLevel = entry?.level || qualification.replace(/-/g, " ");
-  const code = resolved.syllabusCode || "";
+  const groups = groupPapersByYearSessionComponent(papers);
+  const years = [...new Set(papers.map((row) => row.year))].sort((a, b) => b - a);
 
   return (
     <div className="page">
@@ -88,7 +95,8 @@ export default async function PastPaperSeoPage({ params }: Params) {
           {code ? ` ${code}` : ""} {titleLevel} past papers
         </h1>
         <p className="section-lead">
-          {entry?.board || "Cambridge"} · {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
+          {/cambridge/i.test(entry?.board || board) ? "Cambridge International" : entry?.board || "Board"} ·{" "}
+          {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
         </p>
         <SubjectHubTabs active="papers" />
         <p className="paper-crumb muted">
@@ -102,35 +110,96 @@ export default async function PastPaperSeoPage({ params }: Params) {
             </>
           ) : null}
         </p>
-        <section className="paper-board panel">
-          <h2>Papers</h2>
-          {all.length === 0 ? (
-            <p className="muted">Coming soon — no files have been uploaded for this subject yet.</p>
-          ) : (
-            <div className="paper-rows">
-              {all.map((paper) => (
-                <article key={paper.id} className="paper-row">
-                  <div>
-                    <h3>
-                      {paper.year} · {documentTypeLabel(paper.documentType) || paper.paperType}
-                      {paper.componentCode ? ` · Paper ${paper.componentCode}` : ""}
-                    </h3>
-                    <p className="muted">
-                      {paper.session || ""} {paper.syllabusCode || code}
-                    </p>
-                  </div>
-                  <PastPaperBuyButton
-                    catalogKey={paper.catalogKey}
-                    available
-                    owned={owned.has(paper.catalogKey) || session?.user?.role === "ADMIN"}
-                    feeLabel={feeLabel}
-                    signedIn={Boolean(session?.user)}
-                  />
-                </article>
+
+        <form className="panel filters filters-wide" method="get">
+          <label>
+            Year
+            <select name="year" defaultValue={sp.year || ""}>
+              <option value="">All years</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
               ))}
-            </div>
-          )}
-        </section>
+            </select>
+          </label>
+          <label>
+            Session
+            <select name="session" defaultValue={sp.session || ""}>
+              <option value="">Any</option>
+              {["Feb/Mar", "May/Jun", "Oct/Nov"].map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Paper / component
+            <input name="paper" defaultValue={sp.paper || ""} placeholder="42" />
+          </label>
+          <label>
+            Document type
+            <select name="documentType" defaultValue={sp.documentType || ""}>
+              <option value="">Any</option>
+              {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" type="submit">
+            Filter
+          </button>
+        </form>
+
+        {papers.length === 0 ? (
+          <section className="paper-board panel">
+            <h2>Papers</h2>
+            <p className="muted">Coming soon — no files have been published for this subject yet.</p>
+          </section>
+        ) : (
+          groups.map((yearGroup) => (
+            <section key={yearGroup.year} className="paper-board panel">
+              <h2>{yearGroup.year}</h2>
+              {yearGroup.sessions.map((sessionGroup) => (
+                <div key={`${yearGroup.year}-${sessionGroup.session}`} className="paper-session">
+                  <h3>{sessionGroup.session}</h3>
+                  {sessionGroup.components.map((component) => (
+                    <div key={`${yearGroup.year}-${sessionGroup.session}-${component.componentCode}`}>
+                      <p className="paper-component-label">
+                        {component.componentCode === "other"
+                          ? "Supporting documents"
+                          : `Paper ${component.componentCode}`}
+                      </p>
+                      <div className="paper-rows">
+                        {component.papers.map((paper) => (
+                          <article key={paper.id} className="paper-row">
+                            <div>
+                              <h3>{documentTypeShortLabel(paper.documentType, paper.paperType)}</h3>
+                              <p className="muted">
+                                {paper.session || sessionGroup.session}
+                                {code ? ` · ${code}` : paper.syllabusCode ? ` · ${paper.syllabusCode}` : ""}
+                              </p>
+                            </div>
+                            <PastPaperBuyButton
+                              catalogKey={paper.catalogKey}
+                              available
+                              owned={owned.has(paper.catalogKey) || session?.user?.role === "ADMIN"}
+                              feeLabel={feeLabel}
+                              signedIn={Boolean(session?.user)}
+                            />
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </section>
+          ))
+        )}
         <p className="muted" style={{ marginTop: "2rem" }}>
           Exam boards own the original papers. Find a {titleSubject} tutor on{" "}
           <Link href={`/s/${slugify(titleSubject)}`}>tutor search</Link>.

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { publicAvailabilityWhere } from "./availability";
 import { PAST_PAPER_PAGE_SIZE } from "./browse";
 
 export type PublicPaperFilters = {
@@ -16,9 +17,7 @@ export type PublicPaperFilters = {
 };
 
 export function publicPaperWhere(filters: PublicPaperFilters): Prisma.PastPaperWhereInput {
-  const AND: Prisma.PastPaperWhereInput[] = [
-    { published: true, isActive: true, fileUrl: { not: null } },
-  ];
+  const AND: Prisma.PastPaperWhereInput[] = [publicAvailabilityWhere()];
   if (filters.subject) AND.push({ subject: { equals: filters.subject, mode: "insensitive" } });
   if (filters.board) AND.push({ board: { contains: filters.board, mode: "insensitive" } });
   if (filters.qualification) {
@@ -74,4 +73,12 @@ export async function searchPublicPastPapers(filters: PublicPaperFilters, page =
     }),
   ]);
   return { total, papers, page, pageSize: PAST_PAPER_PAGE_SIZE };
+}
+
+export async function listPublicPastPapers(filters: PublicPaperFilters, take = 2000) {
+  return prisma.pastPaper.findMany({
+    where: publicPaperWhere(filters),
+    orderBy: [{ year: "desc" }, { session: "asc" }, { componentCode: "asc" }, { documentType: "asc" }],
+    take,
+  });
 }

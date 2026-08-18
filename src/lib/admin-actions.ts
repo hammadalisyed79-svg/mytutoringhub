@@ -663,29 +663,31 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const catalogKey = (payload.catalogKey || "").trim();
       if (!catalogKey) throw new AdminActionError("catalogKey is required");
       const listing = parsePastPaperKey(catalogKey);
-      if (!listing) throw new AdminActionError("Unknown past paper");
+      const existing = await prisma.pastPaper.findUnique({ where: { catalogKey } });
+      if (!listing && !existing) throw new AdminActionError("Unknown past paper");
       targetType = "PastPaper";
       const flags =
         payload.published !== undefined ? pastPaperVisibility(payload.published, payload.published) : {};
-      const saved = await prisma.pastPaper.upsert({
-        where: { catalogKey },
-        update: {
-          ...(payload.fileUrl !== undefined ? { fileUrl: payload.fileUrl || null } : {}),
-          ...flags,
-          ...(payload.published !== undefined ? { published: payload.published } : {}),
-          title: listing.title,
-          subject: listing.subject,
-          board: listing.board,
-          year: listing.year,
-          paperType: listing.paperType,
-        },
-        create: {
+      if (existing) {
+        const saved = await prisma.pastPaper.update({
+          where: { catalogKey },
+          data: {
+            ...(payload.fileUrl !== undefined ? { fileUrl: payload.fileUrl || null } : {}),
+            ...flags,
+            ...(payload.published !== undefined ? { published: payload.published } : {}),
+          },
+        });
+        targetId = saved.id;
+        break;
+      }
+      const saved = await prisma.pastPaper.create({
+        data: {
           catalogKey,
-          subject: listing.subject,
-          board: listing.board,
-          year: listing.year,
-          paperType: listing.paperType,
-          title: listing.title,
+          subject: listing!.subject,
+          board: listing!.board,
+          year: listing!.year,
+          paperType: listing!.paperType,
+          title: listing!.title,
           fileUrl: payload.fileUrl || null,
           ...pastPaperVisibility(payload.published !== false, payload.published !== false),
         },

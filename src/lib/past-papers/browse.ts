@@ -45,19 +45,39 @@ export function seoBoardSlug(board: string) {
   return slugify(board);
 }
 
-export function subjectSeoSlug(entry: { subject: string; code?: string }, syllabusCode?: string | null) {
-  const code = syllabusCode || guessSyllabusCode(entry.subject, undefined) || "";
+export function subjectSeoSlug(
+  entry: { subject: string; code?: string; level?: string },
+  syllabusCode?: string | null,
+) {
+  const code = syllabusCode || guessSyllabusCode(entry.subject, entry.level) || "";
   const base = slugify(entry.subject);
   return code ? `${base}-${code.toLowerCase()}` : base;
 }
 
 export function guessSyllabusCode(subject: string, level?: string) {
-  const hit = Object.entries(CAMBRIDGE_SYLLABUS_MAP).find(
-    ([, meta]) =>
-      meta.subject.toLowerCase() === subject.toLowerCase() &&
-      (!level || meta.level.toLowerCase() === level.toLowerCase() || (level.includes("IGCSE") && meta.level === "IGCSE")),
+  const subjectName = subject.trim().toLowerCase();
+  const levelName = (level || "").trim().toLowerCase();
+  const entries = Object.entries(CAMBRIDGE_SYLLABUS_MAP).filter(
+    ([, meta]) => meta.subject.toLowerCase() === subjectName,
   );
-  return hit?.[0] || null;
+  if (!entries.length) return null;
+  if (levelName) {
+    const exact = entries.find(([, meta]) => meta.level.toLowerCase() === levelName);
+    if (exact) return exact[0];
+    if (levelName.includes("igcse")) {
+      const igcse = entries.find(([, meta]) => meta.level === "IGCSE");
+      if (igcse) return igcse[0];
+    }
+    if (/o\s*level/.test(levelName)) {
+      const olevel = entries.find(([, meta]) => meta.level === "O Level");
+      if (olevel) return olevel[0];
+    }
+    if (/a\s*level|as\s*level/.test(levelName)) {
+      const alevel = entries.find(([, meta]) => meta.level === "A Level");
+      if (alevel) return alevel[0];
+    }
+  }
+  return (entries.find(([, meta]) => meta.level === "IGCSE") || entries[0])[0];
 }
 
 export function parseSubjectSeoSlug(slug: string) {

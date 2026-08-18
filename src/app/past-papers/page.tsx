@@ -26,6 +26,8 @@ import {
 } from "@/lib/past-papers/browse";
 import { searchPublicPastPapers } from "@/lib/past-papers/public-search";
 import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
+import { paperHasFile, publicAvailabilityWhere } from "@/lib/past-papers/availability";
+import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
 
 export const metadata = {
@@ -59,6 +61,7 @@ export default async function PastPapersPage({
     q?: string;
     code?: string;
     paper?: string;
+    documentType?: string;
     page?: string;
     checkout?: string;
     key?: string;
@@ -88,7 +91,7 @@ export default async function PastPapersPage({
       ? Number(sp.year)
       : 0;
   const page = Math.max(1, Number(sp.page) || 1);
-  const searching = Boolean(sp.q || sp.code || sp.paper || (sp.board && !country));
+  const searching = Boolean(sp.q || sp.code || sp.paper || sp.documentType || (sp.board && !country));
 
   const listings = subject && year ? papersForSubjectYear(subject, year) : [];
   const keys = listings.map((row) => row.key);
@@ -116,6 +119,7 @@ export default async function PastPapersPage({
             country: country || undefined,
             year: year || undefined,
             session: sp.session,
+            documentType: sp.documentType,
           },
           page,
         )
@@ -124,11 +128,10 @@ export default async function PastPapersPage({
       ? prisma.pastPaper.findMany({
           where: {
             subject,
-            published: true,
-            isActive: true,
-            fileUrl: { not: null },
+            ...publicAvailabilityWhere(),
             ...(year ? { year } : {}),
             ...(sp.session ? { session: sp.session } : {}),
+            ...(sp.documentType ? { documentType: sp.documentType } : {}),
             ...(board ? { board } : {}),
           },
           orderBy: [{ year: "desc" }, { session: "asc" }, { componentCode: "asc" }],
@@ -223,6 +226,28 @@ export default async function PastPapersPage({
           <label>
             Paper code
             <input name="paper" defaultValue={sp.paper || ""} placeholder="42" />
+          </label>
+          <label>
+            Session
+            <select name="session" defaultValue={sp.session || ""}>
+              <option value="">Any</option>
+              {["Feb/Mar", "May/Jun", "Oct/Nov"].map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Document type
+            <select name="documentType" defaultValue={sp.documentType || ""}>
+              <option value="">Any</option>
+              {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </label>
           <button className="btn" type="submit">
             Search
@@ -420,7 +445,7 @@ export default async function PastPapersPage({
                       <div className="paper-rows">
                         {rows.map((row) => {
                           const file = fileMap.get(row.key);
-                          const available = Boolean(file?.fileUrl);
+                          const available = paperHasFile(file || {});
                           return (
                             <article key={row.key} className="paper-row">
                               <div>

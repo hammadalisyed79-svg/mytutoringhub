@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
-import { parseCambridgeFilename } from "./cambridge-filename-parser";
+import { parseCambridgeFilename, normalizeCambridgeSession } from "./cambridge-filename-parser";
 import { parseHttpsPdfUrl } from "./allowlist";
-import { isSafeCatalogKey } from "./catalog-key";
+import { importedCatalogKey, isSafeCatalogKey } from "./catalog-key";
 import { matchCurriculumEntry } from "./subject-matcher";
 import { validatePdfBuffer, sha256 } from "./file-validate";
 import { duplicateComboWhere } from "./catalog-key";
+import { guessSyllabusCode } from "./browse";
+import { parseManifestPayload } from "./manifest-import";
+import { groupPapersByYearSessionComponent } from "./group-papers";
+import { isR2Configured } from "./r2";
+import { downloadableFileWhere } from "./availability";
 
 function expectParsed(
   filename: string,
@@ -94,5 +99,94 @@ assert.equal(blocked.ok, false);
 
 const badScheme = parseHttpsPdfUrl("http://example.com/file.pdf");
 assert.equal(badScheme.ok, false);
+
+expectParsed("0620_m16_er.pdf", {
+  code: "0620",
+  session: "Feb/Mar",
+  year: 2016,
+  type: "EXAMINER_REPORT",
+  component: "",
+});
+expectParsed("0620_m16_ci_52.pdf", {
+  code: "0620",
+  session: "Feb/Mar",
+  year: 2016,
+  type: "OTHER",
+  component: "52",
+});
+const qpVariant = parseCambridgeFilename("0620_s24_qp_42.pdf");
+assert.equal(qpVariant.ok, true);
+if (qpVariant.ok) assert.equal(qpVariant.metadata.variant, "2");
+
+const nested = parseCambridgeFilename(
+  "cambridge/igcse/chemistry/0620/2024/may-june/question-papers/0620_s24_qp_42.pdf",
+);
+assert.equal(nested.ok, true);
+
+assert.equal(guessSyllabusCode("Chemistry", "IGCSE"), "0620");
+assert.equal(guessSyllabusCode("Chemistry", "O Level"), "5070");
+assert.equal(guessSyllabusCode("Chemistry", "A Level"), "9701");
+assert.equal(guessSyllabusCode("Chemistry"), "0620");
+
+assert.equal(normalizeCambridgeSession("February/March"), "Feb/Mar");
+assert.equal(normalizeCambridgeSession("May/June"), "May/Jun");
+assert.equal(normalizeCambridgeSession("October/November"), "Oct/Nov");
+
+const key = importedCatalogKey({
+  board: "Cambridge IGCSE",
+  subject: "Chemistry",
+  year: 2024,
+  documentType: "QUESTION_PAPER",
+  session: "May/Jun",
+  componentCode: "42",
+});
+assert.equal(key, "cambridge-igcse__chemistry__2024__question-paper__may-jun__42");
+
+const manifest = parseManifestPayload({
+  files: [
+    {
+      original_filename: "0620_s24_qp_42.pdf",
+      r2_object_key: "cambridge/igcse/chemistry/0620/2024/may-june/question-papers/0620_s24_qp_42.pdf",
+      file_size: 1234,
+      checksum: "a".repeat(64),
+    },
+    {
+      original_filename: "notes.txt",
+      r2_object_key: "cambridge/igcse/chemistry/0620/notes.txt",
+    },
+  ],
+});
+assert.equal(manifest.length, 1);
+assert.equal(manifest[0].storageKey.includes("0620_s24_qp_42.pdf"), true);
+assert.equal(manifest[0].checksum?.length, 64);
+
+const grouped = groupPapersByYearSessionComponent([
+  {
+    id: "1",
+    catalogKey: "a",
+    year: 2024,
+    session: "May/Jun",
+    componentCode: "42",
+    documentType: "MARK_SCHEME",
+    paperType: "Marking scheme",
+  },
+  {
+    id: "2",
+    catalogKey: "b",
+    year: 2024,
+    session: "May/Jun",
+    componentCode: "42",
+    documentType: "QUESTION_PAPER",
+    paperType: "Question paper",
+  },
+]);
+assert.equal(grouped[0]?.year, 2024);
+assert.equal(grouped[0]?.sessions[0]?.components[0]?.papers[0]?.documentType, "QUESTION_PAPER");
+assert.equal(grouped[0]?.sessions[0]?.components[0]?.papers[1]?.documentType, "MARK_SCHEME");
+
+assert.equal(typeof isR2Configured(), "boolean");
+assert.deepEqual(downloadableFileWhere(), {
+  OR: [{ storageKey: { not: null } }, { fileUrl: { not: null } }],
+});
 
 console.log("past-papers tests passed");

@@ -4,6 +4,7 @@ import { curriculumLevels, uniqueCurriculumSubjects } from "@/lib/curriculum";
 import { uniqueCurriculumBoards } from "@/lib/past-papers/browse";
 import { listSourceAdapters } from "@/lib/past-papers/sources";
 import { PastPaperImportClient } from "@/components/PastPaperImportClient";
+import { R2ManifestImportClient } from "@/components/R2ManifestImportClient";
 
 export const metadata = { title: "Past paper import · Admin" };
 export const dynamic = "force-dynamic";
@@ -26,9 +27,11 @@ export default async function AdminPastPaperImportPage() {
         <h1 className="page-title">Past paper auto import</h1>
         <p className="muted">
           Upload PDFs you are allowed to host, or paste specific HTTPS PDF URLs. Cambridge filenames such as
-          0620_s24_qp_42.pdf are parsed automatically. Board websites are not scraped.
+          0620_s24_qp_42.pdf are parsed automatically. Board websites are not scraped. Chemistry 0620 files already
+          in Cloudflare R2 should be synced with the metadata-only form below — do not re-upload those PDFs.
         </p>
       </div>
+      <R2ManifestImportClient />
       <PastPaperImportClient boards={boards} levels={levels} subjects={subjects} sources={sources} />
     </>
   );

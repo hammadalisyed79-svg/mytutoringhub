@@ -320,6 +320,8 @@ model PastPaper {
   downloadCount    Int      @default(0)
   importStatus     String?
   checksum         String?
+  /// BLOB = Vercel Blob (photos and manual PDF uploads). R2 = Cloudflare object key in storageKey.
+  storageProvider  String?  @default("BLOB")
 
   @@index([subject, year])
   @@index([board, year])
@@ -329,6 +331,8 @@ model PastPaper {
   @@index([catalogKey])
   @@index([curriculumCode, year, session, documentType, componentCode])
   @@index([syllabusCode, year, session])
+  @@index([storageProvider])
+  @@index([storageKey])
 }
 
 model ImportJob {
