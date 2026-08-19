@@ -9,7 +9,9 @@ import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
-import { syncTutorBadges } from "@/lib/subscription";
+import { SubscribeButton } from "@/components/SubscribeButton";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { uniqueVisibleSubscriptions, syncTutorBadges } from "@/lib/subscription";
 import {
   reconcileUserSafepayPaperPurchases,
   reconcileUserSafepayPayments,
@@ -19,6 +21,27 @@ import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
+
+function profileStrength(tp: {
+  photoUrl: string | null;
+  bio: string | null;
+  subjects: string | null;
+  qualifications: string | null;
+  hourlyRate: number;
+  availability: string | null;
+}) {
+  const missing = [
+    !tp.photoUrl && "photo",
+    !tp.bio?.trim() && "bio",
+    !tp.subjects?.trim() && "subjects",
+    !tp.qualifications?.trim() && "qualifications",
+    !(tp.hourlyRate > 0) && "hourly rate",
+    !tp.availability?.trim() && "availability",
+  ].filter(Boolean) as string[];
+  const total = 6;
+  const done = total - missing.length;
+  return { pct: Math.round((done / total) * 100), missing };
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -37,8 +60,9 @@ export default async function DashboardPage({
   if (session.user.role === "ADMIN") redirect("/admin");
   const sp = await searchParams;
 
-  const [justActivated] = await Promise.all([
+  const [justActivated, currency] = await Promise.all([
     reconcileUserSafepayPayments(session.user.id),
+    getVisitorCurrency(),
     reconcileUserSafepayPaperPurchases(session.user.id),
   ]);
   if (session.user.role === "TUTOR") {
@@ -64,22 +88,26 @@ export default async function DashboardPage({
   const dbSubjects = (await prisma.subject.findMany({ orderBy: { name: "asc" }, select: { name: true } })).map(
     (row) => row.name,
   );
-  const catalogSubjects = mergeSubjectNames(
-    dbSubjects,
-    catalogSubjectNames(),
-  );
+  const catalogSubjects = mergeSubjectNames(dbSubjects, catalogSubjectNames());
 
-  const visibleSubs = user.subscriptions.filter((s) =>
-    ["ACTIVE", "TRIALING"].includes(s.status),
-  );
+  const visibleSubs = uniqueVisibleSubscriptions(user.subscriptions);
   const pendingSubs = user.subscriptions.filter((s) => s.status === "INCOMPLETE");
+  const isTutor = user.role === "TUTOR";
+  const corePlan = isTutor
+    ? visibleSubs.find((s) => s.plan === "TUTOR_BASIC" || s.plan === "VERIFIED_TUTOR")
+    : visibleSubs.find((s) => s.plan === "STUDENT_PASS");
+  const addOnSubs = isTutor
+    ? visibleSubs.filter((s) => s.plan !== "TUTOR_BASIC")
+    : [];
 
   return (
     <div className="page">
       <div className="container">
         <h1 className="page-title">Hi, {user.name}</h1>
         <p className="muted">
-          Role: {user.role.toLowerCase()} · Manage your profile, subscriptions, and activity.
+          {isTutor
+            ? "Complete your profile to appear in search, then reply to student requests."
+            : "Find a tutor, message with a Student Pass, or post a request."}
         </p>
         {sp.verified === "1" && (
           <p className="success panel" style={{ marginTop: "1rem" }}>
@@ -114,89 +142,35 @@ export default async function DashboardPage({
           </p>
         )}
 
-        <div
-          style={{
-            marginTop: "1.25rem",
-            display: "flex",
-            gap: "0.6rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <Link
-            href={user.role === "TUTOR" ? "/dashboard/tutor/plan" : "/dashboard/student/plan"}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              background: "var(--white)",
-              border: "1px solid var(--line)",
-              borderRadius: "var(--radius-sm)",
-              padding: "0.4em 1em",
-              fontSize: "0.88rem",
-              fontWeight: 600,
-              color: "var(--brand)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            My Plan →
-          </Link>
-          {user.role === "TUTOR" && (
-            <Link
-              href="/dashboard/tutor/analytics"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                background: "var(--white)",
-                border: "1px solid var(--line)",
-                borderRadius: "var(--radius-sm)",
-                padding: "0.4em 1em",
-                fontSize: "0.88rem",
-                fontWeight: 600,
-                color: "var(--brand)",
-                boxShadow: "var(--shadow-sm)",
-              }}
-            >
-              Analytics →
-            </Link>
-          )}
-          <Link
-            href="/settings/plan"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              background: "var(--white)",
-              border: "1px solid var(--line)",
-              borderRadius: "var(--radius-sm)",
-              padding: "0.4em 1em",
-              fontSize: "0.88rem",
-              fontWeight: 600,
-              color: "var(--ink)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            Subscription settings
-          </Link>
-        </div>
-
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
           <section className="panel">
-            <h2>Subscriptions</h2>
-            {visibleSubs.length === 0 && (
-              <p className="muted">No active plans yet. Subscribe to unlock messaging.</p>
-            )}
-            <ul className="sub-list">
-              {visibleSubs.map((s) => (
-                <li key={s.id}>
-                  <strong>{getPlan(s.plan as never)?.name || s.plan}</strong> — {s.status}
-                  {s.currentPeriodEnd
-                    ? ` · until ${s.currentPeriodEnd.toLocaleDateString()}`
-                    : ""}{" "}
-                  · <Link href={`/receipt/${s.id}`}>View slip</Link>
+            <h2>Your plan</h2>
+            {corePlan ? (
+              <ul className="sub-list">
+                <li>
+                  <strong>{getPlan(corePlan.plan as never)?.name || corePlan.plan}</strong>
+                  {corePlan.currentPeriodEnd
+                    ? ` · until ${corePlan.currentPeriodEnd.toLocaleDateString()}`
+                    : " · active"}{" "}
+                  · <Link href={`/receipt/${corePlan.id}`}>View slip</Link>
                 </li>
-              ))}
-            </ul>
+                {addOnSubs
+                  .filter((s) => s.id !== corePlan.id)
+                  .map((s) => (
+                    <li key={s.id}>
+                      <strong>{getPlan(s.plan as never)?.name || s.plan}</strong>
+                      {s.currentPeriodEnd ? ` · until ${s.currentPeriodEnd.toLocaleDateString()}` : ""}{" "}
+                      · <Link href={`/receipt/${s.id}`}>View slip</Link>
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="muted">
+                {isTutor
+                  ? "Activate Tutor Basic to appear in search. Add-ons stay optional."
+                  : "A Student Pass unlocks messaging and tutor requests. Pay on Safepay in one step."}
+              </p>
+            )}
             {pendingSubs.length > 0 && (
               <div style={{ marginTop: "0.75rem" }}>
                 <p className="muted" style={{ fontSize: "0.9rem" }}>
@@ -219,26 +193,55 @@ export default async function DashboardPage({
                 </div>
               </div>
             )}
-            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
-              <Link href="/pricing" className="btn btn-sm">
-                View plans
-              </Link>
-              <Link href="/settings" className="btn btn-secondary btn-sm">
-                Settings
-              </Link>
-            </div>
-            {visibleSubs.length === 0 && <RecoverPaymentForm />}
+            {!corePlan && (
+              <div className="plan-cta" style={{ marginTop: "0.85rem" }}>
+                {isTutor ? (
+                  <SubscribeButton
+                    plan="TUTOR_BASIC"
+                    currency={currency}
+                    label="Activate Tutor Basic free"
+                    complimentary
+                  />
+                ) : (
+                  <SubscribeButton
+                    plan="STUDENT_PASS"
+                    currency={currency}
+                    label="Pay with Safepay · Student Pass"
+                    featured
+                  />
+                )}
+              </div>
+            )}
+            <p style={{ marginTop: "0.85rem", marginBottom: 0 }}>
+              <Link href="/pricing">{isTutor ? "Tutor add-ons" : "See Student Pass"} →</Link>
+            </p>
+            {!corePlan && <RecoverPaymentForm />}
           </section>
 
           <section className="panel">
-            <h2>Quick links</h2>
+            <h2>{isTutor ? "Tutor tasks" : "Student tasks"}</h2>
             <div className="dash-links">
-              <Link href="/search">Browse tutors</Link>
-              <Link href="/ads">Student ads</Link>
-              <Link href="/messages">Messages</Link>
-              <Link href="/settings">Account settings</Link>
-              <Link href="/help">Help</Link>
-              {user.role === "ADMIN" && <Link href="/admin">Admin panel</Link>}
+              {isTutor ? (
+                <>
+                  <Link href="/student-requests">Student requests</Link>
+                  <Link href="/ads">Student ads</Link>
+                  <Link href="/messages">Messages</Link>
+                  <Link href="/past-papers">Past papers</Link>
+                  <Link href="/dashboard/tutor/analytics">Analytics</Link>
+                  <Link href="/settings">Account settings</Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/search">Find a tutor</Link>
+                  <Link href="/student-requests">Student requests</Link>
+                  <Link href="/ads/new">Post a request</Link>
+                  <Link href="/past-papers">Past papers</Link>
+                  <Link href="/messages">Messages</Link>
+                  <Link href="/assistant">Study assistant</Link>
+                  <Link href="/settings">Account settings</Link>
+                  <Link href="/become-a-tutor">Become a tutor</Link>
+                </>
+              )}
             </div>
           </section>
 
@@ -256,7 +259,7 @@ export default async function DashboardPage({
             </section>
           )}
 
-          {user.role === "TUTOR" && user.tutorProfile && (
+          {isTutor && user.tutorProfile && (
             <>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Your tutor profile</h2>
@@ -270,18 +273,7 @@ export default async function DashboardPage({
                     : "Standard listing"}
                 </p>
                 {(() => {
-                  const tp = user.tutorProfile;
-                  const fields = [
-                    !!tp.photoUrl,
-                    !!tp.bio?.trim(),
-                    !!tp.subjects?.trim(),
-                    !!tp.qualifications?.trim(),
-                    tp.hourlyRate > 0,
-                    !!tp.availability?.trim(),
-                  ];
-                  const done = fields.filter(Boolean).length;
-                  const pct = Math.round((done / fields.length) * 100);
-                  const incomplete = pct < 100;
+                  const { pct, missing } = profileStrength(user.tutorProfile);
                   return (
                     <div className="profile-strength">
                       <div className="profile-strength-label">
@@ -289,43 +281,36 @@ export default async function DashboardPage({
                         <span>{pct}%</span>
                       </div>
                       <div className="profile-strength-bar">
-                        <div
-                          className="profile-strength-fill"
-                          style={{ width: `${pct}%` }}
-                        />
+                        <div className="profile-strength-fill" style={{ width: `${pct}%` }} />
                       </div>
-                      {incomplete && (
+                      {missing.length > 0 && (
                         <p className="profile-strength-nudge">
-                          Complete your profile to appear higher in search — add{" "}
-                          {[
-                            !tp.photoUrl && "photo",
-                            !tp.bio?.trim() && "bio",
-                            !tp.subjects?.trim() && "subjects",
-                            !tp.qualifications?.trim() && "qualifications",
-                            !(tp.hourlyRate > 0) && "hourly rate",
-                            !tp.availability?.trim() && "availability",
-                          ]
-                            .filter(Boolean)
-                            .join(", ")}
-                          .
+                          Complete your profile to appear higher in search — add {missing.join(", ")}.
                         </p>
                       )}
                     </div>
                   );
                 })()}
                 <p className="muted">
-                  Select your country, city, subjects, and matching expertise from the catalog.
-                  Add more levels and languages as needed — students see this on your public listing.
+                  This is your public listing. Students find you from this profile — there is no
+                  separate create-listing step.
                 </p>
                 {!user.tutorProfile.active && (
-                  <p className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)", marginBottom: "1rem" }}>
-                    Students cannot see this listing yet.{" "}
-                    <Link href="/pricing">Activate Tutor Basic</Link> to appear in search, then share your
+                  <p
+                    className="panel"
+                    style={{
+                      borderColor: "var(--brand)",
+                      background: "rgba(15, 90, 70, 0.06)",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    Students cannot see this listing yet. Activate Tutor Basic above, then share your
                     public profile link.
                   </p>
                 )}
                 <TutorProfileForm
                   initial={user.tutorProfile}
+                  displayName={user.name}
                   subjects={catalogSubjects}
                   extraLevels={curriculumLevels()}
                 />
@@ -341,7 +326,10 @@ export default async function DashboardPage({
                 </p>
               </section>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
-                <h2>Subject ads</h2>
+                <h2>Optional subject ads</h2>
+                <p className="muted">
+                  Extra subject-specific ads on top of your profile. Not required to get found.
+                </p>
                 <TutorAdsManager subjects={catalogSubjects} extraLevels={curriculumLevels()} />
               </section>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
@@ -349,7 +337,7 @@ export default async function DashboardPage({
                 <p className="muted">
                   Required: a government photo ID (passport, national ID / CNIC, or driving licence).
                   Recommended: your highest qualification. Documents stay private — admins only.
-                  Purchasing Verified Tutor also prioritises your request.
+                  The Verified Tutor add-on on Pricing prioritises your request.
                 </p>
                 <VerificationForm />
               </section>
@@ -358,7 +346,7 @@ export default async function DashboardPage({
 
           {user.role === "STUDENT" && (
             <section className="panel" style={{ gridColumn: "1 / -1" }}>
-              <h2>Your ads</h2>
+              <h2>Your requests</h2>
               {user.studentAds.length === 0 && (
                 <p className="muted">You have not posted any requests.</p>
               )}
