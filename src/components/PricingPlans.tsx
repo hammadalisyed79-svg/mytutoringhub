@@ -4,9 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   type PricingEntry,
-  getPricingForCountry,
   formatPrice,
-  SUPPORTED_COUNTRIES,
 } from "@/lib/pricing";
 
 type BillingCycle = "monthly" | "annual";
@@ -149,23 +147,11 @@ type Props = {
   detectedCountryCode: string;
 };
 
-export function PricingPlans({ pricing: initialPricing, detectedCountryCode }: Props) {
+export function PricingPlans({ pricing: initialPricing }: Props) {
   const [billing, setBilling] = useState<BillingCycle>("monthly");
   const [audience, setAudience] = useState<AudienceKey>("tutors");
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    detectedCountryCode in
-      Object.fromEntries(SUPPORTED_COUNTRIES.map((c) => [c.code, true]))
-      ? detectedCountryCode
-      : "DEFAULT",
-  );
 
-  const pricing = useMemo(
-    () =>
-      selectedCountry === "DEFAULT"
-        ? initialPricing
-        : getPricingForCountry(selectedCountry),
-    [selectedCountry, initialPricing],
-  );
+  const pricing = initialPricing;
 
   const plans = useMemo(() => buildPlans(pricing), [pricing]);
 
@@ -196,27 +182,9 @@ export function PricingPlans({ pricing: initialPricing, detectedCountryCode }: P
 
         <div className="pricing-control-card">
           {/* Currency / location banner */}
-          <div className="pricing-location-bar">
-            <span className="pricing-location-text">
-              Prices shown in <strong>{pricing.currency}</strong> for{" "}
-              <strong>{pricing.countryName}</strong>
-            </span>
-            <label htmlFor="pricing-country-select" className="pricing-location-label">
-              Not your location?
-            </label>
-            <select
-              id="pricing-country-select"
-              className="pricing-country-select"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
-            >
-              {SUPPORTED_COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <p className="pricing-location-hint">
+            Prices shown in {pricing.currency} for {pricing.countryName}
+          </p>
 
           <div className="pricing-toggle" role="tablist" aria-label="Billing cycle">
             <button

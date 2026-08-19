@@ -1799,6 +1799,13 @@ select:focus {
   font-weight: 700;
 }
 
+.pricing-location-hint {
+  font-size: 0.78rem;
+  color: var(--muted-foreground, #6b7280);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
 .pricing-stat-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
