@@ -1,4 +1,6 @@
+import { headers } from "next/headers";
 import { PricingPlans } from "@/components/PricingPlans";
+import { getPricingForCountry } from "@/lib/pricing";
 
 export const metadata = {
   title: "Plans & Pricing – Student Pass and Tutor Subscriptions",
@@ -7,11 +9,15 @@ export const metadata = {
   alternates: { canonical: "/pricing" },
 };
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const headersList = await headers();
+  const countryCode = headersList.get("x-vercel-ip-country") ?? "GB";
+  const pricing = getPricingForCountry(countryCode);
+
   return (
     <div className="page pricing-page">
       <div className="container">
-        <PricingPlans />
+        <PricingPlans pricing={pricing} detectedCountryCode={countryCode} />
       </div>
     </div>
   );
