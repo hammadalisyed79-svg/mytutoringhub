@@ -69,6 +69,14 @@ export function formatAvailabilityLines(raw?: string | null): string[] {
   return [];
 }
 
+export function groupAvailabilityByDay(raw?: string | null) {
+  const slots = parseAvailability(raw);
+  const grouped = new Map<Weekday, AvailabilitySlot[]>();
+  for (const day of WEEKDAYS) grouped.set(day, []);
+  for (const slot of slots) grouped.get(slot.day)?.push(slot);
+  return { slots, grouped };
+}
+
 export const EXPERIENCE_YEAR_OPTIONS = [
   { value: 0, label: "Less than 1 year" },
   ...Array.from({ length: 20 }, (_, i) => {

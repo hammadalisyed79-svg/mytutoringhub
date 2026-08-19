@@ -21,6 +21,8 @@
   --font-body: var(--font-body);
   --container: 1180px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --green: #22c55e;
+  --fg-muted: var(--muted);
 }
 
 @theme inline {
@@ -3477,6 +3479,430 @@ select:focus {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+/* ── Tutor profile v2 (conversion layout) ─────────────── */
+.profile-page {
+  background: #f8f9fa;
+}
+
+.profile-shell {
+  padding-bottom: 5rem;
+}
+
+.profile-v2-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.profile-sidebar {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.profile-sidebar-card,
+.profile-content-card {
+  background: #fff;
+  border: 1px solid rgba(20, 36, 31, 0.08);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.4rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.profile-sidebar-card {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.profile-photo-lg {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(13, 95, 82, 0.1);
+  margin: 0 auto;
+}
+
+.profile-name {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.profile-headline-v2 {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.profile-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.profile-rating-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0.15rem 0 0;
+  font-size: 0.92rem;
+}
+
+.profile-rating-empty {
+  margin: 0.15rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.profile-rate-lg {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.75rem, 3vw, 2.15rem);
+  font-weight: 800;
+  color: #15803d;
+  letter-spacing: -0.03em;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.profile-rate-inline {
+  text-align: left;
+  font-size: 1.65rem;
+}
+
+.profile-rate-label {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.profile-facts-list {
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.profile-cta-stack {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+}
+
+.profile-cta-hint {
+  margin: 0;
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+.profile-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.85rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.profile-quick-stats dt {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand-deep);
+  line-height: 1.1;
+}
+
+.profile-quick-stats dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.profile-content {
+  min-width: 0;
+}
+
+.profile-content-card h2 {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.28rem;
+  letter-spacing: -0.015em;
+}
+
+.profile-subheading {
+  margin: 1.15rem 0 0.45rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.profile-bio {
+  margin: 0;
+}
+
+.profile-chip-group + .profile-chip-group {
+  margin-top: 1rem;
+}
+
+.profile-chip-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.profile-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.65rem;
+  border-radius: 0.35rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-chip-subject {
+  color: var(--brand-deep);
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.profile-chip-subject:hover {
+  background: rgba(34, 197, 94, 0.18);
+}
+
+.profile-chip-level {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.profile-chip-board {
+  color: var(--ink);
+  background: rgba(20, 36, 31, 0.06);
+  border: 1px solid rgba(20, 36, 31, 0.1);
+}
+
+.profile-schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.profile-schedule-day {
+  padding: 0.65rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(248, 249, 250, 0.9);
+  text-align: center;
+  min-height: 4.5rem;
+}
+
+.profile-schedule-day.is-available {
+  background: rgba(34, 197, 94, 0.06);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.profile-schedule-day-name {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-deep);
+}
+
+.profile-schedule-times {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.profile-schedule-off {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.profile-reviews-v2 {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.profile-review-card {
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(248, 249, 250, 0.65);
+}
+
+.profile-review-card p:last-child {
+  margin-bottom: 0;
+}
+
+.profile-review-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.profile-contact-card .contact-form {
+  margin-top: 0.85rem;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.profile-placeholder {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(13, 95, 82, 0.05);
+  border: 1px dashed rgba(13, 95, 82, 0.22);
+  color: var(--brand-deep);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.profile-complete-banner {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, rgba(34, 197, 94, 0.08), #fff);
+}
+
+.profile-complete-banner strong {
+  color: var(--brand-deep);
+}
+
+.profile-complete-banner p {
+  margin: 0;
+}
+
+.profile-complete-banner .btn {
+  width: fit-content;
+}
+
+.profile-similar {
+  margin-top: 2rem;
+}
+
+.profile-section-title {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.45rem;
+  letter-spacing: -0.02em;
+}
+
+.profile-sidebar-extra {
+  padding: 0.85rem 1rem;
+}
+
+.profile-mobile-bar {
+  display: none;
+}
+
+@media (min-width: 961px) {
+  .profile-sidebar {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+  }
+}
+
+@media (max-width: 960px) {
+  .profile-v2-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-sidebar {
+    position: static;
+  }
+
+  .profile-schedule-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .profile-mobile-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 35;
+    padding: 0.65rem max(1rem, env(safe-area-inset-right)) calc(0.65rem + env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(20, 36, 31, 0.08);
+    backdrop-filter: blur(10px);
+  }
+
+  .profile-shell {
+    padding-bottom: 6.5rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .profile-schedule-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-quick-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-photo-lg {
+    width: 7.5rem;
+    height: 7.5rem;
+    font-size: 2rem;
+  }
+}
+/* ── end Tutor profile v2 ─────────────────────────────── */
 
 .profile-book-price {
   margin: 0.15rem 0 0.35rem;

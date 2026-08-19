@@ -6,6 +6,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { searchTutors } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
 import { SearchFiltersForm } from "@/components/SearchFiltersForm";
+import { TutorAvatar } from "@/components/TutorAvatar";
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
@@ -187,18 +188,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 className={`tc-card${highlighted ? " highlighted" : ""}${boosted ? " boosted" : ""}`}
               >
                 <div className="tc-left">
-                  <div className="tc-avatar" aria-hidden>
-                    {t.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={t.photoUrl}
-                        alt={tutorName}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <span>{tutorName.slice(0, 1).toUpperCase()}</span>
-                    )}
-                  </div>
+                  <TutorAvatar
+                    className="tc-avatar"
+                    photoUrl={t.photoUrl}
+                    cropX={t.photoCropX}
+                    cropY={t.photoCropY}
+                    cropZoom={t.photoCropZoom}
+                    initial={tutorName.slice(0, 1).toUpperCase()}
+                  />
                   {isStarTutor && (
                     <div className="tc-star-badge" title="Star Tutor">⭐ Star Tutor</div>
                   )}
