@@ -580,6 +580,55 @@ export function AdminPlanPricesForm({
   );
 }
 
+export function AdminSyncSubjectsButton() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [ok, setOk] = useState("");
+
+  async function run() {
+    setBusy(true);
+    setError("");
+    setOk("");
+    try {
+      const data = (await postAdmin({ action: "subject_sync" })) as {
+        created?: number;
+        updated?: number;
+        total?: number;
+        r2Count?: number;
+        warning?: string;
+      };
+      const created = Number(data.created || 0);
+      const updated = Number(data.updated || 0);
+      const total = Number(data.total || 0);
+      const r2Count = Number(data.r2Count || 0);
+      const parts = [
+        `Subject list updated. ${created} added, ${updated} refreshed, ${total} total.`,
+      ];
+      if (r2Count) parts.push(`${r2Count} names came from Cloudflare R2.`);
+      if (data.warning) parts.push(data.warning);
+      setOk(parts.join(" "));
+      window.setTimeout(() => window.location.reload(), 900);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update subjects");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="stack-form">
+      <p className="muted">
+        Adds missing subjects from the curriculum catalog and, when configured, from Cloudflare R2 (
+        <code>catalog/subjects.json</code> and paper folders). Existing subjects are not deleted.
+      </p>
+      <button className="btn" type="button" disabled={busy} onClick={run}>
+        {busy ? "Updating…" : "Update subjects"}
+      </button>
+      {ok && <p className="success">{ok}</p>}
+      {error && <p className="form-error">{error}</p>}
+    </div>
+  );
+}
+
 export function AdminSubjectCreateForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

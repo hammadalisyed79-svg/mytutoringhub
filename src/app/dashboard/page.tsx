@@ -11,8 +11,8 @@ import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
-import { uniqueCurriculumSubjects, curriculumLevels } from "@/lib/curriculum";
-import { allMarketSubjects } from "@/lib/markets";
+import { curriculumLevels } from "@/lib/curriculum";
+import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -58,8 +58,9 @@ export default async function DashboardPage({
   const dbSubjects = (await prisma.subject.findMany({ orderBy: { name: "asc" }, select: { name: true } })).map(
     (row) => row.name,
   );
-  const catalogSubjects = [...new Set([...dbSubjects, ...uniqueCurriculumSubjects(), ...allMarketSubjects()])].sort(
-    (a, b) => a.localeCompare(b),
+  const catalogSubjects = mergeSubjectNames(
+    dbSubjects,
+    catalogSubjectNames(),
   );
 
   const visibleSubs = user.subscriptions.filter((s) =>

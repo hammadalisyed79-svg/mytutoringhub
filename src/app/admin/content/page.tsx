@@ -6,6 +6,7 @@ import {
   AdminSettingsForm,
   AdminSubjectCreateForm,
   AdminSubjectRenameForm,
+  AdminSyncSubjectsButton,
 } from "@/components/AdminActions";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,7 @@ export default async function AdminContentPage() {
 
       <section className="panel">
         <h2>Subjects ({subjects.length})</h2>
+        <AdminSyncSubjectsButton />
         <AdminSubjectCreateForm />
         {subjects.length === 0 && <p className="muted">No subjects yet.</p>}
         <div className="results" style={{ marginTop: "1rem" }}>

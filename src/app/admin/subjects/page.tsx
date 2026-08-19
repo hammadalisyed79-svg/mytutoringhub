@@ -4,6 +4,7 @@ import {
   AdminActionButton,
   AdminSubjectCreateForm,
   AdminSubjectRenameForm,
+  AdminSyncSubjectsButton,
 } from "@/components/AdminActions";
 
 export const metadata = { title: "Subjects · Admin" };
@@ -19,6 +20,10 @@ export default async function AdminSubjectsPage() {
         <h1 className="page-title">Subjects</h1>
         <p className="muted">These appear on the public subjects index and search.</p>
       </div>
+      <section className="panel">
+        <h2>Update from catalog &amp; Cloudflare</h2>
+        <AdminSyncSubjectsButton />
+      </section>
       <section className="panel">
         <h2>Add subject</h2>
         <AdminSubjectCreateForm />

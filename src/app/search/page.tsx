@@ -9,6 +9,7 @@ import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 import { formatTutorPlace } from "@/lib/tutor-catalog";
+import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
 export const metadata = {
   title: "Find tutors",
@@ -42,7 +43,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const sp = await searchParams;
   const currency = await getVisitorCurrency();
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
-  const subjectNames = subjects.map((s) => s.name);
+  const subjectNames = mergeSubjectNames(
+    subjects.map((s) => s.name),
+    catalogSubjectNames(),
+  );
   const { tutors, total, page, pages, resolved, locationRelaxed } = await searchTutors(sp, {
     currency,
     subjectNames,

@@ -52,3 +52,6 @@ next-env.d.ts
 # Local past-paper discovery artifacts (never commit)
 /data/past-papers/discovery/
 /data/past-papers/staging/
+
+.vercel
+.env*

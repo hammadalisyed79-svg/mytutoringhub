@@ -5,6 +5,7 @@ import { canPostAd } from "@/lib/subscription";
 import { NewAdForm } from "@/components/NewAdForm";
 import type { Role } from "@/lib/types";
 import Link from "next/link";
+import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
 export const metadata = { title: "Post a request", description: "Post a student request for a private tutor. Student Pass required." };
 
@@ -21,6 +22,10 @@ export default async function NewAdPage() {
   }
   const allowed = await canPostAd(session.user.id, session.user.role as Role);
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
+  const subjectNames = mergeSubjectNames(
+    subjects.map((s) => s.name),
+    catalogSubjectNames(),
+  );
 
   return (
     <div className="page">
@@ -38,7 +43,7 @@ export default async function NewAdPage() {
             </Link>
           </div>
         ) : (
-          <NewAdForm subjects={subjects.map((s) => s.name)} />
+          <NewAdForm subjects={subjectNames} />
         )}
       </div>
     </div>

@@ -26,6 +26,7 @@ export default async function AdminOverviewPage() {
     studentAds,
     tutorAds,
     conversations,
+    pastPapers,
     recentUsers,
     recentPayments,
     recentReports,
@@ -42,6 +43,7 @@ export default async function AdminOverviewPage() {
     prisma.studentAd.count(),
     prisma.tutorAd.count(),
     prisma.conversation.count(),
+    prisma.pastPaper.count(),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 8,
@@ -78,6 +80,7 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/payments?status=INCOMPLETE" label="Incomplete payments" value={incompletePayments} />
         <Stat href="/admin/ads" label="Ads" value={studentAds + tutorAds} />
         <Stat href="/admin/messages" label="Conversations" value={conversations} />
+        <Stat href="/admin/past-papers" label="Past papers" value={pastPapers} />
       </div>
 
       <div className="admin-quick-links">

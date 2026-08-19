@@ -1,33 +1,9 @@
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { uniqueCurriculumSubjects } from "@/lib/curriculum";
-import { allMarketSubjects } from "@/lib/markets";
+import { catalogSubjectNames } from "@/lib/subject-catalog";
+import { slugify } from "@/lib/search-tutors";
 
-function subjectSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-const extraSubjects = [
-  "Islamiyat",
-  "Pakistan Studies",
-  "Spanish",
-  "Primary School",
-  "Music Piano",
-  "Guitar",
-  "IELTS",
-  "CSS Prep",
-  "Quran Nazra",
-  "SAT Prep",
-  "Spoken English",
-  "Urdu",
-];
-
-const subjects = [
-  ...new Set([...uniqueCurriculumSubjects(), ...allMarketSubjects(), ...extraSubjects]),
-].map((name) => [name, subjectSlug(name)] as const);
+const subjects = catalogSubjectNames().map((name) => [name, slugify(name)] as const);
 
 export const COMPANY_ACCOUNTS = [
   {

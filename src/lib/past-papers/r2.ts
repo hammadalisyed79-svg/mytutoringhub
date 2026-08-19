@@ -111,3 +111,27 @@ export async function listObjectSummaries(prefix: string, maxKeys = 5000) {
   } while (token);
   return out;
 }
+
+export async function listCommonPrefixes(prefix = "", maxKeys = 500) {
+  const client = r2Client();
+  const out: string[] = [];
+  let token: string | undefined;
+  do {
+    const res = await client.send(
+      new ListObjectsV2Command({
+        Bucket: r2Bucket(),
+        Prefix: prefix,
+        Delimiter: "/",
+        ContinuationToken: token,
+        MaxKeys: 1000,
+      }),
+    );
+    for (const item of res.CommonPrefixes || []) {
+      if (!item.Prefix) continue;
+      out.push(item.Prefix);
+      if (out.length >= maxKeys) return out;
+    }
+    token = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (token);
+  return out;
+}

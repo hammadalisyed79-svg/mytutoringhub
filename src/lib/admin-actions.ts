@@ -13,6 +13,7 @@ import {
 import { safepayConfigured } from "@/lib/safepay";
 import { PLANS } from "@/lib/plans";
 import type { Role, SubscriptionPlan } from "@/lib/types";
+import { syncSubjectsFromSources } from "@/lib/subject-sync";
 import { z } from "zod";
 
 const PLANS_SET = new Set(PLANS.map((p) => p.id));
@@ -162,6 +163,8 @@ const ACTION_ALIASES: Record<string, string> = {
   open_tutor_ad: "restore_tutor_ad",
   create_subject: "subject_create",
   delete_subject: "subject_delete",
+  sync_subjects: "subject_sync",
+  update_subjects: "subject_sync",
 };
 
 export async function runAdminAction(adminId: string, raw: unknown) {
@@ -169,6 +172,7 @@ export async function runAdminAction(adminId: string, raw: unknown) {
   const action = ACTION_ALIASES[payload.action] || payload.action;
   let targetType = "unknown";
   let targetId = payload.id || payload.conversationId || payload.messageId || "none";
+  let extra: Record<string, unknown> = {};
 
   switch (action) {
     case "hide_ad":
@@ -585,6 +589,12 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       await prisma.subject.delete({ where: { id } });
       break;
     }
+    case "subject_sync": {
+      targetType = "Subject";
+      targetId = "catalog";
+      extra = await syncSubjectsFromSources();
+      break;
+    }
     case "update_settings": {
       targetType = "SiteSettings";
       targetId = SITE_SETTINGS_ID;
@@ -711,10 +721,10 @@ export async function runAdminAction(adminId: string, raw: unknown) {
     action,
     targetType,
     targetId,
-    detail: detailOf(payload),
+    detail: Object.keys(extra).length ? JSON.stringify({ action, ...extra }) : detailOf(payload),
   });
 
-  return { ok: true as const, action, targetType, targetId };
+  return { ok: true as const, action, targetType, targetId, ...extra };
 }
 
 export { AdminActionError, COMPANY_ADMIN_EMAIL };

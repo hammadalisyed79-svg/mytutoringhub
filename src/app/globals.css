@@ -706,7 +706,7 @@ svg {
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1rem 1.25rem;
   text-align: center;
 }
@@ -3255,6 +3255,10 @@ a.chip-btn {
 
   .steps {
     grid-template-columns: 1fr;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

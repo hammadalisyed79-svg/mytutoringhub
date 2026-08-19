@@ -25,6 +25,7 @@ export async function GET() {
     studentAds,
     tutorAds,
     conversations,
+    pastPapers,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.tutorProfile.count(),
@@ -38,6 +39,7 @@ export async function GET() {
     prisma.studentAd.count(),
     prisma.tutorAd.count(),
     prisma.conversation.count(),
+    prisma.pastPaper.count(),
   ]);
 
   return NextResponse.json({
@@ -55,6 +57,7 @@ export async function GET() {
       incompletePayments,
       ads: studentAds + tutorAds,
       conversations,
+      pastPapers,
     },
   });
 }

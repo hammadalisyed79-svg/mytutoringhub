@@ -12,8 +12,8 @@ import {
   tutorLanguageOptions,
   tutorLevelOptions,
 } from "@/lib/tutor-catalog";
-import { curriculumLevels, uniqueCurriculumSubjects } from "@/lib/curriculum";
-import { allMarketSubjects } from "@/lib/markets";
+import { curriculumLevels } from "@/lib/curriculum";
+import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 
 const schema = z
@@ -90,14 +90,11 @@ export async function PUT(req: Request) {
       where: { userId: session.user.id },
       select: { subjects: true, levels: true, languages: true, expertise: true, location: true },
     });
-    const subjectCatalog = [
-      ...new Set([
-        ...listed.map((row) => row.name),
-        ...uniqueCurriculumSubjects(),
-        ...allMarketSubjects(),
-        ...splitCsv(existing?.subjects),
-      ]),
-    ];
+    const subjectCatalog = mergeSubjectNames(
+      listed.map((row) => row.name),
+      catalogSubjectNames(),
+      splitCsv(existing?.subjects),
+    );
     const subjectParts = splitCsv(data.subjects);
     if (!subjectParts.length) {
       return NextResponse.json({ error: "Select at least one subject from the catalog" }, { status: 400 });

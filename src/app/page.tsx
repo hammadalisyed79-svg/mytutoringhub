@@ -7,6 +7,7 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 import { CountryMarkets } from "@/components/CountryMarkets";
+import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -16,10 +17,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.c
 
 export default async function HomePage() {
   const currency = await getVisitorCurrency();
-  const [tutorCount, studentCount, openAds] = await Promise.all([
+  const [tutorCount, studentCount, openAds, pastPaperCount] = await Promise.all([
     prisma.tutorProfile.count({ where: { active: true } }),
     prisma.user.count({ where: { role: "STUDENT" } }),
     prisma.studentAd.count({ where: { status: "OPEN" } }),
+    prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
   ]);
 
   const featured = await prisma.tutorProfile.findMany({
@@ -90,6 +92,10 @@ export default async function HomePage() {
           <div>
             <strong>1,200+</strong>
             <span>Subject codes</span>
+          </div>
+          <div>
+            <strong>{pastPaperCount.toLocaleString()}</strong>
+            <span>Past papers</span>
           </div>
         </div>
       </section>
