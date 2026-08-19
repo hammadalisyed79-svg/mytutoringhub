@@ -39,6 +39,7 @@ model User {
   aiMessages           AiMessage[]
   adminAuditLogs       AdminAuditLog[]
   pastPaperPurchases   PastPaperPurchase[]
+  serviceFeeEvents     ServiceFeeEvent[]
 }
 
 model Account {
@@ -134,10 +135,33 @@ model Subscription {
   stripeSubscriptionId String?   @unique
   stripePriceId        String?
   currentPeriodEnd     DateTime?
+  // Extended fields for admin plan management
+  role                 String?   // "tutor" | "student"
+  billingPeriod        String?   // "monthly" | "annual"
+  currency             String?   @default("GBP")
+  priceAmount          Float?
+  startDate            DateTime? @default(now())
+  endDate              DateTime?
+  cancelledAt          DateTime?
+  notes                String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
   @@index([userId, plan, status])
+}
+
+model ServiceFeeEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType   String   // "booking_fee" | "profile_boost" | "paper_bundle" | "group_class" | "resource_upload"
+  amount      Float
+  currency    String   @default("GBP")
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
 }
 
 model StudentAd {
