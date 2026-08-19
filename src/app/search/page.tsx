@@ -180,6 +180,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               .slice(0, 3);
             const snippet = (t.bio || "").slice(0, 120).trim();
             const place = formatTutorPlace(t.location, t.country);
+            const tutorName = t.user.name?.trim() || "Tutor";
             return (
               <div
                 key={t.id}
@@ -191,11 +192,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={t.photoUrl}
-                        alt={t.user.name}
+                        alt={tutorName}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     ) : (
-                      <span>{t.user.name.slice(0, 1).toUpperCase()}</span>
+                      <span>{tutorName.slice(0, 1).toUpperCase()}</span>
                     )}
                   </div>
                   {isStarTutor && (
@@ -206,7 +207,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <div className="tc-top-row">
                     <div className="tc-name-area">
                       <h2 className="tc-name">
-                        <Link href={`/tutors/${t.id}`}>{t.user.name}</Link>
+                        <Link href={`/tutors/${t.id}`}>{tutorName}</Link>
                       </h2>
                       {t.headline && <p className="tc-headline">{t.headline}</p>}
                     </div>

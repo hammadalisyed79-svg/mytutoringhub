@@ -145,10 +145,28 @@ export async function searchTutors(
             }
           : {}),
       },
-      include: {
+      select: {
+        id: true,
+        headline: true,
+        bio: true,
+        subjects: true,
+        hourlyRate: true,
+        location: true,
+        online: true,
+        inPerson: true,
+        photoUrl: true,
+        languages: true,
+        levels: true,
+        country: true,
+        expertise: true,
+        verified: true,
+        planTier: true,
+        highlighted: true,
+        highlightedUntil: true,
+        boostUntil: true,
+        offersFreeTrial: true,
         user: { select: { id: true, name: true } },
         reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
-        ads: { where: { status: "ACTIVE" }, take: 6 },
       },
     });
 
@@ -179,7 +197,7 @@ export async function searchTutors(
       const verified = t.verified ? 1 : 0;
       const tierScore = (t.planTier ?? 0) * 5;
       const locBoost =
-        location && t.location.toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
+        location && (t.location || "").toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
       const countryBoost =
         country && (t.country || "").toLowerCase().includes(country.toLowerCase()) ? 3 : 0;
       // Structured match bonuses: prioritise tutors whose selections directly match
@@ -272,7 +290,20 @@ export async function similarTutors(opts: {
       user: { suspended: false },
       OR: or,
     },
-    include: { user: { select: { name: true } } },
+    select: {
+      id: true,
+      photoUrl: true,
+      photoCropX: true,
+      photoCropY: true,
+      photoCropZoom: true,
+      verified: true,
+      headline: true,
+      subjects: true,
+      hourlyRate: true,
+      location: true,
+      country: true,
+      user: { select: { name: true } },
+    },
     take: opts.take ?? 4,
     orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],
   });
