@@ -10,6 +10,15 @@ import type { SubscriptionPlan } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+function pricingRedirect(appUrl: string, checkout: string, planHint?: SubscriptionPlan | null, extras?: Record<string, string>) {
+  const params = new URLSearchParams({ checkout });
+  if (planHint) params.set("plan", planHint);
+  for (const [key, value] of Object.entries(extras || {})) {
+    params.set(key, value);
+  }
+  return `${appUrl}/pricing?${params.toString()}`;
+}
+
 /**
  * Safepay redirects here after hosted checkout with ?tracker=track_...
  */
@@ -24,7 +33,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(
       kind === "paper"
         ? `${appUrl}/past-papers?checkout=missing_tracker`
-        : `${appUrl}/pricing?checkout=missing_tracker`,
+        : pricingRedirect(appUrl, "missing_tracker", planHint),
     );
   }
 
@@ -32,7 +41,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(
       kind === "paper"
         ? `${appUrl}/past-papers?checkout=safepay_unavailable`
-        : `${appUrl}/pricing?checkout=safepay_unavailable`,
+        : pricingRedirect(appUrl, "safepay_unavailable", planHint),
     );
   }
 
@@ -50,20 +59,25 @@ export async function GET(req: Request) {
     if (!isSafepayTrackerPaid(state, report)) {
       const dest = kind === "paper" ? "/past-papers" : "/pricing";
       return NextResponse.redirect(
-        `${appUrl}${dest}?checkout=pending&tracker=${encodeURIComponent(token)}&state=${encodeURIComponent(state || "unknown")}`,
+        kind === "paper"
+          ? `${appUrl}${dest}?checkout=pending&tracker=${encodeURIComponent(token)}&state=${encodeURIComponent(state || "unknown")}`
+          : pricingRedirect(appUrl, "pending", planHint, {
+              tracker: token,
+              state: state || "unknown",
+            }),
       );
     }
 
     const result = await activatePaidSafepaySubscription({ tracker: token, planHint });
     if (!result.ok) {
-      return NextResponse.redirect(`${appUrl}/pricing?checkout=unknown_order`);
+      return NextResponse.redirect(pricingRedirect(appUrl, "unknown_order", planHint));
     }
 
     return NextResponse.redirect(`${appUrl}/receipt/${result.subscription.id}`);
   } catch (err) {
     console.error("Safepay complete error", err);
     return NextResponse.redirect(
-      kind === "paper" ? `${appUrl}/past-papers?checkout=error` : `${appUrl}/pricing?checkout=error`,
+      kind === "paper" ? `${appUrl}/past-papers?checkout=error` : pricingRedirect(appUrl, "error", planHint),
     );
   }
 }

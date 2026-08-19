@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       currency,
       orderId,
       redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}`,
-      cancelUrl: `${appUrl}/pricing?checkout=cancel`,
+      cancelUrl: `${appUrl}/pricing?checkout=cancel&plan=${plan}`,
     });
 
     await reconcileUserSafepayPayments(session.user.id);
