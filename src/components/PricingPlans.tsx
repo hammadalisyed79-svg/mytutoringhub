@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   type PricingEntry,
@@ -9,6 +8,14 @@ import {
 
 type BillingCycle = "monthly" | "annual";
 type AudienceKey = "tutors" | "students";
+
+// Maps plan display name to the subscription plan ID used by the checkout API.
+const PLAN_ID_MAP: Record<string, string> = {
+  "Tutor Pro": "TUTOR_BASIC",
+  "Tutor Elite": "VERIFIED_TUTOR",
+  "Student Study Plus": "STUDENT_PASS",
+  "Student Pro": "STUDENT_PASS",
+};
 
 type Plan = {
   name: string;
@@ -62,7 +69,7 @@ function buildPlans(pricing: PricingEntry): {
           "Appear in tutor search",
         ],
         cta: "Get Started Free",
-        href: "/register?role=tutor",
+        href: "/pricing",
         isFree: true,
       },
       {
@@ -77,7 +84,7 @@ function buildPlans(pricing: PricingEntry): {
           "Analytics dashboard",
         ],
         cta: "Upgrade Now",
-        href: "/register?role=tutor",
+        href: "/pricing",
         featured: true,
       },
       {
@@ -92,7 +99,7 @@ function buildPlans(pricing: PricingEntry): {
           "Early access to new subjects and past papers",
         ],
         cta: "Upgrade Now",
-        href: "/register?role=tutor",
+        href: "/pricing",
       },
     ],
     students: [
@@ -107,7 +114,7 @@ function buildPlans(pricing: PricingEntry): {
           "Access free past papers",
         ],
         cta: "Get Started Free",
-        href: "/register?role=student",
+        href: "/pricing",
         isFree: true,
       },
       {
@@ -121,7 +128,7 @@ function buildPlans(pricing: PricingEntry): {
           "Progress tracking",
         ],
         cta: "Upgrade Now",
-        href: "/register?role=student",
+        href: "/pricing",
         featured: true,
       },
       {
@@ -136,7 +143,7 @@ function buildPlans(pricing: PricingEntry): {
           "Priority support",
         ],
         cta: "Upgrade Now",
-        href: "/register?role=student",
+        href: "/pricing",
       },
     ],
   };
@@ -146,6 +153,62 @@ type Props = {
   pricing: PricingEntry;
   detectedCountryCode: string;
 };
+
+function PricingCta({
+  planId,
+  billing,
+  label,
+  featured,
+}: {
+  planId: string;
+  billing: BillingCycle;
+  label: string;
+  featured?: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleClick() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/safepay/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, billing }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = "/login?next=/pricing";
+          return;
+        }
+        setError(data.error || "Could not start checkout");
+        return;
+      }
+      if (data.url) window.location.href = data.url;
+      if (data.granted) window.location.href = data.url ?? "/dashboard";
+    } catch {
+      setError("Network error — please try again");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        className={`btn btn-block ${featured ? "" : "btn-secondary"}`.trim()}
+        onClick={handleClick}
+        disabled={loading}
+      >
+        {loading ? "Opening secure checkout…" : label}
+      </button>
+      {error && <p className="form-error" style={{ marginTop: "0.5rem" }}>{error}</p>}
+    </div>
+  );
+}
 
 export function PricingPlans({ pricing: initialPricing }: Props) {
   const [billing, setBilling] = useState<BillingCycle>("monthly");
@@ -246,6 +309,7 @@ export function PricingPlans({ pricing: initialPricing }: Props) {
           {plans[audience].map((plan) => {
             const price = displayPrice(plan);
             const period = plan.isFree ? "" : billing === "monthly" ? "/mo" : "/yr";
+            const planId = PLAN_ID_MAP[plan.name];
 
             return (
               <article
@@ -276,12 +340,21 @@ export function PricingPlans({ pricing: initialPricing }: Props) {
                   ))}
                 </ul>
 
-                <Link
-                  href={plan.href}
-                  className={`btn btn-block ${plan.featured ? "" : "btn-secondary"}`.trim()}
-                >
-                  {plan.cta}
-                </Link>
+                {plan.isFree || !planId ? (
+                  <a
+                    href="/register"
+                    className="btn btn-block btn-secondary"
+                  >
+                    {plan.cta}
+                  </a>
+                ) : (
+                  <PricingCta
+                    planId={planId}
+                    billing={billing}
+                    label={plan.cta}
+                    featured={plan.featured}
+                  />
+                )}
               </article>
             );
           })}

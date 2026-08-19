@@ -46,6 +46,7 @@ export function isSafepayTrackerPaid(state: string | undefined, report?: unknown
 export async function activatePaidSafepaySubscription(opts: {
   tracker: string;
   planHint?: SubscriptionPlan | null;
+  billingHint?: "monthly" | "annual";
 }) {
   const existing = await prisma.subscription.findUnique({
     where: { stripeSubscriptionId: opts.tracker },
@@ -57,12 +58,16 @@ export async function activatePaidSafepaySubscription(opts: {
     return { ok: true as const, subscription: existing, alreadyActive: true };
   }
 
-  const periodEnd = new Date(Date.now() + 30 * 86400000);
+  // Use billingPeriod stored on the record, or fall back to the hint, then monthly.
+  const billing = (existing.billingPeriod as "monthly" | "annual" | null) ?? opts.billingHint ?? "monthly";
+  const periodMs = billing === "annual" ? 365 * 86400000 : 30 * 86400000;
+  const periodEnd = new Date(Date.now() + periodMs);
   const updated = await prisma.subscription.update({
     where: { id: existing.id },
     data: {
       status: "ACTIVE",
       currentPeriodEnd: periodEnd,
+      billingPeriod: billing,
     },
   });
 

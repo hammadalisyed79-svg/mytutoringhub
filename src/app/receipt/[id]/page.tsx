@@ -97,7 +97,10 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             <tbody>
               <tr>
                 <td>
-                  {planName} — 30-day platform subscription
+                  {planName} —{" "}
+                  {sub.billingPeriod === "annual"
+                    ? "Annual subscription — billed yearly"
+                    : "Monthly subscription — billed monthly"}
                   {sub.currentPeriodEnd
                     ? ` (until ${sub.currentPeriodEnd.toLocaleDateString()})`
                     : ""}

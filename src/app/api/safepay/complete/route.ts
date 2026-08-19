@@ -27,6 +27,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const tracker = searchParams.get("tracker");
   const planHint = searchParams.get("plan") as SubscriptionPlan | null;
+  const billingHint = searchParams.get("billing") as "monthly" | "annual" | null;
   const kind = searchParams.get("kind");
 
   if (!tracker) {
@@ -68,7 +69,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const result = await activatePaidSafepaySubscription({ tracker: token, planHint });
+    const result = await activatePaidSafepaySubscription({ tracker: token, planHint, billingHint: billingHint ?? undefined });
     if (!result.ok) {
       return NextResponse.redirect(pricingRedirect(appUrl, "unknown_order", planHint));
     }

@@ -7,12 +7,14 @@ export function SubscribeButton({
   plan,
   label = "Subscribe securely",
   currency,
+  billing,
   featured,
   complimentary,
 }: {
   plan: SubscriptionPlan;
   label?: string;
   currency?: string;
+  billing?: "monthly" | "annual";
   featured?: boolean;
   complimentary?: boolean;
 }) {
@@ -26,7 +28,7 @@ export function SubscribeButton({
     let res = await fetch("/api/safepay/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, currency }),
+      body: JSON.stringify({ plan, currency, billing: billing ?? "monthly" }),
     });
 
     if (res.status === 503) {
