@@ -3959,6 +3959,212 @@ a.chip-btn {
   }
 }
 
+/* ── Mobile responsive audit fixes ─────────────────────────────────────── */
+
+/* Touch targets: ensure all interactive elements are at least 44px tall */
+.btn,
+.page-tab,
+.cb-country-pill,
+.chip-btn,
+.nav-toggle,
+.nav-drawer-inner a,
+.nav-drawer-inner button {
+  min-height: 44px;
+}
+
+/* Keep btn-sm usable but still touch-friendly */
+.btn-sm {
+  min-height: 40px;
+}
+
+/* Inputs: 16px min font-size prevents iOS auto-zoom */
+input,
+textarea,
+select {
+  font-size: max(1rem, 16px);
+}
+
+/* hero-search inputs specifically */
+.hero-search-row input,
+.hero-search-row select,
+.hero-search-place select {
+  font-size: max(1rem, 16px);
+  min-height: 48px;
+}
+
+/* Ensure images never overflow */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Study progress bar chart – horizontal scroll on very small screens */
+.study-bar-chart-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Past papers filter bar wrapping */
+.page-tabs,
+.year-tabs {
+  flex-wrap: wrap;
+}
+
+/* Country grid in past papers uses auto-fit — ensure 2-col floor on mobile */
+@media (max-width: 480px) {
+  .page-tabs {
+    gap: 0.3rem;
+  }
+
+  .page-tab {
+    font-size: 0.82rem;
+    padding: 0.38rem 0.65rem;
+  }
+}
+
+/* Stats row: already 2-col at ≤960px via existing rules; reinforce for small */
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Country cards: 1 col on small mobile, 2 on tablet already handled */
+@media (max-width: 480px) {
+  .country-markets {
+    grid-template-columns: 1fr;
+  }
+
+  /* Past papers filters: stack vertically */
+  .filters,
+  .filters-wide {
+    grid-template-columns: 1fr;
+  }
+
+  /* Pricing cards */
+  .pricing-cards,
+  .pricing-fee-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Pricing toggle full width */
+  .pricing-toggle,
+  .pricing-audience-tabs {
+    width: 100%;
+  }
+
+  /* Subject chips 1 col on very small screens */
+  .cb-chip-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Board cards full width (already default block, but ensure no overflow) */
+  .cb-board-card {
+    padding: 1rem;
+  }
+}
+
+/* Past papers: country selection tabs scroll on mobile */
+@media (max-width: 768px) {
+  .paper-country-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 0.35rem;
+    scrollbar-width: none;
+  }
+
+  .paper-country-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Past papers filter bar: ensure inputs are full width */
+  .filters label,
+  .filters-wide label {
+    width: 100%;
+  }
+}
+
+/* Search page: tutor cards and search input full width already handled,
+   but ensure search input min-height for touch */
+@media (max-width: 768px) {
+  .search-q input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* Filters panel: reduce padding on small screens */
+  .search-panel {
+    padding: 0.9rem;
+  }
+
+  /* Pagination wraps cleanly */
+  .pagination {
+    gap: 0.65rem;
+  }
+}
+
+/* Footer: already 1fr at 720px; ensure proper padding */
+@media (max-width: 720px) {
+  .site-footer {
+    padding: 2.25rem 0 1.5rem;
+  }
+
+  .footer-grid {
+    gap: 1.5rem 1.25rem;
+  }
+}
+
+/* Navigation: prevent overflow on very small screens */
+@media (max-width: 380px) {
+  .logo-link {
+    max-width: calc(100% - 6rem);
+  }
+
+  .brand-logo-text {
+    font-size: 0.82rem;
+  }
+}
+
+/* Dashboard: plan cards stack, analytics overflow */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-join {
+    grid-template-columns: 1fr;
+  }
+
+  /* Analytics bars: horizontal scroll */
+  .admin-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Container: ensure minimum 1rem padding on all sides at mobile */
+@media (max-width: 480px) {
+  .container {
+    width: min(var(--container), calc(100% - 2rem));
+  }
+}
+
+/* Ensure hero search full-width on mobile */
+@media (max-width: 768px) {
+  .hero-search,
+  .hero-search-row {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* Subject code chips: already 2-col at 720px via .cb-chip-grid rule */
+
+/* Tutor grid: already 1fr at 720px ✓ */
+
+/* CTA band: already stacks at 720px ✓ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -279,6 +279,7 @@ export default function ProgressPage() {
           </div>
 
           {/* CSS bar chart */}
+          <div className="study-bar-chart-wrap">
           <div
             style={{
               display: "flex",
@@ -286,6 +287,7 @@ export default function ProgressPage() {
               alignItems: "flex-end",
               height: 120,
               marginBottom: "0.5rem",
+              minWidth: "min-content",
             }}
           >
             {dayTotals.map((d, i) => {
@@ -328,6 +330,7 @@ export default function ProgressPage() {
                 </div>
               );
             })}
+          </div>
           </div>
 
           {/* Subject chips */}
