@@ -10,6 +10,7 @@
     "test:past-papers": "tsx src/lib/past-papers/past-papers.test.ts",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
