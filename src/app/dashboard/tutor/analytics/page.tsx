@@ -6,13 +6,14 @@ import { prisma } from "@/lib/prisma";
 export const metadata = { title: "Analytics — Tutor Dashboard" };
 export const dynamic = "force-dynamic";
 
-function planTier(subscriptions: { plan: string; status: string }[]): "free" | "pro" | "elite" {
-  const active = subscriptions.find((s) => ["ACTIVE", "TRIALING"].includes(s.status));
-  if (!active) return "free";
-  const p = active.plan.toLowerCase();
-  if (p.includes("elite")) return "elite";
-  if (p.includes("pro")) return "pro";
-  return "free";
+function hasActiveListing(subscriptions: { plan: string; status: string }[]) {
+  return subscriptions.some(
+    (s) =>
+      ["ACTIVE", "TRIALING"].includes(s.status) &&
+      ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"].includes(
+        s.plan,
+      ),
+  );
 }
 
 function profileCompleteness(profile: {
@@ -63,7 +64,7 @@ export default async function TutorAnalyticsPage() {
   const profile = user.tutorProfile;
   if (!profile) redirect("/dashboard");
 
-  const tier = planTier(user.subscriptions);
+  const listed = hasActiveListing(user.subscriptions);
   const completeness = profileCompleteness(profile);
 
   // ── Enquiry data (conversations where tutor is userB) ──────────────────
@@ -184,12 +185,7 @@ export default async function TutorAnalyticsPage() {
   // TODO: track real reveals
   const revealRate = totalEnquiries > 0 ? Math.round((Math.min(totalEnquiries, 3) / totalEnquiries) * 100) : 0;
 
-  const tierColors: Record<string, string> = {
-    free: "var(--muted)",
-    pro: "var(--ok)",
-    elite: "var(--accent)",
-  };
-  const tierColor = tierColors[tier];
+  const listingColor = listed ? "var(--ok)" : "var(--muted)";
 
   return (
     <div className="page">
@@ -366,7 +362,7 @@ export default async function TutorAnalyticsPage() {
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <span
                 style={{
-                  background: tierColor,
+                  background: listingColor,
                   color: "#fff",
                   borderRadius: "999px",
                   padding: "0.18em 0.75em",
@@ -376,16 +372,14 @@ export default async function TutorAnalyticsPage() {
                   textTransform: "uppercase",
                 }}
               >
-                {tier === "elite" ? "Elite" : tier === "pro" ? "Pro" : "Free"}
+                {listed ? "Tutor Basic" : "Not listed"}
               </span>
               <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>plan</span>
             </div>
             <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--muted)" }}>
-              {tier === "elite"
-                ? "Featured placement — you appear at the top of results."
-                : tier === "pro"
-                ? "Priority placement — you rank above Free tutors in search."
-                : "Standard placement. Upgrade to Pro for priority ranking."}
+              {listed
+                ? "Listed in search while Tutor Basic is active. Paid add-ons on Pricing can highlight or boost you."
+                : "Activate Tutor Basic on Pricing to appear in search."}
             </p>
           </section>
         </div>
@@ -423,7 +417,7 @@ export default async function TutorAnalyticsPage() {
         </section>
 
         {/* ── 6. Plan Upgrade Nudge ─────────────────────────────────────── */}
-        {tier === "free" && (
+        {!listed && (
           <section
             className="panel"
             style={{
@@ -432,11 +426,11 @@ export default async function TutorAnalyticsPage() {
             }}
           >
             <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700, color: "var(--brand)" }}>
-              Unlock full analytics with Pro
+              Appear in search with Tutor Basic
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
-              Upgrade to Pro to unlock priority placement in search results, see profile view
-              history, and access the complete analytics suite.
+              Activate complimentary Tutor Basic, then add verification, highlight, or boost from
+              the same Pricing page.
             </p>
             <Link
               href="/pricing"
@@ -450,7 +444,7 @@ export default async function TutorAnalyticsPage() {
                 display: "inline-block",
               }}
             >
-              Upgrade to Pro →
+              Open tutor plans →
             </Link>
           </section>
         )}

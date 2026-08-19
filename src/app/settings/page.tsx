@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -47,8 +49,10 @@ export default function SettingsPage() {
       setError(data.error || "Could not save");
       return;
     }
+    setName(data.name || name);
     setMsg("Settings saved.");
     setPassword("");
+    await update({ name: data.name });
     router.refresh();
   }
 
@@ -66,6 +70,11 @@ export default function SettingsPage() {
     <div className="page">
       <div className="container narrow-prose">
         <h1 className="page-title">Account settings</h1>
+        <p className="muted">
+          Update the name students and tutors see. Google sign-in can fill this on first login —
+          you can change it anytime.{" "}
+          <Link href="/pricing">Your plan</Link>
+        </p>
         <form className="stack-form" onSubmit={save}>
           <label>
             Email
@@ -83,7 +92,18 @@ export default function SettingsPage() {
           {emailVerified === true && <p className="success">Email verified.</p>}
           <label>
             Name
-            <input value={name} onChange={(e) => setName(e.target.value)} required minLength={2} />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              minLength={2}
+              maxLength={80}
+              autoComplete="name"
+            />
+            <span className="field-hint">
+              Students see this on your listing. Google sign-in fills it from your Gmail profile; you
+              can change it anytime.
+            </span>
           </label>
           <label>
             Phone

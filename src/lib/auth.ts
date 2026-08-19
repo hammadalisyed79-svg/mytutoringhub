@@ -19,6 +19,7 @@ import {
 } from "@/lib/oauth";
 import { sendLoginConfirmationEmail } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
+import { resolveOAuthDisplayName } from "@/lib/display-name";
 import type { Role } from "@/lib/types";
 
 declare module "next-auth" {
@@ -84,6 +85,17 @@ function authProviders(): NextAuthConfig["providers"] {
         clientId: googleClientId(),
         clientSecret: googleClientSecret(),
         allowDangerousEmailAccountLinking: true,
+        authorization: { params: { scope: "openid email profile" } },
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: resolveOAuthDisplayName(profile) || profile.name,
+            email: resolveOAuthEmail({ email: profile.email, profile }) ?? profile.email ?? "",
+            image: profile.picture,
+            role: "STUDENT",
+            onboardingComplete: true,
+          };
+        },
       }),
     );
   }
@@ -99,7 +111,7 @@ function authProviders(): NextAuthConfig["providers"] {
         profile(profile) {
           return {
             id: profile.sub,
-            name: profile.name,
+            name: resolveOAuthDisplayName(profile) || profile.name,
             email: resolveOAuthEmail({ email: profile.email, profile }) ?? profile.email ?? "",
             image: null,
             role: "STUDENT",
@@ -144,7 +156,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
 
       const result = await handleOAuthSignIn({
         email,
-        name: user.name || (profile as { name?: string })?.name,
+        name: resolveOAuthDisplayName(profile) || user.name,
         image: user.image || (profile as { picture?: string })?.picture,
         account,
       });
@@ -169,6 +181,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         token.sub = user.id!;
         token.role = user.role as Role;
         token.onboardingComplete = user.onboardingComplete ?? true;
+        if (user.name) token.name = user.name;
         return token;
       }
       const issued = Number(token.iat || 0);
@@ -178,11 +191,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       if (trigger === "update" && token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub as string },
-          select: { role: true, onboardingComplete: true },
+          select: { role: true, onboardingComplete: true, name: true },
         });
         if (dbUser) {
           token.role = dbUser.role as Role;
           token.onboardingComplete = dbUser.onboardingComplete;
+          token.name = dbUser.name;
         }
       }
       return token;
@@ -192,6 +206,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         session.user.id = (token.sub || token.id) as string;
         session.user.role = token.role as Role;
         session.user.onboardingComplete = Boolean(token.onboardingComplete ?? true);
+        if (typeof token.name === "string") session.user.name = token.name;
       }
       return session;
     },

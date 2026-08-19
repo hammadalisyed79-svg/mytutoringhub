@@ -1,7 +1,13 @@
 import Link from "next/link";
+import { connection } from "next/server";
+import { auth } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  await connection();
+  const session = await auth();
+  const role = session?.user?.role;
+
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
@@ -20,19 +26,26 @@ export function SiteFooter() {
             <Link href="/search">Find tutors</Link>
             <Link href="/subjects">Subjects</Link>
             <Link href="/past-papers">Past papers</Link>
-            <Link href="/ads">Student requests</Link>
-            <Link href="/assistant">Study assistant</Link>
-            <Link href="/pricing">Student Pass</Link>
+            {role !== "TUTOR" && <Link href="/ads">Student requests</Link>}
+            <Link href="/pricing">{role === "STUDENT" ? "Student Pass" : "Pricing"}</Link>
             <Link href="/how-it-works">How it works</Link>
           </div>
         </div>
         <div>
           <h4>Tutors</h4>
           <div className="footer-col">
-            <Link href="/become-a-tutor">Become a tutor</Link>
-            <Link href="/register?role=tutor">Sign up as tutor</Link>
-            <Link href="/ads">Students looking for tutors</Link>
-            <Link href="/pricing">Tutor plans</Link>
+            {role === "TUTOR" ? (
+              <>
+                <Link href="/dashboard">Tutor dashboard</Link>
+                <Link href="/ads">Student requests</Link>
+                <Link href="/pricing">Tutor plans</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/become-a-tutor">Become a tutor</Link>
+                <Link href="/pricing">Tutor plans</Link>
+              </>
+            )}
           </div>
         </div>
         <div>
@@ -43,8 +56,12 @@ export function SiteFooter() {
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
-            <Link href="/login">Log in</Link>
-            <Link href="/register">Join</Link>
+            {!session?.user && (
+              <>
+                <Link href="/login">Log in</Link>
+                <Link href="/register">Join</Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -49,7 +49,7 @@ export default async function AdsPage() {
                 <Link href="/ads/new" className="btn">
                   Post a request
                 </Link>
-              ) : (
+              ) : session?.user?.role === "TUTOR" ? null : (
                 <Link href="/register?role=student" className="btn">
                   Join as student
                 </Link>

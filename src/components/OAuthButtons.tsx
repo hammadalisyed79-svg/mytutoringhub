@@ -42,7 +42,7 @@ export function OAuthButtons({
         throw new Error((data as { error?: string }).error || "Social sign-in unavailable");
       }
       await signIn(provider, {
-        callbackUrl: intent === "register" ? "/pricing?verify=sent" : "/dashboard",
+        callbackUrl: "/dashboard",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Social sign-in failed");

@@ -48,16 +48,29 @@ function NavIdentity({
   );
 }
 
-const PUBLIC_LINKS = [
-  { href: "/search", label: "Find tutors" },
-  { href: "/subjects", label: "Subjects" },
-  { href: "/ads", label: "Student ads" },
-  { href: "/become-a-tutor", label: "Become a tutor" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/past-papers", label: "Past papers" },
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/assistant", label: "Study assistant" },
-] as const;
+function primaryLinks(role?: string | null) {
+  if (role === "ADMIN") return [];
+  if (role === "TUTOR") {
+    return [
+      { href: "/ads", label: "Student requests" },
+      { href: "/past-papers", label: "Past papers" },
+      { href: "/pricing", label: "Plans" },
+    ];
+  }
+  if (role === "STUDENT") {
+    return [
+      { href: "/search", label: "Find tutors" },
+      { href: "/ads", label: "Requests" },
+      { href: "/past-papers", label: "Past papers" },
+      { href: "/pricing", label: "Student Pass" },
+    ];
+  }
+  return [
+    { href: "/search", label: "Find tutors" },
+    { href: "/past-papers", label: "Past papers" },
+    { href: "/pricing", label: "Pricing" },
+  ];
+}
 
 function shouldOpenAuthDialog(e: React.MouseEvent) {
   return !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);
@@ -180,7 +193,7 @@ export function SiteNav({
     <>
       <nav className="nav nav-desktop" aria-label="Primary">
         <div className="nav-primary">
-          {PUBLIC_LINKS.map((item) => (
+          {primaryLinks(user?.role).map((item) => (
             <Link key={item.href} href={item.href} onClick={closeMenu}>
               {item.label}
             </Link>
@@ -223,7 +236,7 @@ export function SiteNav({
 
       <nav id="mobile-nav" className={`nav-drawer ${open ? "is-open" : ""}`} aria-label="Mobile">
         <div className="nav-drawer-inner">
-          {PUBLIC_LINKS.map((item) => (
+          {primaryLinks(user?.role).map((item) => (
             <Link key={item.href} href={item.href} onClick={closeMenu}>
               {item.label}
             </Link>

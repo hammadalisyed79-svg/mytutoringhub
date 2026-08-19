@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/Logo";
 import { JsonLd } from "@/components/JsonLd";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
+import { POPULAR_SUBJECTS, TESTIMONIALS } from "@/lib/marketing";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
@@ -201,22 +201,6 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-          <div className="subject-cats">
-            {SUBJECT_CATEGORIES.map((cat) => (
-              <div key={cat.title}>
-                <h3>{cat.title}</h3>
-                <ul>
-                  {cat.items.map((item) => (
-                    <li key={item.slug}>
-                      <Link href={`/search?subject=${encodeURIComponent(item.slug)}`}>
-                        {item.name} tutors
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
           <p className="section-actions">
             <Link href="/subjects" className="btn btn-secondary">
               Browse all subjects
@@ -233,11 +217,6 @@ export default async function HomePage() {
             homepage, plus 42 more countries to browse. Open a chip to search tutors in that country.
           </p>
           <CountryMarkets compact pinnedCountry={pinnedCountry} />
-          <p className="section-actions">
-            <Link href="/subjects" className="btn btn-secondary">
-              Browse subject codes
-            </Link>
-          </p>
         </div>
       </section>
 
@@ -267,8 +246,8 @@ export default async function HomePage() {
             </div>
           </div>
           <p className="section-actions">
-            <Link href="/how-it-works" className="btn">
-              See how it works
+            <Link href="/search" className="btn">
+              Find a tutor
             </Link>
           </p>
         </div>
@@ -304,9 +283,6 @@ export default async function HomePage() {
           <div className="hero-ctas">
             <Link href="/become-a-tutor" className="btn">
               Become a tutor
-            </Link>
-            <Link href="/ads" className="btn btn-secondary">
-              See student requests
             </Link>
           </div>
         </div>

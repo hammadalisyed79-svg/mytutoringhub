@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { issueEmailVerification } from "@/lib/email-verification";
 import { getSiteSettings } from "@/lib/site-settings";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
+import { normalizeDisplayName } from "@/lib/display-name";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -32,10 +33,14 @@ export async function POST(req: Request) {
     if (existing) {
       return NextResponse.json({ error: "Email already registered" }, { status: 400 });
     }
+    const name = normalizeDisplayName(data.name);
+    if (!name) {
+      return NextResponse.json({ error: "Enter a name between 2 and 80 characters" }, { status: 400 });
+    }
     const passwordHash = await hash(data.password, 10);
     const user = await prisma.user.create({
       data: {
-        name: data.name,
+        name,
         email,
         passwordHash,
         role: data.role,

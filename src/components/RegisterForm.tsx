@@ -54,7 +54,7 @@ function RegisterFormInner({
       window.location.href = "/login?verify=sent";
       return;
     }
-    window.location.href = "/pricing?verify=sent";
+    window.location.href = "/dashboard?verify=sent";
   }
 
   return (

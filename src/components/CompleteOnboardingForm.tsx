@@ -24,7 +24,7 @@ export function CompleteOnboardingForm() {
         throw new Error((data as { error?: string }).error || "Could not save your account type");
       }
       await update({ onboardingComplete: true });
-      window.location.href = (data as { redirect?: string }).redirect || "/pricing";
+      window.location.href = (data as { redirect?: string }).redirect || "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -62,7 +62,7 @@ export function CompleteOnboardingForm() {
       </fieldset>
       {error && <p className="form-error">{error}</p>}
       <button className="btn btn-block" type="submit" disabled={loading}>
-        {loading ? "Saving…" : "Continue to plans"}
+        {loading ? "Saving…" : "Continue to dashboard"}
       </button>
     </form>
   );

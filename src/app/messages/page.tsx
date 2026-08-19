@@ -57,12 +57,15 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
               reply. You can attach a photo once a thread is open.
             </p>
             <p>
-              <Link href="/search" className="btn">
-                Find tutors
-              </Link>{" "}
-              <Link href="/ads" className="btn btn-secondary">
-                Browse student requests
-              </Link>
+              {session.user.role === "TUTOR" ? (
+                <Link href="/ads" className="btn">
+                  Browse student requests
+                </Link>
+              ) : (
+                <Link href="/search" className="btn">
+                  Find tutors
+                </Link>
+              )}
             </p>
           </div>
         )}

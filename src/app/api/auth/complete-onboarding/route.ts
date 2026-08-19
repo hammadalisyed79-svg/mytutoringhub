@@ -21,6 +21,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    redirect: role === "TUTOR" ? "/pricing?verify=sent" : "/pricing?verify=sent",
+    redirect: "/dashboard?verify=sent",
   });
 }

@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 
 export const metadata = {
   title: "Become a tutor",
@@ -6,78 +9,64 @@ export const metadata = {
     "List on My Tutoring Hub, keep 100% of lesson fees, and get Tutor Basic complimentary until 30 September 2026. Verified, highlight, and boost stay paid.",
 };
 
-export default function BecomeATutorPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BecomeATutorPage() {
+  const session = await auth();
+  if (session?.user?.role === "ADMIN") redirect("/admin");
+  if (session?.user?.role === "TUTOR") redirect("/dashboard");
+
+  const isStudent = session?.user?.role === "STUDENT";
+
   return (
     <div className="page">
       <div className="container">
         <h1 className="page-title">Are you a tutor? Join My Tutoring Hub</h1>
         <p className="section-lead">
-          Publish a profile, run subject ads, get verified, and keep 100% of lesson fees. Students
-          need a Pass to message you. You need Tutor Basic to appear in search — complimentary until
-          30 September 2026. Verified badge, highlight, and ad boost stay paid.
+          Publish a profile, run optional subject ads, get verified, and keep 100% of lesson fees.
+          Tutor Basic is complimentary until 30 September 2026. Verified badge, highlight, and ad
+          boost stay paid.
         </p>
 
         <div className="steps" style={{ marginBottom: "2rem" }}>
           <div className="step">
             <span>1</span>
-            <h3>Create your profile</h3>
+            <h3>{isStudent ? "Switch this account" : "Create your profile"}</h3>
             <p className="muted">
-              Add subjects, rates, qualifications, languages, availability, photo, and optional free
-              trial.
+              {isStudent
+                ? "Keep the same login. We turn this account into a tutor listing you can edit anytime."
+                : "Add subjects, rates, qualifications, languages, availability, and a photo."}
             </p>
           </div>
           <div className="step">
             <span>2</span>
             <h3>Activate Tutor Basic</h3>
             <p className="muted">
-              Appear in search with up to 3 active subject ads. Launch offer: Tutor Basic is
-              complimentary until 30 September 2026. Add Unlimited Ads if you teach more niches.
+              Appear in search. Launch offer: complimentary until 30 September 2026.
             </p>
           </div>
           <div className="step">
             <span>3</span>
-            <h3>Verify & boost</h3>
+            <h3>Get found</h3>
             <p className="muted">
-              Upload a government photo ID (passport, national ID, or driving licence) plus your
-              qualifications for a Verified badge. Highlighted and Ad Boost plans stay optional.
+              Students search by country, city, and subject. Optional: verify, highlight, or boost
+              from Pricing.
             </p>
           </div>
         </div>
 
-        <div className="feature-split" style={{ marginBottom: "2rem" }}>
-          <article className="panel">
-            <h3>No lesson commission</h3>
-            <p className="muted">
-              Students pay you directly. My Tutoring Hub only charges platform subscriptions and
-              visibility add-ons.
-            </p>
-          </article>
-          <article className="panel">
-            <h3>Multi-subject ads</h3>
-            <p className="muted">
-              List each subject separately so students searching Maths, Physics, or IELTS land on the
-              right offer.
-            </p>
-          </article>
-          <article className="panel">
-            <h3>Student request board</h3>
-            <p className="muted">
-              Reply to “need a tutor” ads from students with an active Pass looking for your subject.
-            </p>
-          </article>
-        </div>
-
         <div className="hero-ctas">
-          <Link href="/register?role=tutor" className="btn">
-            Sign up as a tutor
-          </Link>
-          <Link href="/pricing" className="btn btn-secondary">
-            View tutor plans
-          </Link>
-          <Link href="/ads" className="btn btn-secondary">
-            Browse student ads
-          </Link>
+          {isStudent ? (
+            <BecomeTutorForm />
+          ) : (
+            <Link href="/register?role=tutor" className="btn">
+              Sign up as a tutor
+            </Link>
+          )}
         </div>
+        <p className="muted" style={{ marginTop: "1rem" }}>
+          <Link href="/pricing">See tutor plans</Link>
+        </p>
       </div>
     </div>
   );

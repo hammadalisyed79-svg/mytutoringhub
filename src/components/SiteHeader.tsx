@@ -10,16 +10,25 @@ export async function SiteHeader() {
   await connection();
   const session = await auth();
   let unread = 0;
+  let displayName = session?.user?.name ?? "";
   if (session?.user?.id) {
-    unread = await prisma.message.count({
-      where: {
-        readAt: null,
-        senderId: { not: session.user.id },
-        conversation: {
-          OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+    const [unreadCount, me] = await Promise.all([
+      prisma.message.count({
+        where: {
+          readAt: null,
+          senderId: { not: session.user.id },
+          conversation: {
+            OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+          },
         },
-      },
-    });
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true },
+      }),
+    ]);
+    unread = unreadCount;
+    if (me?.name) displayName = me.name;
   }
 
   return (
@@ -32,7 +41,7 @@ export async function SiteHeader() {
           user={
             session?.user
               ? {
-                  name: session.user.name,
+                  name: displayName,
                   email: session.user.email,
                   role: session.user.role,
                   unreadCount: unread,

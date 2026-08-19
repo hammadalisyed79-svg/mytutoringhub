@@ -89,13 +89,6 @@ export function HeroSearch() {
           </select>
         </label>
       </div>
-      <div className="hero-intent">
-        <a href="/register?role=student">I&apos;m looking for a tutor</a>
-        <span aria-hidden>·</span>
-        <a href="/register?role=tutor">I want to teach</a>
-        <span aria-hidden>·</span>
-        <a href="/ads">Browse student requests</a>
-      </div>
     </form>
   );
 }

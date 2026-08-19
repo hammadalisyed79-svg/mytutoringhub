@@ -151,6 +151,27 @@ export function isSubscriptionActive(status: string) {
   return ACTIVE.has(status);
 }
 
+/** One row per plan: keep the active/trialing subscription with the latest period end. */
+export function uniqueVisibleSubscriptions<T extends {
+  plan: string;
+  status: string;
+  currentPeriodEnd: Date | null;
+}>(subs: T[]): T[] {
+  const best = new Map<string, T>();
+  for (const sub of subs) {
+    if (!ACTIVE.has(sub.status)) continue;
+    const prev = best.get(sub.plan);
+    if (!prev) {
+      best.set(sub.plan, sub);
+      continue;
+    }
+    const prevEnd = prev.currentPeriodEnd?.getTime() ?? 0;
+    const nextEnd = sub.currentPeriodEnd?.getTime() ?? 0;
+    if (nextEnd >= prevEnd) best.set(sub.plan, sub);
+  }
+  return [...best.values()];
+}
+
 export function isBoostActive(boostUntil: Date | null | undefined, now = new Date()) {
   if (!boostUntil) return false;
   if (boostUntil <= now) return false;

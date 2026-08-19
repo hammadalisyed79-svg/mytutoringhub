@@ -110,7 +110,7 @@ export function PlanBanner({
         )}
         {planTier !== "free" && (
           <Link
-            href="/settings/plan"
+            href="/pricing"
             style={{
               color: "var(--brand)",
               fontWeight: 600,

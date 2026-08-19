@@ -457,7 +457,7 @@ export default function ProgressPage() {
             Exam Countdown →
           </Link>
           <Link
-            href="/study/assistant"
+            href="/assistant"
             style={{
               border: "1.5px solid var(--brand)",
               color: "var(--brand)",

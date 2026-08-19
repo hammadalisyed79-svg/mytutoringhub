@@ -3,6 +3,7 @@ import type { Account } from "@auth/core/types";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmailHtml } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
+import { oauthUserDisplayName } from "@/lib/display-name";
 import type { Role } from "@/lib/types";
 
 export const OAUTH_INTENT_COOKIE = "oauth_intent";
@@ -183,7 +184,11 @@ export async function handleOAuthSignIn(opts: {
 
     dbUser = await prisma.user.create({
       data: {
-        name: opts.name?.trim() || email.split("@")[0],
+        name: oauthUserDisplayName({
+          email,
+          oauthName: opts.name,
+          isNewUser: true,
+        }),
         email,
         role,
         image,
@@ -203,9 +208,16 @@ export async function handleOAuthSignIn(opts: {
     }).catch((err) => console.error("[email] welcome failed", err));
   } else {
     if (dbUser.suspended) return { ok: false as const, reason: "suspended" };
+    const nextName = oauthUserDisplayName({
+      existingName: dbUser.name,
+      email,
+      oauthName: opts.name,
+      isNewUser: false,
+    });
     await prisma.user.update({
       where: { id: dbUser.id },
       data: {
+        ...(nextName !== dbUser.name ? { name: nextName } : {}),
         ...(image && !dbUser.image ? { image } : {}),
         ...(dbUser.emailVerified ? {} : { emailVerified: new Date() }),
       },
@@ -239,4 +251,26 @@ export async function completeOnboarding(userId: string, role: Role) {
   }
 
   return { role };
+}
+
+export async function becomeTutor(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { tutorProfile: true },
+  });
+  if (!user) throw new Error("User not found");
+  if (user.role === "ADMIN") {
+    throw new Error("Admin accounts cannot switch to tutor here");
+  }
+  if (user.role === "TUTOR") {
+    if (!user.tutorProfile) await createTutorProfile(userId);
+    return { alreadyTutor: true as const };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: "TUTOR", onboardingComplete: true },
+  });
+  await createTutorProfile(userId);
+  return { alreadyTutor: false as const };
 }

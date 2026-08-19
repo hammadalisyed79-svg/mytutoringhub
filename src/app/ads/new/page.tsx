@@ -12,6 +12,7 @@ export const metadata = { title: "Post a request", description: "Post a student 
 export default async function NewAdPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  if (session.user.role === "TUTOR") redirect("/ads");
   if (session.user.role !== "ADMIN") {
     const me = await prisma.user.findUnique({
       where: { id: session.user.id },
