@@ -182,6 +182,18 @@ export async function searchTutors(
         location && t.location.toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
       const countryBoost =
         country && (t.country || "").toLowerCase().includes(country.toLowerCase()) ? 3 : 0;
+      // Structured match bonuses: prioritise tutors whose selections directly match
+      const subjectFieldMatch = subject
+        ? expandSubjectTerms(subject).some(
+            (term) =>
+              (t.subjects || "").toLowerCase().includes(term.toLowerCase()) ||
+              (t.expertise || "").toLowerCase().includes(term.toLowerCase()),
+          )
+          ? 50
+          : 0
+        : 0;
+      const levelFieldMatch =
+        level && (t.levels || "").toLowerCase().includes(level.toLowerCase()) ? 30 : 0;
       return {
         t,
         score:
@@ -190,7 +202,9 @@ export async function searchTutors(
           highlight * 100 +
           verified * 10 +
           locBoost +
-          countryBoost -
+          countryBoost +
+          subjectFieldMatch +
+          levelFieldMatch -
           t.hourlyRate / 10000,
       };
     })
