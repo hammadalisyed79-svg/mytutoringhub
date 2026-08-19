@@ -108,6 +108,52 @@ export default async function DashboardPage({
           </p>
         )}
 
+        <div
+          style={{
+            marginTop: "1.25rem",
+            display: "flex",
+            gap: "0.6rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link
+            href={user.role === "TUTOR" ? "/dashboard/tutor/plan" : "/dashboard/student/plan"}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              background: "var(--white)",
+              border: "1px solid var(--line)",
+              borderRadius: "var(--radius-sm)",
+              padding: "0.4em 1em",
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              color: "var(--brand)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            My Plan →
+          </Link>
+          <Link
+            href="/settings/plan"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              background: "var(--white)",
+              border: "1px solid var(--line)",
+              borderRadius: "var(--radius-sm)",
+              padding: "0.4em 1em",
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              color: "var(--ink)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            Subscription settings
+          </Link>
+        </div>
+
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
           <section className="panel">
             <h2>Subscriptions</h2>
