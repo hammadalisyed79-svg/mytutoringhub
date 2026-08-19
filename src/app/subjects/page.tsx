@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { SUBJECT_CATEGORIES } from "@/lib/marketing";
 import { CurriculumBrowser } from "@/components/CurriculumBrowser";
+import { CountryMarkets } from "@/components/CountryMarkets";
 import { averageRateForSubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -85,6 +86,18 @@ export default async function SubjectsPage({
             </div>
           ))}
         </div>
+
+        <section className="subjects-countries">
+          <h2>Browse by country</h2>
+          <p className="muted">
+            Eight featured markets with popular subject codes. Other countries are in the dropdown.
+          </p>
+          <CountryMarkets
+            compact
+            pinnedCountry={pinnedCountry}
+            moreCountryHref={(c) => `/subjects?tab=codes&country=${encodeURIComponent(c.name)}`}
+          />
+        </section>
 
         <section className="all-subjects">
           <h2>All subjects on My Tutoring Hub</h2>

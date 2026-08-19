@@ -1,27 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import {
-  TOP_COUNTRIES,
-  type MarketCountry,
-  homepageFeaturedCountries,
-  otherMarketCountries,
-  subjectCode,
-  countryByName,
-} from "@/lib/markets";
+import { type MarketCountry, selectFeaturedMarketCountries, subjectCode } from "@/lib/markets";
 import { uniqueSubjectsForCountry } from "@/lib/curriculum";
+import { MoreCountriesSelect } from "@/components/MoreCountriesSelect";
 
-function CountryMarketCard({
-  country,
-  compact = false,
-}: {
-  country: MarketCountry;
-  compact?: boolean;
-}) {
+const CHIP_SLOTS = 12;
+
+function searchHref(country: MarketCountry) {
+  const city = country.cities[0];
+  const params = new URLSearchParams({ country: country.name });
+  if (city) params.set("location", city);
+  return `/search?${params.toString()}`;
+}
+
+function CountryMarketCard({ country }: { country: MarketCountry }) {
   const catalog = uniqueSubjectsForCountry(country.name);
-  const subjects = (catalog.length ? catalog : country.subjects).slice(0, compact ? 12 : 16);
-  const city = countryByName(country.name)?.cities[0] || country.cities[0];
+  const subjects = (catalog.length ? catalog : country.subjects).slice(0, CHIP_SLOTS);
+  const city = country.cities[0];
 
   return (
     <article className="country-market">
@@ -58,12 +54,14 @@ function CountryMarketCard({
         {subjects.map((subject) => (
           <Link
             key={`${country.code}-${subject}`}
-            href={`/search?subject=${encodeURIComponent(subject)}&country=${encodeURIComponent(country.name)}&location=${encodeURIComponent(city)}`}
+            href={`/search?subject=${encodeURIComponent(subject)}&country=${encodeURIComponent(country.name)}${
+              city ? `&location=${encodeURIComponent(city)}` : ""
+            }`}
             className="chip"
             title={`${subjectCode(subject)} · ${subject}`}
           >
             <span className="subject-code">{subjectCode(subject)}</span>
-            {subject}
+            <span className="chip-text">{subject}</span>
           </Link>
         ))}
       </div>
@@ -72,83 +70,36 @@ function CountryMarketCard({
 }
 
 export function CountryMarkets({
-  compact = false,
   pinnedCountry,
+  moreCountryHref,
 }: {
   compact?: boolean;
   pinnedCountry?: string | null;
+  moreCountryHref?: (country: MarketCountry) => string;
 }) {
-  const featured = useMemo(() => {
-    const base = compact ? homepageFeaturedCountries() : TOP_COUNTRIES;
-    if (!pinnedCountry) return base;
-    const pinned = base.find((c) => c.name === pinnedCountry) || TOP_COUNTRIES.find((c) => c.name === pinnedCountry);
-    if (!pinned) return base;
-    return [pinned, ...base.filter((c) => c.name !== pinnedCountry)];
-  }, [compact, pinnedCountry]);
-  const rest = compact ? otherMarketCountries().filter((c) => c.name !== pinnedCountry) : [];
-  const [query, setQuery] = useState("");
-  const [selectedCode, setSelectedCode] = useState("");
-
-  const filteredRest = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return rest;
-    return rest.filter(
-      (country) =>
-        country.name.toLowerCase().includes(needle) ||
-        country.cities.some((city) => city.toLowerCase().includes(needle)),
-    );
-  }, [query, rest]);
-
-  const selectedCountry = useMemo(
-    () => rest.find((country) => country.code === selectedCode) || null,
-    [rest, selectedCode],
-  );
+  const { featured, rest } = selectFeaturedMarketCountries(pinnedCountry);
 
   return (
     <>
       <div className="country-markets">
         {featured.map((country) => (
-          <CountryMarketCard key={country.code} country={country} compact={compact} />
+          <CountryMarketCard key={country.code} country={country} />
         ))}
       </div>
 
-      {compact && rest.length > 0 && (
+      {rest.length > 0 && (
         <div className="country-more">
-          <h3 className="country-more-title">Browse {rest.length} more countries</h3>
+          <h3 className="country-more-title">More countries</h3>
           <p className="muted country-more-lead">
-            Search by country or city, then pick one to see popular subjects and tutor search links.
+            {rest.length} more markets. Choose one to open tutor search for that country.
           </p>
-          <input
-            type="search"
-            className="country-more-search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search countries…"
-            aria-label="Search countries"
+          <MoreCountriesSelect
+            placeholder="More countries"
+            options={rest.map((country) => ({
+              label: country.name,
+              href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
+            }))}
           />
-          <div className="country-more-list" role="listbox" aria-label="More countries">
-            {filteredRest.length === 0 ? (
-              <p className="muted">No countries match your search.</p>
-            ) : (
-              filteredRest.map((country) => (
-                <button
-                  key={country.code}
-                  type="button"
-                  role="option"
-                  aria-selected={selectedCode === country.code}
-                  className={`chip-btn ${selectedCode === country.code ? "is-on" : ""}`}
-                  onClick={() => setSelectedCode(country.code)}
-                >
-                  {country.name}
-                </button>
-              ))
-            )}
-          </div>
-          {selectedCountry && (
-            <div className="country-more-selected">
-              <CountryMarketCard country={selectedCountry} compact />
-            </div>
-          )}
         </div>
       )}
     </>

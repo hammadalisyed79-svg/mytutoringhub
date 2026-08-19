@@ -1,6 +1,13 @@
 import Link from "next/link";
-import { curriculumCountries, groupCurriculumByBoard, CURRICULUM } from "@/lib/curriculum";
+import { groupCurriculumByBoard, CURRICULUM, splitCurriculumCountries } from "@/lib/curriculum";
 import { countryByName } from "@/lib/markets";
+import { MoreCountriesSelect } from "@/components/MoreCountriesSelect";
+
+function codesHref(name: string, query: string) {
+  const params = new URLSearchParams({ tab: "codes", country: name });
+  if (query) params.set("q", query);
+  return `/subjects?${params.toString()}`;
+}
 
 export function CurriculumBrowser({
   country,
@@ -11,10 +18,10 @@ export function CurriculumBrowser({
   query?: string;
   pinnedCountry?: string | null;
 }) {
-  const countries = curriculumCountries(pinnedCountry);
+  const { featured, rest } = splitCurriculumCountries(pinnedCountry);
   const selected =
-    countries.find((name) => name.toLowerCase() === (country || "").toLowerCase()) ||
-    countries[0] ||
+    [...featured, ...rest].find((name) => name.toLowerCase() === (country || "").toLowerCase()) ||
+    featured[0] ||
     "Pakistan";
   const groups = groupCurriculumByBoard(selected, query);
   const total = CURRICULUM.filter((row) => row.country === selected).length;
@@ -51,23 +58,28 @@ export function CurriculumBrowser({
         </p>
       </div>
 
-      <div className="cb-countries-scroll" role="tablist" aria-label="Countries">
-        {countries.map((name) => {
-          const href = query
-            ? `/subjects?tab=codes&country=${encodeURIComponent(name)}&q=${encodeURIComponent(query)}`
-            : `/subjects?tab=codes&country=${encodeURIComponent(name)}`;
-          return (
+      <div className="cb-countries-row">
+        <div className="cb-countries-scroll" role="tablist" aria-label="Countries">
+          {featured.map((name) => (
             <Link
               key={name}
-              href={href}
+              href={codesHref(name, query)}
               role="tab"
               aria-selected={name === selected}
               className={`cb-country-pill${name === selected ? " is-active" : ""}`}
             >
               {name}
             </Link>
-          );
-        })}
+          ))}
+        </div>
+        <MoreCountriesSelect
+          placeholder="More countries"
+          selectedLabel={rest.includes(selected) ? selected : undefined}
+          options={rest.map((name) => ({
+            label: name,
+            href: codesHref(name, query),
+          }))}
+        />
       </div>
 
       {groups.length === 0 ? (
@@ -78,7 +90,9 @@ export function CurriculumBrowser({
             <section key={group.board} className="cb-board-card">
               <div className="cb-board-head">
                 <h2 className="cb-board-name">{group.board}</h2>
-                <span className="cb-board-count">{group.entries.length} subject{group.entries.length !== 1 ? "s" : ""}</span>
+                <span className="cb-board-count">
+                  {group.entries.length} subject{group.entries.length !== 1 ? "s" : ""}
+                </span>
               </div>
               {i > 0 && <hr className="cb-board-divider" aria-hidden="true" />}
               <div className="cb-chip-grid">

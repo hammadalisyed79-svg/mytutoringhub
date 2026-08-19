@@ -1,5 +1,5 @@
 import catalog from "@/data/curriculum.json";
-import { TOP_COUNTRIES } from "@/lib/markets";
+import { FEATURED_COUNTRY_LIMIT, HOMEPAGE_FEATURED_COUNTRY_CODES, countryByCode } from "@/lib/markets";
 
 export type CurriculumEntry = {
   country: string;
@@ -24,6 +24,38 @@ export function curriculumCountries(pinnedFirst?: string | null) {
     return a.localeCompare(b);
   });
   return names;
+}
+
+/** Eight featured curriculum countries as pills; the rest go in a dropdown. */
+export function splitCurriculumCountries(pinnedFirst?: string | null): {
+  featured: string[];
+  rest: string[];
+} {
+  const all = curriculumCountries();
+  const allSet = new Set(all);
+  const featured: string[] = [];
+  for (const code of HOMEPAGE_FEATURED_COUNTRY_CODES) {
+    const name = countryByCode(code)?.name;
+    if (!name || !allSet.has(name) || featured.includes(name)) continue;
+    featured.push(name);
+    if (featured.length === FEATURED_COUNTRY_LIMIT) break;
+  }
+  for (const name of all) {
+    if (featured.length === FEATURED_COUNTRY_LIMIT) break;
+    if (!featured.includes(name)) featured.push(name);
+  }
+
+  if (pinnedFirst && allSet.has(pinnedFirst)) {
+    if (featured.includes(pinnedFirst)) {
+      featured.splice(0, featured.length, pinnedFirst, ...featured.filter((n) => n !== pinnedFirst));
+    } else {
+      featured.splice(0, featured.length, pinnedFirst, ...featured.slice(0, FEATURED_COUNTRY_LIMIT - 1));
+    }
+  }
+
+  const featuredSet = new Set(featured.slice(0, FEATURED_COUNTRY_LIMIT));
+  const rest = all.filter((name) => !featuredSet.has(name));
+  return { featured: featured.slice(0, FEATURED_COUNTRY_LIMIT), rest };
 }
 
 export function uniqueCurriculumSubjects() {

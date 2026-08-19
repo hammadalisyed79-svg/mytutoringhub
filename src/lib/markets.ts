@@ -1030,6 +1030,45 @@ export function otherMarketCountries() {
   return TOP_COUNTRIES.filter((c) => !HOMEPAGE_FEATURED.has(c.code));
 }
 
+export const FEATURED_COUNTRY_LIMIT = 8;
+
+/**
+ * Exactly 8 country cards, plus the remaining markets for a dropdown.
+ * If the visitor's country is not already in the 8, it replaces the last slot.
+ */
+export function selectFeaturedMarketCountries(pinnedName?: string | null): {
+  featured: MarketCountry[];
+  rest: MarketCountry[];
+} {
+  const seen = new Set<string>();
+  const featured: MarketCountry[] = [];
+  for (const country of [...homepageFeaturedCountries(), ...TOP_COUNTRIES]) {
+    if (seen.has(country.code)) continue;
+    seen.add(country.code);
+    featured.push(country);
+    if (featured.length === FEATURED_COUNTRY_LIMIT) break;
+  }
+
+  const pinned = pinnedName
+    ? featured.find((c) => c.name === pinnedName) || countryByName(pinnedName)
+    : null;
+
+  if (pinned) {
+    if (featured.some((c) => c.code === pinned.code)) {
+      featured.splice(0, featured.length, pinned, ...featured.filter((c) => c.code !== pinned.code));
+    } else {
+      featured.splice(0, featured.length, pinned, ...featured.slice(0, FEATURED_COUNTRY_LIMIT - 1));
+    }
+  }
+
+  const featuredCodes = new Set(featured.map((c) => c.code));
+  const rest = TOP_COUNTRIES.filter((c) => !featuredCodes.has(c.code)).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+
+  return { featured: featured.slice(0, FEATURED_COUNTRY_LIMIT), rest };
+}
+
 /** Short subject codes shown on chips and the directory (not ISO country codes). */
 export const SUBJECT_CODES: Record<string, string> = {
   Mathematics: "MATH",
