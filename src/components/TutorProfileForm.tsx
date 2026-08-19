@@ -2,7 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
+import { PhotoCropEditor } from "@/components/PhotoCropEditor";
+import { TutorAvatar } from "@/components/TutorAvatar";
 import {
   citiesForCountry,
   expertiseForSubjects,
@@ -36,6 +39,9 @@ type Initial = {
   online: boolean;
   inPerson: boolean;
   photoUrl?: string | null;
+  photoCropX?: number | null;
+  photoCropY?: number | null;
+  photoCropZoom?: number | null;
   qualifications?: string | null;
   experienceYears?: number | null;
   teachingMethod?: string | null;
@@ -43,6 +49,7 @@ type Initial = {
   levels?: string | null;
   availability?: string | null;
   videoUrl?: string | null;
+  introVideoUrl?: string | null;
   offersFreeTrial?: boolean;
   phone?: string | null;
 };
@@ -104,14 +111,17 @@ async function parseUploadResponse(
 
 export function TutorProfileForm({
   initial,
+  displayName,
   subjects: catalogSubjects,
   extraLevels = [],
 }: {
   initial: Initial;
+  displayName: string;
   subjects: string[];
   extraLevels?: string[];
 }) {
   const router = useRouter();
+  const { update } = useSession();
   const photoInput = useRef<HTMLInputElement>(null);
   const countries = useMemo(() => tutorCountries(), []);
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
@@ -123,8 +133,13 @@ export function TutorProfileForm({
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
+  const [photoCropX, setPhotoCropX] = useState(initial.photoCropX ?? 0);
+  const [photoCropY, setPhotoCropY] = useState(initial.photoCropY ?? 0);
+  const [photoCropZoom, setPhotoCropZoom] = useState(initial.photoCropZoom ?? 1);
+  const [showCropEditor, setShowCropEditor] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [headline, setHeadline] = useState(initial.headline || "");
+  const [name, setName] = useState(displayName);
   const [bio, setBio] = useState(initial.bio || "");
   const [subjectList, setSubjectList] = useState(splitCsv(initial.subjects));
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
@@ -142,10 +157,11 @@ export function TutorProfileForm({
   const [teachingMethod, setTeachingMethod] = useState(initial.teachingMethod || "");
   const [slots, setSlots] = useState<AvailabilitySlot[]>(() => parseAvailability(initial.availability));
   const [videoUrl, setVideoUrl] = useState(initial.videoUrl || "");
+  const [introVideoUrl, setIntroVideoUrl] = useState(initial.introVideoUrl || "");
   const [phone, setPhone] = useState(initial.phone || "");
   const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
 
-  const videoSrc = embedVideoSrc(videoUrl);
+  const videoSrc = embedVideoSrc(introVideoUrl || videoUrl);
   const cities = useMemo(() => citiesForCountry(country), [country]);
   const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
   const listedSubjects = useMemo(() => {
@@ -157,6 +173,7 @@ export function TutorProfileForm({
 
   const checks = useMemo(
     () => [
+      { label: "Name", ok: name.trim().length >= 2, required: true },
       { label: "Photo", ok: photoUrl.startsWith("https://"), required: false },
       { label: "Headline", ok: headline.trim().length >= 8, required: true },
       { label: "About you", ok: bio.trim().length >= 40, required: true },
@@ -175,6 +192,7 @@ export function TutorProfileForm({
     ],
     [
       photoUrl,
+      name,
       headline,
       bio,
       country,
@@ -223,6 +241,10 @@ export function TutorProfileForm({
 
   function removePhoto() {
     setPhotoUrl("");
+    setPhotoCropX(0);
+    setPhotoCropY(0);
+    setPhotoCropZoom(1);
+    setShowCropEditor(false);
     setPhotoError("");
     setPhotoMsg("Photo removed. Save profile to update your listing.");
     if (photoInput.current) photoInput.current.value = "";
@@ -250,7 +272,11 @@ export function TutorProfileForm({
         return;
       }
       setPhotoUrl(result.url);
-      setPhotoMsg("Photo updated. Save profile to keep it on your listing.");
+      setPhotoCropX(0);
+      setPhotoCropY(0);
+      setPhotoCropZoom(1);
+      setShowCropEditor(true);
+      setPhotoMsg("");
     } catch {
       setPhotoError("Photo upload failed. Check your connection and try again.");
     } finally {
@@ -275,7 +301,12 @@ export function TutorProfileForm({
       setError("Select at least one subject from the catalog.");
       return;
     }
+    if (name.trim().length < 2) {
+      setError("Enter the name students see (at least 2 characters).");
+      return;
+    }
     const payload = {
+      name: name.trim(),
       headline: headline.trim(),
       bio: bio.trim(),
       subjects: joinCsv(subjectList),
@@ -286,6 +317,9 @@ export function TutorProfileForm({
       online,
       inPerson,
       photoUrl,
+      photoCropX,
+      photoCropY,
+      photoCropZoom,
       qualifications: qualifications.trim(),
       experienceYears: experienceYears === "" ? null : Number(experienceYears),
       teachingMethod: teachingMethod.trim(),
@@ -293,6 +327,7 @@ export function TutorProfileForm({
       levels: joinCsv(levelList),
       availability: serializeAvailability(slots),
       videoUrl: videoUrl.trim(),
+      introVideoUrl: introVideoUrl.trim(),
       offersFreeTrial,
       phone: phone.trim(),
     };
@@ -309,6 +344,7 @@ export function TutorProfileForm({
         return;
       }
       setMsg("Profile saved. You can edit any of these details anytime.");
+      await update({ name: name.trim() });
       router.refresh();
     } catch {
       setError("Save failed. Try again.");
@@ -323,8 +359,13 @@ export function TutorProfileForm({
         <div className="profile-photo-hero">
           <div className="profile-photo-preview profile-photo-preview-lg" aria-hidden>
             {photoUrl.startsWith("http") ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt="" />
+              <TutorAvatar
+                photoUrl={photoUrl}
+                cropX={photoCropX}
+                cropY={photoCropY}
+                cropZoom={photoCropZoom}
+                style={{ width: "100%", height: "100%" }}
+              />
             ) : (
               <span>Add photo</span>
             )}
@@ -340,8 +381,18 @@ export function TutorProfileForm({
                 onClick={() => photoInput.current?.click()}
                 disabled={uploading}
               >
-                {uploading ? "Uploading…" : photoUrl.startsWith("http") ? "Edit photo" : "Add photo"}
+                {uploading ? "Uploading…" : photoUrl.startsWith("http") ? "Change photo" : "Add photo"}
               </button>
+              {photoUrl.startsWith("http") && !showCropEditor && (
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={() => setShowCropEditor(true)}
+                  disabled={uploading}
+                >
+                  Crop & zoom
+                </button>
+              )}
               {photoUrl.startsWith("http") && (
                 <button
                   className="btn btn-secondary btn-sm"
@@ -362,6 +413,22 @@ export function TutorProfileForm({
             />
             {photoError && <p className="form-error">{photoError}</p>}
             {photoMsg && <p className="success">{photoMsg}</p>}
+            {showCropEditor && photoUrl.startsWith("http") && (
+              <div style={{ marginTop: "1rem" }}>
+                <PhotoCropEditor
+                  photoUrl={photoUrl}
+                  initial={{ x: photoCropX, y: photoCropY, zoom: photoCropZoom }}
+                  onSave={(crop) => {
+                    setPhotoCropX(crop.x);
+                    setPhotoCropY(crop.y);
+                    setPhotoCropZoom(crop.zoom);
+                    setShowCropEditor(false);
+                    setPhotoMsg("Crop saved. Click Save profile to keep this on your listing.");
+                  }}
+                  onCancel={() => setShowCropEditor(false)}
+                />
+              </div>
+            )}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input
@@ -402,6 +469,26 @@ export function TutorProfileForm({
       <section className="form-section">
         <h3>Listing basics</h3>
         <p className="field-hint">Students use these to decide whether to message you.</p>
+
+        <label>
+          <span>
+            Name <abbr className="req" title="Required">*</abbr>
+          </span>
+          <input
+            name="displayName"
+            required
+            minLength={2}
+            maxLength={80}
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="The name students see"
+          />
+          <span className="field-hint">
+            Filled from your Gmail profile when you sign in with Google. You can change it anytime —
+            it appears on search cards and your public listing.
+          </span>
+        </label>
 
         <label>
           <span>
@@ -677,6 +764,19 @@ export function TutorProfileForm({
             inputMode="url"
           />
           <span className="field-hint">Paste a YouTube or Vimeo link. A preview appears below.</span>
+        </label>
+        <label>
+          Introduction video URL
+          <input
+            name="introVideoUrl"
+            value={introVideoUrl}
+            onChange={(e) => setIntroVideoUrl(e.target.value)}
+            placeholder="YouTube, Vimeo, or direct video link"
+            inputMode="url"
+          />
+          <span className="field-hint">
+            Introduction video URL (YouTube, Vimeo, or direct video link). Shown on your public profile.
+          </span>
         </label>
         {videoSrc ? (
           <div className="media-embed-wrap profile-video-preview">

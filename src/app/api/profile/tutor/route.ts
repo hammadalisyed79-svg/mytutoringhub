@@ -15,9 +15,11 @@ import {
 import { curriculumLevels } from "@/lib/curriculum";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
+import { parseDisplayNameInput } from "@/lib/display-name";
 
 const schema = z
   .object({
+    name: z.string().min(1, "Enter the name students see"),
     headline: z
       .string()
       .trim()
@@ -46,6 +48,7 @@ const schema = z
     availability: z.string().max(4000).optional(),
     experienceYears: z.coerce.number().int().min(0).max(40).optional().nullable(),
     videoUrl: z.string().max(500).optional().or(z.literal("")),
+    introVideoUrl: z.string().max(500).optional().or(z.literal("")),
     offersFreeTrial: z.boolean().optional(),
     phone: z.string().max(40).optional(),
   })
@@ -72,6 +75,10 @@ export async function PUT(req: Request) {
 
   try {
     const data = schema.parse(await req.json());
+    const parsedName = parseDisplayNameInput(data.name);
+    if (!parsedName.ok) {
+      return NextResponse.json({ error: parsedName.error }, { status: 400 });
+    }
 
     const rawPhoto = (data.photoUrl || "").trim();
     if (rawPhoto.startsWith("data:")) {
@@ -135,6 +142,11 @@ export async function PUT(req: Request) {
     const experienceYears =
       data.experienceYears == null || Number.isNaN(data.experienceYears) ? null : data.experienceYears;
 
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { name: parsedName.name },
+    });
+
     const profile = await prisma.tutorProfile.upsert({
       where: { userId: session.user.id },
       update: {
@@ -155,6 +167,7 @@ export async function PUT(req: Request) {
         levels: levels || null,
         availability: availability || null,
         videoUrl: data.videoUrl?.trim() || null,
+        introVideoUrl: data.introVideoUrl?.trim() || null,
         offersFreeTrial: Boolean(data.offersFreeTrial),
         phone: data.phone?.trim() || null,
       },
@@ -177,6 +190,7 @@ export async function PUT(req: Request) {
         levels: levels || null,
         availability: availability || null,
         videoUrl: data.videoUrl?.trim() || null,
+        introVideoUrl: data.introVideoUrl?.trim() || null,
         offersFreeTrial: Boolean(data.offersFreeTrial),
         phone: data.phone?.trim() || null,
         active: false,

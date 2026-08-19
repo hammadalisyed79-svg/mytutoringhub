@@ -41,6 +41,7 @@ model User {
   pastPaperPurchases   PastPaperPurchase[]
   serviceFeeEvents     ServiceFeeEvent[]
   usageEvents          UsageEvent[]
+  studentRequests      StudentRequest[]
 }
 
 model Account {
@@ -90,8 +91,12 @@ model TutorProfile {
   expertise       String?
   experienceYears Int?
   videoUrl        String?
+  introVideoUrl   String?
   offersFreeTrial Boolean   @default(false)
   phone           String?
+  photoCropX      Float?    @default(0)
+  photoCropY      Float?    @default(0)
+  photoCropZoom   Float?    @default(1)
   verified        Boolean   @default(false)
   planTier        Int       @default(0)
   highlighted     Boolean   @default(false)
@@ -460,6 +465,22 @@ model ProfileView {
   country   String?
 
   @@index([tutorId, viewedAt])
+}
+
+model StudentRequest {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id])
+  subject     String
+  level       String
+  board       String?
+  description String
+  schedule    String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([subject, isPublic, createdAt])
 }
 
 model AdminAuditLog {

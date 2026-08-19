@@ -167,57 +167,102 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             const boosted = isBoostActive(t.boostUntil);
             const highlighted =
               t.highlighted || (t.highlightedUntil && t.highlightedUntil > new Date());
+            const isStarTutor = (t.planTier ?? 0) >= 2;
+            const subjectChips = (t.subjects || "")
+              .split(/[,;|]/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .slice(0, 5);
+            const levelChips = (t.levels || "")
+              .split(/[,;|]/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .slice(0, 3);
+            const snippet = (t.bio || "").slice(0, 120).trim();
+            const place = formatTutorPlace(t.location, t.country);
             return (
-              <Link
+              <div
                 key={t.id}
-                href={`/tutors/${t.id}`}
-                className={`tutor-card ${highlighted ? "highlighted" : ""}`}
+                className={`tc-card${highlighted ? " highlighted" : ""}${boosted ? " boosted" : ""}`}
               >
-                <div className="tutor-avatar" aria-hidden>
-                  {t.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={t.photoUrl}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        borderRadius: "50%",
-                      }}
-                    />
-                  ) : (
-                    t.user.name.slice(0, 1)
+                <div className="tc-left">
+                  <div className="tc-avatar" aria-hidden>
+                    {t.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={t.photoUrl}
+                        alt={t.user.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span>{t.user.name.slice(0, 1).toUpperCase()}</span>
+                    )}
+                  </div>
+                  {isStarTutor && (
+                    <div className="tc-star-badge" title="Star Tutor">⭐ Star Tutor</div>
                   )}
                 </div>
-                <div className="tutor-card-body">
-                  <div className="meta">
+                <div className="tc-body">
+                  <div className="tc-top-row">
+                    <div className="tc-name-area">
+                      <h2 className="tc-name">
+                        <Link href={`/tutors/${t.id}`}>{t.user.name}</Link>
+                      </h2>
+                      {t.headline && <p className="tc-headline">{t.headline}</p>}
+                    </div>
+                    <div className="tc-price-area">
+                      <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
+                      <span className="tc-rate-label">/ hour</span>
+                    </div>
+                  </div>
+
+                  <div className="tc-badges">
+                    {t.verified && <span className="badge badge-verified">✓ Verified</span>}
                     {boosted && <span className="badge accent">Boosted</span>}
-                    {highlighted && <span className="badge accent">Highlighted</span>}
-                    {(t.planTier ?? 0) >= 2 && <span className="badge badge-featured">Featured</span>}
-                    {t.verified && (
-                      <span className="badge badge-verified">✓ Verified</span>
-                    )}
+                    {highlighted && <span className="badge accent">Featured</span>}
                     {t.offersFreeTrial && <span className="badge">Free trial</span>}
                     {avg !== null && (
-                      <span>
-                        {avg.toFixed(1)} ★ · {t.reviews.length} review
-                        {t.reviews.length === 1 ? "" : "s"}
+                      <span className="tc-rating">
+                        {"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))}{" "}
+                        <strong>{avg.toFixed(1)}</strong>
+                        <span className="muted"> ({t.reviews.length})</span>
                       </span>
                     )}
                   </div>
-                  <h2>{t.user.name}</h2>
-                  <p className="tutor-headline">{t.headline || t.subjects}</p>
-                  <p className="muted clamp-2">{t.bio}</p>
-                  <div className="meta">
-                    <strong className="price-tag">{formatHourly(t.hourlyRate, currency)}</strong>
-                    <span>{formatTutorPlace(t.location, t.country) || "Online"}</span>
-                    <span>
-                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ")}
+
+                  {snippet && (
+                    <p className="tc-snippet">
+                      {snippet}{(t.bio || "").length > 120 ? "…" : ""}
+                    </p>
+                  )}
+
+                  {subjectChips.length > 0 && (
+                    <div className="tc-chips">
+                      {subjectChips.map((s) => (
+                        <span key={s} className="tc-chip">{s}</span>
+                      ))}
+                      {levelChips.map((l) => (
+                        <span key={l} className="tc-chip tc-chip-level">{l}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="tc-footer">
+                    <span className="tc-place muted">
+                      {place && <>{place} · </>}
+                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online"}
                     </span>
+                    <div className="tc-actions">
+                      <Link href={`/messages?tutor=${t.id}`} className="btn btn-secondary btn-sm">
+                        Message
+                      </Link>
+                      <Link href={`/tutors/${t.id}`} className="btn btn-sm">
+                        View Profile
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

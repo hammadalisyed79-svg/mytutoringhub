@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TutorAvatar } from "@/components/TutorAvatar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
@@ -82,7 +83,7 @@ export default async function TutorProfilePage({ params }: Params) {
   const place = formatTutorPlace(tutor.location, tutor.country);
   const availabilityLines = formatAvailabilityLines(tutor.availability);
   const experienceLabel = formatExperienceYears(tutor.experienceYears);
-  const videoSrc = embedVideoSrc(tutor.videoUrl);
+  const videoSrc = embedVideoSrc(tutor.introVideoUrl || tutor.videoUrl);
   const mapSrc = openStreetMapEmbed(place);
   const similar = await similarTutors({
     id: tutor.id,
@@ -93,6 +94,9 @@ export default async function TutorProfilePage({ params }: Params) {
   const modes = [tutor.online ? "Online" : null, tutor.inPerson ? "In person" : null].filter(
     Boolean,
   ) as string[];
+  // Privacy: phone is only shown to the profile owner or admin, and only when the tutor is verified.
+  // Personal email and external website links are NEVER shown on the public profile.
+  // Raw academic certificates/documents are never displayed (they go through the admin verification flow only).
   const showPhone = Boolean(tutor.verified && tutor.phone && (isOwner || isAdmin || session?.user?.role === "STUDENT"));
   const canMessage = session?.user?.role === "STUDENT";
   const initial = tutor.user.name.slice(0, 1).toUpperCase();
@@ -124,14 +128,14 @@ export default async function TutorProfilePage({ params }: Params) {
           <div className="profile-main stack">
             <section className="panel profile-hero">
               <div className="profile-hero-top">
-                <div className="profile-photo" aria-hidden>
-                  {tutor.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={tutor.photoUrl} alt="" />
-                  ) : (
-                    initial
-                  )}
-                </div>
+                <TutorAvatar
+                  className="profile-photo"
+                  photoUrl={tutor.photoUrl}
+                  cropX={tutor.photoCropX}
+                  cropY={tutor.photoCropY}
+                  cropZoom={tutor.photoCropZoom}
+                  initial={initial}
+                />
                 <div className="profile-hero-copy">
                   <div className="meta">
                     {highlighted && <span className="badge accent">Highlighted</span>}
@@ -290,11 +294,11 @@ export default async function TutorProfilePage({ params }: Params) {
                 </div>
               </section>
             )}
-            {tutor.videoUrl && !videoSrc && (
+            {(tutor.introVideoUrl || tutor.videoUrl) && !videoSrc && (
               <section className="panel profile-section">
                 <h2>Intro video</h2>
                 <p>
-                  <a href={tutor.videoUrl} target="_blank" rel="noreferrer">
+                  <a href={tutor.introVideoUrl || tutor.videoUrl!} target="_blank" rel="noreferrer">
                     Watch intro video
                   </a>
                 </p>
@@ -396,23 +400,14 @@ export default async function TutorProfilePage({ params }: Params) {
             <div className="tutor-grid similar-tutors">
               {similar.map((t) => (
                 <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
-                  <div className="tutor-avatar" aria-hidden>
-                    {t.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={t.photoUrl}
-                        alt=""
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "50%",
-                        }}
-                      />
-                    ) : (
-                      t.user.name.slice(0, 1)
-                    )}
-                  </div>
+                  <TutorAvatar
+                    className="tutor-avatar"
+                    photoUrl={t.photoUrl}
+                    cropX={t.photoCropX}
+                    cropY={t.photoCropY}
+                    cropZoom={t.photoCropZoom}
+                    initial={t.user.name.slice(0, 1)}
+                  />
                   <div className="tutor-card-body">
                     <div className="meta">
                       {t.verified && <span className="badge">Verified</span>}
