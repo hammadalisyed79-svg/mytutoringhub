@@ -188,7 +188,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <div className="meta">
                     {boosted && <span className="badge accent">Boosted</span>}
                     {highlighted && <span className="badge accent">Highlighted</span>}
-                    {t.verified && <span className="badge">Verified</span>}
+                    {(t.planTier ?? 0) >= 2 && <span className="badge badge-featured">Featured</span>}
+                    {t.verified && (
+                      <span className="badge badge-verified">✓ Verified</span>
+                    )}
                     {t.offersFreeTrial && <span className="badge">Free trial</span>}
                     {avg !== null && (
                       <span>

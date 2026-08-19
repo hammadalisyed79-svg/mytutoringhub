@@ -134,6 +134,26 @@ export default async function DashboardPage({
           >
             My Plan →
           </Link>
+          {user.role === "TUTOR" && (
+            <Link
+              href="/dashboard/tutor/analytics"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                background: "var(--white)",
+                border: "1px solid var(--line)",
+                borderRadius: "var(--radius-sm)",
+                padding: "0.4em 1em",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+                color: "var(--brand)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              Analytics →
+            </Link>
+          )}
           <Link
             href="/settings/plan"
             style={{
@@ -236,13 +256,57 @@ export default async function DashboardPage({
                 <h2>Your tutor profile</h2>
                 <p className="muted">
                   Status: {user.tutorProfile.active ? "Listed" : "Hidden until Tutor Basic is active"}{" "}
-                  · {user.tutorProfile.verified ? "Verified" : "Not verified"} ·{" "}
+                  · {user.tutorProfile.verified ? "✓ Verified" : "Not verified"} ·{" "}
                   {user.tutorProfile.highlighted ||
                   (user.tutorProfile.highlightedUntil &&
                     user.tutorProfile.highlightedUntil > new Date())
                     ? "Highlighted"
                     : "Standard listing"}
                 </p>
+                {(() => {
+                  const tp = user.tutorProfile;
+                  const fields = [
+                    !!tp.photoUrl,
+                    !!tp.bio?.trim(),
+                    !!tp.subjects?.trim(),
+                    !!tp.qualifications?.trim(),
+                    tp.hourlyRate > 0,
+                    !!tp.availability?.trim(),
+                  ];
+                  const done = fields.filter(Boolean).length;
+                  const pct = Math.round((done / fields.length) * 100);
+                  const incomplete = pct < 100;
+                  return (
+                    <div className="profile-strength">
+                      <div className="profile-strength-label">
+                        <span>Profile strength</span>
+                        <span>{pct}%</span>
+                      </div>
+                      <div className="profile-strength-bar">
+                        <div
+                          className="profile-strength-fill"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      {incomplete && (
+                        <p className="profile-strength-nudge">
+                          Complete your profile to appear higher in search — add{" "}
+                          {[
+                            !tp.photoUrl && "photo",
+                            !tp.bio?.trim() && "bio",
+                            !tp.subjects?.trim() && "subjects",
+                            !tp.qualifications?.trim() && "qualifications",
+                            !(tp.hourlyRate > 0) && "hourly rate",
+                            !tp.availability?.trim() && "availability",
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                          .
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
                 <p className="muted">
                   Select your country, city, subjects, and matching expertise from the catalog.
                   Add more levels and languages as needed — students see this on your public listing.

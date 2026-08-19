@@ -40,6 +40,7 @@ model User {
   adminAuditLogs       AdminAuditLog[]
   pastPaperPurchases   PastPaperPurchase[]
   serviceFeeEvents     ServiceFeeEvent[]
+  usageEvents          UsageEvent[]
 }
 
 model Account {
@@ -92,6 +93,7 @@ model TutorProfile {
   offersFreeTrial Boolean   @default(false)
   phone           String?
   verified        Boolean   @default(false)
+  planTier        Int       @default(0)
   highlighted     Boolean   @default(false)
   highlightedUntil DateTime?
   boostUntil      DateTime?
@@ -438,6 +440,26 @@ model PastPaperPurchase {
   createdAt  DateTime   @default(now())
 
   @@index([userId, catalogKey])
+}
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // "enquiry_reveal" | "tutor_contact" | "paper_download"
+  month     String   // "2026-08" format for easy monthly grouping
+  createdAt DateTime @default(now())
+
+  @@index([userId, type, month])
+}
+
+model ProfileView {
+  id        String   @id @default(cuid())
+  tutorId   String
+  viewedAt  DateTime @default(now())
+  country   String?
+
+  @@index([tutorId, viewedAt])
 }
 
 model AdminAuditLog {

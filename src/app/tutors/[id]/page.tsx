@@ -135,7 +135,10 @@ export default async function TutorProfilePage({ params }: Params) {
                 <div className="profile-hero-copy">
                   <div className="meta">
                     {highlighted && <span className="badge accent">Highlighted</span>}
-                    {tutor.verified && <span className="badge">Verified</span>}
+                    {(tutor.planTier ?? 0) >= 2 && <span className="badge badge-featured">Featured</span>}
+                    {tutor.verified && (
+                      <span className="badge badge-verified">✓ Verified</span>
+                    )}
                     {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
                     {avg !== null && (
                       <span className="profile-rating">

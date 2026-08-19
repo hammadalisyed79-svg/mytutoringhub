@@ -1679,6 +1679,51 @@ select:focus {
   background: rgba(184, 90, 40, 0.14);
 }
 
+.badge-verified {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.12);
+  border: 1px solid rgba(22, 101, 52, 0.25);
+}
+
+.badge-featured {
+  color: #854d0e;
+  background: rgba(202, 138, 4, 0.13);
+  border: 1px solid rgba(202, 138, 4, 0.3);
+}
+
+.profile-strength {
+  margin-top: 1rem;
+}
+
+.profile-strength-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+.profile-strength-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.profile-strength-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--brand) 0%, #34d399 100%);
+  transition: width 0.4s ease;
+}
+
+.profile-strength-nudge {
+  margin-top: 0.5rem;
+  font-size: 0.83rem;
+  color: var(--brand-deep);
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

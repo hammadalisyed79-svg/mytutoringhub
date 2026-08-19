@@ -177,6 +177,7 @@ export async function searchTutors(
       const highlight =
         (t.highlightedUntil && t.highlightedUntil > now) || t.highlighted ? 1 : 0;
       const verified = t.verified ? 1 : 0;
+      const tierScore = (t.planTier ?? 0) * 5;
       const locBoost =
         location && t.location.toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
       const countryBoost =
@@ -184,6 +185,7 @@ export async function searchTutors(
       return {
         t,
         score:
+          tierScore * 100 +
           boost * 1000 +
           highlight * 100 +
           verified * 10 +
