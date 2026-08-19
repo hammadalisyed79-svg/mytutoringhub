@@ -1,4 +1,5 @@
 import catalog from "@/data/curriculum.json";
+import { TOP_COUNTRIES } from "@/lib/markets";
 
 export type CurriculumEntry = {
   country: string;
@@ -12,8 +13,9 @@ export type CurriculumEntry = {
 export const CURRICULUM = catalog as CurriculumEntry[];
 
 export function curriculumCountries() {
-  const names = [...new Set(CURRICULUM.map((row) => row.country))];
-  return names.sort((a, b) => {
+  const fromCurriculum = new Set(CURRICULUM.map((row) => row.country));
+  const allNames = [...new Set([...fromCurriculum, ...TOP_COUNTRIES.map((c) => c.name)])];
+  return allNames.sort((a, b) => {
     if (a === "Pakistan") return -1;
     if (b === "Pakistan") return 1;
     return a.localeCompare(b);
