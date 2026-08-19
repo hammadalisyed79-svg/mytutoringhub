@@ -221,6 +221,13 @@ export function TutorProfileForm({
     setSlots((current) => current.map((slot, i) => (i === index ? { ...slot, ...patch } : slot)));
   }
 
+  function removePhoto() {
+    setPhotoUrl("");
+    setPhotoError("");
+    setPhotoMsg("Photo removed. Save profile to update your listing.");
+    if (photoInput.current) photoInput.current.value = "";
+  }
+
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -326,14 +333,26 @@ export function TutorProfileForm({
             <h3>Display picture</h3>
             <p className="field-hint">Shown at the top of your public listing. Change it whenever you like.</p>
             <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB · square works best</p>
-            <button
-              className="btn btn-secondary btn-sm"
-              type="button"
-              onClick={() => photoInput.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? "Uploading…" : photoUrl ? "Edit photo" : "Add photo"}
-            </button>
+            <div className="profile-photo-actions">
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                onClick={() => photoInput.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? "Uploading…" : photoUrl.startsWith("http") ? "Edit photo" : "Add photo"}
+              </button>
+              {photoUrl.startsWith("http") && (
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={removePhoto}
+                  disabled={uploading}
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
             <input
               ref={photoInput}
               type="file"

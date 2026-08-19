@@ -3092,6 +3092,12 @@ a.chip-btn {
   width: fit-content;
 }
 
+.profile-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .profile-photo-link {
   margin-top: 0.65rem;
   font-size: 0.88rem;
