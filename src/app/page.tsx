@@ -10,6 +10,9 @@ import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 
 export const metadata = {
+  title: "MyTutoringHub – Find Expert Tutors Online Worldwide",
+  description:
+    "Connect with qualified tutors for GCSE, A-Level, IGCSE, IB and more. Find tutors in your country or online. Browse past papers free.",
   alternates: { canonical: "/" },
 };
 

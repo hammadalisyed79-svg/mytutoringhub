@@ -8,9 +8,10 @@ import { getSiteSettings } from "@/lib/site-settings";
 import { microsoftConfigured } from "@/lib/oauth";
 
 export const metadata = {
-  title: "Sign up",
+  title: "Sign Up – Join as a Student or Tutor",
   description:
-    "Join My Tutoring Hub as a student or tutor with Google, Microsoft, or any email.",
+    "Create your free MyTutoringHub account. Join as a student to find private tutors, or as a tutor to reach students worldwide. Sign up with Google, Microsoft, or email.",
+  alternates: { canonical: "/register" },
 };
 
 export default async function RegisterPage() {

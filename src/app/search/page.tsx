@@ -12,9 +12,10 @@ import { formatTutorPlace } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
 export const metadata = {
-  title: "Find tutors",
+  title: "Find Private Tutors – GCSE, A-Level, IGCSE, IB & More",
   description:
-    "Search private tutors by subject, city, language, and verified badge. Message with a Student Pass. Lesson fees stay off-platform.",
+    "Search verified private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates shown in your local currency.",
+  alternates: { canonical: "/search" },
 };
 
 type SearchParams = Promise<{

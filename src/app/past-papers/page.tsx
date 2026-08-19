@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatPlanPrice } from "@/lib/currency";
@@ -31,9 +32,10 @@ import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
 
 export const metadata = {
-  title: "Past papers",
+  title: "Past Papers – GCSE, A-Level, IGCSE & IB Free Download",
   description:
-    "Browse My Tutoring Hub past papers by country, board, qualification, subject, year and session.",
+    "Browse and download past papers for GCSE, A-Level, IGCSE, IB and more. Filter by country, board, qualification, subject, year and session. Free for signed-in users.",
+  alternates: { canonical: "/past-papers" },
 };
 
 export const dynamic = "force-dynamic";
@@ -144,8 +146,25 @@ export default async function PastPapersPage({
   const boards = subject ? pastPaperBoards(subject) : [];
   const pages = searchResult ? Math.max(1, Math.ceil(searchResult.total / PAST_PAPER_PAGE_SIZE)) : 1;
 
+  const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
+
   return (
     <div className="page">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Past Papers by Subject",
+          description: "GCSE, A-Level, IGCSE and IB past papers available for download",
+          url: `${SITE_URL}/past-papers`,
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "GCSE Past Papers", url: `${SITE_URL}/past-papers?board=Cambridge+IGCSE` },
+            { "@type": "ListItem", position: 2, name: "A-Level Past Papers", url: `${SITE_URL}/past-papers?board=Cambridge+International+AS+%26+A+Level` },
+            { "@type": "ListItem", position: 3, name: "IGCSE Past Papers", url: `${SITE_URL}/past-papers?level=IGCSE` },
+            { "@type": "ListItem", position: 4, name: "IB Past Papers", url: `${SITE_URL}/past-papers?board=IB` },
+          ],
+        }}
+      />
       <div className="container">
         <h1 className="page-title">Past papers</h1>
         <p className="section-lead">

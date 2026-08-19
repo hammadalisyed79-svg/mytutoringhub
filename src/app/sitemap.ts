@@ -6,6 +6,24 @@ import { slugify } from "@/lib/search-tutors";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
+  const priorityMap: Record<string, number> = {
+    "/": 1.0,
+    "/search": 0.9,
+    "/past-papers": 0.8,
+    "/subjects": 0.8,
+    "/pricing": 0.7,
+    "/become-a-tutor": 0.7,
+    "/how-it-works": 0.7,
+    "/ads": 0.6,
+    "/about": 0.6,
+    "/contact": 0.6,
+    "/join": 0.6,
+    "/register": 0.6,
+    "/login": 0.5,
+    "/help": 0.5,
+    "/terms": 0.4,
+    "/privacy": 0.4,
+  };
   const staticRoutes = [
     "",
     "/search",
@@ -25,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((path) => ({
     url: `${base}${path || "/"}`,
     lastModified: new Date(),
+    priority: priorityMap[path || "/"] ?? 0.6,
   }));
 
   try {
