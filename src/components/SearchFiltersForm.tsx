@@ -7,10 +7,17 @@ import { subjectCode } from "@/lib/markets";
 import {
   SEARCH_LANGUAGES,
   SEARCH_LEVELS,
+  countryChoices,
   resolveCity,
+  resolveCountry,
   suggestCities,
   suggestSubjects,
 } from "@/lib/search-smart";
+import {
+  citiesForSearchCountry,
+  cityBelongsToCountry,
+  inferTutorCountry,
+} from "@/lib/tutor-catalog";
 import { SuggestField, type SuggestOption } from "@/components/SuggestField";
 
 type Props = {
@@ -18,6 +25,7 @@ type Props = {
     q?: string;
     subject?: string;
     location?: string;
+    country?: string;
     level?: string;
     language?: string;
     mode?: string;
@@ -31,12 +39,25 @@ type Props = {
   currency: string;
 };
 
+function initialCountryValue(initial: Props["initial"]) {
+  const fromParam = resolveCountry(initial.country);
+  if (fromParam.matched) return fromParam.value;
+  return inferTutorCountry(initial.location, initial.country);
+}
+
 export function SearchFiltersForm({ initial, subjects, levels, codes, currency }: Props) {
+  const countries = useMemo(() => countryChoices(), []);
   const [q, setQ] = useState(initial.q || "");
   const [subject, setSubject] = useState(initial.subject || "");
+  const [country, setCountry] = useState(initialCountryValue(initial));
   const [location, setLocation] = useState(initial.location || "");
   const [level, setLevel] = useState(initial.level || "");
   const [language, setLanguage] = useState(initial.language || "");
+
+  const cityPool = useMemo(
+    () => (country ? citiesForSearchCountry(country) : undefined),
+    [country],
+  );
 
   const subjectOptions = useMemo(() => {
     const names = suggestSubjects(subject, subjects, 8);
@@ -62,15 +83,15 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency }
     return [...fromNames, ...fromCodes.filter((o) => !seen.has(o.label.toLowerCase()))].slice(0, 10);
   }, [subject, subjects, codes]);
 
-  const cityOptions = useMemo(
-    () =>
-      suggestCities(location, 8).map((city) => ({
-        value: city,
-        label: city,
-        hint: city === "Online" ? "Video lessons" : undefined,
-      })),
-    [location],
-  );
+  const cityOptions = useMemo(() => {
+    // Keep suggestion scoring fast even if a country has many cities.
+    const limit = Math.min(cityPool?.length ?? 8, 20);
+    return suggestCities(location, limit, cityPool).map((city) => ({
+      value: city,
+      label: city,
+      hint: city === "Online" ? "Video lessons" : undefined,
+    }));
+  }, [location, cityPool]);
 
   const levelOptions = useMemo(() => {
     const all = [...new Set([...SEARCH_LEVELS, ...levels])];
@@ -87,12 +108,30 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency }
     return filtered.slice(0, 8).map((item) => ({ value: item, label: item }));
   }, [language]);
 
+  const cityPlaceholder = country
+    ? `${(cityPool || []).find((city) => city !== "Online") || "City"}, Online…`
+    : "Islamabad, Online…";
+
+  function onCountryChange(next: string) {
+    setCountry(next);
+    if (next && location && !cityBelongsToCountry(location, next)) {
+      setLocation("");
+    }
+  }
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    const city = resolveCity(location);
-    if (!city.matched || city.value === location) return;
+    const city = resolveCity(location, cityPool);
+    const nation = resolveCountry(country);
+    if (
+      (!city.matched || city.value === location) &&
+      (!nation.matched || nation.value === country)
+    ) {
+      return;
+    }
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    data.set("location", city.value);
+    if (nation.matched) data.set("country", nation.value);
+    if (city.matched) data.set("location", city.value);
     const params = new URLSearchParams();
     for (const [key, value] of data.entries()) {
       const text = String(value).trim();
@@ -104,7 +143,8 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency }
   const active = [
     q && { key: "q", label: `“${q}”` },
     subject && { key: "subject", label: subject },
-    location && { key: "location", label: resolveCity(location).label || location },
+    country && { key: "country", label: resolveCountry(country).label || country },
+    location && { key: "location", label: resolveCity(location, cityPool).label || location },
     level && { key: "level", label: level },
     language && { key: "language", label: language },
     initial.mode === "online" && { key: "mode", label: "Online" },
@@ -148,13 +188,28 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency }
           options={subjectOptions}
           placeholder="Mathematics, Arabic, MATH…"
         />
+        <label>
+          Country
+          <select
+            name="country"
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+          >
+            <option value="">Any country</option>
+            {countries.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
         <SuggestField
           name="location"
           label="City"
           value={location}
           onChange={setLocation}
           options={cityOptions}
-          placeholder="Islamabad, Online…"
+          placeholder={cityPlaceholder}
         />
         <SuggestField
           name="level"

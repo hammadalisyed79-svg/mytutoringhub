@@ -1,5 +1,7 @@
 /** Global currency helpers — amounts in the DB are stored in PKR (legacy base unit). */
 
+import { MARKET_CITIES_BY_COUNTRY_CODE } from "@/lib/market-locations";
+
 export type CurrencyCode =
   | "USD"
   | "PKR"
@@ -226,50 +228,5 @@ export function formatSafepayPriceId(stripePriceId: string | null | undefined) {
 
 export const MARKET_CITIES = [
   "Online",
-  "Karachi",
-  "Lahore",
-  "Islamabad",
-  "Mumbai",
-  "Delhi",
-  "Bangalore",
-  "New York",
-  "Los Angeles",
-  "Houston",
-  "London",
-  "Manchester",
-  "Birmingham",
-  "Dubai",
-  "Abu Dhabi",
-  "Sharjah",
-  "Riyadh",
-  "Jeddah",
-  "Dammam",
-  "Toronto",
-  "Vancouver",
-  "Calgary",
-  "Sydney",
-  "Melbourne",
-  "Brisbane",
-  "Dhaka",
-  "Chittagong",
-  "Cairo",
-  "Alexandria",
-  "Lagos",
-  "Abuja",
-  "Kuala Lumpur",
-  "Penang",
-  "Singapore",
-  "Doha",
-  "Johannesburg",
-  "Cape Town",
-  "Auckland",
-  "Wellington",
-  "Berlin",
-  "Munich",
-  "Hong Kong",
-  "Rawalpindi",
-  "Faisalabad",
-  "Peshawar",
-  "Quetta",
-  "Multan",
+  ...Array.from(new Set(Object.values(MARKET_CITIES_BY_COUNTRY_CODE).flat())),
 ];

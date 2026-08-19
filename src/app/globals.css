@@ -641,6 +641,44 @@ svg {
   min-height: 2.75rem;
 }
 
+.hero-search-place {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.5rem 0.5rem;
+  border-radius: var(--radius);
+  background: rgba(255, 252, 247, 0.97);
+  box-shadow: var(--shadow);
+}
+
+.hero-search-place label {
+  margin: 0;
+  gap: 0.15rem;
+}
+
+.hero-search-place label span {
+  padding: 0.2rem 0.75rem 0;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.hero-search-place select {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  min-height: 2.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.hero-search-place select:focus {
+  outline: none;
+  background: rgba(13, 95, 82, 0.05);
+}
+
 .hero-intent {
   display: flex;
   flex-wrap: wrap;
@@ -3337,6 +3375,10 @@ a.chip-btn {
   }
 
   .hero-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-search-place {
     grid-template-columns: 1fr;
   }
 

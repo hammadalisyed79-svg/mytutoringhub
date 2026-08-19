@@ -1,5 +1,7 @@
 /** ISO 3166-1 alpha-2 markets we feature, with country-wise top tutoring subjects. */
 
+import { MARKET_CITIES_BY_COUNTRY_CODE } from "@/lib/market-locations";
+
 export type MarketCountry = {
   code: string;
   name: string;
@@ -8,7 +10,7 @@ export type MarketCountry = {
 };
 
 /** Pakistan first, then 49 more high tutoring-demand countries (50 total). */
-export const TOP_COUNTRIES: MarketCountry[] = [
+const TOP_COUNTRIES_BASE: MarketCountry[] = [
   {
     code: "PK",
     name: "Pakistan",
@@ -960,6 +962,15 @@ export const TOP_COUNTRIES: MarketCountry[] = [
     ],
   },
 ];
+
+/**
+ * Expand cities per country for search + profile filters.
+ * Subjects remain defined in this file.
+ */
+export const TOP_COUNTRIES: MarketCountry[] = TOP_COUNTRIES_BASE.map((country) => ({
+  ...country,
+  cities: MARKET_CITIES_BY_COUNTRY_CODE[country.code] || country.cities,
+}));
 
 /** Top 8 countries shown as cards on the homepage. */
 export const HOMEPAGE_FEATURED_COUNTRY_CODES = [

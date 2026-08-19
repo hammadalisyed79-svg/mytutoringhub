@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
-import { formatTutorPlace } from "@/lib/tutor-catalog";
+import { formatTutorPlace, inferTutorCountry } from "@/lib/tutor-catalog";
 
 type Params = { params: Promise<{ subject: string; city?: string[] }> };
 
@@ -46,6 +46,10 @@ export default async function SeoTutorsPage({ params }: Params) {
     page: "1",
   });
   const avg = await averageRateForSubject(label);
+  const countryName = cityName ? inferTutorCountry(cityName) : "";
+  const searchHref = `/search?subject=${encodeURIComponent(label)}${
+    cityName ? `&location=${encodeURIComponent(cityName)}` : ""
+  }${countryName ? `&country=${encodeURIComponent(countryName)}` : ""}`;
 
   return (
     <div className="page">
@@ -65,7 +69,7 @@ export default async function SeoTutorsPage({ params }: Params) {
         </p>
         <p>
           <Link
-            href={`/search?subject=${encodeURIComponent(label)}${cityName ? `&location=${encodeURIComponent(cityName)}` : ""}`}
+            href={searchHref}
             className="btn btn-secondary btn-sm"
           >
             Open full search filters

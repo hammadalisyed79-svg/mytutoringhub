@@ -5,14 +5,17 @@ import {
   expandSubjectTerms,
   parseSearchQuery,
   resolveCity,
+  resolveCountry,
   resolveSubjectName,
 } from "@/lib/search-smart";
 import { isBoostActive } from "@/lib/subscription";
+import { citiesForSearchCountry } from "@/lib/tutor-catalog";
 
 export type TutorSearchFilters = {
   q?: string;
   subject?: string;
   location?: string;
+  country?: string;
   mode?: string;
   verified?: string;
   max?: string;
@@ -35,19 +38,26 @@ export async function searchTutors(
   const page = Math.max(1, Number(filters.page) || 1);
   const now = new Date();
   const parsed =
-    filters.q && !filters.subject && !filters.location ? parseSearchQuery(filters.q) : {};
+    filters.q && !filters.subject && !filters.location && !filters.country
+      ? parseSearchQuery(filters.q)
+      : {};
   const codeMatch = matchCurriculumCode((filters.subject || filters.q || "").trim());
   const subjectResolved = resolveSubjectName(
     filters.subject || parsed.subject || codeMatch?.subject,
     opts?.subjectNames,
   );
-  const cityResolved = resolveCity(filters.location || parsed.location);
+  const countryResolved = resolveCountry(filters.country || parsed.country);
+  const country = countryResolved.value;
+  const cityPool = country ? citiesForSearchCountry(country) : undefined;
+  const cityResolved = resolveCity(filters.location || parsed.location, cityPool);
   const subject = subjectResolved.value;
   const location = cityResolved.value;
   const level = (filters.level || parsed.level || (!filters.subject && codeMatch?.level) || "").trim();
   const mode = filters.mode || parsed.mode || "";
   let keyword = (filters.q || "").trim();
-  if (filters.q && !filters.subject && !filters.location) keyword = parsed.q || "";
+  if (filters.q && !filters.subject && !filters.location && !filters.country) {
+    keyword = parsed.q || "";
+  }
   if (codeMatch && keyword.toUpperCase() === codeMatch.code.toUpperCase()) keyword = "";
 
   const maxPkr =
@@ -57,7 +67,24 @@ export async function searchTutors(
         ? Number(filters.max)
         : undefined;
 
-  const query = (useLocation: boolean) =>
+  const countryClause = (useCountry: boolean, withCity: boolean) => {
+    if (!useCountry || !country) return {};
+    if (withCity && location && location !== "Online") {
+      return {
+        OR: [{ country: contains(country) }, { country: null }, { country: { equals: "" } }],
+      };
+    }
+    return {
+      OR: [
+        { country: contains(country) },
+        ...citiesForSearchCountry(country)
+          .filter((city) => city !== "Online")
+          .map((city) => ({ location: contains(city) })),
+      ],
+    };
+  };
+
+  const query = (useLocation: boolean, useCountry: boolean) =>
     prisma.tutorProfile.findMany({
       where: {
         active: true,
@@ -69,6 +96,7 @@ export async function searchTutors(
         ...(level ? { levels: contains(level) } : {}),
         ...(mode === "online" || location === "Online" ? { online: true } : {}),
         ...(mode === "inperson" ? { inPerson: true } : {}),
+        ...countryClause(useCountry, Boolean(useLocation)),
         ...(useLocation && location && location !== "Online"
           ? { location: contains(location) }
           : {}),
@@ -124,11 +152,23 @@ export async function searchTutors(
       },
     });
 
-  let profiles = await query(true);
+  let profiles = await query(true, Boolean(country));
   let locationRelaxed = false;
+  let keptCountry = Boolean(country);
   if (profiles.length === 0 && location && location !== "Online" && (subject || keyword)) {
-    profiles = await query(false);
-    locationRelaxed = profiles.length > 0;
+    if (country) {
+      profiles = await query(false, true);
+      if (profiles.length > 0) {
+        locationRelaxed = true;
+      } else {
+        profiles = await query(false, false);
+        locationRelaxed = profiles.length > 0;
+        keptCountry = false;
+      }
+    } else {
+      profiles = await query(false, false);
+      locationRelaxed = profiles.length > 0;
+    }
   }
 
   const scored = profiles
@@ -139,9 +179,17 @@ export async function searchTutors(
       const verified = t.verified ? 1 : 0;
       const locBoost =
         location && t.location.toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
+      const countryBoost =
+        country && (t.country || "").toLowerCase().includes(country.toLowerCase()) ? 3 : 0;
       return {
         t,
-        score: boost * 1000 + highlight * 100 + verified * 10 + locBoost - t.hourlyRate / 10000,
+        score:
+          boost * 1000 +
+          highlight * 100 +
+          verified * 10 +
+          locBoost +
+          countryBoost -
+          t.hourlyRate / 10000,
       };
     })
     .sort((a, b) => b.score - a.score);
@@ -154,8 +202,9 @@ export async function searchTutors(
     page,
     pageSize: PAGE_SIZE,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    resolved: { subject, location, level, keyword, mode },
+    resolved: { subject, location, country, level, keyword, mode },
     locationRelaxed,
+    keptCountry,
   };
 }
 

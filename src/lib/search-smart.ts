@@ -1,5 +1,5 @@
 import { MARKET_CITIES } from "@/lib/currency";
-import { SUBJECT_CODES, allMarketCities } from "@/lib/markets";
+import { SUBJECT_CODES, TOP_COUNTRIES, allMarketCities, countryByCode, countryByName } from "@/lib/markets";
 
 export const SEARCH_LANGUAGES = [
   "English",
@@ -35,6 +35,18 @@ export const SEARCH_LEVELS = [
   "SAT",
   "University",
 ];
+
+const COUNTRY_ALIASES: Record<string, string> = {
+  usa: "United States",
+  us: "United States",
+  america: "United States",
+  uk: "United Kingdom",
+  britain: "United Kingdom",
+  england: "United Kingdom",
+  uae: "United Arab Emirates",
+  ksa: "Saudi Arabia",
+  saudi: "Saudi Arabia",
+};
 
 const CITY_ALIASES: Record<string, string> = {
   islam: "Islamabad",
@@ -149,14 +161,73 @@ export function cityChoices() {
   return [...new Set([...allMarketCities(), ...MARKET_CITIES])];
 }
 
-export function resolveCity(input: string | undefined) {
+function inPool(value: string, pool?: string[]) {
+  if (!pool?.length) return true;
+  return pool.some((item) => item.toLowerCase() === value.toLowerCase());
+}
+
+export function countryChoices() {
+  return TOP_COUNTRIES.map((country) => country.name);
+}
+
+export function resolveCountry(input: string | undefined) {
   const raw = (input || "").trim();
   if (!raw) return { value: "", matched: false, label: "" };
-  if (/^online$/i.test(raw)) return { value: "Online", matched: true, label: "Online" };
+  if (raw.length === 2) {
+    const byCode = countryByCode(raw);
+    if (byCode) return { value: byCode.name, matched: true, label: byCode.name };
+  }
+  const aliased = COUNTRY_ALIASES[norm(raw)];
+  if (aliased) return { value: aliased, matched: true, label: aliased };
+  const exact = countryByName(raw);
+  if (exact) return { value: exact.name, matched: true, label: exact.name };
+  const ranked = TOP_COUNTRIES.map((country) => ({
+    country,
+    score: scoreSuggestion(raw, country.name),
+  }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const top = ranked[0];
+  const qLen = norm(raw).length;
+  const confident =
+    top &&
+    (top.score >= 90 || (top.score >= 70 && qLen >= 4)) &&
+    (!ranked[1] || top.score - ranked[1].score >= 8);
+  if (confident && top) {
+    return { value: top.country.name, matched: true, label: top.country.name };
+  }
+  return { value: raw, matched: false, label: raw };
+}
+
+export function suggestCountries(query: string, limit = 12) {
+  const names = countryChoices();
+  const q = query.trim();
+  if (!q) return names.slice(0, limit);
+  return names
+    .map((name) => ({
+      name,
+      score: Math.max(
+        scoreSuggestion(q, name),
+        COUNTRY_ALIASES[norm(q)] === name ? 95 : 0,
+        countryByCode(q)?.name === name ? 100 : 0,
+      ),
+    }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((row) => row.name);
+}
+
+export function resolveCity(input: string | undefined, pool?: string[]) {
+  const raw = (input || "").trim();
+  if (!raw) return { value: "", matched: false, label: "" };
+  if (/^online$/i.test(raw) && inPool("Online", pool)) {
+    return { value: "Online", matched: true, label: "Online" };
+  }
   const key = norm(raw).replace(/\s/g, "");
   const aliased = CITY_ALIASES[key] || CITY_ALIASES[norm(raw)];
-  if (aliased) return { value: aliased, matched: true, label: aliased };
-  const cities = cityChoices();
+  if (aliased && inPool(aliased, pool)) return { value: aliased, matched: true, label: aliased };
+  const cities = pool?.length ? pool : cityChoices();
   const ranked = cities
     .map((city) => ({ city, score: scoreSuggestion(raw, city) }))
     .filter((row) => row.score > 0)
@@ -197,12 +268,19 @@ export function expandSubjectTerms(subject: string) {
   return [...terms];
 }
 
-export function suggestCities(query: string, limit = 8) {
+export function suggestCities(query: string, limit = 8, pool?: string[]) {
   const q = query.trim();
-  const cities = cityChoices();
-  if (!q) return cities.slice(0, limit);
+  const cities = pool?.length ? pool : cityChoices();
+  if (!q) {
+    const online = cities.filter((city) => city === "Online");
+    const rest = cities.filter((city) => city !== "Online");
+    return [...online, ...rest].slice(0, limit);
+  }
   return cities
-    .map((city) => ({ city, score: Math.max(scoreSuggestion(q, city), CITY_ALIASES[norm(q)] === city ? 95 : 0) }))
+    .map((city) => ({
+      city,
+      score: Math.max(scoreSuggestion(q, city), CITY_ALIASES[norm(q)] === city && inPool(city, pool) ? 95 : 0),
+    }))
     .filter((row) => row.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
@@ -229,7 +307,14 @@ export function suggestSubjects(query: string, subjectNames: string[], limit = 8
 
 export function parseSearchQuery(input: string) {
   let text = input.trim();
-  const out: { q?: string; subject?: string; location?: string; mode?: string; level?: string } = {};
+  const out: {
+    q?: string;
+    subject?: string;
+    location?: string;
+    country?: string;
+    mode?: string;
+    level?: string;
+  } = {};
   if (!text) return out;
 
   if (/\bonline\b/i.test(text)) {
@@ -256,6 +341,22 @@ export function parseSearchQuery(input: string) {
     const city = resolveCity(last);
     if (city.matched) {
       out.location = city.value;
+      tokens.pop();
+    }
+  }
+  if (tokens.length >= 2) {
+    const lastTwo = `${tokens[tokens.length - 2]} ${tokens[tokens.length - 1]}`;
+    const nation = resolveCountry(lastTwo);
+    if (nation.matched) {
+      out.country = nation.value;
+      tokens.splice(-2, 2);
+    }
+  }
+  if (!out.country && tokens.length) {
+    const last = tokens[tokens.length - 1];
+    const nation = resolveCountry(last);
+    if (nation.matched) {
+      out.country = nation.value;
       tokens.pop();
     }
   }

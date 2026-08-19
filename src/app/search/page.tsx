@@ -24,6 +24,7 @@ type SearchParams = Promise<{
   verified?: string;
   max?: string;
   location?: string;
+  country?: string;
   level?: string;
   trial?: string;
   language?: string;
@@ -47,22 +48,33 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     subjects.map((s) => s.name),
     catalogSubjectNames(),
   );
-  const { tutors, total, page, pages, resolved, locationRelaxed } = await searchTutors(sp, {
+  const { tutors, total, page, pages, resolved, locationRelaxed, keptCountry } = await searchTutors(sp, {
     currency,
     subjectNames,
   });
   const city = resolveCity(sp.location);
   const related = resolved.subject ? relatedSubjects(resolved.subject, subjectNames) : [];
 
+  const placeLabel = [
+    resolved.location && resolved.location !== "Online" ? resolved.location : "",
+    resolved.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   const summary = [
     total.toLocaleString(),
     total === 1 ? "tutor" : "tutors",
     resolved.subject ? `for ${resolved.subject}` : "",
     locationRelaxed
-      ? `— none in ${resolved.location}, showing all locations`
-      : resolved.location
-        ? `in ${resolved.location}`
-        : "",
+      ? keptCountry && resolved.country
+        ? `— none in ${resolved.location}, showing ${resolved.country}`
+        : `— none in ${resolved.location}, showing all locations`
+      : placeLabel
+        ? `in ${placeLabel}`
+        : resolved.location === "Online"
+          ? "online"
+          : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -72,7 +84,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       <div className="container">
         <h1 className="page-title">Find private tutors</h1>
         <p className="section-lead">
-          Search by subject, code, or city. Rates are shown in {currency}. Lesson fees stay between
+          Search by subject, country, or city. Rates are shown in {currency}. Lesson fees stay between
           you and the tutor.
         </p>
 
@@ -133,8 +145,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
         {locationRelaxed && tutors.length > 0 && (
           <p className="search-note">
-            No {resolved.subject || "matching"} tutors in {resolved.location}. Showing tutors who
-            teach this subject in other cities and online.
+            No {resolved.subject || "matching"} tutors in {resolved.location}
+            {keptCountry && resolved.country ? `, ${resolved.country}` : ""}. Showing tutors who
+            teach this subject {keptCountry && resolved.country ? `in ${resolved.country}` : "in other cities and online"}.
           </p>
         )}
 

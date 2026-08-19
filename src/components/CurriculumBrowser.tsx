@@ -70,7 +70,7 @@ export function CurriculumBrowser({
                 <Link
                   key={row.code}
                   href={`/search?subject=${encodeURIComponent(row.subject)}${
-                    city ? `&location=${encodeURIComponent(city)}` : ""
+                    city ? `&country=${encodeURIComponent(selected)}&location=${encodeURIComponent(city)}` : ""
                   }&level=${encodeURIComponent(row.level)}`}
                   className="chip"
                   title={`${row.code} · ${row.subject} · ${row.level} · ${row.exam}`}

@@ -250,13 +250,31 @@ export function citiesForCountry(countryName: string) {
   return uniqueSorted(["Online", ...(country?.cities || []), ...(EXTRA_CITIES[countryName] || [])]);
 }
 
+/** Online first, then that country's market cities — used by tutor search. */
+export function citiesForSearchCountry(countryName: string) {
+  const cities = citiesForCountry(countryName).filter((city) => city !== "Online");
+  return countryName ? ["Online", ...cities] : [];
+}
+
+export function cityBelongsToCountry(city: string, countryName: string) {
+  const value = city.trim();
+  if (!value || /^online$/i.test(value)) return true;
+  if (!countryName) return true;
+  return citiesForCountry(countryName).some((item) => item.toLowerCase() === value.toLowerCase());
+}
+
 export function inferTutorCountry(location?: string | null, country?: string | null) {
-  if (country && tutorCountries().includes(country)) return country;
-  const hay = (location || "").toLowerCase();
-  if (!hay) return "";
+  if (country) {
+    const listed = tutorCountries().find((name) => name.toLowerCase() === country.trim().toLowerCase());
+    if (listed) return listed;
+  }
+  const hay = (location || "").trim().toLowerCase();
+  if (!hay || hay === "online") return "";
   for (const row of TOP_COUNTRIES) {
     if (hay.includes(row.name.toLowerCase())) return row.name;
     if (row.cities.some((city) => hay.includes(city.toLowerCase()))) return row.name;
+    const extra = EXTRA_CITIES[row.name] || [];
+    if (extra.some((city) => hay.includes(city.toLowerCase()))) return row.name;
   }
   return "";
 }

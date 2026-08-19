@@ -35,7 +35,7 @@ function CountryMarketCard({
         {subjects.map((subject) => (
           <Link
             key={`${country.code}-${subject}`}
-            href={`/search?subject=${encodeURIComponent(subject)}&location=${encodeURIComponent(city)}`}
+            href={`/search?subject=${encodeURIComponent(subject)}&country=${encodeURIComponent(country.name)}&location=${encodeURIComponent(city)}`}
             className="chip"
             title={`${subjectCode(subject)} · ${subject}`}
           >
