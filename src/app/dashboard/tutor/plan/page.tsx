@@ -1,20 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getUserPlan, getMonthlyUsage } from "@/lib/plan-limits";
 
 export const metadata = { title: "My Plan — Tutor Dashboard" };
 export const dynamic = "force-dynamic";
-
-// TODO: replace with real subscription lookup
-const MOCK_PLAN = {
-  tier: "free" as "free" | "pro" | "elite",
-  name: "Free Starter",
-  price: null as null | string,
-  billingPeriod: null as null | string,
-  renewsOn: null as null | string,
-  enquiryRevealsUsed: 3,
-  enquiryRevealsLimit: 5,
-};
 
 const TUTOR_PLANS = [
   {
@@ -59,10 +49,39 @@ export default async function TutorPlanPage() {
   if (!session?.user) redirect("/login");
   if (session.user.role !== "TUTOR") redirect("/dashboard");
 
-  const plan = MOCK_PLAN;
+  const [planSlug, revealsUsed] = await Promise.all([
+    getUserPlan(session.user.id).catch(() => "free"),
+    getMonthlyUsage(session.user.id, "enquiry_reveal").catch(() => 0),
+  ]);
+
+  const isPaid =
+    planSlug.includes("tutor_pro") ||
+    planSlug.includes("tutor_elite") ||
+    planSlug.includes("verified_tutor") ||
+    planSlug.includes("pro") ||
+    planSlug.includes("elite");
+
+  const tier: "free" | "pro" | "elite" = planSlug.includes("elite")
+    ? "elite"
+    : planSlug !== "free" && isPaid
+    ? "pro"
+    : "free";
+
+  const plan = {
+    tier,
+    name: tier === "elite" ? "Elite Tutor" : tier === "pro" ? "Pro Tutor" : "Free Starter",
+    price: null as null | string,
+    billingPeriod: null as null | string,
+    renewsOn: null as null | string,
+    enquiryRevealsUsed: revealsUsed,
+    enquiryRevealsLimit: isPaid ? -1 : 5,
+  };
+
   const pct =
     plan.enquiryRevealsLimit > 0
       ? Math.min(100, (plan.enquiryRevealsUsed / plan.enquiryRevealsLimit) * 100)
+      : plan.enquiryRevealsLimit === -1
+      ? 0
       : 0;
 
   const badgeColor =
@@ -71,9 +90,12 @@ export default async function TutorPlanPage() {
   return (
     <div className="page">
       <div className="container" style={{ maxWidth: 820 }}>
-        <div style={{ marginBottom: "0.5rem" }}>
+        <div style={{ marginBottom: "0.5rem", display: "flex", gap: "1rem" }}>
           <Link href="/dashboard" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
             ← Dashboard
+          </Link>
+          <Link href="/dashboard/tutor/analytics" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
+            Analytics →
           </Link>
         </div>
         <h1 className="page-title">My Plan</h1>
@@ -150,7 +172,7 @@ export default async function TutorPlanPage() {
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.88rem" }}>
               <span>Enquiry reveals</span>
               <span style={{ color: "var(--muted)" }}>
-                {plan.enquiryRevealsUsed} / {plan.enquiryRevealsLimit}
+                {plan.enquiryRevealsUsed} / {plan.enquiryRevealsLimit === -1 ? "∞" : plan.enquiryRevealsLimit}
               </span>
             </div>
             <div

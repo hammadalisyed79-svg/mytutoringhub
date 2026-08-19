@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canMessage } from "@/lib/subscription";
+import { canPerformAction, recordUsage } from "@/lib/plan-limits";
 import { sendEmail, newMessageEmailHtml } from "@/lib/email";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
@@ -69,6 +70,49 @@ export async function POST(req: Request) {
   const recipient = await prisma.user.findUnique({ where: { id: data.recipientId } });
   if (!recipient) return NextResponse.json({ error: "Recipient not found" }, { status: 404 });
 
+  // Check if this is a new conversation (first contact) to enforce monthly limits
+  const role = session.user.role as Role;
+  const isNewContact = !await prisma.conversation.findFirst({
+    where: {
+      OR: [
+        { userAId: session.user.id, userBId: data.recipientId },
+        { userAId: data.recipientId, userBId: session.user.id },
+      ],
+    },
+  });
+
+  if (isNewContact && role === "STUDENT" && recipient.role === "TUTOR") {
+    const check = await canPerformAction(session.user.id, "tutor_contact");
+    if (!check.allowed) {
+      return NextResponse.json(
+        {
+          error: "limit_exceeded",
+          message: `You've used all ${check.limit} tutor contacts this month. Upgrade to contact more tutors.`,
+          upgradeUrl: "/pricing",
+          used: check.used,
+          limit: check.limit,
+        },
+        { status: 429 },
+      );
+    }
+  }
+
+  if (isNewContact && role === "TUTOR" && recipient.role === "STUDENT") {
+    const check = await canPerformAction(session.user.id, "enquiry_reveal");
+    if (!check.allowed) {
+      return NextResponse.json(
+        {
+          error: "limit_exceeded",
+          message: `You've used all ${check.limit} enquiry reveals this month. Upgrade to Pro for unlimited reveals.`,
+          upgradeUrl: "/pricing",
+          used: check.used,
+          limit: check.limit,
+        },
+        { status: 429 },
+      );
+    }
+  }
+
   const recipientAllowed = await canMessage(recipient.id, recipient.role as Role);
   if (!recipientAllowed && recipient.role !== "ADMIN") {
     return NextResponse.json(
@@ -81,6 +125,7 @@ export async function POST(req: Request) {
   let conversation = await prisma.conversation.findUnique({
     where: { userAId_userBId: { userAId, userBId } },
   });
+  const creatingNewConversation = !conversation;
   if (!conversation) {
     conversation = await prisma.conversation.create({
       data: {
@@ -89,6 +134,16 @@ export async function POST(req: Request) {
         relatedAdId: data.relatedAdId,
       },
     });
+  }
+
+  // Record usage event for the first message in a new conversation
+  if (creatingNewConversation) {
+    const senderRole = session.user.role as Role;
+    if (senderRole === "STUDENT" && recipient.role === "TUTOR") {
+      await recordUsage(session.user.id, "tutor_contact");
+    } else if (senderRole === "TUTOR" && recipient.role === "STUDENT") {
+      await recordUsage(session.user.id, "enquiry_reveal");
+    }
   }
 
   const text = data.body?.trim() || "";

@@ -1,21 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getUserPlan, getMonthlyUsage } from "@/lib/plan-limits";
 
 export const metadata = { title: "My Plan — Student Dashboard" };
 export const dynamic = "force-dynamic";
-
-// TODO: replace with real subscription lookup
-const MOCK_PLAN = {
-  tier: "free" as "free" | "plus" | "pro",
-  name: "Free",
-  price: null as null | string,
-  billingPeriod: null as null | string,
-  renewsOn: null as null | string,
-  contactsUsed: 2,
-  contactsLimit: 3,
-  pastPaperAccess: "limited" as "limited" | "full",
-};
 
 const STUDENT_PLANS = [
   {
@@ -58,11 +47,40 @@ export default async function StudentPlanPage() {
   if (!session?.user) redirect("/login");
   if (session.user.role !== "STUDENT") redirect("/dashboard");
 
-  const plan = MOCK_PLAN;
+  const [planSlug, contactsUsed] = await Promise.all([
+    getUserPlan(session.user.id).catch(() => "free"),
+    getMonthlyUsage(session.user.id, "tutor_contact").catch(() => 0),
+  ]);
+
+  const isPaid =
+    planSlug.includes("student_pass") ||
+    planSlug.includes("student_plus") ||
+    planSlug.includes("student_pro") ||
+    planSlug.includes("plus") ||
+    planSlug.includes("pro");
+
+  const tier: "free" | "plus" | "pro" = planSlug.includes("pro") && isPaid
+    ? "pro"
+    : isPaid
+    ? "plus"
+    : "free";
+
+  const plan = {
+    tier,
+    name: tier === "pro" ? "Study Pro" : tier === "plus" ? "Study Plus" : "Free",
+    price: null as null | string,
+    billingPeriod: null as null | string,
+    renewsOn: null as null | string,
+    contactsUsed,
+    contactsLimit: isPaid ? -1 : 3,
+    pastPaperAccess: isPaid ? ("full" as "full") : ("limited" as "limited"),
+  };
+
   const pct =
     plan.contactsLimit > 0
       ? Math.min(100, (plan.contactsUsed / plan.contactsLimit) * 100)
       : 0;
+
 
   const badgeColor =
     plan.tier === "pro" ? "var(--accent)" : plan.tier === "plus" ? "var(--ok)" : "var(--muted)";
@@ -315,6 +333,64 @@ export default async function StudentPlanPage() {
             </Link>
           </p>
         </div>
+
+        {/* Study tools */}
+        <section style={{ marginTop: "1.5rem" }}>
+          <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem" }}>
+            Study Tools
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gap: "1rem",
+            }}
+          >
+            {[
+              {
+                href: "/study/countdown",
+                icon: "⏳",
+                title: "Exam Countdown",
+                desc: "Live countdowns for Cambridge, Edexcel, AQA, FBISE, and Matric sessions.",
+              },
+              {
+                href: "/study/progress",
+                icon: "📚",
+                title: "My Study Log",
+                desc: "Track your study sessions and see your weekly progress at a glance.",
+              },
+              {
+                href: "/study/assistant",
+                icon: "🤖",
+                title: "AI Study Assistant",
+                desc: "Get exam Q&A, essay feedback, and revision plans (Study Pro).",
+              },
+            ].map((tool) => (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.35rem",
+                  padding: "1rem",
+                  borderRadius: "var(--radius)",
+                  border: "1.5px solid var(--border)",
+                  background: "var(--paper)",
+                  textDecoration: "none",
+                  color: "inherit",
+                  transition: "border-color 0.15s",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>{tool.icon}</span>
+                <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--brand)" }}>
+                  {tool.title}
+                </span>
+                <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>{tool.desc}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

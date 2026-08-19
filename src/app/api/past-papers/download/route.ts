@@ -27,6 +27,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "This paper is not available yet" }, { status: 404 });
   }
 
+  // TODO: gate premium papers — when a isPremium flag is added to PastPaper,
+  // check it here and call getUserPlan to enforce student plan limits.
+  // For now all papers are treated as free-tier accessible.
+
   const fee = await getPastPaperFeePkr();
   const allowed =
     session.user.role === "ADMIN" ||
