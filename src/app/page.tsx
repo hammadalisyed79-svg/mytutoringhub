@@ -215,8 +215,8 @@ export default async function HomePage() {
         <div className="container">
           <h2>Top subjects by country</h2>
           <p className="section-lead">
-            Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — Pakistan first, then
-            other high-demand markets. Open a chip to search tutors in that country.
+            Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — top 8 markets on the
+            homepage, plus 42 more countries to browse. Open a chip to search tutors in that country.
           </p>
           <CountryMarkets compact />
           <p className="section-actions">
