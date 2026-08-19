@@ -31,7 +31,13 @@ export default async function HomePage() {
     where: { active: true },
     take: 3,
     orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
-    include: {
+    select: {
+      id: true,
+      hourlyRate: true,
+      headline: true,
+      subjects: true,
+      verified: true,
+      highlighted: true,
       user: { select: { name: true } },
       reviews: { select: { rating: true } },
     },
