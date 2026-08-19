@@ -222,12 +222,7 @@ export default async function TutorProfilePage({ params }: Params) {
                     <dd>{languages.join(" · ")}</dd>
                   </div>
                 )}
-                {tutor.qualifications && (
-                  <div>
-                    <dt>Qualifications</dt>
-                    <dd className="prose-block">{tutor.qualifications}</dd>
-                  </div>
-                )}
+                {/* Qualifications hidden from public profile per product requirements */}
                 {experienceLabel && (
                   <div>
                     <dt>Experience</dt>
@@ -253,7 +248,7 @@ export default async function TutorProfilePage({ params }: Params) {
                   </div>
                 )}
               </dl>
-              {!tutor.qualifications && !tutor.teachingMethod && !availabilityLines.length && !experienceLabel && levels.length === 0 && languages.length === 0 && expertise.length === 0 && !tutor.country && (
+              {!tutor.teachingMethod && !availabilityLines.length && !experienceLabel && levels.length === 0 && languages.length === 0 && expertise.length === 0 && !tutor.country && (
                 <p className="muted">This tutor has not added extra teaching details yet.</p>
               )}
             </section>
