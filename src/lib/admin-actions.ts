@@ -13,6 +13,8 @@ import {
 import { safepayConfigured } from "@/lib/safepay";
 import { PLANS } from "@/lib/plans";
 import type { Role, SubscriptionPlan } from "@/lib/types";
+import { isR2Configured, r2NotConfiguredMessage } from "@/lib/past-papers/r2";
+import { syncPastPapersFromR2 } from "@/lib/past-papers/past-paper-sync";
 import { syncSubjectsFromSources } from "@/lib/subject-sync";
 import { z } from "zod";
 
@@ -165,6 +167,8 @@ const ACTION_ALIASES: Record<string, string> = {
   delete_subject: "subject_delete",
   sync_subjects: "subject_sync",
   update_subjects: "subject_sync",
+  sync_past_papers: "past_paper_sync",
+  update_past_papers: "past_paper_sync",
 };
 
 export async function runAdminAction(adminId: string, raw: unknown) {
@@ -593,6 +597,15 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "Subject";
       targetId = "catalog";
       extra = await syncSubjectsFromSources();
+      break;
+    }
+    case "past_paper_sync": {
+      targetType = "PastPaper";
+      targetId = "catalog";
+      if (!isR2Configured()) {
+        throw new AdminActionError(r2NotConfiguredMessage(), 503);
+      }
+      extra = await syncPastPapersFromR2();
       break;
     }
     case "update_settings": {

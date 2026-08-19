@@ -7,6 +7,7 @@ import { validatePdfBuffer, sha256 } from "./file-validate";
 import { duplicateComboWhere } from "./catalog-key";
 import { guessSyllabusCode } from "./browse";
 import { parseManifestPayload } from "./manifest-import";
+import { classifyR2PaperObject, r2PaperListPrefixes } from "./past-paper-sync";
 import { groupPapersByYearSessionComponent } from "./group-papers";
 import { isR2Configured } from "./r2";
 import { downloadableFileWhere } from "./availability";
@@ -188,5 +189,38 @@ assert.equal(typeof isR2Configured(), "boolean");
 assert.deepEqual(downloadableFileWhere(), {
   OR: [{ storageKey: { not: null } }, { fileUrl: { not: null } }],
 });
+
+const chemR2 = classifyR2PaperObject(
+  "cambridge/igcse/chemistry/0620/0620_s24_qp_42.pdf",
+  1234,
+);
+assert.equal(chemR2.ok, true, "0620 R2 object should classify");
+if (chemR2.ok) {
+  assert.equal(chemR2.paper.subject, "Chemistry");
+  assert.equal(chemR2.paper.syllabusCode, "0620");
+  assert.equal(chemR2.paper.year, 2024);
+  assert.equal(chemR2.paper.documentType, "QUESTION_PAPER");
+  assert.equal(chemR2.paper.storageKey, "cambridge/igcse/chemistry/0620/0620_s24_qp_42.pdf");
+  assert.match(chemR2.paper.board, /Cambridge/i);
+}
+
+const mathR2 = classifyR2PaperObject("cambridge/igcse/mathematics/0580/0580_w22_ms_13.pdf", 88);
+assert.equal(mathR2.ok, true, "0580 R2 object should classify");
+if (mathR2.ok) {
+  assert.equal(mathR2.paper.subject, "Mathematics");
+  assert.equal(mathR2.paper.syllabusCode, "0580");
+  assert.equal(mathR2.paper.documentType, "MARK_SCHEME");
+}
+
+const skippedJson = classifyR2PaperObject("catalog/subjects.json", 20);
+assert.equal(skippedJson.ok, false);
+
+const skippedName = classifyR2PaperObject("cambridge/igcse/chemistry/notes.pdf", 20);
+assert.equal(skippedName.ok, false);
+
+const unknownSyllabus = classifyR2PaperObject("9999_s24_qp_11.pdf", 20);
+assert.equal(unknownSyllabus.ok, false);
+
+assert.equal(r2PaperListPrefixes()[0], "cambridge/");
 
 console.log("past-papers tests passed");

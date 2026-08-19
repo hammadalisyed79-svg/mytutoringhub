@@ -6,6 +6,7 @@ import {
   AdminSettingsForm,
   AdminSubjectCreateForm,
   AdminSubjectRenameForm,
+  AdminSyncPastPapersButton,
   AdminSyncSubjectsButton,
 } from "@/components/AdminActions";
 
@@ -22,7 +23,7 @@ export default async function AdminContentPage() {
       <div>
         <h1 className="page-title">Content & site control</h1>
         <p className="muted">
-          Subjects, maintenance, announcements, and feature switches. Catalog prices are on{" "}
+          Subjects, past papers, maintenance, announcements, and feature switches. Catalog prices are on{" "}
           <Link href="/admin/plans">Plans & prices</Link>.
         </p>
       </div>
@@ -30,6 +31,14 @@ export default async function AdminContentPage() {
       <section className="panel">
         <h2>Site settings</h2>
         <AdminSettingsForm settings={settings} />
+      </section>
+
+      <section className="panel">
+        <h2>Past papers</h2>
+        <AdminSyncPastPapersButton />
+        <p className="muted">
+          Manage individual papers on <Link href="/admin/past-papers">Past papers</Link>.
+        </p>
       </section>
 
       <section className="panel">

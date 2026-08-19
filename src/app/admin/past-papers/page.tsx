@@ -12,7 +12,7 @@ import { paperHasFile } from "@/lib/past-papers/availability";
 import { PHASE1_SYLLABUS_CODE } from "@/lib/past-papers/constants";
 import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
 import { AdminPastPaperFeeForm, AdminPastPaperUpload } from "@/components/AdminPastPapers";
-import { AdminActionButton } from "@/components/AdminActions";
+import { AdminActionButton, AdminSyncPastPapersButton } from "@/components/AdminActions";
 
 export const metadata = { title: "Past papers · Admin" };
 export const dynamic = "force-dynamic";
@@ -54,12 +54,17 @@ export default async function AdminPastPapersPage({
         <h1 className="page-title">Past papers</h1>
         <p className="muted">
           Catalog covers 2016–2025 for every subject and board. Upload a PDF to make a paper downloadable. {uploaded}{" "}
-          file{uploaded === 1 ? "" : "s"} in catalog.{" "}
+          file{uploaded === 1 ? "" : "s"} in catalog. Press <strong>Update past papers</strong> to refresh metadata from
+          Cloudflare R2.{" "}
           <Link href="/admin/past-papers/import">Auto import / R2 sync</Link>
           {" · "}
           <Link href="/admin/past-papers/imports">Import history</Link>
         </p>
       </div>
+      <section className="panel">
+        <h2>Update from Cloudflare R2</h2>
+        <AdminSyncPastPapersButton />
+      </section>
       <section className="panel">
         <h2>Download fee</h2>
         <AdminPastPaperFeeForm feePkr={feePkr} />
@@ -81,7 +86,7 @@ export default async function AdminPastPapersPage({
           </button>
         </form>
         {r2Papers.length === 0 ? (
-          <p className="muted">No R2-backed papers for {code}. Use Import → Sync from R2 (0620).</p>
+          <p className="muted">No R2-backed papers for {code}. Press Update past papers above, or use Import.</p>
         ) : (
           <div className="table-wrap">
             <table className="table">

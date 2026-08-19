@@ -629,6 +629,60 @@ export function AdminSyncSubjectsButton() {
   );
 }
 
+export function AdminSyncPastPapersButton() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [ok, setOk] = useState("");
+
+  async function run() {
+    setBusy(true);
+    setError("");
+    setOk("");
+    try {
+      const data = (await postAdmin({ action: "past_paper_sync" })) as {
+        created?: number;
+        updated?: number;
+        unchanged?: number;
+        skipped?: number;
+        listed?: number;
+        total?: number;
+        warning?: string;
+      };
+      const created = Number(data.created || 0);
+      const updated = Number(data.updated || 0);
+      const unchanged = Number(data.unchanged || 0);
+      const skipped = Number(data.skipped || 0);
+      const listed = Number(data.listed || 0);
+      const total = Number(data.total || 0);
+      const parts = [
+        `Past papers updated from Cloudflare R2. ${created} added, ${updated} refreshed, ${unchanged} already current, ${total} total.`,
+      ];
+      if (listed) parts.push(`Listed ${listed} object${listed === 1 ? "" : "s"} in the bucket.`);
+      if (skipped) parts.push(`${skipped} non-paper file${skipped === 1 ? "" : "s"} skipped.`);
+      if (data.warning) parts.push(data.warning);
+      setOk(parts.join(" "));
+      window.setTimeout(() => window.location.reload(), 900);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update past papers");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="stack-form">
+      <p className="muted">
+        Lists PDFs in Cloudflare R2 (<code>cambridge/</code> and optional <code>R2_PREFIX</code>) and upserts catalog
+        rows. Files stay in R2 — this does not download or re-upload them. Existing papers are not deleted.
+      </p>
+      <button className="btn" type="button" disabled={busy} onClick={run}>
+        {busy ? "Updating…" : "Update past papers"}
+      </button>
+      {ok && <p className="success">{ok}</p>}
+      {error && <p className="form-error">{error}</p>}
+    </div>
+  );
+}
+
 export function AdminSubjectCreateForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

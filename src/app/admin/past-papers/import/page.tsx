@@ -27,8 +27,9 @@ export default async function AdminPastPaperImportPage() {
         <h1 className="page-title">Past paper auto import</h1>
         <p className="muted">
           Upload PDFs you are allowed to host, or paste specific HTTPS PDF URLs. Cambridge filenames such as
-          0620_s24_qp_42.pdf are parsed automatically. Board websites are not scraped. Chemistry 0620 files already
-          in Cloudflare R2 should be synced with the metadata-only form below — do not re-upload those PDFs.
+          0620_s24_qp_42.pdf are parsed automatically. Board websites are not scraped. To refresh every paper already
+          in Cloudflare R2, use <Link href="/admin/past-papers">Update past papers</Link> on the past papers page —
+          that upserts catalog rows without downloading files. The form below is a dry-run for Chemistry 0620 only.
         </p>
       </div>
       <R2ManifestImportClient />

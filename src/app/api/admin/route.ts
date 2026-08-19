@@ -5,6 +5,7 @@ import { AdminActionError, runAdminAction } from "@/lib/admin-actions";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 export async function GET() {
   if (!(await requireAdmin())) {
