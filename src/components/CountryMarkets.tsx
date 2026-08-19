@@ -28,7 +28,30 @@ function CountryMarketCard({
       <div className="country-market-head">
         <div>
           <h3>{country.name}</h3>
-          <p className="muted">{country.cities.join(" · ")}</p>
+          <p className="muted">
+            {country.cities.slice(0, 3).map((c, i) => (
+              <span key={c}>
+                <Link
+                  href={`/search?country=${encodeURIComponent(country.name)}&location=${encodeURIComponent(c)}`}
+                  className="city-chip-link"
+                >
+                  {c}
+                </Link>
+                {i < Math.min(2, country.cities.length - 1) && " · "}
+              </span>
+            ))}
+            {country.cities.length > 3 && (
+              <>
+                {" "}
+                <Link
+                  href={`/search?country=${encodeURIComponent(country.name)}`}
+                  className="city-more-link"
+                >
+                  +{country.cities.length - 3} more cities — search →
+                </Link>
+              </>
+            )}
+          </p>
         </div>
       </div>
       <div className="subject-chips country-subject-chips">
