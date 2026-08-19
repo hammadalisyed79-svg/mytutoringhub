@@ -2,6 +2,8 @@ import { headers } from "next/headers";
 import { PricingPlans } from "@/components/PricingPlans";
 import { getPricingForCountry } from "@/lib/pricing";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Plans & Pricing – Student Pass and Tutor Subscriptions",
   description:
@@ -12,6 +14,7 @@ export const metadata = {
 export default async function PricingPage() {
   const headersList = await headers();
   const countryCode = headersList.get("x-vercel-ip-country") ?? "GB";
+  console.log("[pricing] x-vercel-ip-country header value:", countryCode);
   const pricing = getPricingForCountry(countryCode);
 
   return (

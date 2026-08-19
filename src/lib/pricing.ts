@@ -153,8 +153,8 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
 };
 
 export const DEFAULT_PRICING: PricingEntry = {
-  currency: "USD",
-  currencySymbol: "$",
+  currency: "GBP",
+  currencySymbol: "£",
   countryName: "your region",
   tagline: "Join tutors & students in 50+ countries",
   tutorPro: { monthly: 9.99, annual: 95.88 },
@@ -187,5 +187,5 @@ export const SUPPORTED_COUNTRIES = [
   { code: "US", label: "United States (USD)" },
   { code: "CA", label: "Canada (CAD)" },
   { code: "AU", label: "Australia (AUD)" },
-  { code: "DEFAULT", label: "Rest of world (USD)" },
+  { code: "DEFAULT", label: "Rest of world (GBP)" },
 ];
