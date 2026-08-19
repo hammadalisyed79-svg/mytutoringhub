@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:past-papers": "tsx src/lib/past-papers/past-papers.test.ts",
+    "test:safepay": "tsx src/lib/safepay.test.ts",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",

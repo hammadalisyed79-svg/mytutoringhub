@@ -11,7 +11,13 @@ import {
   toSafepayMinorUnits,
   type CurrencyCode,
 } from "@/lib/currency";
-import { getSafepayClient, getSafepayEnv, safepayConfigured } from "@/lib/safepay";
+import {
+  checkoutAppUrl,
+  createSafepayHostedCheckout,
+  getSafepayEnv,
+  safepayConfigured,
+  safepayPublicError,
+} from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 import { z } from "zod";
 
@@ -61,7 +67,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = checkoutAppUrl(req);
 
   if (def.isComplimentary) {
     const granted = await grantComplimentaryPlan({ userId: session.user.id, plan: def });
@@ -86,39 +92,19 @@ export async function POST(req: Request) {
   const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
   const amountMajor = pkrToCurrency(def.chargePricePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
-  const apiKey = process.env.SAFEPAY_API_KEY!;
-  const safepay = getSafepayClient();
-  const env = getSafepayEnv();
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
+  }
   const orderId = `mth_${plan}_${Date.now()}`;
 
   try {
-    const paymentSession = await safepay.payments.session.setup({
-      merchant_api_key: apiKey,
-      intent: process.env.SAFEPAY_INTENT || "CYBERSOURCE",
-      mode: "payment",
-      entry_mode: "raw",
-      currency,
+    const { url, tracker } = await createSafepayHostedCheckout({
       amount,
-      metadata: {
-        order_id: orderId,
-      },
-      include_fees: false,
+      currency,
+      orderId,
+      redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}`,
+      cancelUrl: `${appUrl}/pricing?checkout=cancel`,
     });
-
-    const tracker = paymentSession?.data?.tracker?.token as string | undefined;
-    if (!tracker) {
-      console.error("Safepay session response missing tracker", paymentSession);
-      return NextResponse.json({ error: "Could not create Safepay session" }, { status: 502 });
-    }
-
-    const passport = await safepay.client.passport.create();
-    const tbt = (typeof passport?.data === "string" ? passport.data : passport?.data?.token) as
-      | string
-      | undefined;
-    if (!tbt) {
-      console.error("Safepay passport response missing token", passport);
-      return NextResponse.json({ error: "Could not create Safepay auth token" }, { status: 502 });
-    }
 
     await reconcileUserSafepayPayments(session.user.id);
 
@@ -148,20 +134,9 @@ export async function POST(req: Request) {
       },
     });
 
-    const url = safepay.checkout.createCheckoutUrl({
-      env,
-      tracker,
-      tbt,
-      source: "hosted",
-      order_id: orderId,
-      redirect_url: `${appUrl}/api/safepay/complete?plan=${plan}`,
-      cancel_url: `${appUrl}/pricing?checkout=cancel`,
-    });
-
     return NextResponse.json({ url, tracker, provider: "safepay", currency, amount });
   } catch (err) {
     console.error("Safepay checkout error", err);
-    const message = err instanceof Error ? err.message : "Safepay checkout failed";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json({ error: safepayPublicError(err) }, { status: 502 });
   }
 }

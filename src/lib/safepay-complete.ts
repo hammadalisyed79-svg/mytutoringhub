@@ -104,6 +104,48 @@ export async function activatePaidSafepaySubscription(opts: {
   return { ok: true as const, subscription: updated, alreadyActive: false };
 }
 
+export async function activatePaidPastPaperPurchase(tracker: string) {
+  const existing = await prisma.pastPaperPurchase.findUnique({ where: { tracker } });
+  if (!existing) return { ok: false as const };
+  if (existing.status !== "PAID") {
+    await prisma.pastPaperPurchase.update({
+      where: { id: existing.id },
+      data: { status: "PAID" },
+    });
+  }
+  return { ok: true as const, catalogKey: existing.catalogKey };
+}
+
+export async function reconcileUserSafepayPaperPurchases(userId: string) {
+  if (!safepayConfigured()) return [];
+
+  const pending = await prisma.pastPaperPurchase.findMany({
+    where: {
+      userId,
+      status: "PENDING",
+      tracker: { startsWith: "track_" },
+      createdAt: { gte: new Date(Date.now() - 30 * 86400000) },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 12,
+  });
+
+  const unlocked: string[] = [];
+  for (const row of pending) {
+    const tracker = row.tracker;
+    if (!tracker) continue;
+    try {
+      const { state, report, tracker: token } = await fetchSafepayTrackerState(tracker);
+      if (!isSafepayTrackerPaid(state, report)) continue;
+      const result = await activatePaidPastPaperPurchase(token);
+      if (result.ok) unlocked.push(result.catalogKey);
+    } catch (err) {
+      console.error("Safepay paper reconcile failed", tracker, err);
+    }
+  }
+  return unlocked;
+}
+
 /** Activate any INCOMPLETE Safepay checkouts that already succeeded at the processor. */
 export async function reconcileUserSafepayPayments(userId: string) {
   if (!safepayConfigured()) return [];

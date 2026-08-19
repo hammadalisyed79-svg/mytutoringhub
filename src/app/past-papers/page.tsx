@@ -32,6 +32,7 @@ import { paperHasFile, publicAvailabilityWhere } from "@/lib/past-papers/availab
 import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
 import { getUserCountry } from "@/lib/geo";
+import { reconcileUserSafepayPaperPurchases } from "@/lib/safepay-complete";
 
 export const metadata = {
   title: "Past Papers – GCSE, A-Level, IGCSE & IB Free Download",
@@ -73,6 +74,9 @@ export default async function PastPapersPage({
 }) {
   const sp = await searchParams;
   const session = await auth();
+  if (session?.user) {
+    await reconcileUserSafepayPaperPurchases(session.user.id);
+  }
   const currency = await getVisitorCurrency();
   const pinnedCountry = getUserCountry(await headers());
   const feePkr = await getPastPaperFeePkr();

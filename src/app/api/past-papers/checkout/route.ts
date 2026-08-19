@@ -12,7 +12,13 @@ import {
   toSafepayMinorUnits,
   type CurrencyCode,
 } from "@/lib/currency";
-import { getSafepayClient, getSafepayEnv, safepayConfigured } from "@/lib/safepay";
+import {
+  checkoutAppUrl,
+  createSafepayHostedCheckout,
+  getSafepayEnv,
+  safepayConfigured,
+  safepayPublicError,
+} from "@/lib/safepay";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
   }
 
   const feePkr = await getPastPaperFeePkr();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = checkoutAppUrl(req);
 
   if (feePkr === 0 || session.user.role === "ADMIN") {
     await prisma.pastPaperPurchase.create({
@@ -91,35 +97,19 @@ export async function POST(req: Request) {
   const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
   const amountMajor = pkrToCurrency(feePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
-  const apiKey = process.env.SAFEPAY_API_KEY!;
-  const safepay = getSafepayClient();
-  const env = getSafepayEnv();
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
+  }
   const orderId = `mth_paper_${Date.now()}`;
 
   try {
-    const paymentSession = await safepay.payments.session.setup({
-      merchant_api_key: apiKey,
-      intent: process.env.SAFEPAY_INTENT || "CYBERSOURCE",
-      mode: "payment",
-      entry_mode: "raw",
-      currency,
+    const { url, tracker } = await createSafepayHostedCheckout({
       amount,
-      metadata: { order_id: orderId, catalog_key: catalogKey },
-      include_fees: false,
+      currency,
+      orderId,
+      redirectUrl: `${appUrl}/api/safepay/complete?kind=paper&key=${encodeURIComponent(catalogKey)}`,
+      cancelUrl: `${appUrl}/past-papers?checkout=cancel&subject=${encodeURIComponent(listing?.subject || paper.subject)}`,
     });
-
-    const tracker = paymentSession?.data?.tracker?.token as string | undefined;
-    if (!tracker) {
-      return NextResponse.json({ error: "Could not create Safepay session" }, { status: 502 });
-    }
-
-    const passport = await safepay.client.passport.create();
-    const tbt = (typeof passport?.data === "string" ? passport.data : passport?.data?.token) as
-      | string
-      | undefined;
-    if (!tbt) {
-      return NextResponse.json({ error: "Could not create Safepay auth token" }, { status: 502 });
-    }
 
     await prisma.pastPaperPurchase.create({
       data: {
@@ -132,20 +122,9 @@ export async function POST(req: Request) {
       },
     });
 
-    const url = safepay.checkout.createCheckoutUrl({
-      env,
-      tracker,
-      tbt,
-      source: "hosted",
-      order_id: orderId,
-      redirect_url: `${appUrl}/api/safepay/complete?kind=paper&key=${encodeURIComponent(catalogKey)}`,
-      cancel_url: `${appUrl}/past-papers?checkout=cancel&subject=${encodeURIComponent(listing?.subject || paper.subject)}`,
-    });
-
     return NextResponse.json({ url, tracker, provider: "safepay", currency, amount });
   } catch (err) {
     console.error("Past paper checkout error", err);
-    const message = err instanceof Error ? err.message : "Checkout failed";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json({ error: safepayPublicError(err) }, { status: 502 });
   }
 }

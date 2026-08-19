@@ -10,7 +10,10 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
-import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
+import {
+  reconcileUserSafepayPaperPurchases,
+  reconcileUserSafepayPayments,
+} from "@/lib/safepay-complete";
 import { curriculumLevels } from "@/lib/curriculum";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 
@@ -34,7 +37,10 @@ export default async function DashboardPage({
   if (session.user.role === "ADMIN") redirect("/admin");
   const sp = await searchParams;
 
-  const justActivated = await reconcileUserSafepayPayments(session.user.id);
+  const [justActivated] = await Promise.all([
+    reconcileUserSafepayPayments(session.user.id),
+    reconcileUserSafepayPaperPurchases(session.user.id),
+  ]);
   if (session.user.role === "TUTOR") {
     await syncTutorBadges(session.user.id);
   }

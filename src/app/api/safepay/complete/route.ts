@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { safepayConfigured } from "@/lib/safepay";
+import { checkoutAppUrl, safepayConfigured } from "@/lib/safepay";
 import {
+  activatePaidPastPaperPurchase,
   activatePaidSafepaySubscription,
   fetchSafepayTrackerState,
   isSafepayTrackerPaid,
 } from "@/lib/safepay-complete";
-import { prisma } from "@/lib/prisma";
 import type { SubscriptionPlan } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ export const runtime = "nodejs";
  * Safepay redirects here after hosted checkout with ?tracker=track_...
  */
 export async function GET(req: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = checkoutAppUrl(req);
   const { searchParams } = new URL(req.url);
   const tracker = searchParams.get("tracker");
   const planHint = searchParams.get("plan") as SubscriptionPlan | null;
@@ -39,16 +39,10 @@ export async function GET(req: Request) {
   try {
     const { state, report, tracker: token } = await fetchSafepayTrackerState(tracker);
     if (isSafepayTrackerPaid(state, report)) {
-      const paperPurchase = await prisma.pastPaperPurchase.findUnique({ where: { tracker: token } });
-      if (paperPurchase) {
-        if (paperPurchase.status !== "PAID") {
-          await prisma.pastPaperPurchase.update({
-            where: { id: paperPurchase.id },
-            data: { status: "PAID" },
-          });
-        }
+      const paper = await activatePaidPastPaperPurchase(token);
+      if (paper.ok) {
         return NextResponse.redirect(
-          `${appUrl}/past-papers?checkout=success&key=${encodeURIComponent(paperPurchase.catalogKey)}`,
+          `${appUrl}/past-papers?checkout=success&key=${encodeURIComponent(paper.catalogKey)}`,
         );
       }
     }
