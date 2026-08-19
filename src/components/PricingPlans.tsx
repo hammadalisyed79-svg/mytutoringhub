@@ -181,11 +181,6 @@ export function PricingPlans({ pricing: initialPricing }: Props) {
         </div>
 
         <div className="pricing-control-card">
-          {/* Currency / location banner */}
-          <p className="pricing-location-hint">
-            Prices shown in {pricing.currency} for {pricing.countryName}
-          </p>
-
           <div className="pricing-toggle" role="tablist" aria-label="Billing cycle">
             <button
               type="button"
