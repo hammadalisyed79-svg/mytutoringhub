@@ -14,6 +14,26 @@ const ALLOWED = new Set([
   "application/pdf",
 ]);
 
+const EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  pdf: "application/pdf",
+};
+
+function extFromName(name: string): string {
+  const dot = name.lastIndexOf(".");
+  return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
+}
+
+function resolveContentType(file: File): string | null {
+  if (file.type && ALLOWED.has(file.type)) return file.type;
+  const mime = EXT_TO_MIME[extFromName(file.name)];
+  return mime && ALLOWED.has(mime) ? mime : null;
+}
+
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) {
@@ -35,7 +55,8 @@ export async function POST(req: Request) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: "File must be under 2MB" }, { status: 400 });
   }
-  if (!ALLOWED.has(file.type)) {
+  const contentType = resolveContentType(file);
+  if (!contentType) {
     return NextResponse.json(
       { error: "Only images (JPEG, PNG, WebP, GIF) and PDF are allowed" },
       { status: 400 },
@@ -43,14 +64,14 @@ export async function POST(req: Request) {
   }
 
   const ext =
-    file.type === "application/pdf"
+    contentType === "application/pdf"
       ? "pdf"
-      : file.type.split("/")[1]?.replace("jpeg", "jpg") || "bin";
+      : contentType.split("/")[1]?.replace("jpeg", "jpg") || extFromName(file.name) || "bin";
   const pathname = `uploads/${session.user.id}/${Date.now()}.${ext}`;
 
   const blob = await put(pathname, file, {
     access: "public",
-    contentType: file.type,
+    contentType,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 

@@ -49,6 +49,59 @@ type Initial = {
 
 const TIMES = availabilityTimeOptions();
 
+const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+function photoExt(name: string): string {
+  const dot = name.lastIndexOf(".");
+  return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
+}
+
+function validatePhotoFile(file: File): string | null {
+  if (file.size > PHOTO_MAX_BYTES) {
+    return "Photo must be under 2 MB.";
+  }
+  const ext = photoExt(file.name);
+  if (ext === "heic" || ext === "heif") {
+    return "HEIC photos aren't supported. Save as JPEG or PNG and try again.";
+  }
+  const mime = file.type.toLowerCase();
+  if (mime && PHOTO_MIMES.has(mime)) return null;
+  if (ext && PHOTO_EXTENSIONS.has(ext)) return null;
+  return "Use JPEG, PNG, WebP, or GIF.";
+}
+
+async function parseUploadResponse(
+  res: Response,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  let data: { error?: string; url?: string } | null = null;
+  try {
+    data = await res.json();
+  } catch {
+    if (res.status === 503) {
+      return {
+        ok: false,
+        error: "Photo uploads aren't available right now (storage not configured). Paste a photo link below.",
+      };
+    }
+    return { ok: false, error: `Upload failed (${res.status}). Try again or paste a photo link.` };
+  }
+  if (!res.ok) {
+    if (res.status === 503) {
+      return {
+        ok: false,
+        error: "Photo uploads aren't available right now (storage not configured). Paste a photo link below.",
+      };
+    }
+    return { ok: false, error: data?.error || `Upload failed (${res.status}).` };
+  }
+  if (!data?.url) {
+    return { ok: false, error: "Upload succeeded but no URL was returned." };
+  }
+  return { ok: true, url: data.url };
+}
+
 export function TutorProfileForm({
   initial,
   subjects: catalogSubjects,
@@ -66,6 +119,8 @@ export function TutorProfileForm({
 
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
   const [uploading, setUploading] = useState(false);
@@ -169,21 +224,28 @@ export function TutorProfileForm({
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError("");
+    setPhotoError("");
+    setPhotoMsg("");
+    const validationError = validatePhotoFile(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      e.target.value = "";
+      return;
+    }
     setUploading(true);
     try {
       const fd = new FormData();
       fd.set("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Photo upload failed");
+      const result = await parseUploadResponse(res);
+      if (!result.ok) {
+        setPhotoError(result.error);
         return;
       }
-      setPhotoUrl(data.url);
-      setMsg("Photo updated. Save profile to keep it on your listing.");
+      setPhotoUrl(result.url);
+      setPhotoMsg("Photo updated. Save profile to keep it on your listing.");
     } catch {
-      setError("Photo upload failed");
+      setPhotoError("Photo upload failed. Check your connection and try again.");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -263,6 +325,7 @@ export function TutorProfileForm({
           <div className="profile-photo-hero-copy">
             <h3>Display picture</h3>
             <p className="field-hint">Shown at the top of your public listing. Change it whenever you like.</p>
+            <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB · square works best</p>
             <button
               className="btn btn-secondary btn-sm"
               type="button"
@@ -271,7 +334,15 @@ export function TutorProfileForm({
             >
               {uploading ? "Uploading…" : photoUrl ? "Edit photo" : "Add photo"}
             </button>
-            <input ref={photoInput} type="file" accept="image/*" onChange={onFile} hidden />
+            <input
+              ref={photoInput}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+              onChange={onFile}
+              hidden
+            />
+            {photoError && <p className="form-error">{photoError}</p>}
+            {photoMsg && <p className="success">{photoMsg}</p>}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input
