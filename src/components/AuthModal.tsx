@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 export function AuthModalFrame({
@@ -39,7 +40,7 @@ export function AuthModalFrame({
     };
   }, [dismiss]);
 
-  return (
+  const modal = (
     <div className="auth-modal-page">
       <button type="button" className="auth-modal-scrim" aria-label="Close" onClick={dismiss} />
       <div className="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby={titleId}>
@@ -53,6 +54,15 @@ export function AuthModalFrame({
       </div>
     </div>
   );
+
+  // SiteNav mounts this inside the sticky header. backdrop-filter + z-index make
+  // that header the containing block for position:fixed, so on mobile the login
+  // overlay is clipped to the header strip and the hero stays visible. Portal out.
+  if (onClose && typeof document !== "undefined") {
+    return createPortal(modal, document.body);
+  }
+
+  return modal;
 }
 
 function CloseIcon() {
