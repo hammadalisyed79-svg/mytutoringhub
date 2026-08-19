@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -10,6 +11,9 @@ import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 import { formatTutorPlace } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
+import { getUserCountry } from "@/lib/geo";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Find Private Tutors – GCSE, A-Level, IGCSE, IB & More",
@@ -44,6 +48,7 @@ function searchQuery(sp: Record<string, string | undefined>, page: number) {
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const currency = await getVisitorCurrency();
+  const pinnedCountry = getUserCountry(await headers());
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -95,6 +100,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           levels={curriculumLevels()}
           codes={curriculumCodeOptions()}
           currency={currency}
+          pinnedCountry={pinnedCountry}
         />
 
         <div className="search-quick" aria-label="Popular subjects">

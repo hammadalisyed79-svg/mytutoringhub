@@ -37,6 +37,7 @@ type Props = {
   levels: string[];
   codes: CurriculumCodeOption[];
   currency: string;
+  pinnedCountry?: string | null;
 };
 
 function initialCountryValue(initial: Props["initial"]) {
@@ -45,8 +46,12 @@ function initialCountryValue(initial: Props["initial"]) {
   return inferTutorCountry(initial.location, initial.country);
 }
 
-export function SearchFiltersForm({ initial, subjects, levels, codes, currency }: Props) {
-  const countries = useMemo(() => countryChoices(), []);
+export function SearchFiltersForm({ initial, subjects, levels, codes, currency, pinnedCountry }: Props) {
+  const countries = useMemo(() => {
+    const all = countryChoices();
+    if (!pinnedCountry) return all;
+    return [pinnedCountry, ...all.filter((c) => c !== pinnedCountry)];
+  }, [pinnedCountry]);
   const [q, setQ] = useState(initial.q || "");
   const [subject, setSubject] = useState(initial.subject || "");
   const [country, setCountry] = useState(initialCountryValue(initial));

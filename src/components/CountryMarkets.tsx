@@ -71,9 +71,21 @@ function CountryMarketCard({
   );
 }
 
-export function CountryMarkets({ compact = false }: { compact?: boolean }) {
-  const featured = compact ? homepageFeaturedCountries() : TOP_COUNTRIES;
-  const rest = compact ? otherMarketCountries() : [];
+export function CountryMarkets({
+  compact = false,
+  pinnedCountry,
+}: {
+  compact?: boolean;
+  pinnedCountry?: string | null;
+}) {
+  const featured = useMemo(() => {
+    const base = compact ? homepageFeaturedCountries() : TOP_COUNTRIES;
+    if (!pinnedCountry) return base;
+    const pinned = base.find((c) => c.name === pinnedCountry) || TOP_COUNTRIES.find((c) => c.name === pinnedCountry);
+    if (!pinned) return base;
+    return [pinned, ...base.filter((c) => c.name !== pinnedCountry)];
+  }, [compact, pinnedCountry]);
+  const rest = compact ? otherMarketCountries().filter((c) => c.name !== pinnedCountry) : [];
   const [query, setQuery] = useState("");
   const [selectedCode, setSelectedCode] = useState("");
 

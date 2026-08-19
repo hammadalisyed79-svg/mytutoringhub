@@ -12,14 +12,18 @@ export type CurriculumEntry = {
 
 export const CURRICULUM = catalog as CurriculumEntry[];
 
-export function curriculumCountries() {
+export function curriculumCountries(pinnedFirst?: string | null) {
   const fromCurriculum = new Set(CURRICULUM.map((row) => row.country));
-  const allNames = [...new Set([...fromCurriculum, ...TOP_COUNTRIES.map((c) => c.name)])];
-  return allNames.sort((a, b) => {
+  const names = [...fromCurriculum].sort((a, b) => {
+    if (pinnedFirst) {
+      if (a === pinnedFirst) return -1;
+      if (b === pinnedFirst) return 1;
+    }
     if (a === "Pakistan") return -1;
     if (b === "Pakistan") return 1;
     return a.localeCompare(b);
   });
+  return names;
 }
 
 export function uniqueCurriculumSubjects() {

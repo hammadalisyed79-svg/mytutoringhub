@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { JsonLd } from "@/components/JsonLd";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,7 @@ import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
 import { paperHasFile, publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
+import { getUserCountry } from "@/lib/geo";
 
 export const metadata = {
   title: "Past Papers – GCSE, A-Level, IGCSE & IB Free Download",
@@ -72,10 +74,11 @@ export default async function PastPapersPage({
   const sp = await searchParams;
   const session = await auth();
   const currency = await getVisitorCurrency();
+  const pinnedCountry = getUserCountry(await headers());
   const feePkr = await getPastPaperFeePkr();
   const feeLabel = feePkr === 0 ? "Free" : formatPlanPrice(feePkr, currency);
   const subjects = pastPaperSubjects();
-  const countries = curriculumCountries();
+  const countries = curriculumCountries(pinnedCountry);
   const country = countries.find((name) => name === sp.country) || "";
   const boardsForCountry = country ? curriculumBoardsForCountry(country) : [];
   const board = boardsForCountry.find((name) => name === sp.board) || "";

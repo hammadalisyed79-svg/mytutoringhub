@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { LogoMark } from "@/components/Logo";
@@ -8,6 +9,9 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS, SUBJECT_CATEGORIES, TESTIMONIALS } from "@/lib/marketing";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
+import { getUserCountry } from "@/lib/geo";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "MyTutoringHub – Find Expert Tutors Online Worldwide",
@@ -20,6 +24,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.c
 
 export default async function HomePage() {
   const currency = await getVisitorCurrency();
+  const pinnedCountry = getUserCountry(await headers());
   const [tutorCount, studentCount, openAds, pastPaperCount] = await Promise.all([
     prisma.tutorProfile.count({ where: { active: true } }),
     prisma.user.count({ where: { role: "STUDENT" } }),
@@ -227,7 +232,7 @@ export default async function HomePage() {
             Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — top 8 markets on the
             homepage, plus 42 more countries to browse. Open a chip to search tutors in that country.
           </p>
-          <CountryMarkets compact />
+          <CountryMarkets compact pinnedCountry={pinnedCountry} />
           <p className="section-actions">
             <Link href="/subjects" className="btn btn-secondary">
               Browse subject codes

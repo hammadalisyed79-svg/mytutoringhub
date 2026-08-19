@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { SUBJECT_CATEGORIES } from "@/lib/marketing";
 import { CurriculumBrowser } from "@/components/CurriculumBrowser";
@@ -8,6 +9,9 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { subjectCode } from "@/lib/markets";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { CURRICULUM } from "@/lib/curriculum";
+import { getUserCountry } from "@/lib/geo";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Subjects",
@@ -33,6 +37,7 @@ export default async function SubjectsPage({
   searchParams: Promise<{ country?: string; q?: string; tab?: string }>;
 }) {
   const currency = await getVisitorCurrency();
+  const pinnedCountry = getUserCountry(await headers());
   const { country, q, tab } = await searchParams;
   const showCodes = tab === "codes";
   const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
@@ -62,7 +67,7 @@ export default async function SubjectsPage({
               {CURRICULUM.length.toLocaleString()} subject codes from national boards, Cambridge, IB,
               and other curricula. Pick a country, then open a code to find tutors.
             </p>
-            <CurriculumBrowser country={country} query={q} />
+            <CurriculumBrowser country={country} query={q} pinnedCountry={pinnedCountry} />
           </section>
         ) : (
           <>

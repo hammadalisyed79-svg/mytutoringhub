@@ -5,11 +5,13 @@ import { countryByName } from "@/lib/markets";
 export function CurriculumBrowser({
   country,
   query = "",
+  pinnedCountry,
 }: {
   country?: string;
   query?: string;
+  pinnedCountry?: string | null;
 }) {
-  const countries = curriculumCountries();
+  const countries = curriculumCountries(pinnedCountry);
   const selected =
     countries.find((name) => name.toLowerCase() === (country || "").toLowerCase()) ||
     countries[0] ||
