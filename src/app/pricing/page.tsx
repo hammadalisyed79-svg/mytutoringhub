@@ -2,12 +2,14 @@ import { auth } from "@/lib/auth";
 import { formatPromoUntil, getLivePlans, getPlan } from "@/lib/plans";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
+import { PaymentsComingSoonBanner } from "@/components/PaymentsComingSoonBanner";
 import { PricingPlansClient } from "@/components/PricingPlansClient";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { prisma } from "@/lib/prisma";
 import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { pageMetadata } from "@/lib/seo";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +48,7 @@ export default async function PricingPage({
     session?.user &&
     session.user.role !== "ADMIN" &&
     (sp.verify === "sent" || !me?.emailVerified);
+  const paidCheckoutLive = isPaidCheckoutLive();
 
   return (
     <div className="page checkout-page">
@@ -56,17 +59,21 @@ export default async function PricingPage({
             <h1 className="page-title">Plans & pricing</h1>
             <p className="section-lead">
               {VALUE_PROPOSITION} Prices shown in <strong>{currency}</strong>.{" "}
-              {STUDENT_PASS_PAPERS_LINE} There is no shopping cart — choose a plan and pay on
-              Safepay in one step.
+              {STUDENT_PASS_PAPERS_LINE}{" "}
+              {paidCheckoutLive
+                ? "There is no shopping cart — choose a plan and pay on Safepay in one step."
+                : "Card checkout is opening soon — free and complimentary plans work now; paid plans can be activated by email."}
             </p>
             <ValuePropStrip />
           </div>
           <ol className="checkout-steps" aria-label="Checkout steps">
             <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>
             <li className={session?.user ? "is-current" : ""}>2. Choose plan</li>
-            <li>3. Pay on Safepay</li>
+            <li>{paidCheckoutLive ? "3. Pay on Safepay" : "3. Pay (coming soon)"}</li>
           </ol>
         </div>
+
+        {!paidCheckoutLive && <PaymentsComingSoonBanner />}
 
         {liveOffer && (
           <aside className="promo-banner">
@@ -79,10 +86,21 @@ export default async function PricingPage({
         )}
 
         <div className="checkout-trust-bar">
-          <span>256-bit encrypted checkout</span>
-          <span>Email confirmation</span>
-          <span>Works worldwide</span>
-          <span>No cart — one-click plan checkout</span>
+          {paidCheckoutLive ? (
+            <>
+              <span>256-bit encrypted checkout</span>
+              <span>Email confirmation</span>
+              <span>Works worldwide</span>
+              <span>No cart — one-click plan checkout</span>
+            </>
+          ) : (
+            <>
+              <span>Free tutor listings</span>
+              <span>Complimentary Tutor Basic</span>
+              <span>Manual plan activation by email</span>
+              <span>Card checkout opening soon</span>
+            </>
+          )}
         </div>
 
         <CheckoutNotice
@@ -105,8 +123,9 @@ export default async function PricingPage({
 
         {!session?.user && (
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
-            Join free, then pay on Safepay from the plan you pick. Signed-in accounts never go back
-            to register — checkout starts here.
+            {paidCheckoutLive
+              ? "Join free, then pay on Safepay from the plan you pick. Signed-in accounts never go back to register — checkout starts here."
+              : "Join free first. Complimentary Tutor Basic activates without payment; other paid plans — email us until card checkout is live."}
           </p>
         )}
 
@@ -115,6 +134,7 @@ export default async function PricingPage({
           addOns={addOns}
           currency={currency}
           signedIn={Boolean(session?.user)}
+          paidCheckoutLive={paidCheckoutLive}
         />
       </div>
     </div>

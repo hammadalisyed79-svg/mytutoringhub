@@ -6,6 +6,7 @@ import { formatPromoUntil } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
+import { manualPlanActivationMailto } from "@/lib/payments-status";
 
 function PlanActions({
   plan,
@@ -13,14 +14,30 @@ function PlanActions({
   signedIn,
   featured,
   billing,
+  paidCheckoutLive,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
   signedIn: boolean;
   featured?: boolean;
   billing: "monthly" | "annual";
+  paidCheckoutLive: boolean;
 }) {
   if (signedIn) {
+    if (!paidCheckoutLive && !plan.isComplimentary) {
+      return (
+        <div className="checkout-action">
+          <a
+            className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
+            href={manualPlanActivationMailto(plan.name)}
+          >
+            Email to activate {plan.name}
+          </a>
+          <p className="checkout-trust muted">Card checkout opening soon · Manual activation available</p>
+        </div>
+      );
+    }
+
     return (
       <SubscribeButton
         plan={plan.id}
@@ -118,11 +135,13 @@ export function PricingPlansClient({
   addOns,
   currency,
   signedIn,
+  paidCheckoutLive,
 }: {
   corePlans: ResolvedPlan[];
   addOns: ResolvedPlan[];
   currency: CurrencyCode;
   signedIn: boolean;
+  paidCheckoutLive: boolean;
 }) {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const hasAnnual = corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null);
@@ -201,6 +220,7 @@ export function PricingPlansClient({
                   signedIn={signedIn}
                   featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
                   billing={billing}
+                  paidCheckoutLive={paidCheckoutLive}
                 />
               </div>
             </article>
@@ -213,7 +233,7 @@ export function PricingPlansClient({
           <h2 className="checkout-section-title">Tutor add-ons</h2>
           <p className="muted" style={{ marginTop: "-0.4rem", marginBottom: "1rem" }}>
             Optional visibility upgrades. Verified badge, highlight, boost, and extra ads are billed
-            separately on Safepay (one-time or monthly as shown).
+            separately{paidCheckoutLive ? " on Safepay" : ""} (one-time or monthly as shown).
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (
@@ -237,6 +257,7 @@ export function PricingPlansClient({
                     currency={currency}
                     signedIn={signedIn}
                     billing="monthly"
+                    paidCheckoutLive={paidCheckoutLive}
                   />
                 </div>
               </article>
