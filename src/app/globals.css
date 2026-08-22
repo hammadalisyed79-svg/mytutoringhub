@@ -3029,6 +3029,7 @@ select:focus {
   padding: 0;
   border-bottom: none;
   gap: 0;
+  align-items: stretch;
 }
 
 .tc-card-main {
@@ -3086,14 +3087,6 @@ select:focus {
   height: 4.75rem;
 }
 
-.tc-avatar-card {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  border-radius: 0;
-  font-size: 3rem;
-}
-
 .tc-card-grid .tc-star-badge {
   position: absolute;
   left: 0.65rem;
@@ -3138,6 +3131,22 @@ select:focus {
   color: var(--brand-deep);
   background: rgba(13,95,82,0.11);
   flex-shrink: 0;
+}
+
+.tc-card-grid .tc-avatar.tc-avatar-card {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+  font-size: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+}
+
+.tc-card-grid .tc-avatar.tc-avatar-card img {
+  object-fit: cover;
 }
 
 .tc-star-badge {
