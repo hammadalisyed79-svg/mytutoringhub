@@ -115,8 +115,8 @@ export function welcomeEmailHtml(name: string, role: string) {
   const roleLabel = role === "TUTOR" ? "tutor" : "student";
   const earnLine =
     role === "TUTOR"
-      ? `<p>Complete your profile to earn <strong>200 Hub Points</strong> (Rs 200 off plans and tutor ads). Invite others to earn <strong>50 points</strong> per successful referral.</p>`
-      : `<p>Invite friends to earn <strong>50 Hub Points</strong> (Rs 50 equivalent) when they join and message a tutor.</p>`;
+      ? `<p>Complete your profile to earn <strong>200 Hub Points</strong> toward plans and tutor ads. Invite others to earn <strong>50 points</strong> per successful referral.</p>`
+      : `<p>Invite friends to earn <strong>50 Hub Points</strong> when they join and message a tutor.</p>`;
   return emailLayout({
     preheader: "Your My Tutoring Hub account is ready — confirm your email to get started.",
     title: "Welcome aboard",
@@ -141,7 +141,7 @@ export function hubPointsEarnedEmailHtml(opts: {
     title: "Hub Points earned",
     body: `<p>Hi ${opts.name},</p>
 <p><strong>+${opts.points} Hub Points</strong> — ${escapeHtml(opts.reason)}</p>
-<p>Your balance is now <strong>${opts.balance.toLocaleString()} points</strong> (1 point = Rs 1 PKR).</p>
+<p>Your balance is now <strong>${opts.balance.toLocaleString()} points</strong> (shown in your local currency on the dashboard).</p>
 <p>Redeem on Student Pass, Student Pro, or tutor ads and subscriptions — up to 50% off each purchase.</p>`,
     cta: { label: "View your wallet", href: opts.dashboardUrl },
   });

@@ -27,7 +27,7 @@ export function PointsWalletPanel({
           </p>
           <h2 style={{ margin: "0.25rem 0 0" }}>{summary.balanceLabel}</h2>
           <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.92rem" }}>
-            1 point = Rs 1 PKR · redeem up to 50% on plans and tutor ads
+            {summary.pointValueLabel} · redeem up to 50% on plans and tutor ads
           </p>
           {expiryNote ? (
             <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.85rem" }}>

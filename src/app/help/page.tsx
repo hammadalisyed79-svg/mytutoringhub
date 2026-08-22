@@ -12,7 +12,7 @@ export const metadata = pageMetadata({
 const FAQS = [
   {
     q: "What are Hub Points?",
-    a: "Hub Points are platform credit (1 point = Rs 1 PKR). Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor ads on Pricing.",
+    a: "Hub Points are platform credit — each point converts to your local currency on Pricing. Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor ads on Pricing.",
   },
   {
     q: "What is free vs paid on My Tutoring Hub?",

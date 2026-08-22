@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import {
-  formatPlanPrice,
+  formatMoney,
   pkrToCurrency,
   type CurrencyCode,
 } from "@/lib/currency";
@@ -41,6 +41,8 @@ export type HubPointLedgerRow = {
 export type HubPointsSummary = {
   balance: number;
   balanceLabel: string;
+  currency: CurrencyCode;
+  pointValueLabel: string;
   lastActivityAt: Date | null;
   expiresAt: Date | null;
   recent: HubPointLedgerRow[];
@@ -82,6 +84,8 @@ function emptyHubPointsSummary(
   return {
     balance: 0,
     balanceLabel: formatHubPoints(0, currency),
+    currency,
+    pointValueLabel: hubPointValueLabel(currency),
     lastActivityAt: null,
     expiresAt: null,
     recent: [],
@@ -89,6 +93,11 @@ function emptyHubPointsSummary(
     earnHints: hubPointsEarnHints(role),
     redeemHints: hubPointsRedeemHints(role),
   };
+}
+
+export function hubPointValueLabel(currency: CurrencyCode) {
+  const onePoint = formatMoney(pkrToCurrency(1, currency), currency);
+  return `1 point ≈ ${onePoint}`;
 }
 
 export async function getHubPointsBalanceSafe(userId: string): Promise<number> {
@@ -104,10 +113,9 @@ export async function getHubPointsBalanceSafe(userId: string): Promise<number> {
   }
 }
 
-export function formatHubPoints(points: number, currency: CurrencyCode = "PKR") {
-  if (currency === "PKR") return `${points.toLocaleString()} pts (Rs ${points.toLocaleString()})`;
+export function formatHubPoints(points: number, currency: CurrencyCode = "USD") {
   const local = pkrToCurrency(points, currency);
-  return `${points.toLocaleString()} pts (${formatPlanPrice(local, currency)})`;
+  return `${points.toLocaleString()} pts (${formatMoney(local, currency)})`;
 }
 
 export function computeMaxRedeemablePoints(balance: number, orderPkr: number) {
@@ -127,7 +135,7 @@ export async function getHubPointsSummary(
   userId: string,
   opts?: { currency?: CurrencyCode; role?: string; limit?: number },
 ): Promise<HubPointsSummary> {
-  const currency = opts?.currency ?? "PKR";
+  const currency = opts?.currency ?? "USD";
   const role = opts?.role ?? "STUDENT";
 
   try {
@@ -169,6 +177,8 @@ export async function getHubPointsSummary(
     return {
       balance,
       balanceLabel: formatHubPoints(balance, currency),
+      currency,
+      pointValueLabel: hubPointValueLabel(currency),
       lastActivityAt,
       expiresAt,
       recent: user?.hubPointLedger ?? [],
