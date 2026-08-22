@@ -7,15 +7,15 @@ import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { prisma } from "@/lib/prisma";
 import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Plans & Pricing – Student Pass, Student Pro and Tutor Subscriptions",
-  description:
-    "Free students get 3 tutor contacts/month; Student Pass unlocks unlimited messaging. Student Pro adds AI. Free tutors with a complete profile appear in search; Tutor Basic adds priority, unlimited reveals, and ads. No lesson commission.",
-  alternates: { canonical: "/pricing" },
-};
+export const metadata = pageMetadata({
+  title: "Plans & Pricing – Student Pass, Student Pro & Tutor Subscriptions",
+  description: `Free students get 3 tutor contacts/month; Student Pass unlocks unlimited messaging. ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Basic adds priority. No lesson commission.`,
+  path: "/pricing",
+});
 
 export default async function PricingPage({
   searchParams,

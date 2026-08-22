@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 import { TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Become a tutor",
-  description:
-    "List on My Tutoring Hub for free when your profile is complete. Keep 100% of lesson fees. Tutor Basic adds priority until 30 September 2026 complimentary. Verified, highlight, and boost stay paid.",
-};
+export const metadata = pageMetadata({
+  title: "Become a Tutor – Free Listing & Tutor Basic Priority",
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Basic complimentary until 30 September 2026.`,
+  path: "/become-a-tutor",
+});
 
 export const dynamic = "force-dynamic";
 

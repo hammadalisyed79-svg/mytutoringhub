@@ -6,8 +6,12 @@ import { StudyAssistantChat } from "@/components/StudyAssistantChat";
 import { getSiteSettings } from "@/lib/site-settings";
 import { canUseStudyAssistant } from "@/lib/subscription";
 import type { Role } from "@/lib/types";
+import { privateMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Study assistant" };
+export const metadata = privateMetadata(
+  "Study assistant",
+  "AI study coach for Student Pro — explanations and practice on My Tutoring Hub.",
+);
 
 export default async function AssistantPage() {
   const session = await auth();

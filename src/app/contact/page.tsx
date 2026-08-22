@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Contact",
-  description: "Contact My Tutoring Hub at admin@mytutoringhub.com for account, billing, and safety questions.",
-};
+export const metadata = pageMetadata({
+  title: "Contact My Tutoring Hub – Support & Billing",
+  description:
+    "Contact My Tutoring Hub at admin@mytutoringhub.com for account help, Safepay billing, tutor verification, and safety reports.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

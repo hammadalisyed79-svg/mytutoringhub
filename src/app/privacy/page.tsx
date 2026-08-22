@@ -1,8 +1,11 @@
-export const metadata = {
-  title: "Privacy Policy",
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Privacy Policy – My Tutoring Hub",
   description:
     "How My Tutoring Hub collects and uses account, profile, message, and payment data. Contact admin@mytutoringhub.com for privacy requests.",
-};
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

@@ -38,13 +38,14 @@ import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
 import { getUserCountry } from "@/lib/geo";
 import { reconcileUserSafepayPaperPurchases } from "@/lib/safepay-complete";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Past Papers – GCSE, A-Level, IGCSE & IB Free Download",
   description:
-    "Browse and download past papers for GCSE, A-Level, IGCSE, IB and more. Filter by country, board, qualification, subject, year and session. Free for signed-in users.",
-  alternates: { canonical: "/past-papers" },
-};
+    "Browse and download GCSE, A-Level, IGCSE, IB, and Matric past papers. Filter by board, subject, year, and session. Student Pass includes monthly downloads.",
+  path: "/past-papers",
+});
 
 export const dynamic = "force-dynamic";
 

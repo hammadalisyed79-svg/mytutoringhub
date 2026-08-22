@@ -4,6 +4,13 @@ import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/c
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
 import { formatTutorPlace, inferTutorCountry } from "@/lib/tutor-catalog";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  subjectLandingJsonLd,
+  truncateDescription,
+} from "@/lib/seo";
 
 type Params = { params: Promise<{ subject: string; city?: string[] }> };
 
@@ -17,11 +24,45 @@ export async function generateMetadata({ params }: Params) {
   const { subject, city } = await params;
   const subjectName = titleCaseFromSlug(subject);
   const cityName = city?.[0] ? titleCaseFromSlug(city[0]) : null;
-  const title = cityName ? `${subjectName} tutors in ${cityName}` : `${subjectName} tutors`;
-  return {
+  const known = await prisma.subject.findFirst({
+    where: {
+      OR: [
+        { slug: slugify(subjectName) },
+        { name: { equals: subjectName, mode: "insensitive" } },
+      ],
+    },
+  });
+  const label = known?.name || subjectName;
+  const { total } = await searchTutors({
+    subject: label,
+    location: cityName || undefined,
+    page: "1",
+  });
+  const avg = await averageRateForSubject(label);
+  const currency = await getVisitorCurrency();
+  const avgLine =
+    avg != null ? ` Average rate around ${formatMoney(pkrToCurrency(avg, currency), currency)}/hr.` : "";
+
+  const title = cityName
+    ? `${label} Tutors in ${cityName} – Private Lessons`
+    : `${label} Tutors – Find Private Tutors Online`;
+
+  const description = truncateDescription(
+    total > 0
+      ? `${total} ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub.${avgLine} Search free — message with Student Pass. No commission on lessons.`
+      : `Find ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub. Search free and message tutors when listings go live.`,
+  );
+
+  const path = cityName
+    ? `/s/${subject}/${city![0]}`
+    : `/s/${subject}`;
+
+  return pageMetadata({
     title,
-    description: `Find private ${subjectName} tutors${cityName ? ` in ${cityName}` : ""} online or in person on My Tutoring Hub.`,
-  };
+    description,
+    path,
+    noIndex: total === 0,
+  });
 }
 
 export default async function SeoTutorsPage({ params }: Params) {
@@ -50,8 +91,29 @@ export default async function SeoTutorsPage({ params }: Params) {
   const searchHref = `/search?subject=${encodeURIComponent(label)}${
     cityName ? `&location=${encodeURIComponent(cityName)}` : ""
   }${countryName ? `&country=${encodeURIComponent(countryName)}` : ""}`;
+  const landingPath = cityName ? `/s/${subject}/${city![0]}` : `/s/${subject}`;
 
   return (
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Subjects", path: "/subjects" },
+              { name: label, path: `/s/${subject}` },
+              ...(cityName ? [{ name: cityName, path: landingPath }] : []),
+            ]),
+            subjectLandingJsonLd({
+              subject: label,
+              city: cityName,
+              tutorCount: total,
+              path: landingPath,
+            }),
+          ],
+        }}
+      />
     <div className="page">
       <div className="container">
         <h1 className="page-title">
@@ -69,14 +131,13 @@ export default async function SeoTutorsPage({ params }: Params) {
           Search free — message with Student Pass. No commission on lessons.
         </p>
         <p>
+          <Link href={searchHref} className="btn btn-secondary btn-sm">
+            Open full search filters
+          </Link>{" "}
           <Link
-            href={searchHref}
+            href={`/past-papers?subject=${encodeURIComponent(label)}`}
             className="btn btn-secondary btn-sm"
           >
-            Open full search filters
-          </Link>
-          {" "}
-          <Link href={`/past-papers?subject=${encodeURIComponent(label)}`} className="btn btn-secondary btn-sm">
             Past papers 2016–2025
           </Link>
         </p>
@@ -114,5 +175,6 @@ export default async function SeoTutorsPage({ params }: Params) {
         {tutors.length === 0 && <p className="muted">No tutors yet for this search.</p>}
       </div>
     </div>
+    </>
   );
 }

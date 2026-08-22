@@ -22,17 +22,16 @@ import {
   STUDENT_REQUESTS_LINE,
   VALUE_PROPOSITION,
 } from "@/lib/marketing-copy";
+import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "MyTutoringHub – Find Expert Tutors Online Worldwide",
-  description:
-    "Connect with qualified tutors for GCSE, A-Level, IGCSE, IB and more. Find tutors in your country or online. Browse past papers free.",
-  alternates: { canonical: "/" },
-};
+export const metadata = pageMetadata({
+  title: "Find Expert Private Tutors Online – GCSE, A-Level, IGCSE & IB",
+  description: `${VALUE_PROPOSITION} Browse tutors by subject and city. ${GEO_CURRENCY_LINE}`,
+  path: "/",
+});
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
 export default async function HomePage() {
   const session = await auth();
@@ -114,25 +113,7 @@ export default async function HomePage() {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "Organization",
-              name: "My Tutoring Hub",
-              url: SITE_URL,
-              logo: `${SITE_URL}/logo.svg`,
-              email: "admin@mytutoringhub.com",
-            },
-            {
-              "@type": "WebSite",
-              name: "My Tutoring Hub",
-              url: SITE_URL,
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${SITE_URL}/search?q={search_term_string}`,
-                "query-input": "required name=search_term_string",
-              },
-            },
-          ],
+          "@graph": [organizationJsonLd(), websiteJsonLd()],
         }}
       />
       <section className="hero hero-findtutor">

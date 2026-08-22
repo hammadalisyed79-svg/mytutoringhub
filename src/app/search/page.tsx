@@ -17,15 +17,9 @@ import { formatTutorPlace } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getUserCountry } from "@/lib/geo";
 import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
+import { pageMetadata, truncateDescription } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-
-export const metadata = {
-  title: "Find Private Tutors – GCSE, A-Level, IGCSE, IB & More",
-  description:
-    "Search verified private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates shown in your local currency.",
-  alternates: { canonical: "/search" },
-};
 
 type SearchParams = Promise<{
   q?: string;
@@ -40,6 +34,39 @@ type SearchParams = Promise<{
   language?: string;
   page?: string;
 }>;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const sp = await searchParams;
+  const pageNum = Math.max(1, Number(sp.page) || 1);
+  const parts = [
+    sp.subject && `${sp.subject} tutors`,
+    sp.location && sp.location !== "Online" && `in ${sp.location}`,
+    sp.country && !sp.location && `in ${sp.country}`,
+    sp.level && sp.level,
+  ].filter(Boolean);
+
+  const title =
+    parts.length > 0
+      ? `${parts.join(" ")} – Private Tutors`
+      : "Find Private Tutors – GCSE, A-Level, IGCSE, IB & More";
+
+  const description = truncateDescription(
+    parts.length > 0
+      ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates, read reviews, and message tutors free (3 contacts/month) or with Student Pass. ${VALUE_PROPOSITION}`
+      : `Search verified private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
+  );
+
+  return pageMetadata({
+    title,
+    description,
+    path: "/search",
+    noIndex: pageNum > 1,
+  });
+}
 
 function searchQuery(sp: Record<string, string | undefined>, page: number) {
   const params = new URLSearchParams();

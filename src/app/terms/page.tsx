@@ -1,8 +1,11 @@
-export const metadata = {
-  title: "Terms of Service",
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Terms of Service – My Tutoring Hub",
   description:
-    "Terms for using My Tutoring Hub: Student Pass and Tutor Basic subscriptions, off-platform lesson fees, conduct, and reviews.",
-};
+    "Terms for using My Tutoring Hub: Student Pass and Tutor subscriptions, off-platform lesson fees, conduct, reviews, and billing.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

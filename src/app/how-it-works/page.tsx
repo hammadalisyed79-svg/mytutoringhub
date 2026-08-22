@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "How it works",
-  description:
-    "Search private tutors, message with free monthly contacts or a Student Pass, then arrange lessons directly. Tutors list free when their profile is complete; Tutor Basic adds priority.",
-};
+export const metadata = pageMetadata({
+  title: "How It Works – Find, Contact & Learn with a Private Tutor",
+  description: `Search private tutors, message with free monthly contacts or Student Pass, then arrange lessons directly. ${VALUE_PROPOSITION}`,
+  path: "/how-it-works",
+});
 
 export const dynamic = "force-dynamic";
 

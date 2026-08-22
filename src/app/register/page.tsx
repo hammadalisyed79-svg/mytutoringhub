@@ -6,13 +6,14 @@ import { RegisterForm } from "@/components/RegisterForm";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { getSiteSettings } from "@/lib/site-settings";
 import { microsoftConfigured } from "@/lib/oauth";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "Sign Up – Join as a Student or Tutor",
   description:
-    "Create your free MyTutoringHub account. Join as a student to find private tutors, or as a tutor to reach students worldwide. Sign up with Google, Microsoft, or email.",
-  alternates: { canonical: "/register" },
-};
+    "Create your free My Tutoring Hub account. Students find private tutors; tutors reach students worldwide. Sign up with Google, Microsoft, or email.",
+  path: "/register",
+});
 
 export default async function RegisterPage() {
   await connection();

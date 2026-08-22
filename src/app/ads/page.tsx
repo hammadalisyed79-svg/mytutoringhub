@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { STUDENT_REQUESTS_LINE, VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { pageMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { ReportButton } from "@/components/ReportButton";
 
-export const metadata = {
-  title: "Student requests",
-  description:
-    "Browse open student requests for private tutors. Students with a Pass post what they need. Tutors with Tutor Basic can reply.",
-};
+export const metadata = pageMetadata({
+  title: "Student Requests – Find Students Who Need a Tutor",
+  description: `${STUDENT_REQUESTS_LINE} Browse open requests by subject and city. Tutors with Tutor Basic can reply.`,
+  path: "/ads",
+});
 
 function subjectTokens(value: string) {
   return value

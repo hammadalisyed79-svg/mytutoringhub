@@ -3,26 +3,37 @@ import { prisma } from "@/lib/prisma";
 import { TOP_COUNTRIES } from "@/lib/markets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
+import { siteUrl } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
+  const base = siteUrl();
+  const now = new Date();
   const priorityMap: Record<string, number> = {
     "/": 1.0,
     "/search": 0.9,
-    "/past-papers": 0.8,
-    "/subjects": 0.8,
-    "/pricing": 0.7,
-    "/become-a-tutor": 0.7,
+    "/past-papers": 0.85,
+    "/subjects": 0.85,
+    "/pricing": 0.75,
+    "/become-a-tutor": 0.75,
     "/how-it-works": 0.7,
-    "/ads": 0.6,
+    "/ads": 0.65,
     "/about": 0.6,
-    "/contact": 0.6,
-    "/register": 0.6,
+    "/contact": 0.55,
+    "/register": 0.65,
     "/login": 0.5,
-    "/help": 0.5,
-    "/terms": 0.4,
-    "/privacy": 0.4,
+    "/help": 0.55,
+    "/terms": 0.35,
+    "/privacy": 0.35,
   };
+  const changeFreqMap: Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]> = {
+    "/": "daily",
+    "/search": "daily",
+    "/past-papers": "weekly",
+    "/subjects": "weekly",
+    "/pricing": "monthly",
+    "/ads": "daily",
+  };
+
   const staticRoutes = [
     "",
     "/search",
@@ -41,48 +52,80 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/register",
   ].map((path) => ({
     url: `${base}${path || "/"}`,
-    lastModified: new Date(),
-    priority: priorityMap[path || "/"] ?? 0.6,
+    lastModified: now,
+    changeFrequency: changeFreqMap[path || "/"] || "monthly",
+    priority: priorityMap[path || "/"] ?? 0.5,
   }));
 
   try {
-    const subjects = await prisma.subject.findMany({ take: 200 });
-    const cities = [
-      ...new Set(TOP_COUNTRIES.flatMap((c) => c.cities)),
-    ].slice(0, 18);
+    const [subjects, papers, tutors] = await Promise.all([
+      prisma.subject.findMany({ select: { slug: true, name: true } }),
+      prisma.pastPaper.findMany({
+        where: publicAvailabilityWhere(),
+        select: {
+          board: true,
+          qualification: true,
+          subject: true,
+          syllabusCode: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.tutorProfile.findMany({
+        where: { active: true, user: { suspended: false } },
+        select: { id: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+    ]);
+
+    const cities = [...new Set(TOP_COUNTRIES.flatMap((c) => c.cities))].slice(0, 18);
     const subjectRoutes = subjects.flatMap((s) => {
       const slug = s.slug || slugify(s.name);
+      const modified = now;
       return [
-        { url: `${base}/s/${slug}`, lastModified: new Date() },
+        {
+          url: `${base}/s/${slug}`,
+          lastModified: modified,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        },
         ...cities.map((c) => ({
           url: `${base}/s/${slug}/${slugify(c)}`,
-          lastModified: new Date(),
+          lastModified: modified,
+          changeFrequency: "weekly" as const,
+          priority: 0.65,
         })),
       ];
     });
-    const papers = await prisma.pastPaper.findMany({
-      where: publicAvailabilityWhere(),
-      select: { board: true, qualification: true, subject: true, syllabusCode: true, updatedAt: true },
-      take: 2000,
-    });
-    const paperRoutes = papers.map((paper) => {
-      const boardSlug = /cambridge/i.test(paper.board) ? "cambridge" : slugify(paper.board);
-      const levelSlug = slugify(paper.qualification || "paper");
-      const subjectSlug = paper.syllabusCode
-        ? `${slugify(paper.subject)}-${paper.syllabusCode.toLowerCase()}`
-        : slugify(paper.subject);
-      return {
-        url: `${base}/past-papers/${boardSlug}/${levelSlug}/${subjectSlug}`,
-        lastModified: paper.updatedAt,
-      };
-    });
-    const seen = new Set<string>();
-    const uniquePaperRoutes = paperRoutes.filter((row) => {
-      if (seen.has(row.url)) return false;
-      seen.add(row.url);
-      return true;
-    });
-    return [...staticRoutes, ...subjectRoutes, ...uniquePaperRoutes];
+
+    const seenPapers = new Set<string>();
+    const paperRoutes = papers
+      .map((paper) => {
+        const boardSlug = /cambridge/i.test(paper.board) ? "cambridge" : slugify(paper.board);
+        const levelSlug = slugify(paper.qualification || "paper");
+        const subjectSlug = paper.syllabusCode
+          ? `${slugify(paper.subject)}-${paper.syllabusCode.toLowerCase()}`
+          : slugify(paper.subject);
+        return {
+          url: `${base}/past-papers/${boardSlug}/${levelSlug}/${subjectSlug}`,
+          lastModified: paper.updatedAt,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        };
+      })
+      .filter((row) => {
+        if (seenPapers.has(row.url)) return false;
+        seenPapers.add(row.url);
+        return true;
+      });
+
+    const tutorRoutes = tutors.map((t) => ({
+      url: `${base}/tutors/${t.id}`,
+      lastModified: t.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    }));
+
+    return [...staticRoutes, ...subjectRoutes, ...paperRoutes, ...tutorRoutes];
   } catch {
     return staticRoutes;
   }

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Help & FAQ",
+export const metadata = pageMetadata({
+  title: "Help & FAQ – Contacting Tutors, Plans & Payments",
   description:
-    "Answers about contacting tutors, any-mailbox signup, Student Pass, Tutor Basic launch offer, payments, and email from admin@mytutoringhub.com.",
-};
+    "Answers about finding tutors, Student Pass, Tutor Basic, Safepay billing, email verification, and safety on My Tutoring Hub.",
+  path: "/help",
+});
 
 const FAQS = [
   {
@@ -60,12 +62,7 @@ export default function HelpPage() {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: FAQS.map((item) => ({
-            "@type": "Question",
-            name: item.q,
-            acceptedAnswer: { "@type": "Answer", text: item.a },
-          })),
+          ...faqPageJsonLd(FAQS),
         }}
       />
       <div className="container narrow-prose">

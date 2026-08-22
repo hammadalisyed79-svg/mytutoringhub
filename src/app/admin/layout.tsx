@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AdminNav } from "@/components/AdminNav";
+import { privateMetadata } from "@/lib/seo";
 
-export const metadata = { title: "Admin" };
+export const metadata = privateMetadata("Admin");
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

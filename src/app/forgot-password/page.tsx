@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { AuthModalFrame } from "@/components/AuthModal";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Forgot password",
-  description: "Reset your My Tutoring Hub password, or sign in with Google or Microsoft.",
-};
+export const metadata = pageMetadata({
+  title: "Forgot Password – My Tutoring Hub",
+  description:
+    "Reset your My Tutoring Hub password, or sign in with Google or Microsoft instead.",
+  path: "/forgot-password",
+});
 
 export default function ForgotPasswordPage() {
   return (

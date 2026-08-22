@@ -8,6 +8,7 @@ import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
+import { DEFAULT_SITE_URL, SITE_NAME, SITE_NAME_COMPACT, siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const display = Fraunces({
@@ -22,36 +23,37 @@ const body = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: "MyTutoringHub – Find Expert Tutors Online Worldwide",
-    template: "%s | MyTutoringHub",
+    default: `${SITE_NAME} – Find Expert Tutors Online Worldwide`,
+    template: `%s | ${SITE_NAME_COMPACT}`,
   },
   description:
     "Find tutors free. Pay only for messaging access and study tools — lesson fees stay between you and the tutor. GCSE, A-Level, IGCSE, IB and more.",
   keywords: [
-    "tutor",
+    "private tutor",
     "online tutor",
+    "find a tutor",
     "GCSE tutor",
     "A-Level tutor",
     "IGCSE tutor",
     "IB tutor",
+    "Matric tutor",
     "past papers",
     "online tutoring",
-    "find a tutor",
-    "private tutor",
+    "tutoring marketplace",
   ],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com"),
+  metadataBase: new URL(siteUrl()),
   openGraph: {
     type: "website",
     locale: "en_GB",
-    siteName: "MyTutoringHub",
-    title: "MyTutoringHub – Private tutoring, elevated.",
+    siteName: SITE_NAME_COMPACT,
+    title: `${SITE_NAME} – Private tutoring, elevated.`,
     description:
       "Search free · No lesson commission · Student Pass unlocks unlimited contacts. Find tutors worldwide.",
-    url: "https://www.mytutoringhub.com",
+    url: DEFAULT_SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
-    title: "MyTutoringHub – Private tutoring, elevated.",
+    title: `${SITE_NAME} – Private tutoring, elevated.`,
     description:
       "Search free · No lesson commission · Student Pass unlocks unlimited contacts.",
   },
@@ -59,7 +61,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "My Tutoring Hub",
+    title: SITE_NAME,
     statusBarStyle: "default",
   },
   icons: {

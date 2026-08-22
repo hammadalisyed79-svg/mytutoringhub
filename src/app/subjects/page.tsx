@@ -11,13 +11,15 @@ import { subjectCode } from "@/lib/markets";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { CURRICULUM } from "@/lib/curriculum";
 import { getUserCountry } from "@/lib/geo";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Subjects",
-  description: `Browse ${CURRICULUM.length.toLocaleString()} curriculum subject codes across boards including Pakistan, Cambridge, IB, and CBSE.`,
-};
+export const metadata = pageMetadata({
+  title: "Browse Subjects – GCSE, A-Level, IGCSE, IB & Curriculum Codes",
+  description: `Browse ${CURRICULUM.length.toLocaleString()}+ curriculum subject codes and find private tutors by subject. Pakistan, Cambridge, IB, CBSE, and more.`,
+  path: "/subjects",
+});
 
 function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {
   const groups = new Map<string, T[]>();

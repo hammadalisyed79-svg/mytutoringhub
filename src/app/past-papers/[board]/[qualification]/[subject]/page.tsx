@@ -15,6 +15,13 @@ import { documentTypeShortLabel, groupPapersByYearSessionComponent } from "@/lib
 import { listPublicPastPapers } from "@/lib/past-papers/public-search";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/search-tutors";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  pastPaperLearningResourceJsonLd,
+  truncateDescription,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,14 +35,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const titleBoard = entry?.board || board.replace(/-/g, " ");
   const titleLevel = entry?.level || qualification.replace(/-/g, " ");
   const code = resolved.syllabusCode || entry?.code || "";
-  const title = `${titleSubject}${code ? ` ${code}` : ""} ${titleLevel} past papers`;
-  const description = `Download ${titleSubject} ${titleLevel} past papers for ${titleBoard} on My Tutoring Hub. Question papers, mark schemes, and related documents.`;
-  const canonical = `${process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com"}/past-papers/${board}/${qualification}/${subject}`;
-  return {
+  const title = `${titleSubject}${code ? ` ${code}` : ""} ${titleLevel} Past Papers – ${titleBoard}`;
+  const description = truncateDescription(
+    `Download ${titleSubject} ${titleLevel} past papers for ${titleBoard}. Question papers, mark schemes, and examiner reports on My Tutoring Hub.`,
+  );
+  return pageMetadata({
     title,
-    description: description.slice(0, 160),
-    alternates: { canonical },
-  };
+    description,
+    path: `/past-papers/${board}/${qualification}/${subject}`,
+  });
 }
 
 export default async function PastPaperSeoPage({
@@ -88,7 +96,30 @@ export default async function PastPaperSeoPage({
   const groups = groupPapersByYearSessionComponent(papers);
   const years = [...new Set(papers.map((row) => row.year))].sort((a, b) => b - a);
 
+  const titleBoard = entry?.board || board.replace(/-/g, " ");
+  const paperPath = `/past-papers/${board}/${qualification}/${subject}`;
+
   return (
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Past papers", path: "/past-papers" },
+              { name: `${titleSubject} ${titleLevel}`, path: paperPath },
+            ]),
+            pastPaperLearningResourceJsonLd({
+              name: `${titleSubject}${code ? ` ${code}` : ""} ${titleLevel} past papers`,
+              description: `${titleBoard} ${titleSubject} ${titleLevel} examination papers and mark schemes.`,
+              path: paperPath,
+              board: titleBoard,
+              level: titleLevel,
+            }),
+          ],
+        }}
+      />
     <div className="page">
       <div className="container">
         <h1 className="page-title">
@@ -208,5 +239,6 @@ export default async function PastPaperSeoPage({
         </p>
       </div>
     </div>
+    </>
   );
 }

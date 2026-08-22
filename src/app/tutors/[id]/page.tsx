@@ -19,6 +19,13 @@ import {
 } from "@/lib/availability";
 import Link from "next/link";
 import type { Session } from "next-auth";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  breadcrumbJsonLd,
+  pageMetadata,
+  truncateDescription,
+  tutorProfileJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -104,14 +111,19 @@ export async function generateMetadata({ params }: Params) {
     where: { id },
     include: { user: { select: { name: true } } },
   });
-  if (!tutor) return { title: "Tutor" };
+  if (!tutor) return { title: "Tutor not found" };
+  const place = formatTutorPlace(tutor.location, tutor.country);
+  const primarySubject = splitList(tutor.subjects)[0] || "Private";
   const description =
     tutor.headline ||
-    `${tutor.user.name} — ${tutor.subjects} tutor in ${formatTutorPlace(tutor.location, tutor.country)}. Private lessons on My Tutoring Hub.`;
-  return {
-    title: `${tutor.user.name} — private tutor`,
-    description: description.slice(0, 160),
-  };
+    `${tutor.user.name} teaches ${tutor.subjects} in ${place}. Read reviews, compare rates, and message on My Tutoring Hub.`;
+  return pageMetadata({
+    title: `${tutor.user.name} – ${primarySubject} Tutor${place ? ` in ${place}` : ""}`,
+    description: truncateDescription(description),
+    path: `/tutors/${id}`,
+    noIndex: !tutor.active,
+    ogType: "profile",
+  });
 }
 
 export default async function TutorProfilePage({ params }: Params) {
@@ -204,6 +216,33 @@ export default async function TutorProfilePage({ params }: Params) {
   const hasStructuredAvailability = availabilitySlots.length > 0;
 
   return (
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Find tutors", path: "/search" },
+              { name: tutor.user.name, path: `/tutors/${tutor.id}` },
+            ]),
+            tutorProfileJsonLd({
+              id: tutor.id,
+              name: tutor.user.name,
+              description: tutor.headline || tutor.bio,
+              subjects: tutor.subjects,
+              location: place,
+              hourlyRatePkr: tutor.hourlyRate,
+              currency,
+              hourlyLabel: formatHourly(tutor.hourlyRate, currency),
+              photoUrl: tutor.photoUrl,
+              rating: avg,
+              reviewCount: tutor.reviews.length,
+              verified: tutor.verified,
+            }),
+          ],
+        }}
+      />
     <div className="page profile-page">
       <div className="container profile-shell">
         {!tutor.active && (isOwner || isAdmin) && (
@@ -701,5 +740,6 @@ export default async function TutorProfilePage({ params }: Params) {
         )}
       </div>
     </div>
+    </>
   );
 }

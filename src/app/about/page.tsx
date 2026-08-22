@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "About",
+export const metadata = pageMetadata({
+  title: "About My Tutoring Hub – Private Tutors Marketplace",
   description:
-    "My Tutoring Hub is a private tutors marketplace. Students subscribe to message and post requests. Tutors list with Tutor Basic and keep 100% of lesson fees.",
-};
+    "My Tutoring Hub connects students with independent tutors worldwide. No lesson commission — platform subscriptions fund messaging, search, and study tools.",
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (
