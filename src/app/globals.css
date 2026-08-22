@@ -276,6 +276,21 @@ svg {
   min-width: 0;
 }
 
+.nav-identity:not(.is-compact) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  max-width: none;
+  white-space: normal;
+}
+
+.nav-identity-email {
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-all;
+}
+
 .nav-online-dot {
   width: 0.45rem;
   height: 0.45rem;

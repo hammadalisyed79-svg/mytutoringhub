@@ -10,6 +10,7 @@ import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
+import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
@@ -37,8 +38,11 @@ export default async function TutorDashboardPage({
 
   const sp = await searchParams;
   const paidCheckoutLive = isPaidCheckoutLive();
-  const { user, currency, catalogSubjects, extraLevels, pendingSubs, corePlan, addOnSubs } =
-    await prepareDashboardHome(session.user.id, "TUTOR", sp);
+  const [{ user, currency, catalogSubjects, extraLevels, pendingSubs, corePlan, addOnSubs }, inbox] =
+    await Promise.all([
+      prepareDashboardHome(session.user.id, "TUTOR", sp),
+      getUnreadMessageSummary(session.user.id),
+    ]);
 
   return (
     <div className="page">
@@ -159,7 +163,10 @@ export default async function TutorDashboardPage({
             <h2>Tutor shortcuts</h2>
             <div className="dash-links">
               <Link href="/ads">Student requests</Link>
-              <Link href="/messages">Messages</Link>
+              <Link href="/messages">
+                Messages
+                {inbox.unread > 0 ? ` (${inbox.unread} unread)` : ""}
+              </Link>
               <Link href="/past-papers">Past papers</Link>
               <Link href="/dashboard/tutor/analytics">Analytics</Link>
               <Link href="/dashboard/tutor/plan">Your plan</Link>

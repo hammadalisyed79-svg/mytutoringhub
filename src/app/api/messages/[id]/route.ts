@@ -6,6 +6,8 @@ import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 type Params = { params: Promise<{ id: string }> };
 
 const postSchema = z
@@ -115,14 +117,27 @@ export async function POST(req: Request, { params }: Params) {
   const otherId =
     conversation.userAId === session.user.id ? conversation.userBId : conversation.userAId;
   const other = await prisma.user.findUnique({ where: { id: otherId } });
+  let emailSent = false;
   if (other) {
-    notifyNewMessage({
+    const mail = await notifyNewMessage({
       to: other.email,
       fromName: session.user.name,
       preview: text || "Sent a photo",
       conversationId: id,
     });
+    emailSent = mail.sent;
+    if (!mail.sent) {
+      console.error("[messages] email not sent", {
+        to: other.email,
+        conversationId: id,
+        error: mail.error,
+      });
+    }
   }
 
-  return NextResponse.json(message);
+  return NextResponse.json({
+    ...message,
+    sender: { id: session.user.id, name: session.user.name },
+    emailSent,
+  });
 }

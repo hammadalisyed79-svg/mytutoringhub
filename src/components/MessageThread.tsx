@@ -58,7 +58,7 @@ export function MessageThread({
 
   useEffect(() => {
     load({ refreshNav: true });
-    const tick = setInterval(() => load(), 12000);
+    const tick = setInterval(() => load(), 5000);
     return () => clearInterval(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);

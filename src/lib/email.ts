@@ -1,8 +1,18 @@
 import { Resend } from "resend";
+import { getPublicAppUrl } from "@/lib/payments-status";
+
 const MAIL_FROM = "My Tutoring Hub <admin@mytutoringhub.com>";
 const MAIL_REPLY_TO = "admin@mytutoringhub.com";
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appUrl = getPublicAppUrl() || "https://www.mytutoringhub.com";
 const brand = "My Tutoring Hub";
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 export function emailFromAddress() {
   return MAIL_FROM;
@@ -144,11 +154,13 @@ export function newMessageEmailHtml(fromName: string, preview: string, conversat
   const inboxHref = conversationId
     ? `${appUrl}/messages/${conversationId}`
     : `${appUrl}/messages`;
+  const safeName = escapeHtml(fromName);
+  const safePreview = escapeHtml(preview.slice(0, 160));
   return emailLayout({
     preheader: `New message from ${fromName}`,
     title: "New message",
-    body: `<p>You have a new message from <strong>${fromName}</strong>.</p>
-<p style="padding:12px 14px;background:#f6f1e8;border-radius:8px;color:#486581">“${preview.slice(0, 160)}”</p>`,
+    body: `<p>You have a new message from <strong>${safeName}</strong>.</p>
+<p style="padding:12px 14px;background:#f6f1e8;border-radius:8px;color:#486581">“${safePreview}”</p>`,
     cta: { label: "Reply in inbox", href: inboxHref },
   });
 }

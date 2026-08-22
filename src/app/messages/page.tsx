@@ -8,6 +8,7 @@ import { isImageAttachment } from "@/lib/media";
 import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
 import { getPlanDashboardSummary } from "@/lib/plan-limits";
 import { resolveMessageRecipient } from "@/lib/message-recipient";
+import { MessagesAccountBanner } from "@/components/MessagesAccountBanner";
 
 export const metadata = { title: "Messages" };
 
@@ -81,6 +82,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
+        <MessagesAccountBanner email={session.user.email || ""} role={session.user.role} />
         <p className="section-lead">{VALUE_PROPOSITION}</p>
 
         {/* Compose first — messaging is the job of this page when a tutor is selected */}

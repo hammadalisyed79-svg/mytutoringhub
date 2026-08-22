@@ -29,22 +29,26 @@ function firstName(name: string) {
 
 function NavIdentity({
   name,
+  email,
   compact = false,
   className = "",
 }: {
   name: string;
+  email?: string | null;
   compact?: boolean;
   className?: string;
 }) {
   const shown = compact ? firstName(name) : name;
+  const title = email ? `Signed in as ${name} (${email})` : `Signed in as ${name}`;
   return (
     <span
       className={`nav-identity ${compact ? "is-compact" : ""} ${className}`.trim()}
-      title={`Signed in as ${name}`}
-      aria-label={`Signed in as ${name}`}
+      title={title}
+      aria-label={title}
     >
       <span className="nav-online-dot" aria-hidden="true" />
       <span className="nav-identity-name">{shown}</span>
+      {!compact && email ? <span className="nav-identity-email muted">{email}</span> : null}
     </span>
   );
 }
@@ -206,7 +210,7 @@ export function SiteNav({
         </div>
       </nav>
       <div className="header-actions">
-        {user ? <NavIdentity name={accountLabel(user)} compact /> : null}
+        {user ? <NavIdentity name={accountLabel(user)} email={user.email} compact /> : null}
         <AccountLinks
           user={user}
           pathname={pathname}
@@ -217,7 +221,7 @@ export function SiteNav({
       </div>
 
       {user ? (
-        <NavIdentity name={accountLabel(user)} compact className="header-identity" />
+        <NavIdentity name={accountLabel(user)} email={user.email} compact className="header-identity" />
       ) : null}
 
       <button
@@ -248,7 +252,7 @@ export function SiteNav({
           ))}
           <div className="nav-drawer-account">
             {user ? (
-              <NavIdentity name={accountLabel(user)} className="nav-drawer-identity" />
+              <NavIdentity name={accountLabel(user)} email={user.email} className="nav-drawer-identity" />
             ) : null}
             <AccountLinks
               user={user}

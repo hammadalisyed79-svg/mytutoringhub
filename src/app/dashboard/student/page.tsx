@@ -9,6 +9,7 @@ import { SubscribeButton } from "@/components/SubscribeButton";
 import { ReferralShareButton } from "@/components/ReferralShareButton";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
+import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import {
@@ -34,11 +35,10 @@ export default async function StudentDashboardPage({
 
   const sp = await searchParams;
   const paidCheckoutLive = isPaidCheckoutLive();
-  const { user, currency, pendingSubs, corePlan } = await prepareDashboardHome(
-    session.user.id,
-    "STUDENT",
-    sp,
-  );
+  const [{ user, currency, pendingSubs, corePlan }, inbox] = await Promise.all([
+    prepareDashboardHome(session.user.id, "STUDENT", sp),
+    getUnreadMessageSummary(session.user.id),
+  ]);
 
   return (
     <div className="page">
@@ -167,7 +167,10 @@ export default async function StudentDashboardPage({
           <section className="panel">
             <h2>Shortcuts</h2>
             <div className="dash-links">
-              <Link href="/messages">Messages</Link>
+              <Link href="/messages">
+                Messages
+                {inbox.unread > 0 ? ` (${inbox.unread} unread)` : ""}
+              </Link>
               <Link href="/ads">Student requests</Link>
               <Link href="/ads/new">Post a request</Link>
               <Link href="/past-papers">Past papers</Link>

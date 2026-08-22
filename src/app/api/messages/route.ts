@@ -8,6 +8,8 @@ import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 const startSchema = z
   .object({
     recipientId: z.string(),
@@ -188,12 +190,19 @@ export async function POST(req: Request) {
     data: { lastMessageAt: new Date() },
   });
 
-  notifyNewMessage({
+  const mail = await notifyNewMessage({
     to: recipient.email,
     fromName: session.user.name,
     preview: text || "Sent a photo",
     conversationId: conversation.id,
   });
+  if (!mail.sent) {
+    console.error("[messages] email not sent", {
+      to: recipient.email,
+      conversationId: conversation.id,
+      error: mail.error,
+    });
+  }
 
-  return NextResponse.json({ conversationId: conversation.id, message });
+  return NextResponse.json({ conversationId: conversation.id, message, emailSent: mail.sent });
 }

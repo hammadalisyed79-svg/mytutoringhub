@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MessageThread } from "@/components/MessageThread";
+import { MessagesAccountBanner } from "@/components/MessagesAccountBanner";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -34,6 +35,7 @@ export default async function ConversationPage({ params }: Params) {
   return (
     <div className="page">
       <div className="container narrow" style={{ width: "min(720px, calc(100% - 2rem))" }}>
+        <MessagesAccountBanner email={session.user.email || ""} role={session.user.role} />
         <MessageThread conversationId={id} currentUserId={session.user.id} />
       </div>
     </div>

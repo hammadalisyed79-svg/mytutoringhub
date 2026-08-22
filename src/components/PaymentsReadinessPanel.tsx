@@ -5,6 +5,7 @@ import {
   PAYMENTS_SUPPORT_EMAIL,
 } from "@/lib/payments-status";
 import { PaymentsReadinessTestButton } from "@/components/PaymentsReadinessTestButton";
+import { ResendReadinessTestButton } from "@/components/ResendReadinessTestButton";
 
 export function PaymentsReadinessPanel() {
   const readiness = getPaymentsReadiness();
@@ -83,6 +84,7 @@ export function PaymentsReadinessPanel() {
       </div>
 
       <PaymentsReadinessTestButton />
+      <ResendReadinessTestButton />
     </section>
   );
 }
