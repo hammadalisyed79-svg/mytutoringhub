@@ -16,8 +16,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Subjects",
-  description:
-    "Browse 1,200+ curriculum subject codes across 15 countries, including Pakistan boards, Cambridge, IB, and CBSE.",
+  description: `Browse ${CURRICULUM.length.toLocaleString()} curriculum subject codes across boards including Pakistan, Cambridge, IB, and CBSE.`,
 };
 
 function groupSubjectsByLetter<T extends { name: string }>(items: T[]) {

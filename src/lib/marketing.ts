@@ -62,24 +62,3 @@ export const POPULAR_SUBJECTS = [
   "Arabic",
   "Quran Nazra",
 ];
-
-export const TESTIMONIALS = [
-  {
-    quote:
-      "Our maths tutor used past papers and weekly tests. Marks improved a lot before finals.",
-    name: "Ahmed Khan",
-    role: "Parent · Maths",
-  },
-  {
-    quote:
-      "I booked an IELTS tutor online while studying abroad. Flexible timings and clear feedback.",
-    name: "Fatima Rizvi",
-    role: "Student · Online · IELTS",
-  },
-  {
-    quote:
-      "Found an A Level Chemistry tutor via Zoom. Easy to compare rates in my local currency.",
-    name: "James Carter",
-    role: "Parent · A Levels",
-  },
-];

@@ -468,8 +468,8 @@ svg {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr repeat(3, 1fr);
-  gap: 2rem 1.75rem;
+  grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
+  gap: 2rem 1.5rem;
   padding-bottom: 2rem;
 }
 

@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/ads": 0.6,
     "/about": 0.6,
     "/contact": 0.6,
-    "/join": 0.6,
     "/register": 0.6,
     "/login": 0.5,
     "/help": 0.5,

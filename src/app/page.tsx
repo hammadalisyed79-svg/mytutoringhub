@@ -4,9 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { LogoMark } from "@/components/Logo";
 import { JsonLd } from "@/components/JsonLd";
+import { TutorAvatar } from "@/components/TutorAvatar";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { POPULAR_SUBJECTS, TESTIMONIALS } from "@/lib/marketing";
+import { POPULAR_SUBJECTS } from "@/lib/marketing";
+import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
@@ -25,28 +27,76 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.c
 export default async function HomePage() {
   const currency = await getVisitorCurrency();
   const pinnedCountry = getUserCountry(await headers());
-  const [tutorCount, studentCount, openAds, pastPaperCount] = await Promise.all([
-    prisma.tutorProfile.count({ where: { active: true } }),
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.studentAd.count({ where: { status: "OPEN" } }),
-    prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
-  ]);
+  const curriculumCodeCount = CURRICULUM.length;
+  const [tutorCount, studentCount, openAds, pastPaperCount, featured, reviews] =
+    await Promise.all([
+      prisma.tutorProfile.count({ where: { active: true } }),
+      prisma.user.count({ where: { role: "STUDENT" } }),
+      prisma.studentAd.count({ where: { status: "OPEN" } }),
+      prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
+      prisma.tutorProfile.findMany({
+        where: { active: true },
+        take: 3,
+        orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
+        select: {
+          id: true,
+          hourlyRate: true,
+          headline: true,
+          subjects: true,
+          verified: true,
+          highlighted: true,
+          photoUrl: true,
+          photoCropX: true,
+          photoCropY: true,
+          photoCropZoom: true,
+          user: { select: { name: true } },
+          reviews: { select: { rating: true } },
+        },
+      }),
+      prisma.review.findMany({
+        where: {
+          status: "PUBLISHED",
+          comment: { not: "" },
+        },
+        take: 3,
+        orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          comment: true,
+          rating: true,
+          student: { select: { name: true } },
+          tutorProfile: {
+            select: {
+              subjects: true,
+              user: { select: { name: true } },
+            },
+          },
+        },
+      }),
+    ]);
 
-  const featured = await prisma.tutorProfile.findMany({
-    where: { active: true },
-    take: 3,
-    orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
-    select: {
-      id: true,
-      hourlyRate: true,
-      headline: true,
-      subjects: true,
-      verified: true,
-      highlighted: true,
-      user: { select: { name: true } },
-      reviews: { select: { rating: true } },
+  const stats = [
+    tutorCount > 0 && {
+      value: tutorCount.toLocaleString(),
+      label: tutorCount === 1 ? "Active tutor" : "Active tutors",
     },
-  });
+    studentCount > 0 && {
+      value: studentCount.toLocaleString(),
+      label: studentCount === 1 ? "Student joined" : "Students joined",
+    },
+    openAds > 0 && {
+      value: openAds.toLocaleString(),
+      label: openAds === 1 ? "Open student request" : "Open student requests",
+    },
+    curriculumCodeCount > 0 && {
+      value: curriculumCodeCount.toLocaleString(),
+      label: "Curriculum subject codes",
+    },
+    pastPaperCount > 0 && {
+      value: pastPaperCount.toLocaleString(),
+      label: pastPaperCount === 1 ? "Past paper" : "Past papers",
+    },
+  ].filter(Boolean) as { value: string; label: string }[];
 
   return (
     <>
@@ -89,30 +139,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section section-stats">
-        <div className="container stats-row">
-          <div>
-            <strong>{Math.max(tutorCount, 1).toLocaleString()}+</strong>
-            <span>Active tutors</span>
+      {stats.length > 0 && (
+        <section className="section section-stats">
+          <div className="container stats-row">
+            {stats.map((stat) => (
+              <div key={stat.label}>
+                <strong>{stat.value}</strong>
+                <span>{stat.label}</span>
+              </div>
+            ))}
           </div>
-          <div>
-            <strong>{Math.max(studentCount, 1).toLocaleString()}+</strong>
-            <span>Students joined</span>
-          </div>
-          <div>
-            <strong>{openAds}</strong>
-            <span>Open student requests</span>
-          </div>
-          <div>
-            <strong>1,200+</strong>
-            <span>Subject codes</span>
-          </div>
-          <div>
-            <strong>{pastPaperCount.toLocaleString()}</strong>
-            <span>Past papers</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section">
         <div className="container">
@@ -162,17 +200,23 @@ export default async function HomePage() {
                   t.reviews.length > 0
                     ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                     : null;
+                const tutorName = t.user.name?.trim() || "Tutor";
                 return (
                   <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
-                    <div className="tutor-avatar" aria-hidden>
-                      {t.user.name.slice(0, 1)}
-                    </div>
+                    <TutorAvatar
+                      className="tutor-avatar"
+                      photoUrl={t.photoUrl}
+                      cropX={t.photoCropX}
+                      cropY={t.photoCropY}
+                      cropZoom={t.photoCropZoom}
+                      initial={tutorName.slice(0, 1).toUpperCase()}
+                    />
                     <div>
                       <div className="meta">
                         {t.verified && <span className="badge">Verified</span>}
                         {t.highlighted && <span className="badge accent">Highlighted</span>}
                       </div>
-                      <h3>{t.user.name}</h3>
+                      <h3>{tutorName}</h3>
                       <p>{t.headline || t.subjects}</p>
                       <div className="meta">
                         <span>{formatHourly(t.hourlyRate, currency)}</span>
@@ -253,22 +297,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <h2>Why families choose My Tutoring Hub</h2>
-          <div className="testimonial-grid">
-            {TESTIMONIALS.map((t) => (
-              <blockquote key={t.name} className="testimonial">
-                <p>“{t.quote}”</p>
-                <footer>
-                  <strong>{t.name}</strong>
-                  <span className="muted">{t.role}</span>
-                </footer>
-              </blockquote>
-            ))}
+      {reviews.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <h2>What students say</h2>
+            <p className="section-lead">Recent reviews from students on My Tutoring Hub.</p>
+            <div className="testimonial-grid">
+              {reviews.map((r) => {
+                const subject = r.tutorProfile.subjects?.split(",")[0]?.trim();
+                return (
+                  <blockquote key={r.id} className="testimonial">
+                    <p>“{r.comment}”</p>
+                    <footer>
+                      <strong>{r.student.name}</strong>
+                      <span className="muted">
+                        {r.rating} ★
+                        {subject ? ` · ${subject}` : ""}
+                      </span>
+                    </footer>
+                  </blockquote>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section cta-band">
         <div className="container cta-band-inner">

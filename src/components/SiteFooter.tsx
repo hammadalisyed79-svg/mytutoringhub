@@ -32,6 +32,14 @@ export async function SiteFooter() {
           </div>
         </div>
         <div>
+          <h4>Study tools</h4>
+          <div className="footer-col">
+            <Link href="/study/countdown">Exam countdown</Link>
+            <Link href="/study/progress">Study progress</Link>
+            <Link href="/assistant">Study assistant</Link>
+          </div>
+        </div>
+        <div>
           <h4>Tutors</h4>
           <div className="footer-col">
             {role === "TUTOR" ? (
