@@ -28,6 +28,7 @@ export const runtime = "nodejs";
 // Add-ons are one-time charges and do not have an annual variant.
 const PLAN_PRICING_KEY: Record<string, keyof ReturnType<typeof getPricingForCountry> & string> = {
   STUDENT_PASS: "studentPlus",
+  STUDENT_PRO: "studentPro",
   TUTOR_BASIC: "tutorPro",
   VERIFIED_TUTOR: "tutorElite",
 };
@@ -35,6 +36,7 @@ const PLAN_PRICING_KEY: Record<string, keyof ReturnType<typeof getPricingForCoun
 const schema = z.object({
   plan: z.enum([
     "STUDENT_PASS",
+    "STUDENT_PRO",
     "TUTOR_BASIC",
     "VERIFIED_TUTOR",
     "HIGHLIGHTED_AD",

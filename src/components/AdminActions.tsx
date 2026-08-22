@@ -133,6 +133,7 @@ export function AdminGrantPlanForm({ userId }: { userId?: string }) {
       )}
       <select name="plan" required defaultValue="STUDENT_PASS">
         <option value="STUDENT_PASS">Student Pass</option>
+        <option value="STUDENT_PRO">Student Pro</option>
         <option value="TUTOR_BASIC">Tutor Basic</option>
         <option value="VERIFIED_TUTOR">Verified Tutor</option>
         <option value="HIGHLIGHTED_AD">Highlighted Listing</option>

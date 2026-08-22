@@ -95,7 +95,7 @@ export default async function DashboardPage({
   const isTutor = user.role === "TUTOR";
   const corePlan = isTutor
     ? visibleSubs.find((s) => s.plan === "TUTOR_BASIC" || s.plan === "VERIFIED_TUTOR")
-    : visibleSubs.find((s) => s.plan === "STUDENT_PASS");
+    : visibleSubs.find((s) => s.plan === "STUDENT_PASS" || s.plan === "STUDENT_PRO");
   const addOnSubs = isTutor
     ? visibleSubs.filter((s) => s.plan !== "TUTOR_BASIC")
     : [];
@@ -107,11 +107,12 @@ export default async function DashboardPage({
         <p className="muted">
           {isTutor
             ? "Complete your profile to appear in search, then reply to student requests."
-            : "Find a tutor, message with a Student Pass, or post a request."}
+            : "Find a tutor, use free monthly contacts or a Student Pass, or post a request."}
         </p>
         {sp.verified === "1" && (
           <p className="success panel" style={{ marginTop: "1rem" }}>
-            Email verified. You can now message, post ads, and use the study assistant.
+            Email verified. Messaging and ads unlock with your plan; the AI study assistant needs
+            Student Pro.
           </p>
         )}
         {user.role !== "ADMIN" && !user.emailVerified && (
@@ -167,8 +168,8 @@ export default async function DashboardPage({
             ) : (
               <p className="muted">
                 {isTutor
-                  ? "Activate Tutor Basic to appear in search. Add-ons stay optional."
-                  : "A Student Pass unlocks messaging and tutor requests. Pay on Safepay in one step."}
+                  ? "Activate Tutor Basic to appear in search. Free listed tutors still receive messages (5 enquiry reveals/month when you initiate)."
+                  : "Free accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited messaging; Student Pro adds AI."}
               </p>
             )}
             {pendingSubs.length > 0 && (
@@ -227,6 +228,7 @@ export default async function DashboardPage({
                   <Link href="/messages">Messages</Link>
                   <Link href="/past-papers">Past papers</Link>
                   <Link href="/dashboard/tutor/analytics">Analytics</Link>
+                  <Link href="/dashboard/tutor/plan">Your plan</Link>
                   <Link href="/settings">Account settings</Link>
                 </>
               ) : (
@@ -239,6 +241,7 @@ export default async function DashboardPage({
                   <Link href="/study/countdown">Exam countdown</Link>
                   <Link href="/study/progress">Study progress</Link>
                   <Link href="/assistant">Study assistant</Link>
+                  <Link href="/dashboard/student/plan">Your plan</Link>
                   <Link href="/settings">Account settings</Link>
                   <Link href="/become-a-tutor">Become a tutor</Link>
                 </>

@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       plan: z
         .enum([
           "STUDENT_PASS",
+          "STUDENT_PRO",
           "TUTOR_BASIC",
           "VERIFIED_TUTOR",
           "HIGHLIGHTED_AD",

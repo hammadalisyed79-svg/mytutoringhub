@@ -59,7 +59,11 @@ export function PlanBanner({
         {planName}
       </span>
 
-      {usageLimit > 0 && (
+      {usageLimit < 0 ? (
+        <span style={{ fontSize: "0.82rem", color: "var(--muted)", flex: "1 1 180px" }}>
+          Unlimited {usageLabel}
+        </span>
+      ) : usageLimit > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", flex: "1 1 180px", minWidth: 0 }}>
           <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
             {usageUsed} of {usageLimit} {usageLabel}
@@ -83,7 +87,7 @@ export function PlanBanner({
             />
           </div>
         </div>
-      )}
+      ) : null}
 
       {renewsOn && planTier !== "free" && (
         <span style={{ fontSize: "0.82rem", color: "var(--muted)", whiteSpace: "nowrap" }}>

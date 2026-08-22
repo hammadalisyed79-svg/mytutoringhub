@@ -56,6 +56,7 @@ const payloadSchema = z.object({
       z.object({
         id: z.enum([
           "STUDENT_PASS",
+          "STUDENT_PRO",
           "TUTOR_BASIC",
           "VERIFIED_TUTOR",
           "HIGHLIGHTED_AD",

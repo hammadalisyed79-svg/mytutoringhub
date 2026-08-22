@@ -4,6 +4,15 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 
 const ACTIVE = new Set(["ACTIVE", "TRIALING"]);
 
+const STUDENT_MESSAGING_PLANS: SubscriptionPlan[] = ["STUDENT_PASS", "STUDENT_PRO"];
+const TUTOR_PAID_PLANS: SubscriptionPlan[] = [
+  "TUTOR_BASIC",
+  "VERIFIED_TUTOR",
+  "HIGHLIGHTED_AD",
+  "AD_BOOST",
+  "UNLIMITED_ADS",
+];
+
 export async function hasActivePlan(userId: string, plan: SubscriptionPlan) {
   const now = new Date();
   const sub = await prisma.subscription.findFirst({
@@ -30,7 +39,7 @@ export async function hasAnyActivePlan(userId: string, plans: SubscriptionPlan[]
   return Boolean(sub);
 }
 
-/** Students need Student Pass; tutors need Tutor Basic (or verified which implies paid presence). */
+/** Email-verified users may message; monthly free limits are enforced in plan-limits / messages API. */
 export async function canMessage(userId: string, role: Role) {
   if (role === "ADMIN") return true;
   const user = await prisma.user.findUnique({
@@ -38,10 +47,39 @@ export async function canMessage(userId: string, role: Role) {
     select: { suspended: true, emailVerified: true },
   });
   if (!user || user.suspended || !user.emailVerified) return false;
-  if (role === "STUDENT") return hasActivePlan(userId, "STUDENT_PASS");
-  if (role === "TUTOR") {
-    return hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR"]);
+  return role === "STUDENT" || role === "TUTOR";
+}
+
+/** Recipient does not need a paid plan. Listed tutors and any non-suspended student can receive. */
+export async function canReceiveMessages(userId: string, role: Role) {
+  if (role === "ADMIN") return true;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      suspended: true,
+      role: true,
+      tutorProfile: { select: { active: true } },
+    },
+  });
+  if (!user || user.suspended) return false;
+  if (role === "TUTOR" || user.role === "TUTOR") {
+    return Boolean(user.tutorProfile?.active);
   }
+  return true;
+}
+
+export async function hasStudentMessagingPass(userId: string) {
+  return hasAnyActivePlan(userId, STUDENT_MESSAGING_PLANS);
+}
+
+export async function hasPaidTutorPlan(userId: string) {
+  return hasAnyActivePlan(userId, TUTOR_PAID_PLANS);
+}
+
+/** Student Pro unlocks AI; tutors/admins keep access with verified email (checked by caller). */
+export async function canUseStudyAssistant(userId: string, role: Role) {
+  if (role === "ADMIN" || role === "TUTOR") return true;
+  if (role === "STUDENT") return hasActivePlan(userId, "STUDENT_PRO");
   return false;
 }
 
@@ -52,7 +90,7 @@ export async function canPostAd(userId: string, role: Role) {
     select: { suspended: true, emailVerified: true },
   });
   if (!user || user.suspended || !user.emailVerified) return false;
-  if (role === "STUDENT") return hasActivePlan(userId, "STUDENT_PASS");
+  if (role === "STUDENT") return hasStudentMessagingPass(userId);
   return false;
 }
 
@@ -89,7 +127,21 @@ export async function canCreateTutorAd(userId: string) {
   return { ok: true as const, profile };
 }
 
-/** Apply paid plan side-effects: listing active, highlight/boost windows, verified entitlement. */
+/** Map active tutor subscriptions to search priority: Free=0, Basic/Pro=1, Verified/Elite=2. */
+export function computeTutorPlanTier(plans: Set<string>): number {
+  if (plans.has("VERIFIED_TUTOR")) return 2;
+  if (
+    plans.has("TUTOR_BASIC") ||
+    plans.has("HIGHLIGHTED_AD") ||
+    plans.has("AD_BOOST") ||
+    plans.has("UNLIMITED_ADS")
+  ) {
+    return 1;
+  }
+  return 0;
+}
+
+/** Apply paid plan side-effects: listing active, highlight/boost windows, verified entitlement, planTier. */
 export async function syncTutorBadges(userId: string) {
   const profile = await prisma.tutorProfile.findUnique({
     where: { userId },
@@ -121,11 +173,13 @@ export async function syncTutorBadges(userId: string) {
     plans.has("HIGHLIGHTED_AD") ||
     plans.has("AD_BOOST") ||
     plans.has("UNLIMITED_ADS");
+  const planTier = computeTutorPlanTier(plans);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },
     data: {
       verified,
+      planTier,
       highlighted: Boolean(periodEnd && periodEnd > now) || plans.has("HIGHLIGHTED_AD"),
       highlightedUntil: periodEnd && periodEnd > now ? periodEnd : profile.highlightedUntil,
       boostUntil: boostEnd && boostEnd > now ? boostEnd : profile.boostUntil,

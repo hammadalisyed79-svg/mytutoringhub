@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 export const metadata = {
   title: "How it works",
   description:
-    "Search private tutors, subscribe with a Student Pass to message and post ads, then arrange lessons directly. Tutors list with Tutor Basic.",
+    "Search private tutors, message with free monthly contacts or a Student Pass, then arrange lessons directly. Tutors list with Tutor Basic.",
 };
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function HowItWorksPage() {
       <div className="container">
         <h1 className="page-title">How to find a private tutor</h1>
         <p className="section-lead">
-          Search tutors, use a Student Pass to message and post requests, then arrange lessons
+          Search tutors, message with free monthly contacts or a Student Pass, then arrange lessons
           directly.
         </p>
 
@@ -40,10 +40,10 @@ export default async function HowItWorksPage() {
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Contact with Student Pass</h3>
+            <h3>Contact tutors</h3>
             <p className="muted">
-              A Student Pass unlocks messaging and “need a tutor” ads. Without a Pass you can
-              browse, but you cannot message or post requests.
+              Free accounts get 3 new tutor contacts per month. A Student Pass unlocks unlimited
+              messaging and “need a tutor” ads. Student Pro adds the AI study assistant.
             </p>
           </div>
           <div className="step">
@@ -61,7 +61,8 @@ export default async function HowItWorksPage() {
             <h2>For students & parents</h2>
             <ul className="check-list">
               <li>Browse verified, highlighted, and boosted tutors</li>
-              <li>Message tutors and post requests with a Student Pass</li>
+              <li>Message tutors free (3 contacts/month) or unlimited with Student Pass</li>
+              <li>Student Pro unlocks the AI study assistant</li>
               <li>Download past papers by subject</li>
               <li>Manage your name and password in Settings</li>
             </ul>

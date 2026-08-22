@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StudyAssistantChat } from "@/components/StudyAssistantChat";
 import { getSiteSettings } from "@/lib/site-settings";
+import { canUseStudyAssistant } from "@/lib/subscription";
+import type { Role } from "@/lib/types";
 
 export const metadata = { title: "Study assistant" };
 
@@ -31,6 +34,31 @@ export default async function AssistantPage() {
     );
   }
 
+  // Student Pro unlocks AI for students; tutors/admins allowed (see canUseStudyAssistant).
+  if (!(await canUseStudyAssistant(session.user.id, session.user.role as Role))) {
+    return (
+      <div className="page">
+        <div className="container narrow-prose">
+          <h1 className="page-title">Study assistant</h1>
+          <p className="section-lead">
+            The AI study assistant is included with Student Pro. Free study tools (progress log and
+            exam countdown) stay available without a paid plan.
+          </p>
+          <p>
+            <Link className="btn" href="/pricing">
+              Get Student Pro
+            </Link>
+          </p>
+          <p className="muted" style={{ marginTop: "1rem" }}>
+            <Link href="/study/progress">Study log (free)</Link>
+            {" · "}
+            <Link href="/study/countdown">Exam countdown (free)</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const configured = Boolean(process.env.OPENAI_API_KEY);
 
   return (
@@ -38,8 +66,8 @@ export default async function AssistantPage() {
       <div className="container narrow-prose">
         <h1 className="page-title">Study assistant</h1>
         <p className="section-lead">
-          Get study help anytime — explanations, practice questions, and plans. This is an AI coach,
-          not a live tutor. For human tutoring, use Find tutors.
+          Included with Student Pro — explanations, practice questions, and plans. This is an AI
+          coach, not a live tutor. For human tutoring, use Find tutors.
         </p>
         <StudyAssistantChat initiallyConfigured={configured} />
       </div>

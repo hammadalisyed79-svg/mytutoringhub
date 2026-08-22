@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getSiteSettings } from "@/lib/site-settings";
+import { canUseStudyAssistant } from "@/lib/subscription";
+import type { Role } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -127,6 +129,15 @@ export async function GET() {
   if (session.user.role !== "ADMIN" && !user?.emailVerified) {
     return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
   }
+  if (!(await canUseStudyAssistant(session.user.id, session.user.role as Role))) {
+    return NextResponse.json(
+      {
+        error: "Student Pro is required for the study assistant",
+        upgradeUrl: "/pricing",
+      },
+      { status: 403 },
+    );
+  }
   const settings = await getSiteSettings();
   if (settings.disableAiAssistant && session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Study assistant is temporarily disabled" }, { status: 403 });
@@ -167,6 +178,15 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== "ADMIN" && !user.emailVerified) {
     return NextResponse.json({ error: "Verify your email to use the study assistant" }, { status: 403 });
+  }
+  if (!(await canUseStudyAssistant(session.user.id, session.user.role as Role))) {
+    return NextResponse.json(
+      {
+        error: "Student Pro is required for the study assistant",
+        upgradeUrl: "/pricing",
+      },
+      { status: 403 },
+    );
   }
   const settings = await getSiteSettings();
   if (settings.disableAiAssistant && session.user.role !== "ADMIN") {

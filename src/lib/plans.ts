@@ -42,11 +42,11 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   {
     id: "STUDENT_PASS",
     name: "Student Pass",
-    description: "Unlimited contact with tutors worldwide. Post student request ads.",
+    description: "Unlimited tutor contacts and student request ads. Free accounts get 3 contacts/month.",
     audience: "student",
     pricePkr: 1999,
     features: [
-      "Message unlimited tutors",
+      "Unlimited new tutor contacts",
       "Post “need a tutor” ads",
       "Browse verified tutors",
       "Online or in-person lessons",
@@ -54,16 +54,30 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     envPriceId: "STRIPE_PRICE_STUDENT_PASS",
   },
   {
+    id: "STUDENT_PRO",
+    name: "Student Pro",
+    description: "Everything in Student Pass, plus the AI study assistant.",
+    audience: "student",
+    pricePkr: 3499,
+    features: [
+      "Everything in Student Pass",
+      "AI study assistant",
+      "Unlimited tutor contacts",
+      "Post “need a tutor” ads",
+    ],
+    envPriceId: "STRIPE_PRICE_STUDENT_PRO",
+  },
+  {
     id: "TUTOR_BASIC",
     name: "Tutor Basic",
-    description: "Publish your profile and up to 3 subject ads.",
+    description: "Publish your profile and message students without monthly reveal limits.",
     audience: "tutor",
     pricePkr: 1499,
     features: [
-      "Public tutor profile",
+      "Public tutor profile in search",
+      "Unlimited enquiry reveals when contacting students",
       "Up to 3 active subject ads",
-      "Receive student messages",
-      "Respond to student ads",
+      "Receive student messages (free listed tutors always can)",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
     promoEnabled: true,
@@ -71,7 +85,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Complimentary listing until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons.",
+      "Complimentary listing until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons. Free listed tutors still receive messages and get 5 enquiry reveals/month.",
   },
   {
     id: "VERIFIED_TUTOR",

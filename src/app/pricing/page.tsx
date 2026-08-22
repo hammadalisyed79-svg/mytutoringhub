@@ -12,9 +12,9 @@ import type { CurrencyCode } from "@/lib/currency";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Plans & Pricing – Student Pass and Tutor Subscriptions",
+  title: "Plans & Pricing – Student Pass, Student Pro and Tutor Subscriptions",
   description:
-    "Affordable plans for students and tutors. Student Pass unlocks messaging; Tutor Basic lists your profile. No lesson commission — ever. Prices shown in your local currency.",
+    "Free students get 3 tutor contacts/month; Student Pass unlocks unlimited messaging. Student Pro adds AI. Free listed tutors receive messages and get 5 enquiry reveals/month. No lesson commission.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -135,8 +135,10 @@ export default async function PricingPage({
             <p className="eyebrow">Platform subscriptions</p>
             <h1 className="page-title">Plans & pricing</h1>
             <p className="section-lead">
-              Prices shown in <strong>{currency}</strong>. There is no shopping cart — choose a plan
-              and pay on Safepay in one step. Lesson fees stay off-platform.
+              Prices shown in <strong>{currency}</strong>. Free students get 3 new tutor contacts per
+              month; free listed tutors always receive messages and get 5 enquiry reveals when
+              contacting students. Paid plans remove those caps. There is no shopping cart — choose a
+              plan and pay on Safepay in one step. Lesson fees stay off-platform.
             </p>
           </div>
           <ol className="checkout-steps" aria-label="Checkout steps">
@@ -174,7 +176,7 @@ export default async function PricingPage({
             <p style={{ marginTop: 0 }}>
               {sp.verify === "sent"
                 ? `We tried to send a confirmation to ${me?.email || "your email"} from admin@mytutoringhub.com.`
-                : "Verify your email to unlock messaging, ads, and the study assistant."}{" "}
+                : "Verify your email to unlock messaging and ads. Student Pro unlocks the AI study assistant."}{" "}
               Check inbox, junk, and promotions. Hotmail can delay mail by several minutes.
             </p>
             <ResendVerificationButton email={me?.email || undefined} />
@@ -194,7 +196,7 @@ export default async function PricingPage({
             {corePlans.map((plan) => (
               <article
                 key={plan.id}
-                className={`plan ${plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" ? "plan-featured" : ""}`}
+                className={`plan ${plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" || plan.id === "STUDENT_PRO" ? "plan-featured" : ""}`}
               >
                 <div className="plan-body">
                   {plan.isPromoActive ? (
@@ -203,6 +205,9 @@ export default async function PricingPage({
                     (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
                       <span className="plan-badge">Most popular</span>
                     )
+                  )}
+                  {plan.id === "STUDENT_PRO" && !plan.isPromoActive && (
+                    <span className="plan-badge">Includes AI</span>
                   )}
                   <h3>{plan.name}</h3>
                   <p className="muted">{plan.description}</p>

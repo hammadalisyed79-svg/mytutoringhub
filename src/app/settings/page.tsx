@@ -73,7 +73,9 @@ export default function SettingsPage() {
         <p className="muted">
           Update the name students and tutors see. Google sign-in can fill this on first login —
           you can change it anytime.{" "}
-          <Link href="/pricing">Your plan</Link>
+          <Link href="/settings/plan">Your plan</Link>
+          {" · "}
+          <Link href="/pricing">Pricing</Link>
         </p>
         <form className="stack-form" onSubmit={save}>
           <label>
@@ -83,8 +85,8 @@ export default function SettingsPage() {
           {emailVerified === false && (
             <div className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)" }}>
               <p style={{ marginTop: 0 }}>
-                Your email is not verified yet. Messaging, ads, and the study assistant stay locked
-                until you confirm the link we sent.
+                Your email is not verified yet. Messaging and ads stay locked until you confirm the
+                link we sent. Student Pro is also required for the AI study assistant.
               </p>
               <ResendVerificationButton email={email} />
             </div>

@@ -55,6 +55,8 @@ export async function activatePaidSafepaySubscription(opts: {
   if (!existing || !plan) return { ok: false as const, reason: "unknown_order" as const };
 
   if (["ACTIVE", "TRIALING"].includes(existing.status)) {
+    const user = await prisma.user.findUnique({ where: { id: existing.userId }, select: { role: true } });
+    if (user?.role === "TUTOR") await syncTutorBadges(existing.userId);
     return { ok: true as const, subscription: existing, alreadyActive: true };
   }
 

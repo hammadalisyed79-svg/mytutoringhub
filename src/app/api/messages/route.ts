@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canMessage } from "@/lib/subscription";
+import { canMessage, canReceiveMessages } from "@/lib/subscription";
 import { canPerformAction, recordUsage } from "@/lib/plan-limits";
 import { sendEmail, newMessageEmailHtml } from "@/lib/email";
 import type { Role } from "@/lib/types";
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   const allowed = await canMessage(session.user.id, session.user.role as Role);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Verified email and an active subscription are required to message" },
+      { error: "Verify your email to send messages" },
       { status: 403 },
     );
   }
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: "limit_exceeded",
-          message: `You've used all ${check.limit} tutor contacts this month. Upgrade to contact more tutors.`,
+          message: `You've used all ${check.limit} tutor contacts this month. Upgrade to Student Pass for unlimited contacts.`,
           upgradeUrl: "/pricing",
           used: check.used,
           limit: check.limit,
@@ -113,12 +113,20 @@ export async function POST(req: Request) {
     }
   }
 
-  const recipientAllowed = await canMessage(recipient.id, recipient.role as Role);
-  if (!recipientAllowed && recipient.role !== "ADMIN") {
-    return NextResponse.json(
-      { error: "Recipient cannot receive messages without an active plan" },
-      { status: 403 },
-    );
+  // Recipients do not need a paid plan — listed tutors and students can always receive.
+  if (recipient.role !== "ADMIN") {
+    const recipientOk = await canReceiveMessages(recipient.id, recipient.role as Role);
+    if (!recipientOk) {
+      return NextResponse.json(
+        {
+          error:
+            recipient.role === "TUTOR"
+              ? "This tutor is not currently listed and cannot receive messages"
+              : "Recipient cannot receive messages",
+        },
+        { status: 403 },
+      );
+    }
   }
 
   const [userAId, userBId] = orderedPair(session.user.id, data.recipientId);

@@ -87,7 +87,7 @@ export async function POST(req: Request, { params }: Params) {
   }
   const allowed = await canMessage(session.user.id, session.user.role as Role);
   if (!allowed) {
-    return NextResponse.json({ error: "Verified email and an active subscription are required" }, { status: 403 });
+    return NextResponse.json({ error: "Verify your email to send messages" }, { status: 403 });
   }
 
   const { id } = await params;

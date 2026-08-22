@@ -1,7 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import {
+  hasActivePlan,
+  hasAnyActivePlan,
+  hasPaidTutorPlan,
+  hasStudentMessagingPass,
+} from "@/lib/subscription";
+import type { Role, SubscriptionPlan } from "@/lib/types";
 
-const TUTOR_FREE_REVEAL_LIMIT = 5;
-const STUDENT_FREE_CONTACT_LIMIT = 3;
+export const TUTOR_FREE_REVEAL_LIMIT = 5;
+export const STUDENT_FREE_CONTACT_LIMIT = 3;
 
 /** Returns the user's current plan slug — reads Subscription table, falls back to "free". */
 export async function getUserPlan(userId: string): Promise<string> {
@@ -53,26 +60,25 @@ export async function canPerformAction(
   const used = await getMonthlyUsage(userId, action);
 
   if (action === "enquiry_reveal") {
-    const isPaid =
-      plan.includes("tutor_pro") ||
-      plan.includes("tutor_elite") ||
-      plan.includes("verified_tutor") ||
-      plan.includes("tutor_basic") ||
-      plan === "pro" ||
-      plan === "elite";
+    const isPaid = await hasPaidTutorPlan(userId);
     const limit = isPaid ? Infinity : TUTOR_FREE_REVEAL_LIMIT;
-    return { allowed: isPaid || used < TUTOR_FREE_REVEAL_LIMIT, limit: isPaid ? -1 : TUTOR_FREE_REVEAL_LIMIT, used, plan };
+    return {
+      allowed: isPaid || used < TUTOR_FREE_REVEAL_LIMIT,
+      limit: isPaid ? -1 : TUTOR_FREE_REVEAL_LIMIT,
+      used,
+      plan,
+    };
   }
 
   if (action === "tutor_contact") {
-    const isPaid =
-      plan.includes("student_pass") ||
-      plan.includes("student_plus") ||
-      plan.includes("student_pro") ||
-      plan === "plus" ||
-      plan === "pro";
+    const isPaid = await hasStudentMessagingPass(userId);
     const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT;
-    return { allowed: isPaid || used < STUDENT_FREE_CONTACT_LIMIT, limit: isPaid ? -1 : STUDENT_FREE_CONTACT_LIMIT, used, plan };
+    return {
+      allowed: isPaid || used < STUDENT_FREE_CONTACT_LIMIT,
+      limit: isPaid ? -1 : STUDENT_FREE_CONTACT_LIMIT,
+      used,
+      plan,
+    };
   }
 
   return { allowed: false, limit: 0, used: 0, plan };
@@ -91,4 +97,77 @@ export async function recordUsage(
   } catch {
     // Table may not be migrated yet — ignore
   }
+}
+
+export type PlanDashboardSummary = {
+  planName: string;
+  planTier: "free" | "pro" | "elite";
+  usageUsed: number;
+  usageLimit: number;
+  usageLabel: string;
+  renewsOn: string | null;
+  upgradeHint: string;
+};
+
+/** Usage meters + labels for student/tutor plan dashboard pages. */
+export async function getPlanDashboardSummary(
+  userId: string,
+  role: Role,
+): Promise<PlanDashboardSummary> {
+  const now = new Date();
+  const subs = await prisma.subscription.findMany({
+    where: {
+      userId,
+      status: { in: ["ACTIVE", "TRIALING"] },
+      OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gt: now } }],
+    },
+    orderBy: { currentPeriodEnd: "desc" },
+  });
+  const renewsOn =
+    subs.find((s) => s.currentPeriodEnd)?.currentPeriodEnd?.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }) ?? null;
+
+  if (role === "STUDENT") {
+    const check = await canPerformAction(userId, "tutor_contact");
+    const hasPro = await hasActivePlan(userId, "STUDENT_PRO");
+    const hasPass = hasPro || (await hasActivePlan(userId, "STUDENT_PASS"));
+    return {
+      planName: hasPro ? "Student Pro" : hasPass ? "Student Pass" : "Free",
+      planTier: hasPro ? "elite" : hasPass ? "pro" : "free",
+      usageUsed: check.used,
+      usageLimit: check.limit,
+      usageLabel: "tutor contacts this month",
+      renewsOn: hasPass ? renewsOn : null,
+      upgradeHint: hasPro
+        ? "You have unlimited contacts and the AI study assistant."
+        : hasPass
+          ? "Upgrade to Student Pro for the AI study assistant."
+          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Upgrade for unlimited messaging.`,
+    };
+  }
+
+  const check = await canPerformAction(userId, "enquiry_reveal");
+  const hasElite = await hasActivePlan(userId, "VERIFIED_TUTOR");
+  const hasBasic =
+    hasElite ||
+    (await hasAnyActivePlan(userId, [
+      "TUTOR_BASIC",
+      "HIGHLIGHTED_AD",
+      "AD_BOOST",
+      "UNLIMITED_ADS",
+    ] as SubscriptionPlan[]));
+  return {
+    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor Basic" : "Free",
+    planTier: hasElite ? "elite" : hasBasic ? "pro" : "free",
+    usageUsed: check.used,
+    usageLimit: check.limit,
+    usageLabel: "enquiry reveals this month",
+    renewsOn: hasBasic ? renewsOn : null,
+    upgradeHint: hasBasic
+      ? "Unlimited student contact when you initiate. Listed tutors always receive messages."
+      : `Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} enquiry reveals/month when contacting students.`,
+  };
 }
