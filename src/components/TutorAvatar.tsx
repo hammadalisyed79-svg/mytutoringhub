@@ -27,7 +27,6 @@ export function TutorAvatar({
 
   const containerStyle: React.CSSProperties = {
     overflow: "hidden",
-    borderRadius: "50%",
     position: "relative",
     flexShrink: 0,
     ...(size ? { width: size, height: size } : {}),

@@ -2955,8 +2955,9 @@ select:focus {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  padding: 1rem;
+  padding: 0 0 1rem;
   min-height: 100%;
+  overflow: hidden;
 }
 
 .tc-card-head {
@@ -2968,6 +2969,15 @@ select:focus {
   border-bottom: 1px solid rgba(13, 95, 82, 0.08);
 }
 
+.tc-card-grid .tc-card-head {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
+  gap: 0;
+}
+
 .tc-card-main {
   flex: 1;
   display: flex;
@@ -2975,6 +2985,10 @@ select:focus {
   gap: 0.42rem;
   padding: 0.85rem 0 0.65rem;
   min-width: 0;
+}
+
+.tc-card-grid .tc-card-main {
+  padding: 0.85rem 1rem 0.65rem;
 }
 
 .tc-card-title-row {
@@ -3003,6 +3017,11 @@ select:focus {
   border-top: 1px solid rgba(13, 95, 82, 0.08);
 }
 
+.tc-card-grid .tc-card-actions {
+  margin: 0 1rem;
+  padding-top: 0.65rem;
+}
+
 .tc-card-actions .btn {
   width: 100%;
   justify-content: center;
@@ -3012,6 +3031,22 @@ select:focus {
 .tc-avatar-lg {
   width: 4.75rem;
   height: 4.75rem;
+}
+
+.tc-avatar-card {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+  font-size: 3rem;
+}
+
+.tc-card-grid .tc-star-badge {
+  position: absolute;
+  left: 0.65rem;
+  bottom: 0.65rem;
+  z-index: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .tc-card:hover {

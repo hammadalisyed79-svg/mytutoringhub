@@ -190,7 +190,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               >
                 <div className="tc-card-head">
                   <TutorAvatar
-                    className="tc-avatar tc-avatar-lg"
+                    className="tc-avatar tc-avatar-card"
                     photoUrl={t.photoUrl}
                     cropX={t.photoCropX}
                     cropY={t.photoCropY}
