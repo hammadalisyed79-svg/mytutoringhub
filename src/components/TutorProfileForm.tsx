@@ -4,8 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
-import { PhotoCropEditor } from "@/components/PhotoCropEditor";
-import { TutorAvatar } from "@/components/TutorAvatar";
+import { PhotoFrameAdjust } from "@/components/PhotoFrameAdjust";
 import {
   citiesForCountry,
   expertiseForSubjects,
@@ -136,7 +135,6 @@ export function TutorProfileForm({
   const [photoCropX, setPhotoCropX] = useState(initial.photoCropX ?? 0);
   const [photoCropY, setPhotoCropY] = useState(initial.photoCropY ?? 0);
   const [photoCropZoom, setPhotoCropZoom] = useState(initial.photoCropZoom ?? 1);
-  const [showCropEditor, setShowCropEditor] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [headline, setHeadline] = useState(initial.headline || "");
   const [name, setName] = useState(displayName);
@@ -244,7 +242,6 @@ export function TutorProfileForm({
     setPhotoCropX(0);
     setPhotoCropY(0);
     setPhotoCropZoom(1);
-    setShowCropEditor(false);
     setPhotoError("");
     setPhotoMsg("Photo removed. Save profile to update your listing.");
     if (photoInput.current) photoInput.current.value = "";
@@ -275,8 +272,7 @@ export function TutorProfileForm({
       setPhotoCropX(0);
       setPhotoCropY(0);
       setPhotoCropZoom(1);
-      setShowCropEditor(true);
-      setPhotoMsg("");
+      setPhotoMsg("Drag the photo to adjust · scroll to zoom");
     } catch {
       setPhotoError("Photo upload failed. Check your connection and try again.");
     } finally {
@@ -357,23 +353,25 @@ export function TutorProfileForm({
     <form className="stack-form profile-form" onSubmit={save}>
       <section className="form-section profile-photo-top">
         <div className="profile-photo-hero">
-          <div className="profile-photo-preview profile-photo-preview-lg" aria-hidden>
-            {photoUrl.startsWith("http") ? (
-              <TutorAvatar
-                photoUrl={photoUrl}
-                cropX={photoCropX}
-                cropY={photoCropY}
-                cropZoom={photoCropZoom}
-                style={{ width: "100%", height: "100%" }}
-              />
-            ) : (
-              <span>Add photo</span>
-            )}
-          </div>
+          <PhotoFrameAdjust
+            className="profile-photo-preview profile-photo-preview-lg"
+            photoUrl={photoUrl}
+            cropX={photoCropX}
+            cropY={photoCropY}
+            cropZoom={photoCropZoom}
+            onChange={({ x, y, zoom }) => {
+              setPhotoCropX(x);
+              setPhotoCropY(y);
+              setPhotoCropZoom(zoom);
+            }}
+            emptyLabel="Add photo"
+          />
           <div className="profile-photo-hero-copy">
             <h3>Display picture</h3>
-            <p className="field-hint">Shown at the top of your public listing. Change it whenever you like.</p>
-            <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB · square works best</p>
+            <p className="field-hint">
+              Shown on your public listing. Drag inside the frame to reposition · scroll to zoom in or out.
+            </p>
+            <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB</p>
             <div className="profile-photo-actions">
               <button
                 className="btn btn-secondary btn-sm"
@@ -383,24 +381,14 @@ export function TutorProfileForm({
               >
                 {uploading ? "Uploading…" : photoUrl.startsWith("http") ? "Change photo" : "Add photo"}
               </button>
-              {photoUrl.startsWith("http") && !showCropEditor && (
-                <button
-                  className="btn btn-secondary btn-sm"
-                  type="button"
-                  onClick={() => setShowCropEditor(true)}
-                  disabled={uploading}
-                >
-                  Crop & zoom
-                </button>
-              )}
               {photoUrl.startsWith("http") && (
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className="profile-photo-clear"
                   type="button"
                   onClick={removePhoto}
                   disabled={uploading}
                 >
-                  Remove photo
+                  Clear
                 </button>
               )}
             </div>
@@ -413,27 +401,16 @@ export function TutorProfileForm({
             />
             {photoError && <p className="form-error">{photoError}</p>}
             {photoMsg && <p className="success">{photoMsg}</p>}
-            {showCropEditor && photoUrl.startsWith("http") && (
-              <div style={{ marginTop: "1rem" }}>
-                <PhotoCropEditor
-                  photoUrl={photoUrl}
-                  initial={{ x: photoCropX, y: photoCropY, zoom: photoCropZoom }}
-                  onSave={(crop) => {
-                    setPhotoCropX(crop.x);
-                    setPhotoCropY(crop.y);
-                    setPhotoCropZoom(crop.zoom);
-                    setShowCropEditor(false);
-                    setPhotoMsg("Crop saved. Click Save profile to keep this on your listing.");
-                  }}
-                  onCancel={() => setShowCropEditor(false)}
-                />
-              </div>
-            )}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input
                 value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
+                onChange={(e) => {
+                  setPhotoUrl(e.target.value);
+                  setPhotoCropX(0);
+                  setPhotoCropY(0);
+                  setPhotoCropZoom(1);
+                }}
                 placeholder="https://"
                 inputMode="url"
               />
