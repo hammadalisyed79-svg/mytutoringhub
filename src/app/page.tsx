@@ -23,6 +23,7 @@ import {
   VALUE_PROPOSITION,
 } from "@/lib/marketing-copy";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { FreeVsPaidHighlights } from "@/components/FreeVsPaidComparison";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -142,6 +143,24 @@ export default async function HomePage() {
       </section>
 
       <PrestigePillars />
+
+      <section className="section section-alt">
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <h2>Free to search. Pay only when you need more.</h2>
+              <p className="section-lead">
+                Join free as a student or tutor. Upgrade for unlimited messaging, study tools, or
+                tutor growth features — lesson fees always stay between you and your tutor.
+              </p>
+            </div>
+            <Link href="/free-vs-paid" className="btn btn-secondary">
+              Free vs paid guide
+            </Link>
+          </div>
+          <FreeVsPaidHighlights compact />
+        </div>
+      </section>
 
       <section className="section">
         <div className="container">

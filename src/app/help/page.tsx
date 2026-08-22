@@ -11,6 +11,10 @@ export const metadata = pageMetadata({
 
 const FAQS = [
   {
+    q: "What is free vs paid on My Tutoring Hub?",
+    a: "Search and join are free. Students get 3 new tutor contacts per month on a free account; Student Pass unlocks unlimited messaging. Tutors list in search for free with a complete profile; Tutor Basic adds priority and ads. We never take a lesson commission. See the full Free vs paid guide for tables and FAQs.",
+  },
+  {
     q: "How do I contact a tutor?",
     a: "Browse Find tutors, open a profile, and send a message. Free student accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited messaging and request ads.",
   },
@@ -82,6 +86,7 @@ export default function HelpPage() {
           Still stuck?{" "}
           <Link href="/contact">Contact</Link> ·{" "}
           <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a> ·{" "}
+          <Link href="/free-vs-paid">Free vs paid</Link> ·{" "}
           <Link href="/pricing">View pricing</Link> · <Link href="/how-it-works">How it works</Link>
         </p>
       </div>

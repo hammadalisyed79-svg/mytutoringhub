@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import Link from "next/link";
 import { formatPromoUntil, getLivePlans, getPlan } from "@/lib/plans";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
@@ -70,6 +71,11 @@ export default async function PricingPage({
                 : "Card checkout is opening soon — free and complimentary plans work now; paid plans can be activated by email."}
             </p>
             <ValuePropStrip />
+            <p className="muted" style={{ marginTop: "0.75rem" }}>
+              Not sure what&apos;s included?{" "}
+              <Link href="/free-vs-paid">Read the free vs paid guide</Link> before you choose a
+              plan.
+            </p>
           </div>
           <ol className="checkout-steps" aria-label="Checkout steps">
             <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>

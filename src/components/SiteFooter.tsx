@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { connection } from "next/server";
-import { auth } from "@/lib/auth";
+import { connection } from "next/server";import { auth } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
 
 export async function SiteFooter() {
@@ -33,6 +32,7 @@ export async function SiteFooter() {
             <Link href="/past-papers">Past papers</Link>
             {role !== "TUTOR" && <Link href="/ads">Student requests</Link>}
             <Link href="/pricing">{role === "STUDENT" ? "Student Pass" : "Pricing"}</Link>
+            <Link href="/free-vs-paid">Free vs paid</Link>
             <Link href="/how-it-works">How it works</Link>
           </div>
         </div>
@@ -66,6 +66,7 @@ export async function SiteFooter() {
           <div className="footer-col">
             <Link href="/about">About</Link>
             <Link href="/help">Help & FAQ</Link>
+            <Link href="/free-vs-paid">Free vs paid</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
