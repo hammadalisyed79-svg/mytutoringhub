@@ -12,7 +12,7 @@ const PLAN_LABELS: Record<string, string> = {
   TUTOR_BASIC: "Tutor Basic",
   VERIFIED_TUTOR: "Verified Tutor",
   HIGHLIGHTED_AD: "Highlighted Listing",
-  AD_BOOST: "Ad Boost",
+  AD_BOOST: "Profile Boost",
   UNLIMITED_ADS: "Unlimited Ads",
 };
 

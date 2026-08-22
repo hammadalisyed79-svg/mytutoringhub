@@ -246,8 +246,9 @@ export default async function RevenuePage() {
           One-off fees &amp; purchases (MTD)
         </h2>
         <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 12 }}>
-          Booking fee, profile boost checkout, group classes, and resource uploads are not live —
-          only recorded ServiceFeeEvent rows and paid past paper downloads appear here.
+          Profile Boost (AD_BOOST) checkout is live via Safepay — booking fees, group classes,
+          and resource uploads are not live yet; only recorded ServiceFeeEvent rows and paid past
+          paper downloads appear here.
         </p>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>

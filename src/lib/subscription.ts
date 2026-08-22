@@ -177,12 +177,34 @@ export async function syncTutorBadges(userId: string) {
     },
   });
   const plans = new Set(subs.map((s) => s.plan));
+  const nowMs = now.getTime();
+  const maxPeriodEnd = (planId: string) =>
+    subs
+      .filter((s) => s.plan === planId && s.currentPeriodEnd && s.currentPeriodEnd > now)
+      .reduce<Date | null>((best, s) => {
+        const end = s.currentPeriodEnd!;
+        return !best || end.getTime() > best.getTime() ? end : best;
+      }, null);
+
   const periodEnd =
-    subs.find((s) => s.plan === "HIGHLIGHTED_AD")?.currentPeriodEnd ||
-    (plans.has("HIGHLIGHTED_AD") ? new Date(now.getTime() + 30 * 86400000) : null);
+    maxPeriodEnd("HIGHLIGHTED_AD") ||
+    (plans.has("HIGHLIGHTED_AD") ? new Date(nowMs + 30 * 86400000) : null);
   const boostEnd =
-    subs.find((s) => s.plan === "AD_BOOST")?.currentPeriodEnd ||
-    (plans.has("AD_BOOST") ? new Date(now.getTime() + 30 * 86400000) : null);
+    maxPeriodEnd("AD_BOOST") ||
+    (plans.has("AD_BOOST") ? new Date(nowMs + 30 * 86400000) : null);
+
+  const highlightUntil =
+    periodEnd && profile.highlightedUntil && profile.highlightedUntil > periodEnd
+      ? profile.highlightedUntil
+      : periodEnd && periodEnd > now
+        ? periodEnd
+        : profile.highlightedUntil;
+  const boostUntil =
+    boostEnd && profile.boostUntil && profile.boostUntil > boostEnd
+      ? profile.boostUntil
+      : boostEnd && boostEnd > now
+        ? boostEnd
+        : profile.boostUntil;
 
   // Do not clear admin-approved verified when Verified plan lapses — only set true from plan.
   const verified = profile.verified || plans.has("VERIFIED_TUTOR");
@@ -200,23 +222,23 @@ export async function syncTutorBadges(userId: string) {
     data: {
       verified,
       planTier,
-      highlighted: Boolean(periodEnd && periodEnd > now) || plans.has("HIGHLIGHTED_AD"),
-      highlightedUntil: periodEnd && periodEnd > now ? periodEnd : profile.highlightedUntil,
-      boostUntil: boostEnd && boostEnd > now ? boostEnd : profile.boostUntil,
+      highlighted: Boolean(highlightUntil && highlightUntil > now) || plans.has("HIGHLIGHTED_AD"),
+      highlightedUntil: highlightUntil,
+      boostUntil,
       active: profile.forceActive || hasPaidListing || listable,
     },
   });
 
-  if (periodEnd && periodEnd > now) {
+  if (highlightUntil && highlightUntil > now) {
     await prisma.tutorAd.updateMany({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },
-      data: { highlightedUntil: periodEnd },
+      data: { highlightedUntil: highlightUntil },
     });
   }
-  if (boostEnd && boostEnd > now) {
+  if (boostUntil && boostUntil > now) {
     await prisma.tutorAd.updateMany({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },
-      data: { boostUntil: boostEnd },
+      data: { boostUntil },
     });
   }
 }

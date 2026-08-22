@@ -6,6 +6,44 @@ import { getPlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import type { SubscriptionPlan } from "@/lib/types";
 
+const ADD_ON_PLANS = new Set<SubscriptionPlan>([
+  "VERIFIED_TUTOR",
+  "HIGHLIGHTED_AD",
+  "AD_BOOST",
+  "UNLIMITED_ADS",
+]);
+
+async function resolveAddOnPeriodEnd(userId: string, plan: SubscriptionPlan, excludeSubId: string) {
+  const now = new Date();
+  const prior = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      plan,
+      status: { in: ["ACTIVE", "TRIALING"] },
+      id: { not: excludeSubId },
+      currentPeriodEnd: { gt: now },
+    },
+    orderBy: { currentPeriodEnd: "desc" },
+  });
+
+  let base = prior?.currentPeriodEnd && prior.currentPeriodEnd > now ? prior.currentPeriodEnd : now;
+
+  if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
+    const profile = await prisma.tutorProfile.findUnique({
+      where: { userId },
+      select: { boostUntil: true, highlightedUntil: true },
+    });
+    if (plan === "AD_BOOST" && profile?.boostUntil && profile.boostUntil > base) {
+      base = profile.boostUntil;
+    }
+    if (plan === "HIGHLIGHTED_AD" && profile?.highlightedUntil && profile.highlightedUntil > base) {
+      base = profile.highlightedUntil;
+    }
+  }
+
+  return new Date(base.getTime() + 30 * 86400000);
+}
+
 export async function fetchSafepayTrackerState(tracker: string) {
   const safepay = getSafepayClient();
   const id = tracker.startsWith("track_") ? tracker : `track_${tracker}`;
@@ -63,7 +101,9 @@ export async function activatePaidSafepaySubscription(opts: {
   // Use billingPeriod stored on the record, or fall back to the hint, then monthly.
   const billing = (existing.billingPeriod as "monthly" | "annual" | null) ?? opts.billingHint ?? "monthly";
   const periodMs = billing === "annual" ? 365 * 86400000 : 30 * 86400000;
-  const periodEnd = new Date(Date.now() + periodMs);
+  const periodEnd = ADD_ON_PLANS.has(plan)
+    ? await resolveAddOnPeriodEnd(existing.userId, plan, existing.id)
+    : new Date(Date.now() + periodMs);
   const updated = await prisma.subscription.update({
     where: { id: existing.id },
     data: {

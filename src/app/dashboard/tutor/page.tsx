@@ -7,6 +7,7 @@ import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
+import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
@@ -158,6 +159,15 @@ export default async function TutorDashboardPage({
               <Link href="/settings">Account settings</Link>
             </div>
           </section>
+
+          {user.tutorProfile && (
+            <div style={{ gridColumn: "1 / -1" }}>
+              <ProfileBoostPanel
+                boostUntil={user.tutorProfile.boostUntil}
+                currency={currency}
+              />
+            </div>
+          )}
 
           {user.tutorProfile && (
             <>

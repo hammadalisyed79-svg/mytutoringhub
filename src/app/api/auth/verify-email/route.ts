@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashEmailToken } from "@/lib/email-verification";
+import { runPostVerifySequence } from "@/lib/email-sequences";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,10 @@ export async function GET(req: Request) {
     data: { emailVerified: new Date() },
   });
   await prisma.emailVerificationToken.deleteMany({ where: { userId: record.userId } });
+
+  void runPostVerifySequence(record.userId).catch((err) => {
+    console.error("[verify-email] onboarding sequence failed", record.userId, err);
+  });
 
   const session = await auth();
   if (session?.user) {

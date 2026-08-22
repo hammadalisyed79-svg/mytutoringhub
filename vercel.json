@@ -4,6 +4,10 @@
     {
       "path": "/api/digests/ads",
       "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/digests/onboarding",
+      "schedule": "0 10 * * *"
     }
   ]
 }

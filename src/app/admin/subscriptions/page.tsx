@@ -25,7 +25,7 @@ const PLAN_OPTIONS: { value: string; label: string }[] = [
   { value: "TUTOR_BASIC", label: "Tutor Basic" },
   { value: "VERIFIED_TUTOR", label: "Verified Tutor" },
   { value: "HIGHLIGHTED_AD", label: "Highlighted Listing" },
-  { value: "AD_BOOST", label: "Ad Boost" },
+  { value: "AD_BOOST", label: "Profile Boost" },
   { value: "UNLIMITED_ADS", label: "Unlimited Ads" },
 ];
 

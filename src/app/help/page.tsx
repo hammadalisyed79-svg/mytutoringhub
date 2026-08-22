@@ -30,11 +30,11 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. One-time booking fees, one-time profile boosts, group class listings, and resource uploads are not available yet (Coming soon).",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Profile Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. Tutors can buy Profile Boost from the dashboard for 30 days of extra search visibility. Booking fees, group class listings, and resource uploads are not available yet.",
   },
   {
     q: "Is Tutor Basic free?",
-    a: "Complete tutor profiles appear in search for free. Tutor Basic (complimentary until 30 September 2026) unlocks priority ranking, unlimited enquiry reveals, and subject ads. Verified badge, highlight, and ad boost remain paid add-ons. After that date the standard Tutor Basic price applies.",
+    a: "Complete tutor profiles appear in search for free. Tutor Basic (complimentary until 30 September 2026) unlocks priority ranking, unlimited enquiry reveals, and subject ads. Verified badge, highlight, and Profile Boost remain paid add-ons. After that date the standard Tutor Basic price applies.",
   },
   {
     q: "Why do I need to verify my email?",

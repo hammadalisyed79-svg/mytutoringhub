@@ -131,11 +131,15 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "AD_BOOST",
-    name: "Ad Boost",
-    description: "Periodic top-of-list boosts for 30 days.",
+    name: "Profile Boost",
+    description: "One-time checkout — 30 days of extra search visibility with periodic top placement.",
     audience: "tutor",
     pricePkr: 999,
-    features: ["Boost window for 30 days", "Extra visibility in search"],
+    features: [
+      "30-day boost window",
+      "Periodic top-of-list placement in search",
+      "Repurchase extends your active window",
+    ],
     envPriceId: "STRIPE_PRICE_AD_BOOST",
     isAddOn: true,
   },

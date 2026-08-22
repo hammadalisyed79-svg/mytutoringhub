@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 
 export const metadata = { title: "Analytics — Tutor Dashboard" };
 export const dynamic = "force-dynamic";
@@ -43,6 +45,8 @@ export default async function TutorAnalyticsPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "TUTOR") redirect("/dashboard");
+
+  const currency = await getVisitorCurrency();
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
@@ -417,12 +421,20 @@ export default async function TutorAnalyticsPage() {
             <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--muted)" }}>
               {listed
                 ? hasPaidPlan
-                  ? "Listed with paid priority. Add-ons on Pricing can highlight or boost you."
+                  ? "Listed with paid priority. Profile Boost puts you at the top of search periodically."
                   : "Listed in search for free. Tutor Basic adds priority, unlimited reveals, and ads."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
           </section>
         </div>
+
+        {profile && (
+          <ProfileBoostPanel
+            boostUntil={profile.boostUntil}
+            currency={currency}
+            compact
+          />
+        )}
 
         <section className="panel" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>Recent activity</h2>
