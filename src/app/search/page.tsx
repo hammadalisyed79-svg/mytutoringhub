@@ -159,7 +159,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           </p>
         )}
 
-        <div className="tutor-grid tutor-grid-list">
+        <div className="tutor-grid tutor-grid-cards">
           {tutors.map((t) => {
             const avg =
               t.reviews.length > 0
@@ -173,23 +173,24 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               .split(/[,;|]/)
               .map((s) => s.trim())
               .filter(Boolean)
-              .slice(0, 5);
+              .slice(0, 3);
             const levelChips = (t.levels || "")
               .split(/[,;|]/)
               .map((s) => s.trim())
               .filter(Boolean)
-              .slice(0, 3);
-            const snippet = (t.bio || "").slice(0, 120).trim();
+              .slice(0, 2);
+            const snippet = (t.bio || "").slice(0, 90).trim();
             const place = formatTutorPlace(t.location, t.country);
             const tutorName = t.user.name?.trim() || "Tutor";
+            const modes = [t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online";
             return (
-              <div
+              <article
                 key={t.id}
-                className={`tc-card${highlighted ? " highlighted" : ""}${boosted ? " boosted" : ""}`}
+                className={`tc-card tc-card-grid${highlighted ? " highlighted" : ""}${boosted ? " boosted" : ""}`}
               >
-                <div className="tc-left">
+                <div className="tc-card-head">
                   <TutorAvatar
-                    className="tc-avatar"
+                    className="tc-avatar tc-avatar-lg"
                     photoUrl={t.photoUrl}
                     cropX={t.photoCropX}
                     cropY={t.photoCropY}
@@ -197,70 +198,74 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     initial={tutorName.slice(0, 1).toUpperCase()}
                   />
                   {isStarTutor && (
-                    <div className="tc-star-badge" title="Star Tutor">⭐ Star Tutor</div>
+                    <span className="tc-star-badge" title="Star Tutor">
+                      Star tutor
+                    </span>
                   )}
                 </div>
-                <div className="tc-body">
-                  <div className="tc-top-row">
-                    <div className="tc-name-area">
-                      <h2 className="tc-name">
-                        <Link href={`/tutors/${t.id}`}>{tutorName}</Link>
-                      </h2>
-                      {t.headline && <p className="tc-headline">{t.headline}</p>}
-                    </div>
-                    <div className="tc-price-area">
-                      <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
-                      <span className="tc-rate-label">/ hour</span>
-                    </div>
-                  </div>
 
-                  <div className="tc-badges">
-                    {t.verified && <span className="badge badge-verified">✓ Verified</span>}
-                    {boosted && <span className="badge accent">Boosted</span>}
-                    {highlighted && <span className="badge accent">Featured</span>}
-                    {t.offersFreeTrial && <span className="badge">Free trial</span>}
+                <div className="tc-card-main">
+                  <div className="tc-card-title-row">
+                    <h2 className="tc-name">
+                      <Link href={`/tutors/${t.id}`}>{tutorName}</Link>
+                    </h2>
                     {avg !== null && (
-                      <span className="tc-rating">
-                        {"★".repeat(Math.round(avg))}{"☆".repeat(5 - Math.round(avg))}{" "}
-                        <strong>{avg.toFixed(1)}</strong>
+                      <span className="tc-rating" aria-label={`${avg.toFixed(1)} out of 5`}>
+                        ★ {avg.toFixed(1)}
                         <span className="muted"> ({t.reviews.length})</span>
                       </span>
                     )}
                   </div>
 
+                  {t.headline && <p className="tc-headline">{t.headline}</p>}
+
+                  <div className="tc-rate-row">
+                    <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
+                    <span className="tc-rate-label">/ hour</span>
+                  </div>
+
+                  <div className="tc-badges">
+                    {t.verified && <span className="badge badge-verified">Verified</span>}
+                    {boosted && <span className="badge accent">Boosted</span>}
+                    {highlighted && <span className="badge accent">Featured</span>}
+                    {t.offersFreeTrial && <span className="badge">Free trial</span>}
+                  </div>
+
                   {snippet && (
-                    <p className="tc-snippet">
-                      {snippet}{(t.bio || "").length > 120 ? "…" : ""}
+                    <p className="tc-snippet tc-snippet-grid">
+                      {snippet}{(t.bio || "").length > 90 ? "…" : ""}
                     </p>
                   )}
 
-                  {subjectChips.length > 0 && (
+                  {(subjectChips.length > 0 || levelChips.length > 0) && (
                     <div className="tc-chips">
                       {subjectChips.map((s) => (
-                        <span key={s} className="tc-chip">{s}</span>
+                        <span key={s} className="tc-chip">
+                          {s}
+                        </span>
                       ))}
                       {levelChips.map((l) => (
-                        <span key={l} className="tc-chip tc-chip-level">{l}</span>
+                        <span key={l} className="tc-chip tc-chip-level">
+                          {l}
+                        </span>
                       ))}
                     </div>
                   )}
 
-                  <div className="tc-footer">
-                    <span className="tc-place muted">
-                      {place && <>{place} · </>}
-                      {[t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online"}
-                    </span>
-                    <div className="tc-actions">
-                      <Link href={`/messages?tutor=${t.id}`} className="btn btn-secondary btn-sm">
-                        Message
-                      </Link>
-                      <Link href={`/tutors/${t.id}`} className="btn btn-sm">
-                        View Profile
-                      </Link>
-                    </div>
-                  </div>
+                  <p className="tc-place muted">
+                    {place ? `${place} · ${modes}` : modes}
+                  </p>
                 </div>
-              </div>
+
+                <div className="tc-card-actions">
+                  <Link href={`/messages?tutor=${t.id}`} className="btn btn-secondary btn-sm">
+                    Message
+                  </Link>
+                  <Link href={`/tutors/${t.id}`} className="btn btn-sm">
+                    View profile
+                  </Link>
+                </div>
+              </article>
             );
           })}
         </div>

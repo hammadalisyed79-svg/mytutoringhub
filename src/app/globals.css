@@ -2857,8 +2857,14 @@ select:focus {
 
 .tutor-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.tutor-grid-cards {
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .tutor-grid-list {
@@ -2943,6 +2949,69 @@ select:focus {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+
+.tc-card-grid {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 1rem;
+  min-height: 100%;
+}
+
+.tc-card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(13, 95, 82, 0.08);
+}
+
+.tc-card-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  padding: 0.85rem 0 0.65rem;
+  min-width: 0;
+}
+
+.tc-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tc-rate-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.tc-snippet-grid {
+  -webkit-line-clamp: 2;
+}
+
+.tc-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(13, 95, 82, 0.08);
+}
+
+.tc-card-actions .btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 2.35rem;
+}
+
+.tc-avatar-lg {
+  width: 4.75rem;
+  height: 4.75rem;
 }
 
 .tc-card:hover {
@@ -3119,10 +3188,19 @@ select:focus {
 }
 
 @media (max-width: 600px) {
+  .tutor-grid-cards {
+    grid-template-columns: 1fr;
+  }
+
   .tc-card {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .tc-card-grid {
+    align-items: stretch;
+  }
+
   .tc-left {
     flex-direction: row;
     align-items: center;
@@ -3134,6 +3212,10 @@ select:focus {
   .tc-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .tc-card-actions {
+    grid-template-columns: 1fr;
   }
 }
 /* ── end Tutor Search Cards ─────────────────────────── */
@@ -4461,6 +4543,10 @@ a.chip-btn {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .tutor-grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .subject-directory {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -4608,6 +4694,10 @@ a.chip-btn {
   .testimonial-grid,
   .subject-cats,
   .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-grid-cards {
     grid-template-columns: 1fr;
   }
 
