@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canMessage, canReceiveMessages } from "@/lib/subscription";
 import { canPerformAction, recordUsage } from "@/lib/plan-limits";
+import { resolveMessageRecipient } from "@/lib/message-recipient";
 import { sendEmail, newMessageEmailHtml } from "@/lib/email";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
@@ -67,20 +68,34 @@ export async function POST(req: Request) {
   }
 
   const data = startSchema.parse(await req.json());
-  if (data.recipientId === session.user.id) {
+  const resolved = await resolveMessageRecipient(data.recipientId);
+  if (!resolved) {
+    return NextResponse.json(
+      { error: "Recipient not found", message: "This tutor could not be found." },
+      { status: 404 },
+    );
+  }
+  const recipientUserId = resolved.userId;
+
+  if (recipientUserId === session.user.id) {
     return NextResponse.json({ error: "Cannot message yourself" }, { status: 400 });
   }
 
-  const recipient = await prisma.user.findUnique({ where: { id: data.recipientId } });
-  if (!recipient) return NextResponse.json({ error: "Recipient not found" }, { status: 404 });
+  const recipient = await prisma.user.findUnique({ where: { id: recipientUserId } });
+  if (!recipient) {
+    return NextResponse.json(
+      { error: "Recipient not found", message: "This tutor could not be found." },
+      { status: 404 },
+    );
+  }
 
   // Check if this is a new conversation (first contact) to enforce monthly limits
   const role = session.user.role as Role;
   const isNewContact = !await prisma.conversation.findFirst({
     where: {
       OR: [
-        { userAId: session.user.id, userBId: data.recipientId },
-        { userAId: data.recipientId, userBId: session.user.id },
+        { userAId: session.user.id, userBId: recipientUserId },
+        { userAId: recipientUserId, userBId: session.user.id },
       ],
     },
   });
@@ -133,7 +148,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const [userAId, userBId] = orderedPair(session.user.id, data.recipientId);
+  const [userAId, userBId] = orderedPair(session.user.id, recipientUserId);
   let conversation = await prisma.conversation.findUnique({
     where: { userAId_userBId: { userAId, userBId } },
   });

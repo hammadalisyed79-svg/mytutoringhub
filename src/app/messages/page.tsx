@@ -7,36 +7,11 @@ import { MessagesPlanPanel } from "@/components/MessagesPlanPanel";
 import { isImageAttachment } from "@/lib/media";
 import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
 import { getPlanDashboardSummary } from "@/lib/plan-limits";
+import { resolveMessageRecipient } from "@/lib/message-recipient";
 
 export const metadata = { title: "Messages" };
 
 type SearchParams = Promise<{ to?: string; tutor?: string; ad?: string }>;
-
-/** Accept user id or tutor-profile id (search historically linked profile ids). */
-async function resolveRecipientUserId(raw: string): Promise<{
-  userId: string;
-  name: string;
-} | null> {
-  const asUser = await prisma.user.findUnique({
-    where: { id: raw },
-    select: { id: true, name: true, role: true, suspended: true },
-  });
-  if (asUser && !asUser.suspended) {
-    return { userId: asUser.id, name: asUser.name };
-  }
-
-  const asProfile = await prisma.tutorProfile.findUnique({
-    where: { id: raw },
-    select: {
-      user: { select: { id: true, name: true, suspended: true } },
-    },
-  });
-  if (asProfile?.user && !asProfile.user.suspended) {
-    return { userId: asProfile.user.id, name: asProfile.user.name };
-  }
-
-  return null;
-}
 
 export default async function MessagesPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
@@ -54,7 +29,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     if (!me?.emailVerified) redirect("/dashboard?verify=1");
   }
 
-  const recipient = rawRecipient ? await resolveRecipientUserId(rawRecipient) : null;
+  const recipient = rawRecipient ? await resolveMessageRecipient(rawRecipient) : null;
   const recipientId = recipient?.userId;
 
   if (recipientId && recipientId !== uid) {
