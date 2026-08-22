@@ -14,26 +14,35 @@ type Recommendation = {
 
 export function TutorBadgeProgressPanel({ progress }: { progress: BadgeProgress }) {
   return (
-    <section className="panel tutor-badge-progress" style={{ marginTop: "1rem" }}>
+    <section className="panel tutor-badge-progress">
       <div className="tutor-badge-progress-head">
-        <h2 style={{ marginTop: 0 }}>Tutor badge progression</h2>
+        <h2>Tutor badge progression</h2>
         <TutorTrustBadgePill badge={progress.current} />
       </div>
-      <p className="muted" style={{ marginTop: 0 }}>
+      <p className="muted tutor-badge-progress-intro">
         Every new tutor starts as <strong>New Tutor</strong>. Earn higher badges through verified
         off-platform recommendations and on-platform student reviews.
       </p>
       <ol className="tutor-badge-steps">
-        {progress.steps.map((step) => (
-          <li key={step.label} className={step.done ? "is-done" : ""}>
-            <strong>{step.label}</strong>
-            <span className="muted">{step.detail}</span>
-          </li>
-        ))}
+        {progress.steps.map((step, index) => {
+          const isCurrent = !step.done && progress.steps.slice(0, index).every((s) => s.done);
+          return (
+            <li
+              key={step.label}
+              className={step.done ? "is-done" : isCurrent ? "is-current" : ""}
+            >
+              <div className="tutor-badge-step-marker" aria-hidden />
+              <div className="tutor-badge-step-body">
+                <strong>{step.label}</strong>
+                <span className="muted">{step.detail}</span>
+              </div>
+            </li>
+          );
+        })}
       </ol>
       {progress.next ? (
-        <p className="field-hint" style={{ marginBottom: 0 }}>
-          Next: <strong>{progress.next ? trustBadgeMeta(progress.next).label : ""}</strong>
+        <p className="tutor-badge-next field-hint">
+          Next: <strong>{trustBadgeMeta(progress.next).label}</strong>
           {progress.externalNeeded > 0
             ? ` · ${progress.externalNeeded} more verified recommendation${progress.externalNeeded === 1 ? "" : "s"}`
             : ""}
@@ -42,11 +51,20 @@ export function TutorBadgeProgressPanel({ progress }: { progress: BadgeProgress 
             : ""}
         </p>
       ) : (
-        <p className="success" style={{ marginBottom: 0 }}>
+        <p className="success tutor-badge-next">
           You have reached the highest tutor badge. Thank you for outstanding teaching.
         </p>
       )}
     </section>
+  );
+}
+
+export function TutorGrowthSection({ progress }: { progress: BadgeProgress }) {
+  return (
+    <div className="tutor-growth-layout">
+      <TutorBadgeProgressPanel progress={progress} />
+      <TutorRecommendationForm />
+    </div>
   );
 }
 
@@ -133,35 +151,41 @@ export function TutorRecommendationForm() {
   }
 
   return (
-    <section className="panel" style={{ marginTop: "1rem" }} id="tutor-recommendations">
-      <h2 style={{ marginTop: 0 }}>Off-platform recommendations</h2>
-      <p className="muted">
-        Ask previous students (outside My Tutoring Hub) to recommend you. Each submission is reviewed
-        by our team before it counts toward <strong>Recommended</strong> and <strong>Super Tutor</strong>{" "}
-        badges.
-      </p>
+    <section className="panel tutor-recommendation-panel" id="tutor-recommendations">
+      <div className="tutor-recommendation-head">
+        <div>
+          <h2>Off-platform recommendations</h2>
+          <p className="muted">
+            Ask previous students (outside My Tutoring Hub) to recommend you. Each submission is
+            reviewed by our team before it counts toward <strong>Recommended</strong> and{" "}
+            <strong>Super Tutor</strong> badges.
+          </p>
+        </div>
+      </div>
 
-      <form className="stack-form" onSubmit={submit}>
-        <label>
-          Student / parent name <abbr className="req" title="Required">*</abbr>
-          <input
-            value={recommenderName}
-            onChange={(e) => setRecommenderName(e.target.value)}
-            required
-            minLength={2}
-            maxLength={80}
-            placeholder="Who is recommending you?"
-          />
-        </label>
-        <label>
-          Their email (optional)
-          <input
-            type="email"
-            value={recommenderEmail}
-            onChange={(e) => setRecommenderEmail(e.target.value)}
-            placeholder="For verification only — not shown publicly"
-          />
-        </label>
+      <form className="stack-form tutor-recommendation-form" onSubmit={submit}>
+        <div className="tutor-recommendation-form-grid">
+          <label>
+            Student / parent name <abbr className="req" title="Required">*</abbr>
+            <input
+              value={recommenderName}
+              onChange={(e) => setRecommenderName(e.target.value)}
+              required
+              minLength={2}
+              maxLength={80}
+              placeholder="Who is recommending you?"
+            />
+          </label>
+          <label>
+            Their email (optional)
+            <input
+              type="email"
+              value={recommenderEmail}
+              onChange={(e) => setRecommenderEmail(e.target.value)}
+              placeholder="For verification only — not shown publicly"
+            />
+          </label>
+        </div>
         <label>
           Relationship (optional)
           <input
@@ -178,14 +202,19 @@ export function TutorRecommendationForm() {
             onChange={(e) => setComment(e.target.value)}
             required
             minLength={20}
-            rows={4}
+            rows={5}
             placeholder="What they said about your teaching, results, or reliability…"
           />
         </label>
-        <label className="btn btn-secondary btn-sm profile-upload-btn" style={{ width: "fit-content" }}>
-          {uploading ? "Uploading…" : proofUrl ? "Change supporting document" : "Attach supporting document"}
-          <input type="file" accept="image/*,application/pdf" hidden onChange={onProofFile} />
-        </label>
+        <div className="tutor-recommendation-actions">
+          <label className="btn btn-secondary btn-sm profile-upload-btn">
+            {uploading ? "Uploading…" : proofUrl ? "Change supporting document" : "Attach supporting document"}
+            <input type="file" accept="image/*,application/pdf" hidden onChange={onProofFile} />
+          </label>
+          <button className="btn" type="submit" disabled={busy || uploading}>
+            {busy ? "Submitting…" : "Submit for review"}
+          </button>
+        </div>
         {proofUrl && (
           <p className="field-hint" style={{ marginTop: 0 }}>
             <a href={proofUrl} target="_blank" rel="noreferrer">
@@ -199,20 +228,21 @@ export function TutorRecommendationForm() {
         )}
         {error && <p className="form-error">{error}</p>}
         {msg && <p className="success">{msg}</p>}
-        <button className="btn" type="submit" disabled={busy || uploading}>
-          {busy ? "Submitting…" : "Submit for review"}
-        </button>
       </form>
 
       {items.length > 0 && (
-        <ul className="sub-list" style={{ marginTop: "1rem" }}>
-          {items.map((item) => (
-            <li key={item.id}>
-              <strong>{item.recommenderName}</strong> · {item.status} ·{" "}
-              {new Date(item.createdAt).toLocaleDateString()}
-            </li>
-          ))}
-        </ul>
+        <div className="tutor-recommendation-history">
+          <h3>Your submissions</h3>
+          <ul className="tutor-recommendation-list">
+            {items.map((item) => (
+              <li key={item.id}>
+                <strong>{item.recommenderName}</strong>
+                <span className={`tutor-rec-status is-${item.status.toLowerCase()}`}>{item.status}</span>
+                <time className="muted">{new Date(item.createdAt).toLocaleDateString()}</time>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </section>
   );

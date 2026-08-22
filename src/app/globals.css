@@ -1969,20 +1969,187 @@ select:focus {
   flex-wrap: wrap;
 }
 
-.tutor-badge-steps {
-  margin: 0.75rem 0 0;
-  padding-left: 1.1rem;
+.tutor-badge-progress h2,
+.tutor-recommendation-panel h2 {
+  margin: 0;
+}
+
+.tutor-badge-progress-intro {
+  margin: 0.65rem 0 0;
+}
+
+.tutor-growth-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.tutor-badge-progress {
+  height: 100%;
+}
+
+.tutor-recommendation-panel {
+  height: 100%;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.tutor-recommendation-head p {
+  margin: 0.45rem 0 0;
+  max-width: 52rem;
+}
+
+.tutor-recommendation-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tutor-recommendation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tutor-recommendation-history {
+  margin-top: 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.tutor-recommendation-history h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+}
+
+.tutor-recommendation-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   gap: 0.55rem;
 }
 
+.tutor-recommendation-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.tutor-rec-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(13, 95, 82, 0.1);
+  color: var(--brand);
+}
+
+.tutor-rec-status.is-pending {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+}
+
+.tutor-rec-status.is-rejected {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+
+.tutor-badge-steps {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0;
+}
+
 .tutor-badge-steps li {
   display: grid;
-  gap: 0.15rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  position: relative;
+}
+
+.tutor-badge-steps li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0.55rem;
+  top: 2rem;
+  bottom: -0.1rem;
+  width: 2px;
+  background: rgba(13, 95, 82, 0.14);
+}
+
+.tutor-badge-steps li.is-done:not(:last-child)::after {
+  background: rgba(13, 95, 82, 0.35);
+}
+
+.tutor-badge-step-marker {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  border-radius: 999px;
+  border: 2px solid rgba(13, 95, 82, 0.22);
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.tutor-badge-steps li.is-done .tutor-badge-step-marker {
+  border-color: var(--brand);
+  background: var(--brand);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.tutor-badge-steps li.is-current .tutor-badge-step-marker {
+  border-color: var(--brand);
+  background: rgba(13, 95, 82, 0.12);
+  box-shadow: 0 0 0 4px rgba(13, 95, 82, 0.1);
+}
+
+.tutor-badge-step-body {
+  display: grid;
+  gap: 0.2rem;
 }
 
 .tutor-badge-steps li.is-done strong {
   color: var(--brand);
+}
+
+.tutor-badge-steps li.is-current strong {
+  color: var(--ink);
+}
+
+.tutor-badge-next {
+  margin: 0.85rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 960px) {
+  .tutor-growth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-recommendation-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-recommendation-list li {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
 }
 
 .tutor-owner-verify-badge {

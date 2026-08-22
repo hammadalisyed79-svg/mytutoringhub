@@ -17,8 +17,7 @@ import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
-  TutorBadgeProgressPanel,
-  TutorRecommendationForm,
+  TutorGrowthSection,
 } from "@/components/TutorBadgeProgress";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
@@ -298,8 +297,11 @@ export default async function TutorDashboardPage({
                   )}
                 </p>
               </section>
-              {badgeProgress && <TutorBadgeProgressPanel progress={badgeProgress} />}
-              <TutorRecommendationForm />
+              {badgeProgress && (
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <TutorGrowthSection progress={badgeProgress} />
+                </div>
+              )}
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Optional subject ads</h2>
                 <p className="muted">
