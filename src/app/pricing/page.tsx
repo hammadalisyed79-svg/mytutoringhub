@@ -11,6 +11,7 @@ import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-cop
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { pageMetadata } from "@/lib/seo";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 
 export const dynamic = "force-dynamic";
@@ -57,12 +58,7 @@ export default async function PricingPage({
   }
 
   const hubPointsBalance = session?.user?.id
-    ? (
-        await prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: { hubPointsBalance: true },
-        })
-      )?.hubPointsBalance ?? 0
+    ? await getHubPointsBalanceSafe(session.user.id)
     : 0;
 
   return (

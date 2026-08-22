@@ -19,7 +19,7 @@ import {
   safepayPublicError,
 } from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
-import { computeMaxRedeemablePoints } from "@/lib/hub-points";
+import { computeMaxRedeemablePoints, getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -108,12 +108,9 @@ export async function POST(req: Request) {
   const basePricePkr =
     billing === "annual" && annualPricePkr != null ? annualPricePkr : def.chargePricePkr;
 
-  const wallet = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { hubPointsBalance: true },
-  });
+  const hubPointsBalance = await getHubPointsBalanceSafe(session.user.id);
   const pointsRedeemedPkr = useHubPoints
-    ? computeMaxRedeemablePoints(wallet?.hubPointsBalance ?? 0, basePricePkr)
+    ? computeMaxRedeemablePoints(hubPointsBalance, basePricePkr)
     : 0;
   const chargePricePkr = Math.max(0, basePricePkr - pointsRedeemedPkr);
 

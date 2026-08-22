@@ -51,6 +51,59 @@ export type HubPointsSummary = {
 
 const appUrl = () => process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
+function hubPointsEarnHints(role: string) {
+  return role === "TUTOR"
+    ? [
+        `Complete your profile — ${HUB_POINTS_PROFILE_COMPLETE} pts (one-time)`,
+        `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
+        `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
+      ]
+    : [
+        `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
+        `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
+      ];
+}
+
+function hubPointsRedeemHints(role: string) {
+  return role === "TUTOR"
+    ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted listing", "Unlimited Ads"]
+    : ["Student Pass", "Student Pro"];
+}
+
+function emptyHubPointsSummary(
+  userId: string,
+  currency: CurrencyCode,
+  role: string,
+): HubPointsSummary {
+  const referralPath =
+    role === "TUTOR"
+      ? `/register?role=tutor&ref=${encodeURIComponent(userId)}`
+      : `/register?role=student&ref=${encodeURIComponent(userId)}`;
+  return {
+    balance: 0,
+    balanceLabel: formatHubPoints(0, currency),
+    lastActivityAt: null,
+    expiresAt: null,
+    recent: [],
+    referralLink: `${appUrl()}${referralPath}`,
+    earnHints: hubPointsEarnHints(role),
+    redeemHints: hubPointsRedeemHints(role),
+  };
+}
+
+export async function getHubPointsBalanceSafe(userId: string): Promise<number> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { hubPointsBalance: true },
+    });
+    return user?.hubPointsBalance ?? 0;
+  } catch (err) {
+    console.error("[hub-points] balance lookup failed", { userId, err });
+    return 0;
+  }
+}
+
 export function formatHubPoints(points: number, currency: CurrencyCode = "PKR") {
   if (currency === "PKR") return `${points.toLocaleString()} pts (Rs ${points.toLocaleString()})`;
   const local = pkrToCurrency(points, currency);
@@ -75,68 +128,58 @@ export async function getHubPointsSummary(
   opts?: { currency?: CurrencyCode; role?: string; limit?: number },
 ): Promise<HubPointsSummary> {
   const currency = opts?.currency ?? "PKR";
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      hubPointsBalance: true,
-      hubPointsLastActivityAt: true,
-      role: true,
-      hubPointLedger: {
-        orderBy: { createdAt: "desc" },
-        take: opts?.limit ?? 8,
-        select: {
-          id: true,
-          amount: true,
-          balanceAfter: true,
-          type: true,
-          description: true,
-          createdAt: true,
+  const role = opts?.role ?? "STUDENT";
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        hubPointsBalance: true,
+        hubPointsLastActivityAt: true,
+        role: true,
+        hubPointLedger: {
+          orderBy: { createdAt: "desc" },
+          take: opts?.limit ?? 8,
+          select: {
+            id: true,
+            amount: true,
+            balanceAfter: true,
+            type: true,
+            description: true,
+            createdAt: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  const balance = user?.hubPointsBalance ?? 0;
-  const lastActivityAt = user?.hubPointsLastActivityAt ?? null;
-  const expiresAt = lastActivityAt
-    ? new Date(
-        lastActivityAt.getTime() + HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000,
-      )
-    : null;
+    const balance = user?.hubPointsBalance ?? 0;
+    const lastActivityAt = user?.hubPointsLastActivityAt ?? null;
+    const expiresAt = lastActivityAt
+      ? new Date(
+          lastActivityAt.getTime() + HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000,
+        )
+      : null;
 
-  const role = opts?.role ?? user?.role ?? "STUDENT";
-  const referralPath =
-    role === "TUTOR"
-      ? `/register?role=tutor&ref=${encodeURIComponent(userId)}`
-      : `/register?role=student&ref=${encodeURIComponent(userId)}`;
+    const resolvedRole = opts?.role ?? user?.role ?? "STUDENT";
+    const referralPath =
+      resolvedRole === "TUTOR"
+        ? `/register?role=tutor&ref=${encodeURIComponent(userId)}`
+        : `/register?role=student&ref=${encodeURIComponent(userId)}`;
 
-  const earnHints =
-    role === "TUTOR"
-      ? [
-          `Complete your profile — ${HUB_POINTS_PROFILE_COMPLETE} pts (one-time)`,
-          `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
-          `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
-        ]
-      : [
-          `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
-          `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
-        ];
-
-  const redeemHints =
-    role === "TUTOR"
-      ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted listing", "Unlimited Ads"]
-      : ["Student Pass", "Student Pro"];
-
-  return {
-    balance,
-    balanceLabel: formatHubPoints(balance, currency),
-    lastActivityAt,
-    expiresAt,
-    recent: user?.hubPointLedger ?? [],
-    referralLink: `${appUrl()}${referralPath}`,
-    earnHints,
-    redeemHints,
-  };
+    return {
+      balance,
+      balanceLabel: formatHubPoints(balance, currency),
+      lastActivityAt,
+      expiresAt,
+      recent: user?.hubPointLedger ?? [],
+      referralLink: `${appUrl()}${referralPath}`,
+      earnHints: hubPointsEarnHints(resolvedRole),
+      redeemHints: hubPointsRedeemHints(resolvedRole),
+    };
+  } catch (err) {
+    console.error("[hub-points] summary unavailable", { userId, err });
+    return emptyHubPointsSummary(userId, currency, role);
+  }
 }
 
 async function touchHubPointsActivity(userId: string) {
@@ -215,33 +258,37 @@ export async function awardHubPoints(opts: {
 }
 
 export async function attributeReferralOnSignup(refereeId: string, referrerIdRaw: string) {
-  const referrerId = referrerIdRaw.trim();
-  if (!referrerId || referrerId === refereeId) return;
+  try {
+    const referrerId = referrerIdRaw.trim();
+    if (!referrerId || referrerId === refereeId) return;
 
-  const [referee, referrer] = await Promise.all([
-    prisma.user.findUnique({ where: { id: refereeId }, select: { referredByUserId: true } }),
-    prisma.user.findUnique({
-      where: { id: referrerId },
-      select: { id: true, name: true, email: true, suspended: true },
-    }),
-  ]);
-  if (!referee || referee.referredByUserId || !referrer || referrer.suspended) return;
-
-  await prisma.user.update({
-    where: { id: refereeId },
-    data: { referredByUserId: referrerId },
-  });
-
-  if (referrer.email) {
-    void sendEmail({
-      to: referrer.email,
-      subject: "Someone joined with your link — Hub Points pending",
-      html: hubPointsReferralPendingEmailHtml({
-        name: referrer.name,
-        points: HUB_POINTS_REFERRAL,
-        dashboardUrl: `${appUrl()}/dashboard`,
+    const [referee, referrer] = await Promise.all([
+      prisma.user.findUnique({ where: { id: refereeId }, select: { referredByUserId: true } }),
+      prisma.user.findUnique({
+        where: { id: referrerId },
+        select: { id: true, name: true, email: true, suspended: true },
       }),
-    }).catch((err) => console.error("[hub-points] referral pending email failed", err));
+    ]);
+    if (!referee || referee.referredByUserId || !referrer || referrer.suspended) return;
+
+    await prisma.user.update({
+      where: { id: refereeId },
+      data: { referredByUserId: referrerId },
+    });
+
+    if (referrer.email) {
+      void sendEmail({
+        to: referrer.email,
+        subject: "Someone joined with your link — Hub Points pending",
+        html: hubPointsReferralPendingEmailHtml({
+          name: referrer.name,
+          points: HUB_POINTS_REFERRAL,
+          dashboardUrl: `${appUrl()}/dashboard`,
+        }),
+      }).catch((err) => console.error("[hub-points] referral pending email failed", err));
+    }
+  } catch (err) {
+    console.error("[hub-points] attribute referral failed", { refereeId, err });
   }
 }
 
@@ -424,23 +471,28 @@ export async function sendHubPointsExpiryWarnings() {
 }
 
 export async function runHubPointsMaintenance() {
-  const stale = await prisma.user.findMany({
-    where: {
-      hubPointsBalance: { gt: 0 },
-      hubPointsLastActivityAt: {
-        lt: new Date(Date.now() - HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000),
+  try {
+    const stale = await prisma.user.findMany({
+      where: {
+        hubPointsBalance: { gt: 0 },
+        hubPointsLastActivityAt: {
+          lt: new Date(Date.now() - HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000),
+        },
       },
-    },
-    select: { id: true },
-    take: 100,
-  });
+      select: { id: true },
+      take: 100,
+    });
 
-  let expired = 0;
-  for (const row of stale) {
-    if (await expireInactiveHubPointsForUser(row.id)) expired += 1;
+    let expired = 0;
+    for (const row of stale) {
+      if (await expireInactiveHubPointsForUser(row.id)) expired += 1;
+    }
+    const warnings = await sendHubPointsExpiryWarnings();
+    return { expired, warnings };
+  } catch (err) {
+    console.error("[hub-points] maintenance failed", err);
+    return { expired: 0, warnings: 0 };
   }
-  const warnings = await sendHubPointsExpiryWarnings();
-  return { expired, warnings };
 }
 
 export async function ensureHubPointsFresh(userId: string) {
