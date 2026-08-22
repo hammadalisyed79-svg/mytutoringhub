@@ -158,6 +158,9 @@ export default function ProgressPage() {
           </Link>
         </div>
         <h1 className="page-title">My Study Log 📚</h1>
+        <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "1.25rem" }}>
+          Free study tool — no subscription required. Stored only in this browser.
+        </p>
 
         {/* Add session form */}
         <section className="panel" style={{ marginBottom: "1.5rem" }}>

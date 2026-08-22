@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const profile = await prisma.tutorProfile.findUnique({ where: { id: data.tutorProfileId } });
   if (!profile) return NextResponse.json({ error: "Tutor not found" }, { status: 404 });
 
-  // Require prior conversation between student and tutor
+  // Require a prior conversation (at least 12h old) to reduce drive-by fake reviews
   const talked = await prisma.conversation.findFirst({
     where: {
       OR: [
@@ -31,6 +31,16 @@ export async function POST(req: Request) {
   if (!talked) {
     return NextResponse.json(
       { error: "Message the tutor before leaving a review" },
+      { status: 403 },
+    );
+  }
+  const minAgeMs = 12 * 60 * 60 * 1000;
+  if (Date.now() - talked.createdAt.getTime() < minAgeMs) {
+    return NextResponse.json(
+      {
+        error:
+          "Please wait at least 12 hours after starting a conversation before leaving a review",
+      },
       { status: 403 },
     );
   }

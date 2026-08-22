@@ -25,8 +25,12 @@ const FAQS = [
     a: "No. Lesson fees stay between you and the tutor. My Tutoring Hub only charges platform subscriptions and visibility upgrades.",
   },
   {
+    q: "What is the Study assistant?",
+    a: "Students with Student Pro (and tutors) can use an AI study coach for explanations and practice. It is not a live tutor and has a daily message limit. Progress log and exam countdown are free tools. For human help, search Find tutors.",
+  },
+  {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. One-time booking fees, group class listings, and resource uploads are not available yet.",
   },
   {
     q: "Is Tutor Basic free?",
@@ -34,7 +38,7 @@ const FAQS = [
   },
   {
     q: "Why do I need to verify my email?",
-    a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging, ads, and the study assistant unlock after you confirm. Resend the link from Pricing, Dashboard, or Settings.",
+    a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging and ads stay locked until you confirm. The AI study assistant also needs Student Pro. Resend the link from Pricing, Dashboard, or Settings.",
   },
   {
     q: "What is a Verified tutor?",
@@ -42,15 +46,11 @@ const FAQS = [
   },
   {
     q: "How do reviews work?",
-    a: "Students who have messaged a tutor can leave a review. Reviews may be moderated before they appear publicly.",
+    a: "Students who have messaged a tutor can leave a review after the conversation is at least 12 hours old. Reviews may be moderated before they appear publicly.",
   },
   {
     q: "How do I report a problem?",
     a: "Use the Report button on a tutor profile or student ad, or email admin@mytutoringhub.com.",
-  },
-  {
-    q: "What is the Study assistant?",
-    a: "Logged-in students and tutors can use an AI study coach for explanations and practice. It is not a live tutor and has a daily message limit. For human help, search Find tutors.",
   },
 ];
 

@@ -39,20 +39,11 @@ function weeksAgo(n: number): Date {
   return d;
 }
 
-function startOfWeek(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  d.setDate(d.getDate() - day);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 export default async function TutorAnalyticsPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "TUTOR") redirect("/dashboard");
 
-  // Fetch tutor profile + subscriptions
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
     include: {
@@ -67,7 +58,6 @@ export default async function TutorAnalyticsPage() {
   const listed = hasActiveListing(user.subscriptions);
   const completeness = profileCompleteness(profile);
 
-  // ── Enquiry data (conversations where tutor is userB) ──────────────────
   let totalEnquiries = 0;
   let recentConversations: {
     id: string;
@@ -77,14 +67,21 @@ export default async function TutorAnalyticsPage() {
   }[] = [];
 
   try {
-    totalEnquiries = await prisma.conversation.count({
-      where: { userBId: session.user.id },
+    const asA = await prisma.conversation.findMany({
+      where: { userAId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        createdAt: true,
+        relatedAdId: true,
+        userB: { select: { name: true } },
+      },
     });
-
-    recentConversations = await prisma.conversation.findMany({
+    const asB = await prisma.conversation.findMany({
       where: { userBId: session.user.id },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 50,
       select: {
         id: true,
         createdAt: true,
@@ -92,17 +89,46 @@ export default async function TutorAnalyticsPage() {
         userA: { select: { name: true } },
       },
     });
+
+    recentConversations = [
+      ...asB.map((c) => ({
+        id: c.id,
+        createdAt: c.createdAt,
+        relatedAdId: c.relatedAdId,
+        userA: c.userA,
+      })),
+      ...asA.map((c) => ({
+        id: c.id,
+        createdAt: c.createdAt,
+        relatedAdId: c.relatedAdId,
+        userA: { name: c.userB.name },
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 40);
+
+    totalEnquiries = await prisma.conversation.count({
+      where: {
+        OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+      },
+    });
   } catch {
     // table may not exist yet
   }
 
-  // ── Profile views ───────────────────────────────────────────────────────
-  // TODO: track real views — ProfileView model added to schema but not yet migrated
-  const profileViewsThisMonth = 0;
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
 
-  // ── Enquiry timeline (last 8 weeks) ────────────────────────────────────
-  // TODO: real data — replace placeholder once migration runs
-  const now = new Date();
+  let profileViewsThisMonth = 0;
+  try {
+    profileViewsThisMonth = await prisma.profileView.count({
+      where: { tutorId: profile.id, viewedAt: { gte: monthStart } },
+    });
+  } catch {
+    profileViewsThisMonth = 0;
+  }
+
   const weekLabels: string[] = [];
   const weekCounts: number[] = [];
 
@@ -111,32 +137,19 @@ export default async function TutorAnalyticsPage() {
     const weekEnd = weeksAgo(i - 1);
     const label = `${weekStart.toLocaleString("default", { month: "short" })} ${weekStart.getDate()}`;
     weekLabels.push(label);
-
-    let count = 0;
-    try {
-      count = recentConversations.filter(
-        (c) => c.createdAt >= weekStart && c.createdAt < weekEnd,
-      ).length;
-    } catch {
-      // placeholder
-    }
-    weekCounts.push(count);
+    weekCounts.push(
+      recentConversations.filter((c) => c.createdAt >= weekStart && c.createdAt < weekEnd).length,
+    );
   }
 
-  // Placeholder fallback so chart isn't empty when data is zero
   const hasRealData = weekCounts.some((c) => c > 0);
-  const displayCounts = hasRealData
-    ? weekCounts
-    : [1, 2, 3, 2, 4, 3, 5, 4]; // TODO: remove when real data flows
-
+  const displayCounts = weekCounts;
   const maxCount = Math.max(...displayCounts, 1);
 
-  // ── Top subjects ───────────────────────────────────────────────────────
   const subjectList = profile.subjects
     ? profile.subjects.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
-  // Count enquiries per subject via relatedAdId → TutorAd.subject
   let subjectCounts: Record<string, number> = {};
   try {
     const ads = await prisma.tutorAd.findMany({
@@ -152,10 +165,7 @@ export default async function TutorAnalyticsPage() {
       }
     }
   } catch {
-    // fallback to profile subjects with placeholder counts
-    subjectList.forEach((s, i) => {
-      subjectCounts[s] = Math.max(1, 5 - i); // TODO: real data
-    });
+    subjectCounts = {};
   }
 
   const topSubjects = Object.entries(subjectCounts)
@@ -163,17 +173,16 @@ export default async function TutorAnalyticsPage() {
     .slice(0, 6);
 
   if (topSubjects.length === 0 && subjectList.length > 0) {
-    subjectList.slice(0, 6).forEach((s, i) => {
+    subjectList.slice(0, 6).forEach((s) => {
       topSubjects.push([s, 0]);
     });
   }
 
-  // ── Activity feed ──────────────────────────────────────────────────────
   const activityFeed: { label: string; time: Date; type: "enquiry" | "view" | "reveal" }[] = [];
 
   recentConversations.slice(0, 8).forEach((c) => {
     activityFeed.push({
-      label: `New enquiry from ${c.userA.name}`,
+      label: `Conversation with ${c.userA.name}`,
       time: c.createdAt,
       type: "enquiry",
     });
@@ -181,9 +190,22 @@ export default async function TutorAnalyticsPage() {
 
   activityFeed.sort((a, b) => b.time.getTime() - a.time.getTime());
 
-  // ── Reveal rate (placeholder — no RevealEvent model yet) ───────────────
-  // TODO: track real reveals
-  const revealRate = totalEnquiries > 0 ? Math.round((Math.min(totalEnquiries, 3) / totalEnquiries) * 100) : 0;
+  let revealCount = 0;
+  try {
+    const monthKey = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}`;
+    revealCount = await prisma.usageEvent.count({
+      where: {
+        userId: session.user.id,
+        type: { in: ["enquiry_reveal", "tutor_contact"] },
+        month: monthKey,
+      },
+    });
+  } catch {
+    revealCount = 0;
+  }
+
+  const revealRate =
+    totalEnquiries > 0 ? Math.round((revealCount / totalEnquiries) * 100) : 0;
 
   const listingColor = listed ? "var(--ok)" : "var(--muted)";
 
@@ -197,7 +219,6 @@ export default async function TutorAnalyticsPage() {
         </div>
         <h1 className="page-title">Analytics</h1>
 
-        {/* ── 1. Profile Stats cards ────────────────────────────────────── */}
         <div
           style={{
             display: "grid",
@@ -209,98 +230,101 @@ export default async function TutorAnalyticsPage() {
           <StatCard
             label="Profile views this month"
             value={profileViewsThisMonth}
-            note="TODO: track real views"
+            note="Public profile visits (not your own)"
             color="var(--brand)"
           />
+          <StatCard label="Total conversations" value={totalEnquiries} color="var(--ok)" />
           <StatCard
-            label="Total enquiries"
-            value={totalEnquiries}
-            color="var(--ok)"
-          />
-          <StatCard
-            label="Reveal rate"
-            value={`${revealRate}%`}
-            note="Reveals / enquiries"
+            label="Contact events (MTD)"
+            value={revealCount}
+            note={totalEnquiries > 0 ? `${revealRate}% of conversations` : "No conversations yet"}
             color="var(--ink)"
           />
           <StatCard
             label="Profile completeness"
             value={`${completeness}%`}
-            color={completeness >= 80 ? "var(--ok)" : completeness >= 40 ? "var(--brand)" : "var(--accent)"}
+            color={
+              completeness >= 80 ? "var(--ok)" : completeness >= 40 ? "var(--brand)" : "var(--accent)"
+            }
             bar={completeness}
           />
         </div>
 
-        {/* ── 2. Enquiry Timeline ───────────────────────────────────────── */}
         <section className="panel" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>
-            Enquiries — last 8 weeks
+            Conversations — last 8 weeks
             {!hasRealData && (
-              <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginLeft: "0.5rem" }}>
-                (placeholder data)
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 400,
+                  color: "var(--muted)",
+                  marginLeft: "0.5rem",
+                }}
+              >
+                (no conversations in this window yet)
               </span>
             )}
           </h2>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              gap: "0.5rem",
-              height: 140,
-              paddingBottom: "1.5rem",
-              position: "relative",
-            }}
-          >
-            {displayCounts.map((count, i) => {
-              const heightPct = Math.round((count / maxCount) * 100);
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    height: "100%",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      color: "var(--muted)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {count > 0 ? count : ""}
-                  </span>
+          {!hasRealData ? (
+            <p style={{ color: "var(--muted)", fontSize: "0.9rem", margin: 0 }}>
+              When students message you, weekly counts will appear here.
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "0.5rem",
+                height: 140,
+                paddingBottom: "1.5rem",
+                position: "relative",
+              }}
+            >
+              {displayCounts.map((count, i) => {
+                const heightPct = Math.round((count / maxCount) * 100);
+                return (
                   <div
+                    key={i}
                     style={{
-                      width: "100%",
-                      height: `${heightPct}%`,
-                      minHeight: 4,
-                      background: "var(--brand)",
-                      borderRadius: "3px 3px 0 0",
-                      opacity: 0.8,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "0.65rem",
-                      color: "var(--muted)",
-                      position: "absolute",
-                      bottom: 0,
-                      whiteSpace: "nowrap",
-                      transform: `translateX(0)`,
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "0.25rem",
+                      height: "100%",
+                      justifyContent: "flex-end",
                     }}
                   >
-                    {weekLabels[i]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                    <span style={{ fontSize: "0.7rem", color: "var(--muted)", lineHeight: 1 }}>
+                      {count > 0 ? count : ""}
+                    </span>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: `${heightPct}%`,
+                        minHeight: 4,
+                        background: "var(--brand)",
+                        borderRadius: "3px 3px 0 0",
+                        opacity: 0.8,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: "0.65rem",
+                        color: "var(--muted)",
+                        position: "absolute",
+                        bottom: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {weekLabels[i]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <div
@@ -311,7 +335,6 @@ export default async function TutorAnalyticsPage() {
             marginBottom: "1.5rem",
           }}
         >
-          {/* ── 3. Top Subjects ─────────────────────────────────────────── */}
           <section className="panel">
             <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>Top subjects</h2>
             {topSubjects.length === 0 ? (
@@ -319,7 +342,16 @@ export default async function TutorAnalyticsPage() {
                 No subject data yet. Add subjects to your profile to track this.
               </p>
             ) : (
-              <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <ol
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.5rem",
+                }}
+              >
                 {topSubjects.map(([subject, count], i) => (
                   <li
                     key={subject}
@@ -352,14 +384,19 @@ export default async function TutorAnalyticsPage() {
             )}
           </section>
 
-          {/* ── 4. Search Appearance Stats ──────────────────────────────── */}
           <section className="panel">
             <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>Search visibility</h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
-              {/* TODO: track real search impressions */}
-              You appeared in <strong>—</strong> searches this month.
+              Search impression tracking is not enabled yet.
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginBottom: "0.5rem",
+              }}
+            >
               <span
                 style={{
                   background: listingColor,
@@ -384,13 +421,21 @@ export default async function TutorAnalyticsPage() {
           </section>
         </div>
 
-        {/* ── 5. Recent Activity Feed ───────────────────────────────────── */}
         <section className="panel" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>Recent activity</h2>
           {activityFeed.length === 0 ? (
             <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>No activity yet.</p>
           ) : (
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <ul
+              style={{
+                margin: 0,
+                padding: 0,
+                listStyle: "none",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+              }}
+            >
               {activityFeed.map((event, i) => (
                 <li
                   key={i}
@@ -407,7 +452,14 @@ export default async function TutorAnalyticsPage() {
                     <ActivityDot type={event.type} />
                     {event.label}
                   </span>
-                  <span style={{ color: "var(--muted)", fontSize: "0.78rem", whiteSpace: "nowrap", marginLeft: "1rem" }}>
+                  <span
+                    style={{
+                      color: "var(--muted)",
+                      fontSize: "0.78rem",
+                      whiteSpace: "nowrap",
+                      marginLeft: "1rem",
+                    }}
+                  >
                     {event.time.toLocaleDateString()}
                   </span>
                 </li>
@@ -416,7 +468,6 @@ export default async function TutorAnalyticsPage() {
           )}
         </section>
 
-        {/* ── 6. Plan Upgrade Nudge ─────────────────────────────────────── */}
         {!listed && (
           <section
             className="panel"
@@ -425,7 +476,9 @@ export default async function TutorAnalyticsPage() {
               background: "rgba(15, 90, 70, 0.05)",
             }}
           >
-            <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700, color: "var(--brand)" }}>
+            <h2
+              style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700, color: "var(--brand)" }}
+            >
               Appear in search with Tutor Basic
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
@@ -467,18 +520,38 @@ function StatCard({
   bar?: number;
 }) {
   return (
-    <div
-      className="panel"
-      style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
-    >
-      <span style={{ fontSize: "0.78rem", color: "var(--muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+    <div className="panel" style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+      <span
+        style={{
+          fontSize: "0.78rem",
+          color: "var(--muted)",
+          fontWeight: 500,
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}
+      >
         {label}
       </span>
-      <span style={{ fontSize: "1.6rem", fontWeight: 800, color: color || "var(--ink)", lineHeight: 1.1 }}>
+      <span
+        style={{
+          fontSize: "1.6rem",
+          fontWeight: 800,
+          color: color || "var(--ink)",
+          lineHeight: 1.1,
+        }}
+      >
         {value}
       </span>
       {bar !== undefined && (
-        <div style={{ height: 4, background: "var(--paper-deep)", borderRadius: 999, overflow: "hidden", marginTop: "0.25rem" }}>
+        <div
+          style={{
+            height: 4,
+            background: "var(--paper-deep)",
+            borderRadius: 999,
+            overflow: "hidden",
+            marginTop: "0.25rem",
+          }}
+        >
           <div
             style={{
               height: "100%",
@@ -489,9 +562,7 @@ function StatCard({
           />
         </div>
       )}
-      {note && (
-        <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>{note}</span>
-      )}
+      {note && <span style={{ fontSize: "0.72rem", color: "var(--muted)" }}>{note}</span>}
     </div>
   );
 }

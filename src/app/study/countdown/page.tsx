@@ -258,7 +258,8 @@ export default function CountdownPage() {
         </div>
         <h1 className="page-title">Exam Countdown ⏳</h1>
         <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "2rem" }}>
-          Live countdowns for major exam sessions. Add the ones you&apos;re sitting to track them at the top.
+          Free study tool — no subscription required. Live countdowns for major exam sessions. Add
+          the ones you&apos;re sitting to track them at the top.
         </p>
 
         {myExamList.length > 0 && (

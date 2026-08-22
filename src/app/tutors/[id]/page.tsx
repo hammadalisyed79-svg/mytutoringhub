@@ -136,6 +136,13 @@ export default async function TutorProfilePage({ params }: Params) {
   const isAdmin = session?.user?.role === "ADMIN";
   if (!tutor.active && !isOwner && !isAdmin) notFound();
 
+  // Fire-and-forget profile view (skip owner views; ignore missing table)
+  if (!isOwner) {
+    void prisma.profileView
+      .create({ data: { tutorId: tutor.id } })
+      .catch(() => undefined);
+  }
+
   const avg =
     tutor.reviews.length > 0
       ? tutor.reviews.reduce((s, r) => s + r.rating, 0) / tutor.reviews.length

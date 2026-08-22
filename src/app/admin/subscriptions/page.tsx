@@ -1,131 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-// TODO: replace with Prisma query
-const MOCK_SUBSCRIPTIONS = [
-  {
-    id: "sub_1",
-    userId: "user_1",
-    userName: "Alice Johnson",
-    userEmail: "alice@example.com",
-    role: "tutor",
-    plan: "pro",
-    status: "active",
-    billingPeriod: "monthly",
-    currency: "GBP",
-    priceAmount: 9.99,
-    startDate: "2026-01-15",
-    endDate: null as string | null,
-    notes: null as string | null,
-  },
-  {
-    id: "sub_2",
-    userId: "user_2",
-    userName: "Bob Smith",
-    userEmail: "bob@example.com",
-    role: "tutor",
-    plan: "elite",
-    status: "active",
-    billingPeriod: "annual",
-    currency: "GBP",
-    priceAmount: 191.88,
-    startDate: "2026-03-01",
-    endDate: "2027-03-01",
-    notes: null as string | null,
-  },
-  {
-    id: "sub_3",
-    userId: "user_3",
-    userName: "Carol Williams",
-    userEmail: "carol@example.com",
-    role: "student",
-    plan: "study_plus",
-    status: "active",
-    billingPeriod: "monthly",
-    currency: "GBP",
-    priceAmount: 4.99,
-    startDate: "2026-05-10",
-    endDate: null as string | null,
-    notes: null as string | null,
-  },
-  {
-    id: "sub_4",
-    userId: "user_4",
-    userName: "David Brown",
-    userEmail: "david@example.com",
-    role: "student",
-    plan: "study_pro",
-    status: "cancelled",
-    billingPeriod: "monthly",
-    currency: "USD",
-    priceAmount: 11.99,
-    startDate: "2025-11-01",
-    endDate: "2026-04-01",
-    notes: "Cancelled by user",
-  },
-  {
-    id: "sub_5",
-    userId: "user_5",
-    userName: "Emma Davis",
-    userEmail: "emma@example.com",
-    role: "tutor",
-    plan: "pro",
-    status: "trial",
-    billingPeriod: "monthly",
-    currency: "GBP",
-    priceAmount: 0,
-    startDate: "2026-08-01",
-    endDate: "2026-08-15",
-    notes: "14-day trial",
-  },
-  {
-    id: "sub_6",
-    userId: "user_6",
-    userName: "Frank Miller",
-    userEmail: "frank@example.com",
-    role: "tutor",
-    plan: "elite",
-    status: "active",
-    billingPeriod: "monthly",
-    currency: "USD",
-    priceAmount: 24.99,
-    startDate: "2026-06-01",
-    endDate: null as string | null,
-    notes: null as string | null,
-  },
-  {
-    id: "sub_7",
-    userId: "user_7",
-    userName: "Grace Lee",
-    userEmail: "grace@example.com",
-    role: "student",
-    plan: "study_plus",
-    status: "expired",
-    billingPeriod: "annual",
-    currency: "GBP",
-    priceAmount: 47.88,
-    startDate: "2025-07-01",
-    endDate: "2026-07-01",
-    notes: null as string | null,
-  },
-];
-
-type Subscription = (typeof MOCK_SUBSCRIPTIONS)[0];
-
-const PLAN_LABELS: Record<string, string> = {
-  free: "Free",
-  pro: "Tutor Pro",
-  elite: "Tutor Elite",
-  study_plus: "Student Plus",
-  study_pro: "Student Pro",
+type Subscription = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  role: string;
+  plan: string;
+  planLabel: string;
+  status: string;
+  billingPeriod: string;
+  currency: string;
+  priceAmount: number;
+  startDate: string;
+  endDate: string | null;
+  notes: string | null;
 };
 
+const PLAN_OPTIONS: { value: string; label: string }[] = [
+  { value: "STUDENT_PASS", label: "Student Pass" },
+  { value: "STUDENT_PRO", label: "Student Pro" },
+  { value: "TUTOR_BASIC", label: "Tutor Basic" },
+  { value: "VERIFIED_TUTOR", label: "Verified Tutor" },
+  { value: "HIGHLIGHTED_AD", label: "Highlighted Listing" },
+  { value: "AD_BOOST", label: "Ad Boost" },
+  { value: "UNLIMITED_ADS", label: "Unlimited Ads" },
+];
+
 const STATUS_COLORS: Record<string, string> = {
-  active: "#16a34a",
-  cancelled: "#dc2626",
-  expired: "#9ca3af",
-  trial: "#2563eb",
+  ACTIVE: "#16a34a",
+  TRIALING: "#2563eb",
+  CANCELED: "#dc2626",
+  PAST_DUE: "#d97706",
+  INCOMPLETE: "#9ca3af",
 };
 
 function statusBadge(status: string) {
@@ -141,12 +50,20 @@ function statusBadge(status: string) {
         textTransform: "capitalize",
       }}
     >
-      {status}
+      {status.toLowerCase()}
     </span>
   );
 }
 
+function formatDate(iso: string | null) {
+  if (!iso) return "—";
+  return iso.slice(0, 10);
+}
+
 export default function SubscriptionsPage() {
+  const [subs, setSubs] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [filterPlan, setFilterPlan] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -154,31 +71,60 @@ export default function SubscriptionsPage() {
   const [editPlan, setEditPlan] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
 
-  const subs = MOCK_SUBSCRIPTIONS.filter((s) => {
-    if (filterPlan && s.plan !== filterPlan) return false;
-    if (filterRole && s.role !== filterRole) return false;
-    if (filterStatus && s.status !== filterStatus) return false;
-    return true;
-  });
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/subscriptions");
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to load subscriptions");
+        setSubs([]);
+        return;
+      }
+      setSubs(data.subscriptions || []);
+    } catch {
+      setError("Network error loading subscriptions");
+      setSubs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const totalSubs = MOCK_SUBSCRIPTIONS.length;
-  const activeProTutors = MOCK_SUBSCRIPTIONS.filter(
-    (s) => s.plan === "pro" && s.role === "tutor" && s.status === "active"
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filtered = useMemo(() => {
+    return subs.filter((s) => {
+      if (filterPlan && s.plan !== filterPlan) return false;
+      if (filterRole && s.role !== filterRole) return false;
+      if (filterStatus && s.status !== filterStatus) return false;
+      return true;
+    });
+  }, [subs, filterPlan, filterRole, filterStatus]);
+
+  const active = (s: Subscription) => s.status === "ACTIVE" || s.status === "TRIALING";
+  const totalSubs = subs.length;
+  const activeProTutors = subs.filter(
+    (s) => s.plan === "TUTOR_BASIC" && s.role === "tutor" && active(s),
   ).length;
-  const activeEliteTutors = MOCK_SUBSCRIPTIONS.filter(
-    (s) => s.plan === "elite" && s.role === "tutor" && s.status === "active"
+  const activeEliteTutors = subs.filter(
+    (s) =>
+      ["VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"].includes(s.plan) &&
+      s.role === "tutor" &&
+      active(s),
   ).length;
-  const activeStudentPlans = MOCK_SUBSCRIPTIONS.filter(
-    (s) => s.role === "student" && s.status === "active"
+  const activeStudentPlans = subs.filter(
+    (s) => (s.plan === "STUDENT_PASS" || s.plan === "STUDENT_PRO") && active(s),
   ).length;
-  const mrr = MOCK_SUBSCRIPTIONS.filter((s) => s.status === "active").reduce(
-    (acc, s) =>
-      acc +
-      (s.billingPeriod === "annual" ? s.priceAmount / 12 : s.priceAmount),
-    0
-  );
+  const mrr = subs.filter(active).reduce((acc, s) => {
+    const amount = s.priceAmount || 0;
+    return acc + (s.billingPeriod === "annual" ? amount / 12 : amount);
+  }, 0);
 
   function openEdit(sub: Subscription) {
     setEditTarget(sub);
@@ -187,10 +133,40 @@ export default function SubscriptionsPage() {
     setEditNotes(sub.notes ?? "");
   }
 
-  function handleSave() {
-    setEditTarget(null);
-    setToast("Plan updated (demo mode — payment integration pending)");
-    setTimeout(() => setToast(""), 3500);
+  async function handleSave() {
+    if (!editTarget) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscriptionId: editTarget.id,
+          plan: editPlan,
+          status: editStatus,
+          notes: editNotes,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data.error || "Update failed");
+        setTimeout(() => setToast(""), 3500);
+        return;
+      }
+      setEditTarget(null);
+      setToast("Subscription updated");
+      setTimeout(() => setToast(""), 3500);
+      await load();
+    } catch {
+      setToast("Network error");
+      setTimeout(() => setToast(""), 3500);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function exportCsv() {
+    window.location.href = "/api/admin/subscriptions?format=csv";
   }
 
   return (
@@ -200,18 +176,22 @@ export default function SubscriptionsPage() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
         }}
       >
         <h1 style={{ fontSize: 24, fontWeight: 700 }}>Subscriptions</h1>
-        <button
-          className="btn btn-secondary"
-          onClick={() => alert("CSV export — TODO: implement")}
-        >
+        <button className="btn btn-secondary" type="button" onClick={exportCsv} disabled={loading}>
           Export CSV
         </button>
       </div>
 
-      {/* Summary cards */}
+      {error && (
+        <p className="form-error" style={{ margin: 0 }}>
+          {error}
+        </p>
+      )}
+
       <div
         style={{
           display: "grid",
@@ -220,11 +200,11 @@ export default function SubscriptionsPage() {
         }}
       >
         {[
-          { label: "Total subscribers", value: totalSubs },
-          { label: "Active Pro tutors", value: activeProTutors },
-          { label: "Active Elite tutors", value: activeEliteTutors },
+          { label: "Total subscriptions", value: totalSubs },
+          { label: "Active Tutor Basic", value: activeProTutors },
+          { label: "Active tutor add-ons", value: activeEliteTutors },
           { label: "Active student plans", value: activeStudentPlans },
-          { label: "Est. MRR (GBP/USD)", value: `£${mrr.toFixed(2)}` },
+          { label: "Est. MRR (stored price)", value: `£${mrr.toFixed(2)}` },
         ].map((card) => (
           <div
             key={card.label}
@@ -236,14 +216,11 @@ export default function SubscriptionsPage() {
             }}
           >
             <div style={{ fontSize: 22, fontWeight: 700 }}>{card.value}</div>
-            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
-              {card.label}
-            </div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{card.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Filters */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <select
           value={filterPlan}
@@ -251,9 +228,9 @@ export default function SubscriptionsPage() {
           style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db" }}
         >
           <option value="">All plans</option>
-          {Object.entries(PLAN_LABELS).map(([val, lbl]) => (
-            <option key={val} value={val}>
-              {lbl}
+          {PLAN_OPTIONS.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
             </option>
           ))}
         </select>
@@ -272,17 +249,17 @@ export default function SubscriptionsPage() {
           style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db" }}
         >
           <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="expired">Expired</option>
-          <option value="trial">Trial</option>
+          <option value="ACTIVE">Active</option>
+          <option value="TRIALING">Trialing</option>
+          <option value="CANCELED">Canceled</option>
+          <option value="PAST_DUE">Past due</option>
+          <option value="INCOMPLETE">Incomplete</option>
         </select>
         <span style={{ color: "#6b7280", fontSize: 13, alignSelf: "center" }}>
-          {subs.length} result{subs.length !== 1 ? "s" : ""}
+          {loading ? "Loading…" : `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 
-      {/* Table */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
@@ -306,7 +283,7 @@ export default function SubscriptionsPage() {
             </tr>
           </thead>
           <tbody>
-            {subs.map((sub, i) => (
+            {filtered.map((sub, i) => (
               <tr
                 key={sub.id}
                 style={{
@@ -317,21 +294,22 @@ export default function SubscriptionsPage() {
                 <td style={{ padding: "8px 12px", fontWeight: 500 }}>{sub.userName}</td>
                 <td style={{ padding: "8px 12px", color: "#6b7280" }}>{sub.userEmail}</td>
                 <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>{sub.role}</td>
-                <td style={{ padding: "8px 12px" }}>{PLAN_LABELS[sub.plan] ?? sub.plan}</td>
+                <td style={{ padding: "8px 12px" }}>{sub.planLabel}</td>
                 <td style={{ padding: "8px 12px" }}>{statusBadge(sub.status)}</td>
                 <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>
                   {sub.billingPeriod}
                 </td>
                 <td style={{ padding: "8px 12px" }}>
-                  {sub.currency === "GBP" ? "£" : "$"}
-                  {sub.priceAmount.toFixed(2)}
+                  {sub.currency === "GBP" ? "£" : sub.currency === "USD" ? "$" : `${sub.currency} `}
+                  {Number(sub.priceAmount || 0).toFixed(2)}
                 </td>
-                <td style={{ padding: "8px 12px" }}>{sub.startDate}</td>
-                <td style={{ padding: "8px 12px" }}>{sub.endDate ?? "—"}</td>
+                <td style={{ padding: "8px 12px" }}>{formatDate(sub.startDate)}</td>
+                <td style={{ padding: "8px 12px" }}>{formatDate(sub.endDate)}</td>
                 <td style={{ padding: "8px 12px" }}>
                   <button
                     className="btn btn-secondary"
                     style={{ padding: "4px 10px", fontSize: 12 }}
+                    type="button"
                     onClick={() => openEdit(sub)}
                   >
                     Edit Plan
@@ -339,9 +317,12 @@ export default function SubscriptionsPage() {
                 </td>
               </tr>
             ))}
-            {subs.length === 0 && (
+            {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ padding: "24px 12px", textAlign: "center", color: "#9ca3af" }}>
+                <td
+                  colSpan={10}
+                  style={{ padding: "24px 12px", textAlign: "center", color: "#9ca3af" }}
+                >
                   No subscriptions match the selected filters.
                 </td>
               </tr>
@@ -350,7 +331,6 @@ export default function SubscriptionsPage() {
         </table>
       </div>
 
-      {/* Edit Plan Modal */}
       {editTarget && (
         <div
           style={{
@@ -392,9 +372,9 @@ export default function SubscriptionsPage() {
                   fontSize: 14,
                 }}
               >
-                {Object.entries(PLAN_LABELS).map(([val, lbl]) => (
-                  <option key={val} value={val}>
-                    {lbl}
+                {PLAN_OPTIONS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
                   </option>
                 ))}
               </select>
@@ -413,10 +393,11 @@ export default function SubscriptionsPage() {
                   fontSize: 14,
                 }}
               >
-                <option value="active">Active</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="expired">Expired</option>
-                <option value="trial">Trial</option>
+                <option value="ACTIVE">Active</option>
+                <option value="TRIALING">Trialing</option>
+                <option value="CANCELED">Canceled</option>
+                <option value="PAST_DUE">Past due</option>
+                <option value="INCOMPLETE">Incomplete</option>
               </select>
             </label>
 
@@ -440,25 +421,26 @@ export default function SubscriptionsPage() {
             </label>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button className="btn btn-secondary" onClick={() => setEditTarget(null)}>
+              <button className="btn btn-secondary" type="button" onClick={() => setEditTarget(null)}>
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                Save changes
+              <button className="btn btn-primary" type="button" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving…" : "Save changes"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toast */}
       {toast && (
         <div
           style={{
             position: "fixed",
             bottom: 24,
             right: 24,
-            background: "#16a34a",
+            background: toast.toLowerCase().includes("fail") || toast.toLowerCase().includes("error")
+              ? "#dc2626"
+              : "#16a34a",
             color: "#fff",
             padding: "12px 20px",
             borderRadius: 8,
