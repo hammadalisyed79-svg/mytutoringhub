@@ -12,17 +12,34 @@ type Recommendation = {
   createdAt: string;
 };
 
-export function TutorBadgeProgressPanel({ progress }: { progress: BadgeProgress }) {
+export function TutorBadgeProgressPanel({
+  progress,
+  layout = "vertical",
+}: {
+  progress: BadgeProgress;
+  layout?: "vertical" | "horizontal";
+}) {
   return (
-    <section className="panel tutor-badge-progress">
+    <section
+      className={`panel tutor-badge-progress${layout === "horizontal" ? " tutor-badge-progress--horizontal" : ""}`}
+    >
       <div className="tutor-badge-progress-head">
-        <h2>Tutor badge progression</h2>
+        <div>
+          <h2>Tutor badge progression</h2>
+          {layout === "horizontal" ? (
+            <p className="muted tutor-badge-progress-intro">
+              Earn higher badges through verified recommendations and student reviews.
+            </p>
+          ) : null}
+        </div>
         <TutorTrustBadgePill badge={progress.current} />
       </div>
-      <p className="muted tutor-badge-progress-intro">
-        Every new tutor starts as <strong>New Tutor</strong>. Earn higher badges through verified
-        off-platform recommendations and on-platform student reviews.
-      </p>
+      {layout === "vertical" ? (
+        <p className="muted tutor-badge-progress-intro">
+          Every new tutor starts as <strong>New Tutor</strong>. Earn higher badges through verified
+          off-platform recommendations and on-platform student reviews.
+        </p>
+      ) : null}
       <ol className="tutor-badge-steps">
         {progress.steps.map((step, index) => {
           const isCurrent = !step.done && progress.steps.slice(0, index).every((s) => s.done);

@@ -17,7 +17,8 @@ import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
-  TutorGrowthSection,
+  TutorBadgeProgressPanel,
+  TutorRecommendationForm,
 } from "@/components/TutorBadgeProgress";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
@@ -55,29 +56,46 @@ export default async function TutorDashboardPage({
   const badgeProgress = user.tutorProfile
     ? tutorBadgeProgress(await getTutorBadgeStats(user.tutorProfile.id))
     : null;
+  const profileStats = user.tutorProfile
+    ? profileStrength(user.tutorProfile, user.name)
+    : null;
 
   return (
-    <div className="page">
+    <div className="page tutor-dashboard-page">
       <div className="container">
-        <h1 className="page-title">Hi, {user.name}</h1>
-        <p className="muted">
-          Complete your profile to appear in search, then reply to student requests.
-        </p>
+        <header className="tutor-dashboard-hero">
+          <div>
+            <h1 className="page-title">Hi, {user.name}</h1>
+            <p className="muted">
+              Complete your profile to appear in search, grow your badge, and reply to student
+              requests.
+            </p>
+          </div>
+          {user.tutorProfile ? (
+            <div className="tutor-dashboard-hero-actions">
+              {user.tutorProfile.active ? (
+                <Link className="btn btn-secondary btn-sm" href={`/tutors/${user.tutorProfile.id}`}>
+                  View public profile
+                </Link>
+              ) : (
+                <Link className="btn btn-secondary btn-sm" href={`/tutors/${user.tutorProfile.id}`}>
+                  Preview profile
+                </Link>
+              )}
+              <Link className="btn btn-sm" href="/messages">
+                Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
+              </Link>
+            </div>
+          ) : null}
+        </header>
 
         {sp.verified === "1" && (
-          <p className="success panel" style={{ marginTop: "1rem" }}>
+          <p className="success panel tutor-dashboard-alert">
             Email verified. Messaging and ads unlock with your plan.
           </p>
         )}
         {!user.emailVerified && (
-          <div
-            className="panel"
-            style={{
-              marginTop: "1rem",
-              borderColor: "var(--brand)",
-              background: "rgba(15, 90, 70, 0.06)",
-            }}
-          >
+          <div className="panel tutor-dashboard-alert tutor-dashboard-alert--verify">
             <p style={{ marginTop: 0 }}>
               Please verify {user.email}. Mail is sent from admin@mytutoringhub.com. Check inbox,
               junk, and promotions.
@@ -92,17 +110,22 @@ export default async function TutorDashboardPage({
         />
         <DashboardMessageAlert userId={session.user.id} />
         {sp.subscribed === "1" && sp.checkout !== "success" && (
-          <p className="success panel" style={{ marginTop: "1rem" }}>
+          <p className="success panel tutor-dashboard-alert">
             Payment confirmed. Your plan is active
             {sp.plan ? ` (${getPlan(sp.plan as never)?.name || sp.plan})` : ""}.
           </p>
         )}
 
-        <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <PointsWalletPanel summary={hubPoints} role="TUTOR" />
+        {badgeProgress ? (
+          <div className="tutor-dashboard-timeline">
+            <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />
           </div>
-          <section className="panel">
+        ) : null}
+
+        <div className="tutor-dashboard-overview">
+          <PointsWalletPanel summary={hubPoints} role="TUTOR" />
+
+          <section className="panel tutor-dashboard-card">
             <h2>Your plan</h2>
             {corePlan ? (
               <ul className="sub-list">
@@ -128,18 +151,17 @@ export default async function TutorDashboardPage({
             ) : (
               <p className="muted">
                 Complete your profile to appear in search for free. Tutor Basic unlocks priority
-                ranking, unlimited enquiry reveals, and subject ads (complimentary until 30
-                September 2026).
+                ranking, unlimited enquiry reveals, and subject ads.
               </p>
             )}
             {pendingSubs.length > 0 && (
-              <div style={{ marginTop: "0.75rem" }}>
-                <p className="muted" style={{ fontSize: "0.9rem" }}>
+              <div className="tutor-dashboard-pending">
+                <p className="muted">
                   {pendingSubs.length} unfinished checkout
-                  {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, open
-                  Dashboard again to confirm, or tap confirm below.
+                  {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, confirm
+                  below.
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                <div className="tutor-dashboard-pending-actions">
                   {pendingSubs
                     .filter((s) => s.stripeSubscriptionId?.startsWith("track_"))
                     .map((s) => (
@@ -155,7 +177,7 @@ export default async function TutorDashboardPage({
               </div>
             )}
             {!corePlan && (
-              <div className="plan-cta" style={{ marginTop: "0.85rem" }}>
+              <div className="plan-cta">
                 <SubscribeButton
                   plan="TUTOR_BASIC"
                   planLabel="Tutor Basic"
@@ -166,16 +188,16 @@ export default async function TutorDashboardPage({
                 />
               </div>
             )}
-            <p style={{ marginTop: "0.85rem", marginBottom: 0 }}>
-              <Link href="/dashboard/tutor/plan">Your plan details</Link>
+            <p className="tutor-dashboard-card-foot">
+              <Link href="/dashboard/tutor/plan">Plan details</Link>
               {" · "}
-              <Link href="/pricing">Tutor add-ons →</Link>
+              <Link href="/pricing">Tutor add-ons</Link>
             </p>
             {!corePlan && <RecoverPaymentForm />}
           </section>
 
-          <section className="panel">
-            <h2>Tutor shortcuts</h2>
+          <section className="panel tutor-dashboard-card">
+            <h2>Quick links</h2>
             <div className="dash-links">
               <Link href="/ads">Student requests</Link>
               <Link href="/messages">
@@ -184,143 +206,122 @@ export default async function TutorDashboardPage({
               </Link>
               <Link href="/past-papers">Past papers</Link>
               <Link href="/dashboard/tutor/analytics">Analytics</Link>
-              <Link href="/dashboard/tutor/plan">Your plan</Link>
               <Link href="/settings">Account settings</Link>
-              <Link href="/dashboard/tutor#invite-tutor">Invite a tutor</Link>
+              <Link href="#invite-tutor">Invite a tutor</Link>
+              <Link href="#tutor-recommendations">Recommendations</Link>
+              <Link href="#tutor-profile">Edit profile</Link>
             </div>
           </section>
+        </div>
 
-          <div style={{ gridColumn: "1 / -1" }}>
-            <InviteTutorShare
-              referrerId={session.user.id}
-              referrerName={session.user.name}
-              compact
-            />
-          </div>
+        <div className="tutor-dashboard-stack">
+          <InviteTutorShare
+            referrerId={session.user.id}
+            referrerName={session.user.name}
+            compact
+          />
 
-          {user.tutorProfile && (
-            <div style={{ gridColumn: "1 / -1" }}>
-              <ProfileBoostPanel
-                boostUntil={user.tutorProfile.boostUntil}
-                currency={currency}
-              />
-            </div>
-          )}
+          {user.tutorProfile ? (
+            <ProfileBoostPanel boostUntil={user.tutorProfile.boostUntil} currency={currency} />
+          ) : null}
 
-          {user.tutorProfile && (
-            <>
-              <section className="panel" style={{ gridColumn: "1 / -1" }}>
-                <h2>Your tutor profile</h2>
-                <p className="muted" style={{ marginTop: 0 }}>
-                  Start with your profile photo, then complete the rest of your listing.
-                </p>
-                <TutorProfileForm
-                  initial={user.tutorProfile}
-                  displayName={user.name}
-                  subjects={catalogSubjects}
-                  extraLevels={extraLevels}
-                />
-                <p className="muted" style={{ marginTop: "1.25rem" }}>
-                  Status:{" "}
-                  {user.tutorProfile.active
-                    ? "Listed in search"
-                    : "Hidden until all required fields are complete (photo, headline, bio, subjects, location, rate, lesson type, and highest qualification)"}{" "}
-                  ·{" "}
+          {user.tutorProfile && badgeProgress ? <TutorRecommendationForm /> : null}
+
+          {user.tutorProfile ? (
+            <section className="panel tutor-profile-workspace" id="tutor-profile">
+              <div className="tutor-profile-workspace-head">
+                <div>
+                  <h2>Your tutor profile</h2>
+                  <p className="muted">
+                    This is your public listing. Students find you here — complete every field marked
+                    with * to go live in search.
+                  </p>
+                </div>
+                <div className="tutor-profile-status-pills">
+                  <span
+                    className={`tutor-status-pill${user.tutorProfile.active ? " is-live" : ""}`}
+                  >
+                    {user.tutorProfile.active ? "Live in search" : "Draft — not visible"}
+                  </span>
                   {user.tutorProfile.verified ? (
                     <span className="badge badge-verified">✓ Verified</span>
                   ) : (
                     <span className="badge">Unverified</span>
-                  )}{" "}
-                  · {badgeProgress && <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />} ·{" "}
-                  {user.tutorProfile.highlighted ||
-                  (user.tutorProfile.highlightedUntil &&
-                    user.tutorProfile.highlightedUntil > new Date())
-                    ? "Highlighted"
-                    : "Standard listing"}
-                </p>
-                {!user.tutorProfile.verified && (
-                  <p className="field-hint" style={{ marginTop: "0.35rem" }}>
-                    Upload your government ID in <a href="#get-verified">Get verified</a> below. An
-                    admin reviews your documents before the verified label appears on your profile.
-                  </p>
-                )}
-                {(() => {
-                  const { pct, missing } = profileStrength(user.tutorProfile, user.name);
-                  return (
-                    <div className="profile-strength" style={{ marginTop: "1rem" }}>
-                      <div className="profile-strength-label">
-                        <span>Profile strength</span>
-                        <span>{pct}%</span>
-                      </div>
-                      <div className="profile-strength-bar">
-                        <div className="profile-strength-fill" style={{ width: `${pct}%` }} />
-                      </div>
-                      {missing.length > 0 && (
-                        <p className="profile-strength-nudge">
-                          Complete your profile to get listed in search for free — add{" "}
-                          {missing.join(", ")}. Tutor Basic adds priority when you&apos;re ready to
-                          grow.
-                        </p>
-                      )}
-                    </div>
-                  );
-                })()}
-                <p className="muted">
-                  This is your public listing. Students find you from this profile — there is no
-                  separate create-listing step.
-                </p>
-                {!user.tutorProfile.active && (
-                  <p
-                    className="panel"
-                    style={{
-                      borderColor: "var(--brand)",
-                      background: "rgba(15, 90, 70, 0.06)",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    Students cannot see this listing yet. Add a photo, subjects, headline, and bio,
-                    then save — free complete profiles appear in search. Tutor Basic adds priority
-                    ranking, unlimited reveals, and ads.
-                  </p>
-                )}
-                <p style={{ marginTop: "1rem" }}>
-                  {user.tutorProfile.active ? (
-                    <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
-                  ) : (
-                    <>
-                      <Link href={`/tutors/${user.tutorProfile.id}`}>Preview your profile</Link>
-                      <span className="muted">
-                        {" "}
-                        (only you can see it until photo, subjects, headline, and bio are saved)
-                      </span>
-                    </>
                   )}
-                </p>
-              </section>
-              {badgeProgress && (
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <TutorGrowthSection progress={badgeProgress} />
+                  {badgeProgress ? (
+                    <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />
+                  ) : null}
                 </div>
-              )}
-              <section className="panel" style={{ gridColumn: "1 / -1" }}>
+              </div>
+
+              {profileStats ? (
+                <div className="profile-strength tutor-profile-strength-banner">
+                  <div className="profile-strength-label">
+                    <span>Profile completion</span>
+                    <span>{profileStats.pct}%</span>
+                  </div>
+                  <div className="profile-strength-bar">
+                    <div
+                      className="profile-strength-fill"
+                      style={{ width: `${profileStats.pct}%` }}
+                    />
+                  </div>
+                  {profileStats.missing.length > 0 ? (
+                    <p className="profile-strength-nudge">
+                      Still needed: <strong>{profileStats.missing.join(", ")}</strong>
+                    </p>
+                  ) : (
+                    <p className="success" style={{ margin: "0.5rem 0 0" }}>
+                      All required fields complete — your profile can appear in search.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+
+              {!user.tutorProfile.active ? (
+                <div className="tutor-profile-hidden-note">
+                  Students cannot see this listing yet. Save your profile with all required fields
+                  to appear in search for free.
+                </div>
+              ) : null}
+
+              {!user.tutorProfile.verified ? (
+                <p className="field-hint">
+                  Upload your government ID in{" "}
+                  <a href="#get-verified">Get verified</a> below for the verified badge.
+                </p>
+              ) : null}
+
+              <TutorProfileForm
+                initial={user.tutorProfile}
+                displayName={user.name}
+                subjects={catalogSubjects}
+                extraLevels={extraLevels}
+              />
+            </section>
+          ) : null}
+
+          {user.tutorProfile ? (
+            <>
+              <section className="panel">
                 <h2>Optional subject ads</h2>
                 <p className="muted">
                   Extra subject-specific ads on top of your profile. Not required to get found.
                 </p>
                 <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
               </section>
-              <section className="panel" style={{ gridColumn: "1 / -1" }} id="get-verified">
+
+              <section className="panel" id="get-verified">
                 <h2>Get verified</h2>
                 <p className="muted">
-                  Required: a government photo ID (passport, national ID / CNIC, or driving licence).
-                  Your profile shows <strong>Unverified</strong> until an admin reviews and approves
-                  your documents. Recommended: your highest qualification. Documents stay private —
-                  admins only. The Verified Tutor add-on on Pricing prioritises your request.
+                  Upload a government photo ID (passport, national ID / CNIC, or driving licence).
+                  Your profile shows <strong>Unverified</strong> until an admin approves your
+                  documents. Documents stay private — admins only.
                 </p>
                 <VerificationForm />
               </section>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

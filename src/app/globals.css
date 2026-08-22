@@ -2137,6 +2137,184 @@ select:focus {
   border-top: 1px solid var(--line);
 }
 
+.tutor-badge-progress--horizontal .tutor-badge-steps {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.tutor-badge-progress--horizontal .tutor-badge-steps li {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  padding: 1rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.tutor-badge-progress--horizontal .tutor-badge-steps li:not(:last-child)::after {
+  display: none;
+}
+
+.tutor-badge-progress--horizontal .tutor-badge-step-marker {
+  margin: 0 auto 0.4rem;
+}
+
+.tutor-badge-progress--horizontal .tutor-badge-steps li.is-current {
+  border-color: rgba(13, 95, 82, 0.35);
+  background: rgba(13, 95, 82, 0.06);
+  box-shadow: inset 0 -3px 0 var(--brand);
+}
+
+.tutor-badge-progress--horizontal .tutor-badge-step-body span {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.tutor-dashboard-page .page-title {
+  margin-bottom: 0.35rem;
+}
+
+.tutor-dashboard-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.tutor-dashboard-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tutor-dashboard-alert {
+  margin-top: 1rem;
+}
+
+.tutor-dashboard-alert--verify {
+  border-color: var(--brand);
+  background: rgba(15, 90, 70, 0.06);
+}
+
+.tutor-dashboard-timeline {
+  margin-top: 1.25rem;
+}
+
+.tutor-dashboard-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  align-items: stretch;
+}
+
+.tutor-dashboard-card h2 {
+  margin-top: 0;
+}
+
+.tutor-dashboard-card-foot {
+  margin: 0.85rem 0 0;
+  font-size: 0.92rem;
+}
+
+.tutor-dashboard-pending {
+  margin-top: 0.75rem;
+}
+
+.tutor-dashboard-pending-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tutor-dashboard-stack {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.tutor-profile-workspace {
+  scroll-margin-top: 5rem;
+}
+
+.tutor-profile-workspace-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.tutor-profile-workspace-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.tutor-profile-workspace-head p {
+  margin: 0;
+  max-width: 40rem;
+}
+
+.tutor-profile-status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.tutor-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+}
+
+.tutor-status-pill.is-live {
+  background: rgba(13, 95, 82, 0.12);
+  color: var(--brand);
+  border-color: rgba(13, 95, 82, 0.22);
+}
+
+.tutor-profile-strength-banner {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(13, 95, 82, 0.05);
+  border: 1px solid rgba(13, 95, 82, 0.12);
+}
+
+.tutor-profile-hidden-note {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(13, 95, 82, 0.18);
+  background: rgba(15, 90, 70, 0.06);
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+@media (max-width: 1100px) {
+  .tutor-dashboard-overview {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tutor-dashboard-overview > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 960px) {
   .tutor-growth-layout {
     grid-template-columns: 1fr;
@@ -2149,6 +2327,20 @@ select:focus {
   .tutor-recommendation-list li {
     grid-template-columns: 1fr;
     gap: 0.35rem;
+  }
+
+  .tutor-badge-progress--horizontal .tutor-badge-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .tutor-dashboard-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-badge-progress--horizontal .tutor-badge-steps {
+    grid-template-columns: 1fr;
   }
 }
 
