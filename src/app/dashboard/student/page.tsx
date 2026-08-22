@@ -14,6 +14,7 @@ import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
+import { StudentDashboardShortcuts } from "@/components/StudentDashboardShortcuts";
 import {
   type DashboardSearchParams,
   prepareDashboardHome,
@@ -153,27 +154,9 @@ export default async function StudentDashboardPage({
             </p>
             {!corePlan && <RecoverPaymentForm />}
           </section>
-
-          <section className="panel student-dashboard-card student-dashboard-shortcuts">
-            <h2>Shortcuts</h2>
-            <div className="dash-links dash-links-grid">
-              <Link href="/messages">
-                Messages
-                {inbox.unread > 0 ? ` (${inbox.unread} unread)` : ""}
-              </Link>
-              <Link href="/ads">Student requests</Link>
-              <Link href="/ads/new">Post a request</Link>
-              <Link href="/past-papers">Past papers</Link>
-              <Link href="/study/countdown">Exam countdown</Link>
-              <Link href="/study/progress">Study progress</Link>
-              <Link href="/assistant">Study assistant</Link>
-              <Link href="/dashboard/student/plan">Your plan</Link>
-              <Link href="/settings">Account settings</Link>
-              <Link href="/support">AI support</Link>
-              <Link href="/become-a-tutor">Become a tutor</Link>
-            </div>
-          </section>
         </div>
+
+        <StudentDashboardShortcuts unread={inbox.unread} />
 
         <div className="student-dashboard-stack">
           <section className="panel student-dashboard-find">

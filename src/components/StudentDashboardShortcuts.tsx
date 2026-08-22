@@ -1,0 +1,115 @@
+import Link from "next/link";
+
+type Shortcut = {
+  href: string;
+  label: string;
+  description: string;
+  icon: string;
+  badge?: string;
+};
+
+const SHORTCUTS: Shortcut[] = [
+  {
+    href: "/messages",
+    label: "Messages",
+    description: "Chat with tutors",
+    icon: "✉",
+  },
+  {
+    href: "/ads",
+    label: "Student requests",
+    description: "Browse open requests",
+    icon: "📋",
+  },
+  {
+    href: "/ads/new",
+    label: "Post a request",
+    description: "Tell tutors what you need",
+    icon: "➕",
+  },
+  {
+    href: "/search",
+    label: "Find tutors",
+    description: "Search by subject & city",
+    icon: "🔍",
+  },
+  {
+    href: "/past-papers",
+    label: "Past papers",
+    description: "Exam practice library",
+    icon: "📄",
+  },
+  {
+    href: "/study/countdown",
+    label: "Exam countdown",
+    description: "Track exam dates",
+    icon: "📅",
+  },
+  {
+    href: "/study/progress",
+    label: "Study progress",
+    description: "Log your revision",
+    icon: "📈",
+  },
+  {
+    href: "/assistant",
+    label: "Study assistant",
+    description: "AI study coach",
+    icon: "🎓",
+  },
+  {
+    href: "/support",
+    label: "AI support",
+    description: "Help with your account",
+    icon: "💬",
+  },
+  {
+    href: "/dashboard/student/plan",
+    label: "Your plan",
+    description: "Pass & billing",
+    icon: "⭐",
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    description: "Account & security",
+    icon: "⚙",
+  },
+  {
+    href: "/become-a-tutor",
+    label: "Become a tutor",
+    description: "Start teaching",
+    icon: "👩‍🏫",
+  },
+];
+
+export function StudentDashboardShortcuts({ unread = 0 }: { unread?: number }) {
+  return (
+    <section className="panel student-dashboard-shortcuts-panel">
+      <div className="student-dashboard-shortcuts-head">
+        <h2>Shortcuts</h2>
+        <p className="muted section-lead-tight">Jump to the tools you use most.</p>
+      </div>
+      <div className="dash-shortcut-grid">
+        {SHORTCUTS.map((item) => {
+          const badge =
+            item.href === "/messages" && unread > 0
+              ? `${unread} unread`
+              : item.badge;
+          return (
+            <Link key={item.href} href={item.href} className="dash-shortcut-card">
+              <span className="dash-shortcut-icon" aria-hidden>
+                {item.icon}
+              </span>
+              <span className="dash-shortcut-copy">
+                <strong>{item.label}</strong>
+                <span className="muted">{item.description}</span>
+              </span>
+              {badge ? <span className="dash-shortcut-badge">{badge}</span> : null}
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
