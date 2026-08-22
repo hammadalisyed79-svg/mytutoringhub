@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canMessage } from "@/lib/subscription";
+import { canReplyInConversation } from "@/lib/subscription";
 import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
@@ -87,12 +87,11 @@ export async function POST(req: Request, { params }: Params) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const allowed = await canMessage(session.user.id, session.user.role as Role);
+  const { id } = await params;
+  const allowed = await canReplyInConversation(session.user.id, session.user.role as Role, id);
   if (!allowed) {
     return NextResponse.json({ error: "Verify your email to send messages" }, { status: 403 });
   }
-
-  const { id } = await params;
   const data = postSchema.parse(await req.json());
   const conversation = await prisma.conversation.findUnique({ where: { id } });
   if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });

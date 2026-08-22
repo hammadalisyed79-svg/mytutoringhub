@@ -24,10 +24,12 @@ export function MessageThread({
   conversationId,
   currentUserId,
   viewerRole,
+  emailAlertFailed,
 }: {
   conversationId: string;
   currentUserId: string;
   viewerRole?: string;
+  emailAlertFailed?: boolean;
 }) {
   const router = useRouter();
   const routerRef = useRef(router);
@@ -67,6 +69,14 @@ export function MessageThread({
     return () => clearInterval(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
+
+  useEffect(() => {
+    if (emailAlertFailed) {
+      setInfo(
+        "Message saved in chat. Email alert could not be sent — the tutor will still see it when they log in to Messages.",
+      );
+    }
+  }, [emailAlertFailed]);
 
   useEffect(() => {
     const el = listRef.current;

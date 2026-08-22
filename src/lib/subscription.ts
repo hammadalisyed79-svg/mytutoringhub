@@ -50,6 +50,34 @@ export async function canMessage(userId: string, role: Role) {
   return role === "STUDENT" || role === "TUTOR";
 }
 
+/** Reply in an existing thread. Tutors may answer inbound student messages even before email verification. */
+export async function canReplyInConversation(userId: string, role: Role, conversationId: string) {
+  if (role === "ADMIN") return true;
+  if (await canMessage(userId, role)) return true;
+
+  if (role !== "TUTOR") return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { suspended: true },
+  });
+  if (!user || user.suspended) return false;
+
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    select: { userAId: true, userBId: true },
+  });
+  if (!conversation) return false;
+  if (conversation.userAId !== userId && conversation.userBId !== userId) return false;
+
+  const otherId = conversation.userAId === userId ? conversation.userBId : conversation.userAId;
+  const inbound = await prisma.message.findFirst({
+    where: { conversationId, senderId: otherId },
+    select: { id: true },
+  });
+  return Boolean(inbound);
+}
+
 /** Recipient does not need a paid plan. Listed tutors and any non-suspended student can receive. */
 export async function canReceiveMessages(userId: string, role: Role) {
   if (role === "ADMIN") return true;

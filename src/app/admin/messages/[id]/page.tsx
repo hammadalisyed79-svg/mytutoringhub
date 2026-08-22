@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { AdminActionButton } from "@/components/AdminActions";
+import { AdminResendMessageNotifyButton } from "@/components/AdminResendMessageNotifyButton";
+import { emailConfigured } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,17 @@ export default async function AdminConversationPage({ params }: Params) {
           confirm="Delete this conversation and every message in it?"
           danger
         />
+      </div>
+
+      <div className="panel" style={{ marginTop: "1rem" }}>
+        <p className="muted" style={{ marginTop: 0 }}>
+          Email alerts go to the recipient&apos;s login email ({conversation.userA.email} /{" "}
+          {conversation.userB.email}), not admin@. Resend must be configured on Vercel.
+        </p>
+        <p className="muted" style={{ marginBottom: 0 }}>
+          Resend on server: <strong>{emailConfigured() ? "configured" : "NOT configured"}</strong>
+        </p>
+        <AdminResendMessageNotifyButton conversationId={conversation.id} />
       </div>
 
       {conversation.messages.length === 0 && <p className="muted">No messages in this thread.</p>}

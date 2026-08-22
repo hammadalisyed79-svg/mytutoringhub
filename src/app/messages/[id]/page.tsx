@@ -4,14 +4,23 @@ import { prisma } from "@/lib/prisma";
 import { MessageThread } from "@/components/MessageThread";
 import { MessagesAccountBanner } from "@/components/MessagesAccountBanner";
 
-type Params = { params: Promise<{ id: string }> };
+type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ emailAlert?: string }>;
 
 export const metadata = { title: "Conversation" };
 
-export default async function ConversationPage({ params }: Params) {
+export default async function ConversationPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const { id } = await params;
+  const sp = await searchParams;
+  const emailAlertFailed = sp.emailAlert === "failed";
 
   if (session.user.role !== "ADMIN") {
     const me = await prisma.user.findUnique({
@@ -19,7 +28,6 @@ export default async function ConversationPage({ params }: Params) {
       select: { emailVerified: true, suspended: true },
     });
     if (me?.suspended) redirect("/dashboard");
-    if (!me?.emailVerified) redirect("/dashboard?verify=1");
   }
 
   const conversation = await prisma.conversation.findUnique({ where: { id } });
@@ -40,6 +48,7 @@ export default async function ConversationPage({ params }: Params) {
           conversationId={id}
           currentUserId={session.user.id}
           viewerRole={session.user.role}
+          emailAlertFailed={emailAlertFailed}
         />
       </div>
     </div>

@@ -66,9 +66,9 @@ export function getPaymentsReadiness(): {
     },
     {
       id: "resend",
-      label: "Resend is configured for payment receipts",
+      label: "Resend is configured (message alerts + receipts)",
       ok: resendReady,
-      hint: "RESEND_API_KEY from resend.com",
+      hint: "Add RESEND_API_KEY in Vercel → Environment Variables, verify mytutoringhub.com in Resend, then redeploy",
     },
   ];
 

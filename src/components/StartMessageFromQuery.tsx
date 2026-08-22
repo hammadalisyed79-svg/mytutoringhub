@@ -76,7 +76,11 @@ export function StartMessageFromQuery({
       setError(data.message || data.error || "Could not start conversation");
       return;
     }
-    router.push(`/messages/${data.conversationId}`);
+    router.push(
+      data.emailSent === false
+        ? `/messages/${data.conversationId}?emailAlert=failed`
+        : `/messages/${data.conversationId}`,
+    );
   }
 
   if (blockedByQuota || limitHit) {

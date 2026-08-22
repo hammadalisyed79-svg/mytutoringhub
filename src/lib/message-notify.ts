@@ -6,10 +6,13 @@ export async function notifyNewMessage(opts: {
   fromName: string;
   preview: string;
   conversationId: string;
-}): Promise<{ sent: boolean; error?: string }> {
+}): Promise<{ sent: boolean; error?: string; id?: string }> {
+  if (!opts.to?.trim()) {
+    return { sent: false, error: "Recipient has no email address" };
+  }
   try {
     const result = await sendEmail({
-      to: opts.to,
+      to: opts.to.trim(),
       subject: "New message on My Tutoring Hub",
       html: newMessageEmailHtml(opts.fromName, opts.preview, opts.conversationId),
     });
@@ -19,7 +22,7 @@ export async function notifyNewMessage(opts: {
         error: "RESEND_API_KEY not configured on server",
       };
     }
-    return { sent: true };
+    return { sent: true, id: result.id };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     console.error("[message-notify] email failed", {

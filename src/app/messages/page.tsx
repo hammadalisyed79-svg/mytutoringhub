@@ -21,13 +21,14 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
   const rawRecipient = sp.to?.trim() || sp.tutor?.trim();
 
   const uid = session.user.id;
+  let emailVerified = true;
   if (session.user.role !== "ADMIN") {
     const me = await prisma.user.findUnique({
       where: { id: uid },
       select: { emailVerified: true, suspended: true },
     });
     if (me?.suspended) redirect("/dashboard");
-    if (!me?.emailVerified) redirect("/dashboard?verify=1");
+    emailVerified = Boolean(me?.emailVerified);
   }
 
   const recipient = rawRecipient ? await resolveMessageRecipient(rawRecipient) : null;
@@ -78,11 +79,30 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
 
   const composing = Boolean(recipientId && recipientId !== uid);
 
+  if (!emailVerified && composing && session.user.role !== "ADMIN") {
+    redirect("/dashboard?verify=1");
+  }
+
   return (
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
         <MessagesAccountBanner email={session.user.email || ""} role={session.user.role} />
+        {!emailVerified && (
+          <p
+            className="muted"
+            style={{
+              margin: "0 0 1rem",
+              padding: "0.65rem 0.9rem",
+              background: "rgba(15, 90, 70, 0.06)",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "0.88rem",
+            }}
+          >
+            Verify your email to start new conversations. You can still read and reply to messages
+            already in your inbox.
+          </p>
+        )}
         <p className="section-lead">{VALUE_PROPOSITION}</p>
 
         {/* Compose first — messaging is the job of this page when a tutor is selected */}
