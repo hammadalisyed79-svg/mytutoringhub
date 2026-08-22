@@ -1,12 +1,19 @@
-export type PricingEntry = {
-  currency: string;
+/**
+ * Thin geo/currency display layer. Canonical plan IDs, names, and PKR amounts live in `plans.ts`.
+ * This module only provides country metadata, fee scaling, and helpers that convert from plans.
+ */
+
+import { getPlan, type ResolvedPlan } from "@/lib/plans";
+import { pkrToCurrency, type CurrencyCode } from "@/lib/currency";
+import type { SubscriptionPlan } from "@/lib/types";
+
+export type CountryPricingMeta = {
+  currency: CurrencyCode | string;
   currencySymbol: string;
   countryName: string;
   tagline: string;
-  tutorPro: { monthly: number; annual: number };
-  tutorElite: { monthly: number; annual: number };
-  studentPlus: { monthly: number; annual: number };
-  studentPro: { monthly: number; annual: number };
+  /** Approximate local units per 1 USD — used to scale optional service fees only. */
+  usdRatio: number;
   fees: {
     firstLesson: number;
     profileBoost: number;
@@ -17,7 +24,6 @@ export type PricingEntry = {
 };
 
 // Service fee USD base values: 1.99 / 4.99 / 0.99 / 2.99 / 1.49
-// Each country's fees scaled by the same ratio as tutorPro monthly vs USD 12.99
 function scaleFees(ratio: number) {
   return {
     firstLesson: Math.round(1.99 * ratio * 100) / 100,
@@ -28,16 +34,13 @@ function scaleFees(ratio: number) {
   };
 }
 
-export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
+export const PRICING_BY_COUNTRY: Record<string, CountryPricingMeta> = {
   PK: {
     currency: "PKR",
     currencySymbol: "₨",
     countryName: "Pakistan",
     tagline: "Trusted by tutors across Lahore, Karachi & Islamabad",
-    tutorPro: { monthly: 1500, annual: 14400 },
-    tutorElite: { monthly: 2999, annual: 28800 },
-    studentPlus: { monthly: 499, annual: 4800 },
-    studentPro: { monthly: 999, annual: 9600 },
+    usdRatio: 1500 / 12.99,
     fees: scaleFees(1500 / 12.99),
   },
   IN: {
@@ -45,10 +48,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "₹",
     countryName: "India",
     tagline: "Serving students from Mumbai to Delhi",
-    tutorPro: { monthly: 499, annual: 4800 },
-    tutorElite: { monthly: 999, annual: 9600 },
-    studentPlus: { monthly: 199, annual: 1920 },
-    studentPro: { monthly: 399, annual: 3840 },
+    usdRatio: 499 / 12.99,
     fees: scaleFees(499 / 12.99),
   },
   NG: {
@@ -56,10 +56,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "₦",
     countryName: "Nigeria",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 3999, annual: 38400 },
-    tutorElite: { monthly: 7999, annual: 76800 },
-    studentPlus: { monthly: 999, annual: 9600 },
-    studentPro: { monthly: 1999, annual: 19200 },
+    usdRatio: 3999 / 12.99,
     fees: scaleFees(3999 / 12.99),
   },
   AE: {
@@ -67,10 +64,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "د.إ",
     countryName: "UAE",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 19, annual: 182 },
-    tutorElite: { monthly: 39, annual: 374 },
-    studentPlus: { monthly: 9, annual: 86 },
-    studentPro: { monthly: 18, annual: 173 },
+    usdRatio: 19 / 12.99,
     fees: scaleFees(19 / 12.99),
   },
   KE: {
@@ -78,10 +72,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "KSh",
     countryName: "Kenya",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 599, annual: 5760 },
-    tutorElite: { monthly: 1199, annual: 11520 },
-    studentPlus: { monthly: 199, annual: 1920 },
-    studentPro: { monthly: 399, annual: 3840 },
+    usdRatio: 599 / 12.99,
     fees: scaleFees(599 / 12.99),
   },
   MY: {
@@ -89,10 +80,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "RM",
     countryName: "Malaysia",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 19, annual: 182 },
-    tutorElite: { monthly: 39, annual: 374 },
-    studentPlus: { monthly: 9, annual: 86 },
-    studentPro: { monthly: 18, annual: 173 },
+    usdRatio: 19 / 12.99,
     fees: scaleFees(19 / 12.99),
   },
   BD: {
@@ -100,10 +88,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "৳",
     countryName: "Bangladesh",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 399, annual: 3840 },
-    tutorElite: { monthly: 799, annual: 7680 },
-    studentPlus: { monthly: 149, annual: 1440 },
-    studentPro: { monthly: 299, annual: 2880 },
+    usdRatio: 399 / 12.99,
     fees: scaleFees(399 / 12.99),
   },
   GB: {
@@ -111,10 +96,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "£",
     countryName: "United Kingdom",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 9.99, annual: 95.88 },
-    tutorElite: { monthly: 19.99, annual: 191.88 },
-    studentPlus: { monthly: 4.99, annual: 47.88 },
-    studentPro: { monthly: 9.99, annual: 95.88 },
+    usdRatio: 9.99 / 12.99,
     fees: scaleFees(9.99 / 12.99),
   },
   US: {
@@ -122,10 +104,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "$",
     countryName: "United States",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 12.99, annual: 124.70 },
-    tutorElite: { monthly: 24.99, annual: 239.90 },
-    studentPlus: { monthly: 5.99, annual: 57.50 },
-    studentPro: { monthly: 11.99, annual: 115.10 },
+    usdRatio: 1,
     fees: scaleFees(1),
   },
   CA: {
@@ -133,10 +112,7 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "CA$",
     countryName: "Canada",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 14.99, annual: 143.90 },
-    tutorElite: { monthly: 29.99, annual: 287.90 },
-    studentPlus: { monthly: 6.99, annual: 67.10 },
-    studentPro: { monthly: 13.99, annual: 134.30 },
+    usdRatio: 14.99 / 12.99,
     fees: scaleFees(14.99 / 12.99),
   },
   AU: {
@@ -144,28 +120,51 @@ export const PRICING_BY_COUNTRY: Record<string, PricingEntry> = {
     currencySymbol: "A$",
     countryName: "Australia",
     tagline: "Join tutors & students in 50+ countries",
-    tutorPro: { monthly: 16.99, annual: 163.10 },
-    tutorElite: { monthly: 32.99, annual: 316.70 },
-    studentPlus: { monthly: 7.99, annual: 76.70 },
-    studentPro: { monthly: 15.99, annual: 153.50 },
+    usdRatio: 16.99 / 12.99,
     fees: scaleFees(16.99 / 12.99),
   },
 };
 
-export const DEFAULT_PRICING: PricingEntry = {
+export const DEFAULT_PRICING: CountryPricingMeta = {
   currency: "GBP",
   currencySymbol: "£",
   countryName: "your region",
   tagline: "Join tutors & students in 50+ countries",
-  tutorPro: { monthly: 9.99, annual: 95.88 },
-  tutorElite: { monthly: 19.99, annual: 191.88 },
-  studentPlus: { monthly: 4.99, annual: 47.88 },
-  studentPro: { monthly: 9.99, annual: 95.88 },
+  usdRatio: 9.99 / 12.99,
   fees: scaleFees(9.99 / 12.99),
 };
 
-export function getPricingForCountry(countryCode: string): PricingEntry {
+/** @deprecated Prefer CountryPricingMeta — kept for older imports. */
+export type PricingEntry = CountryPricingMeta;
+
+export function getPricingForCountry(countryCode: string): CountryPricingMeta {
   return PRICING_BY_COUNTRY[countryCode?.toUpperCase()] ?? DEFAULT_PRICING;
+}
+
+/** Local monthly/annual amounts derived from `plans.ts` PKR (no second plan catalog). */
+export function localPlanAmounts(
+  planId: SubscriptionPlan | string,
+  currency: CurrencyCode,
+  plan?: ResolvedPlan | { pricePkr: number; annualPricePkr?: number; chargePricePkr?: number; annualChargePricePkr?: number | null },
+) {
+  const resolved = plan ?? getPlan(planId);
+  if (!resolved) return null;
+  const monthlyPkr =
+    "chargePricePkr" in resolved && resolved.chargePricePkr != null
+      ? resolved.chargePricePkr
+      : resolved.pricePkr;
+  const listPkr = resolved.pricePkr;
+  const annualPkr =
+    ("annualChargePricePkr" in resolved && resolved.annualChargePricePkr != null
+      ? resolved.annualChargePricePkr
+      : null) ??
+    resolved.annualPricePkr ??
+    Math.round(listPkr * 9.6);
+  return {
+    monthly: pkrToCurrency(monthlyPkr, currency),
+    annual: pkrToCurrency(annualPkr, currency),
+    listMonthly: pkrToCurrency(listPkr, currency),
+  };
 }
 
 export function formatPrice(value: number, symbol: string): string {

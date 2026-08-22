@@ -183,8 +183,6 @@ export async function PUT(req: Request) {
       },
     });
 
-    await syncTutorBadges(session.user.id);
-
     const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
     if (adCount === 0) {
       const firstSubject = profile.subjects.split(",")[0]?.trim() || "General";
