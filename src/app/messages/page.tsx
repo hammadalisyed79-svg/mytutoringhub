@@ -10,12 +10,13 @@ import { getPlanDashboardSummary } from "@/lib/plan-limits";
 
 export const metadata = { title: "Messages" };
 
-type SearchParams = Promise<{ to?: string; ad?: string }>;
+type SearchParams = Promise<{ to?: string; tutor?: string; ad?: string }>;
 
 export default async function MessagesPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const sp = await searchParams;
+  const recipientId = sp.to?.trim() || sp.tutor?.trim();
 
   const uid = session.user.id;
   if (session.user.role !== "ADMIN") {
@@ -25,6 +26,19 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     });
     if (me?.suspended) redirect("/dashboard");
     if (!me?.emailVerified) redirect("/dashboard?verify=1");
+  }
+
+  if (recipientId && recipientId !== uid) {
+    const existing = await prisma.conversation.findFirst({
+      where: {
+        OR: [
+          { userAId: uid, userBId: recipientId },
+          { userAId: recipientId, userBId: uid },
+        ],
+      },
+      select: { id: true },
+    });
+    if (existing) redirect(`/messages/${existing.id}`);
   }
   const conversations = await prisma.conversation.findMany({
     where: { OR: [{ userAId: uid }, { userBId: uid }] },
@@ -52,9 +66,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
 
         <MessagesPlanPanel userId={uid} role={session.user.role} />
 
-        {sp.to && <StartMessageFromQuery recipientId={sp.to} relatedAdId={sp.ad} />}
+        {recipientId && <StartMessageFromQuery recipientId={recipientId} relatedAdId={sp.ad} />}
 
-        {conversations.length === 0 && !sp.to && (
+        {conversations.length === 0 && !recipientId && (
           <div className="panel empty-state">
             <h2>No conversations yet</h2>
             <p className="muted">
