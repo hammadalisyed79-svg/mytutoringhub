@@ -140,13 +140,16 @@ export function loginConfirmationEmailHtml(opts: {
   });
 }
 
-export function newMessageEmailHtml(fromName: string, preview: string) {
+export function newMessageEmailHtml(fromName: string, preview: string, conversationId?: string) {
+  const inboxHref = conversationId
+    ? `${appUrl}/messages/${conversationId}`
+    : `${appUrl}/messages`;
   return emailLayout({
     preheader: `New message from ${fromName}`,
     title: "New message",
     body: `<p>You have a new message from <strong>${fromName}</strong>.</p>
 <p style="padding:12px 14px;background:#f6f1e8;border-radius:8px;color:#486581">“${preview.slice(0, 160)}”</p>`,
-    cta: { label: "Open inbox", href: `${appUrl}/messages` },
+    cta: { label: "Reply in inbox", href: inboxHref },
   });
 }
 

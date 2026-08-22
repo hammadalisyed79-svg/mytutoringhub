@@ -94,30 +94,45 @@ export function MessageThread({
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (sending || uploading) return;
-    setError("");
-    setSending(true);
-    const res = await fetch(`/api/messages/${conversationId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        body: body.trim(),
-        ...(attachmentUrl ? { attachmentUrl } : {}),
-      }),
-    });
-    const data = await res.json();
-    setSending(false);
-    if (!res.ok) {
-      setError(data.error || "Send failed");
+    const trimmed = body.trim();
+    if (!trimmed && !attachmentUrl) {
+      setError("Write a message or attach a photo.");
       return;
     }
-    setBody("");
-    setAttachmentUrl("");
-    if (data.id) {
-      setEnteringIds((prev) => [...prev, data.id as string]);
-      setSendPulse(true);
-      window.setTimeout(() => setSendPulse(false), 520);
+    setError("");
+    setSending(true);
+    try {
+      const res = await fetch(`/api/messages/${conversationId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          body: trimmed,
+          ...(attachmentUrl ? { attachmentUrl } : {}),
+        }),
+      });
+      let data: { error?: string; message?: string; id?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+      if (!res.ok) {
+        setError(data.message || data.error || "Send failed. Try again.");
+        return;
+      }
+      setBody("");
+      setAttachmentUrl("");
+      if (data.id) {
+        setEnteringIds((prev) => [...prev, data.id as string]);
+        setSendPulse(true);
+        window.setTimeout(() => setSendPulse(false), 520);
+      }
+      await load({ refreshNav: true });
+    } catch {
+      setError("Network error — your message may not have sent. Refresh and check the thread.");
+    } finally {
+      setSending(false);
     }
-    await load({ refreshNav: true });
   }
 
   return (

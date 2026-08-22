@@ -8,6 +8,7 @@ import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { ReferralShareButton } from "@/components/ReferralShareButton";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import {
@@ -74,6 +75,7 @@ export default async function StudentDashboardPage({
           state={sp.state}
           planLabel={sp.plan ? getPlan(sp.plan as never)?.name || sp.plan : undefined}
         />
+        <DashboardMessageAlert userId={session.user.id} />
         {sp.subscribed === "1" && sp.checkout !== "success" && (
           <p className="success panel" style={{ marginTop: "1rem" }}>
             Payment confirmed. Your plan is active

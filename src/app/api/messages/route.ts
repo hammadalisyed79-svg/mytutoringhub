@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { canMessage, canReceiveMessages } from "@/lib/subscription";
 import { canPerformAction, recordUsage } from "@/lib/plan-limits";
 import { resolveMessageRecipient } from "@/lib/message-recipient";
-import { sendEmail, newMessageEmailHtml } from "@/lib/email";
+import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
@@ -188,10 +188,11 @@ export async function POST(req: Request) {
     data: { lastMessageAt: new Date() },
   });
 
-  await sendEmail({
+  notifyNewMessage({
     to: recipient.email,
-    subject: "New message on My Tutoring Hub",
-    html: newMessageEmailHtml(session.user.name, text || "Sent a photo"),
+    fromName: session.user.name,
+    preview: text || "Sent a photo",
+    conversationId: conversation.id,
   });
 
   return NextResponse.json({ conversationId: conversation.id, message });

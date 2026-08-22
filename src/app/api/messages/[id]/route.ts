@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canMessage } from "@/lib/subscription";
-import { sendEmail, newMessageEmailHtml } from "@/lib/email";
+import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
@@ -116,10 +116,11 @@ export async function POST(req: Request, { params }: Params) {
     conversation.userAId === session.user.id ? conversation.userBId : conversation.userAId;
   const other = await prisma.user.findUnique({ where: { id: otherId } });
   if (other) {
-    await sendEmail({
+    notifyNewMessage({
       to: other.email,
-      subject: "New message on My Tutoring Hub",
-      html: newMessageEmailHtml(session.user.name, text || "Sent a photo"),
+      fromName: session.user.name,
+      preview: text || "Sent a photo",
+      conversationId: id,
     });
   }
 

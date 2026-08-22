@@ -9,6 +9,7 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
@@ -73,6 +74,7 @@ export default async function TutorDashboardPage({
           state={sp.state}
           planLabel={sp.plan ? getPlan(sp.plan as never)?.name || sp.plan : undefined}
         />
+        <DashboardMessageAlert userId={session.user.id} />
         {sp.subscribed === "1" && sp.checkout !== "success" && (
           <p className="success panel" style={{ marginTop: "1rem" }}>
             Payment confirmed. Your plan is active
