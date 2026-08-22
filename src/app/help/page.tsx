@@ -11,6 +11,10 @@ export const metadata = pageMetadata({
 
 const FAQS = [
   {
+    q: "What are Hub Points?",
+    a: "Hub Points are platform credit (1 point = Rs 1 PKR). Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor ads on Pricing.",
+  },
+  {
     q: "What is free vs paid on My Tutoring Hub?",
     a: "Search and join are free. Students get 3 new tutor contacts per month on a free account; Student Pass unlocks unlimited messaging. Tutors list in search for free with a complete profile; Tutor Basic adds priority and ads. We never take a lesson commission. See the full Free vs paid guide for tables and FAQs.",
   },

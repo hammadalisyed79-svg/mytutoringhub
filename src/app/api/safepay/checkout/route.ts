@@ -19,6 +19,7 @@ import {
   safepayPublicError,
 } from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
+import { computeMaxRedeemablePoints } from "@/lib/hub-points";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -36,6 +37,7 @@ const schema = z.object({
   billing: z.enum(["monthly", "annual"]).optional().default("monthly"),
   currency: z.string().optional(),
   country: z.string().optional(),
+  useHubPoints: z.boolean().optional().default(false),
 });
 
 function resolveCountry(req: Request, bodyCountry?: string): string | null {
@@ -66,7 +68,7 @@ export async function POST(req: Request) {
   }
 
   const body = schema.parse(await req.json());
-  const { plan, billing } = body;
+  const { plan, billing, useHubPoints } = body;
   const def = await getLivePlan(plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
@@ -106,7 +108,16 @@ export async function POST(req: Request) {
   const basePricePkr =
     billing === "annual" && annualPricePkr != null ? annualPricePkr : def.chargePricePkr;
 
-  const amountMajor = pkrToCurrency(basePricePkr, currency);
+  const wallet = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { hubPointsBalance: true },
+  });
+  const pointsRedeemedPkr = useHubPoints
+    ? computeMaxRedeemablePoints(wallet?.hubPointsBalance ?? 0, basePricePkr)
+    : 0;
+  const chargePricePkr = Math.max(0, basePricePkr - pointsRedeemedPkr);
+
+  const amountMajor = pkrToCurrency(chargePricePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
@@ -141,6 +152,7 @@ export async function POST(req: Request) {
         status: "INCOMPLETE",
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod: billing,
+        pointsRedeemedPkr,
       },
       create: {
         userId: session.user.id,
@@ -149,10 +161,20 @@ export async function POST(req: Request) {
         stripeSubscriptionId: tracker,
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod: billing,
+        pointsRedeemedPkr,
       },
     });
 
-    return NextResponse.json({ url, tracker, provider: "safepay", currency, amount, billing });
+    return NextResponse.json({
+      url,
+      tracker,
+      provider: "safepay",
+      currency,
+      amount,
+      billing,
+      pointsRedeemedPkr,
+      listPricePkr: basePricePkr,
+    });
   } catch (err) {
     console.error("Safepay checkout error", err);
     return NextResponse.json({ error: safepayPublicError(err) }, { status: 502 });

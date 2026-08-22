@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSafepayClient, safepayConfigured } from "@/lib/safepay";
 import { syncTutorBadges } from "@/lib/subscription";
 import { sendEmail, paymentReceiptHtml } from "@/lib/email";
+import { deductHubPointsForRedemption } from "@/lib/hub-points";
 import { getPlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import type { SubscriptionPlan } from "@/lib/types";
@@ -126,6 +127,16 @@ export async function activatePaidSafepaySubscription(opts: {
   const user = await prisma.user.findUnique({ where: { id: updated.userId } });
   if (user?.role === "TUTOR") {
     await syncTutorBadges(user.id);
+  }
+
+  if (updated.pointsRedeemedPkr > 0) {
+    const planName = getPlan(plan)?.name || plan;
+    await deductHubPointsForRedemption({
+      userId: updated.userId,
+      points: updated.pointsRedeemedPkr,
+      subscriptionId: updated.id,
+      planName,
+    });
   }
 
   if (user?.email) {

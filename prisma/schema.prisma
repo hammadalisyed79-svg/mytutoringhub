@@ -19,8 +19,14 @@ model User {
   suspended        Boolean   @default(false)
   emailVerified    DateTime?
   onboardingComplete Boolean @default(true)
-  // One-time bonus contacts from successful referrals (+1 per side).
+  // Legacy — replaced by Hub Points referral rewards.
   referralBonusContacts Int @default(0)
+  hubPointsBalance Int @default(0)
+  hubPointsLastActivityAt DateTime?
+  referredByUserId String?
+  referredBy User? @relation("UserReferrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  referrals User[] @relation("UserReferrals")
+  hubPointLedger HubPointLedger[]
   stripeCustomerId String?   @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -45,6 +51,21 @@ model User {
   serviceFeeEvents     ServiceFeeEvent[]
   usageEvents          UsageEvent[]
   studentRequests      StudentRequest[]
+}
+
+model HubPointLedger {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount         Int
+  balanceAfter   Int
+  type           String
+  description    String
+  relatedUserId  String?
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model Account {
@@ -167,6 +188,7 @@ model Subscription {
   // Extended fields for admin plan management
   role                 String?   // "tutor" | "student"
   billingPeriod        String?   // "monthly" | "annual"
+  pointsRedeemedPkr    Int       @default(0)
   currency             String?   @default("GBP")
   priceAmount          Float?
   startDate            DateTime? @default(now())

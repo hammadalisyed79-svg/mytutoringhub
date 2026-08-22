@@ -14,6 +14,8 @@ export function SubscribeButton({
   complimentary,
   oneTime,
   paidCheckoutLive = true,
+  hubPointsBalance = 0,
+  listPricePkr,
 }: {
   plan: SubscriptionPlan;
   planLabel?: string;
@@ -24,9 +26,12 @@ export function SubscribeButton({
   complimentary?: boolean;
   oneTime?: boolean;
   paidCheckoutLive?: boolean;
+  hubPointsBalance?: number;
+  listPricePkr?: number;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [useHubPoints, setUseHubPoints] = useState(hubPointsBalance > 0);
   const displayName = planLabel || plan.replace(/_/g, " ");
 
   if (!paidCheckoutLive && !complimentary) {
@@ -51,7 +56,12 @@ export function SubscribeButton({
     let res = await fetch("/api/safepay/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, currency, billing: billing ?? "monthly" }),
+      body: JSON.stringify({
+        plan,
+        currency,
+        billing: billing ?? "monthly",
+        useHubPoints: useHubPoints && hubPointsBalance > 0,
+      }),
     });
 
     if (res.status === 503) {
@@ -74,6 +84,16 @@ export function SubscribeButton({
 
   return (
     <div className="checkout-action">
+      {hubPointsBalance > 0 && listPricePkr && listPricePkr > 0 && !complimentary ? (
+        <label className="points-checkout-toggle">
+          <input
+            type="checkbox"
+            checked={useHubPoints}
+            onChange={(e) => setUseHubPoints(e.target.checked)}
+          />
+          Apply Hub Points (up to 50% off)
+        </label>
+      ) : null}
       <button
         className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
         type="button"

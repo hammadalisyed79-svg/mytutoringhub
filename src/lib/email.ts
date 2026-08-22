@@ -113,13 +113,101 @@ export async function sendEmail(opts: {
 
 export function welcomeEmailHtml(name: string, role: string) {
   const roleLabel = role === "TUTOR" ? "tutor" : "student";
+  const earnLine =
+    role === "TUTOR"
+      ? `<p>Complete your profile to earn <strong>200 Hub Points</strong> (Rs 200 off plans and tutor ads). Invite others to earn <strong>50 points</strong> per successful referral.</p>`
+      : `<p>Invite friends to earn <strong>50 Hub Points</strong> (Rs 50 equivalent) when they join and message a tutor.</p>`;
   return emailLayout({
-    preheader: "Your My Tutoring Hub account is ready.",
+    preheader: "Your My Tutoring Hub account is ready — confirm your email to get started.",
     title: "Welcome aboard",
     body: `<p>Hi ${name},</p>
 <p>Thanks for joining <strong>${brand}</strong> as a ${roleLabel}. Your account is ready.</p>
-<p>Next step: choose a subscription plan to unlock messaging and connect with tutors or students worldwide. Lesson fees always stay off-platform between you and the other party.</p>`,
-    cta: { label: "View plans & pricing", href: `${appUrl}/pricing` },
+<p><strong>Next step:</strong> confirm your email (we sent a separate message). Then you can search tutors, message, and earn Hub Points.</p>
+${earnLine}
+<p>Lesson fees always stay off-platform between you and the other party.</p>`,
+    cta: { label: "Open dashboard", href: `${appUrl}/dashboard` },
+  });
+}
+
+export function hubPointsEarnedEmailHtml(opts: {
+  name: string;
+  points: number;
+  reason: string;
+  balance: number;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: `You earned ${opts.points} Hub Points.`,
+    title: "Hub Points earned",
+    body: `<p>Hi ${opts.name},</p>
+<p><strong>+${opts.points} Hub Points</strong> — ${escapeHtml(opts.reason)}</p>
+<p>Your balance is now <strong>${opts.balance.toLocaleString()} points</strong> (1 point = Rs 1 PKR).</p>
+<p>Redeem on Student Pass, Student Pro, or tutor ads and subscriptions — up to 50% off each purchase.</p>`,
+    cta: { label: "View your wallet", href: opts.dashboardUrl },
+  });
+}
+
+export function hubPointsRedeemedEmailHtml(opts: {
+  name: string;
+  points: number;
+  planName: string;
+  balance: number;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: `You used ${opts.points} Hub Points on ${opts.planName}.`,
+    title: "Hub Points applied",
+    body: `<p>Hi ${opts.name},</p>
+<p><strong>−${opts.points} Hub Points</strong> applied to <strong>${escapeHtml(opts.planName)}</strong>.</p>
+<p>Remaining balance: <strong>${opts.balance.toLocaleString()} points</strong>.</p>`,
+    cta: { label: "Open dashboard", href: opts.dashboardUrl },
+  });
+}
+
+export function hubPointsReferralPendingEmailHtml(opts: {
+  name: string;
+  points: number;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: `Earn ${opts.points} Hub Points when they complete the next step.`,
+    title: "Your referral signed up",
+    body: `<p>Hi ${opts.name},</p>
+<p>Someone joined My Tutoring Hub using your link.</p>
+<p>You will receive <strong>${opts.points} Hub Points</strong> when they verify their email and complete the referral milestone (first tutor message for students, or a complete tutor profile for tutors).</p>`,
+    cta: { label: "Track Hub Points", href: opts.dashboardUrl },
+  });
+}
+
+export function hubPointsExpiringEmailHtml(opts: {
+  name: string;
+  points: number;
+  expiresAt: Date;
+  pricingUrl: string;
+}) {
+  const when = opts.expiresAt.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  return emailLayout({
+    preheader: `${opts.points} Hub Points expire on ${when}.`,
+    title: "Hub Points expiring soon",
+    body: `<p>Hi ${opts.name},</p>
+<p>You have <strong>${opts.points.toLocaleString()} Hub Points</strong> that will expire on <strong>${when}</strong> after 12 months of inactivity.</p>
+<p>Use them on a subscription or tutor ad — up to 50% off your next purchase.</p>`,
+    cta: { label: "Use points on pricing", href: opts.pricingUrl },
+  });
+}
+
+export function verificationReminderEmailHtml(opts: { name: string; verifyUrl: string }) {
+  return emailLayout({
+    preheader: "Confirm your email to unlock messaging and Hub Points.",
+    title: "Reminder: confirm your email",
+    body: `<p>Hi ${opts.name},</p>
+<p>Please confirm your email to unlock messaging, referrals, and Hub Points on My Tutoring Hub.</p>
+<p>Mail is sent from <strong>admin@mytutoringhub.com</strong> — check inbox, junk, and promotions.</p>`,
+    cta: { label: "Confirm email", href: opts.verifyUrl },
   });
 }
 

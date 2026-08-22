@@ -25,7 +25,7 @@ export const EXAM_PREP_CTA =
   "Exams coming up? Unlock unlimited tutor messages and past papers with Student Pass.";
 
 export const REFERRAL_LINE =
-  "Invite a friend — you both get +1 extra free tutor contact when they join.";
+  "Invite a friend — earn 50 Hub Points when they verify email and complete the referral milestone.";
 
 export const TUTOR_INVITE_LINE =
   "Know a tutor? Share your link — free listing, no commission on lessons. They appear in search worldwide.";

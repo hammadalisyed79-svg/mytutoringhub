@@ -15,6 +15,7 @@ function PlanActions({
   featured,
   billing,
   paidCheckoutLive,
+  hubPointsBalance = 0,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
@@ -22,6 +23,7 @@ function PlanActions({
   featured?: boolean;
   billing: "monthly" | "annual";
   paidCheckoutLive: boolean;
+  hubPointsBalance?: number;
 }) {
   if (signedIn) {
     if (!paidCheckoutLive && !plan.isComplimentary) {
@@ -39,6 +41,12 @@ function PlanActions({
         plan={plan.id}
         currency={currency}
         billing={billing}
+        hubPointsBalance={hubPointsBalance}
+        listPricePkr={
+          billing === "annual" && plan.annualChargePricePkr != null
+            ? plan.annualChargePricePkr
+            : plan.chargePricePkr
+        }
         label={
           plan.isAddOn
             ? `Add ${plan.name}`
@@ -132,12 +140,14 @@ export function PricingPlansClient({
   currency,
   signedIn,
   paidCheckoutLive,
+  hubPointsBalance = 0,
 }: {
   corePlans: ResolvedPlan[];
   addOns: ResolvedPlan[];
   currency: CurrencyCode;
   signedIn: boolean;
   paidCheckoutLive: boolean;
+  hubPointsBalance?: number;
 }) {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const hasAnnual = corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null);
@@ -217,6 +227,7 @@ export function PricingPlansClient({
                   featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
                   billing={billing}
                   paidCheckoutLive={paidCheckoutLive}
+                  hubPointsBalance={hubPointsBalance}
                 />
               </div>
             </article>
@@ -254,6 +265,7 @@ export function PricingPlansClient({
                     signedIn={signedIn}
                     billing="monthly"
                     paidCheckoutLive={paidCheckoutLive}
+                    hubPointsBalance={hubPointsBalance}
                   />
                 </div>
               </article>

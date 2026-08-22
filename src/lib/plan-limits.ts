@@ -106,8 +106,7 @@ export async function canPerformAction(
 
   if (action === "tutor_contact") {
     const isPaid = await hasStudentMessagingPass(userId);
-    const bonus = isPaid ? 0 : await getReferralContactBonus(userId);
-    const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT + bonus;
+    const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT;
     return {
       allowed: isPaid || used < limit,
       limit: isPaid ? -1 : limit,
@@ -204,7 +203,7 @@ export async function getPlanDashboardSummary(
         ? "You have unlimited contacts and the AI study assistant."
         : hasPass
           ? "Upgrade to Student Pro for unlimited past papers and the AI study assistant."
-          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month (+ referral bonus). Upgrade for unlimited messaging and past papers.`,
+          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Earn Hub Points from referrals. Upgrade for unlimited messaging and past papers.`,
     };
   }
 

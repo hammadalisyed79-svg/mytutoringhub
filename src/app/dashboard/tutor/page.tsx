@@ -9,6 +9,8 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { PointsWalletPanel } from "@/components/PointsWalletPanel";
+import { ensureHubPointsFresh, getHubPointsSummary } from "@/lib/hub-points";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
@@ -49,6 +51,8 @@ export default async function TutorDashboardPage({
       prepareDashboardHome(session.user.id, "TUTOR", sp),
       getUnreadMessageSummary(session.user.id),
     ]);
+  await ensureHubPointsFresh(session.user.id);
+  const hubPoints = await getHubPointsSummary(session.user.id, { currency, role: "TUTOR" });
   const badgeProgress = user.tutorProfile
     ? tutorBadgeProgress(await getTutorBadgeStats(user.tutorProfile.id))
     : null;
@@ -96,6 +100,9 @@ export default async function TutorDashboardPage({
         )}
 
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <PointsWalletPanel summary={hubPoints} role="TUTOR" />
+          </div>
           <section className="panel">
             <h2>Your plan</h2>
             {corePlan ? (

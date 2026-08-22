@@ -6,12 +6,10 @@ import {
   sendEmail,
   studentUpgradeNudgeEmailHtml,
   tutorPicksEmailHtml,
+  verificationReminderEmailHtml,
 } from "@/lib/email";
-import {
-  STUDENT_FREE_CONTACT_LIMIT,
-  canPerformAction,
-  getReferralContactBonus,
-} from "@/lib/plan-limits";
+import { runHubPointsMaintenance } from "@/lib/hub-points";
+import { STUDENT_FREE_CONTACT_LIMIT, canPerformAction } from "@/lib/plan-limits";
 import { hasStudentMessagingPass } from "@/lib/subscription";
 import { formatHourly } from "@/lib/currency";
 
@@ -19,6 +17,7 @@ export const EMAIL_SEQUENCES = {
   POST_VERIFY: "post_verify",
   TUTOR_PICKS: "tutor_picks",
   UPGRADE_NUDGE: "upgrade_nudge",
+  VERIFY_REMINDER: "verify_reminder",
 } as const;
 
 type SequenceKey = (typeof EMAIL_SEQUENCES)[keyof typeof EMAIL_SEQUENCES];
@@ -165,9 +164,8 @@ export async function sendUpgradeNudgeEmail(userId: string) {
 
   try {
     const check = await canPerformAction(userId, "tutor_contact");
-    const bonus = await getReferralContactBonus(userId);
     const limit =
-      check.limit === -1 ? STUDENT_FREE_CONTACT_LIMIT + bonus : Math.max(0, check.limit - check.used);
+      check.limit === -1 ? STUDENT_FREE_CONTACT_LIMIT : Math.max(0, check.limit - check.used);
 
     await sendEmail({
       to: user.email,
@@ -216,10 +214,16 @@ export async function runPostVerifySequence(userId: string) {
   return results;
 }
 
-/** Cron: backup tutor picks + delayed upgrade nudges. */
+/** Cron: backup tutor picks + delayed upgrade nudges + verify reminders + Hub Points maintenance. */
 export async function runOnboardingDigest() {
   if (!emailConfigured()) {
-    return { ok: true, skipped: true, sent: { tutorPicks: 0, upgradeNudge: 0 } };
+    const points = await runHubPointsMaintenance().catch(() => ({ expired: 0, warnings: 0 }));
+    return {
+      ok: true,
+      skipped: true,
+      sent: { tutorPicks: 0, upgradeNudge: 0, verifyReminder: 0 },
+      hubPoints: points,
+    };
   }
 
   const now = Date.now();
@@ -228,8 +232,10 @@ export async function runOnboardingDigest() {
   const picksUntil = new Date(now - 12 * 3600000);
   const nudgeSince = new Date(now - 4 * day);
   const nudgeUntil = new Date(now - 2 * day);
+  const verifySince = new Date(now - 2 * day);
+  const verifyUntil = new Date(now - 1 * day);
 
-  const [pickCandidates, nudgeCandidates] = await Promise.all([
+  const [pickCandidates, nudgeCandidates, verifyCandidates] = await Promise.all([
     prisma.user.findMany({
       where: {
         role: "STUDENT",
@@ -256,10 +262,21 @@ export async function runOnboardingDigest() {
       select: { id: true },
       take: 80,
     }),
+    prisma.user.findMany({
+      where: {
+        suspended: false,
+        emailVerified: null,
+        createdAt: { gte: verifySince, lte: verifyUntil },
+        emailSequenceEvents: { none: { sequence: EMAIL_SEQUENCES.VERIFY_REMINDER } },
+      },
+      select: { id: true, name: true, email: true },
+      take: 80,
+    }),
   ]);
 
   let tutorPicks = 0;
   let upgradeNudge = 0;
+  let verifyReminder = 0;
 
   for (const row of pickCandidates) {
     try {
@@ -279,9 +296,36 @@ export async function runOnboardingDigest() {
     }
   }
 
+  for (const row of verifyCandidates) {
+    if (!row.email) continue;
+    const claimed = await claimSequence(row.id, EMAIL_SEQUENCES.VERIFY_REMINDER);
+    if (!claimed) continue;
+    try {
+      await sendEmail({
+        to: row.email,
+        subject: "Reminder: confirm your email · My Tutoring Hub",
+        html: verificationReminderEmailHtml({
+          name: row.name,
+          verifyUrl: `${appUrl()}/dashboard?verify=1`,
+        }),
+      });
+      verifyReminder += 1;
+    } catch (err) {
+      await releaseSequence(row.id, EMAIL_SEQUENCES.VERIFY_REMINDER);
+      console.error("[digest/onboarding] verify_reminder", row.id, err);
+    }
+  }
+
+  const hubPoints = await runHubPointsMaintenance().catch(() => ({ expired: 0, warnings: 0 }));
+
   return {
     ok: true,
-    sent: { tutorPicks, upgradeNudge },
-    candidates: { tutorPicks: pickCandidates.length, upgradeNudge: nudgeCandidates.length },
+    sent: { tutorPicks, upgradeNudge, verifyReminder },
+    candidates: {
+      tutorPicks: pickCandidates.length,
+      upgradeNudge: nudgeCandidates.length,
+      verifyReminder: verifyCandidates.length,
+    },
+    hubPoints,
   };
 }

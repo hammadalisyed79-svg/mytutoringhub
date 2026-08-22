@@ -56,6 +56,15 @@ export default async function PricingPage({
     await reconcileUserSafepayPayments(session.user.id).catch(() => undefined);
   }
 
+  const hubPointsBalance = session?.user?.id
+    ? (
+        await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { hubPointsBalance: true },
+        })
+      )?.hubPointsBalance ?? 0
+    : 0;
+
   return (
     <div className="page checkout-page">
       <div className="container">
@@ -146,6 +155,7 @@ export default async function PricingPage({
           currency={currency}
           signedIn={Boolean(session?.user)}
           paidCheckoutLive={paidCheckoutLive}
+          hubPointsBalance={hubPointsBalance}
         />
       </div>
     </div>

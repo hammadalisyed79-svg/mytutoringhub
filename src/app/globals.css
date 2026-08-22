@@ -4072,6 +4072,52 @@ select:focus {
   }
 }
 
+.points-wallet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.points-wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.points-share-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.points-ledger {
+  margin-top: 1rem;
+}
+
+.points-ledger ul {
+  margin: 0.65rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.points-checkout-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+@media (max-width: 720px) {
+  .points-wallet-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .pagination {
   display: flex;
   align-items: center;

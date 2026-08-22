@@ -6,8 +6,9 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
-import { ReferralShareButton } from "@/components/ReferralShareButton";
+import { PointsWalletPanel } from "@/components/PointsWalletPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { ensureHubPointsFresh, getHubPointsSummary } from "@/lib/hub-points";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
@@ -39,6 +40,8 @@ export default async function StudentDashboardPage({
     prepareDashboardHome(session.user.id, "STUDENT", sp),
     getUnreadMessageSummary(session.user.id),
   ]);
+  await ensureHubPointsFresh(session.user.id);
+  const hubPoints = await getHubPointsSummary(session.user.id, { currency, role: "STUDENT" });
 
   return (
     <div className="page">
@@ -84,6 +87,9 @@ export default async function StudentDashboardPage({
         )}
 
         <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <PointsWalletPanel summary={hubPoints} role="STUDENT" />
+          </div>
           <section className="panel" style={{ gridColumn: "1 / -1" }}>
             <h2>Find a tutor</h2>
             <p className="muted" style={{ marginTop: 0 }}>
@@ -156,7 +162,6 @@ export default async function StudentDashboardPage({
               <Link href="/pricing">See Student Pass →</Link>
             </p>
             {!corePlan && <RecoverPaymentForm />}
-            <ReferralShareButton userId={session.user.id} />
             <InviteTutorShare
               referrerId={session.user.id}
               referrerName={session.user.name}

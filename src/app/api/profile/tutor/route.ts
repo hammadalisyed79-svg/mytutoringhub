@@ -17,6 +17,7 @@ import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
 import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
+import { tryAwardProfileCompleteBonus } from "@/lib/hub-points";
 
 const schema = z
   .object({
@@ -214,6 +215,10 @@ export async function PUT(req: Request) {
     }
 
     await syncTutorBadges(session.user.id);
+
+    void tryAwardProfileCompleteBonus(session.user.id).catch((err) =>
+      console.error("[hub-points] profile complete bonus failed", err),
+    );
 
     const refreshed = await prisma.tutorProfile.findUnique({ where: { id: profile.id } });
     return NextResponse.json(refreshed ?? profile);

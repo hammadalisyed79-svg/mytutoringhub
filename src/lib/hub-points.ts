@@ -1,0 +1,448 @@
+import { prisma } from "@/lib/prisma";
+import {
+  formatPlanPrice,
+  pkrToCurrency,
+  type CurrencyCode,
+} from "@/lib/currency";
+import {
+  hubPointsEarnedEmailHtml,
+  hubPointsExpiringEmailHtml,
+  hubPointsRedeemedEmailHtml,
+  hubPointsReferralPendingEmailHtml,
+  sendEmail,
+} from "@/lib/email";
+import { isTutorProfileListable } from "@/lib/subscription";
+
+/** 1 Hub Point = Rs 1 PKR (display converts to visitor currency). */
+export const HUB_POINTS_PROFILE_COMPLETE = 200;
+export const HUB_POINTS_REFERRAL = 50;
+export const HUB_POINTS_REDEMPTION_MAX_RATIO = 0.5;
+export const HUB_POINTS_MIN_CASH_PKR = 100;
+export const HUB_POINTS_EXPIRY_MONTHS = 12;
+export const HUB_POINTS_EXPIRY_WARNING_DAYS = 30;
+
+export const HUB_POINT_TYPES = {
+  PROFILE_COMPLETE: "PROFILE_COMPLETE",
+  REFERRAL: "REFERRAL",
+  REDEMPTION: "REDEMPTION",
+  EXPIRY: "EXPIRY",
+  ADMIN_ADJUST: "ADMIN_ADJUST",
+} as const;
+
+export type HubPointLedgerRow = {
+  id: string;
+  amount: number;
+  balanceAfter: number;
+  type: string;
+  description: string;
+  createdAt: Date;
+};
+
+export type HubPointsSummary = {
+  balance: number;
+  balanceLabel: string;
+  lastActivityAt: Date | null;
+  expiresAt: Date | null;
+  recent: HubPointLedgerRow[];
+  referralLink: string;
+  earnHints: string[];
+  redeemHints: string[];
+};
+
+const appUrl = () => process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
+
+export function formatHubPoints(points: number, currency: CurrencyCode = "PKR") {
+  if (currency === "PKR") return `${points.toLocaleString()} pts (Rs ${points.toLocaleString()})`;
+  const local = pkrToCurrency(points, currency);
+  return `${points.toLocaleString()} pts (${formatPlanPrice(local, currency)})`;
+}
+
+export function computeMaxRedeemablePoints(balance: number, orderPkr: number) {
+  if (balance <= 0 || orderPkr <= 0) return 0;
+  const capByPercent = Math.floor(orderPkr * HUB_POINTS_REDEMPTION_MAX_RATIO);
+  let max = Math.min(balance, capByPercent);
+  if (orderPkr - max < HUB_POINTS_MIN_CASH_PKR && orderPkr > HUB_POINTS_MIN_CASH_PKR) {
+    max = Math.max(0, orderPkr - HUB_POINTS_MIN_CASH_PKR);
+  }
+  if (orderPkr <= HUB_POINTS_MIN_CASH_PKR) {
+    max = Math.min(max, Math.max(0, orderPkr - 1));
+  }
+  return Math.max(0, max);
+}
+
+export async function getHubPointsSummary(
+  userId: string,
+  opts?: { currency?: CurrencyCode; role?: string; limit?: number },
+): Promise<HubPointsSummary> {
+  const currency = opts?.currency ?? "PKR";
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      hubPointsBalance: true,
+      hubPointsLastActivityAt: true,
+      role: true,
+      hubPointLedger: {
+        orderBy: { createdAt: "desc" },
+        take: opts?.limit ?? 8,
+        select: {
+          id: true,
+          amount: true,
+          balanceAfter: true,
+          type: true,
+          description: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  const balance = user?.hubPointsBalance ?? 0;
+  const lastActivityAt = user?.hubPointsLastActivityAt ?? null;
+  const expiresAt = lastActivityAt
+    ? new Date(
+        lastActivityAt.getTime() + HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000,
+      )
+    : null;
+
+  const role = opts?.role ?? user?.role ?? "STUDENT";
+  const referralPath =
+    role === "TUTOR"
+      ? `/register?role=tutor&ref=${encodeURIComponent(userId)}`
+      : `/register?role=student&ref=${encodeURIComponent(userId)}`;
+
+  const earnHints =
+    role === "TUTOR"
+      ? [
+          `Complete your profile — ${HUB_POINTS_PROFILE_COMPLETE} pts (one-time)`,
+          `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
+          `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
+        ]
+      : [
+          `Invite a student — ${HUB_POINTS_REFERRAL} pts when they message a tutor`,
+          `Invite a tutor — ${HUB_POINTS_REFERRAL} pts when their profile goes live`,
+        ];
+
+  const redeemHints =
+    role === "TUTOR"
+      ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted listing", "Unlimited Ads"]
+      : ["Student Pass", "Student Pro"];
+
+  return {
+    balance,
+    balanceLabel: formatHubPoints(balance, currency),
+    lastActivityAt,
+    expiresAt,
+    recent: user?.hubPointLedger ?? [],
+    referralLink: `${appUrl()}${referralPath}`,
+    earnHints,
+    redeemHints,
+  };
+}
+
+async function touchHubPointsActivity(userId: string) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { hubPointsLastActivityAt: new Date() },
+  });
+}
+
+export async function awardHubPoints(opts: {
+  userId: string;
+  amount: number;
+  type: string;
+  description: string;
+  idempotencyKey: string;
+  relatedUserId?: string;
+  notify?: boolean;
+}) {
+  if (opts.amount === 0) return { awarded: false as const, reason: "zero" as const };
+
+  try {
+    const existing = await prisma.hubPointLedger.findUnique({
+      where: { idempotencyKey: opts.idempotencyKey },
+    });
+    if (existing) return { awarded: false as const, reason: "duplicate" as const };
+
+    const user = await prisma.user.findUnique({
+      where: { id: opts.userId },
+      select: { id: true, name: true, email: true, hubPointsBalance: true, suspended: true },
+    });
+    if (!user || user.suspended) return { awarded: false as const, reason: "invalid_user" as const };
+
+    const balanceAfter = user.hubPointsBalance + opts.amount;
+    if (balanceAfter < 0) return { awarded: false as const, reason: "insufficient" as const };
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: opts.userId },
+        data: {
+          hubPointsBalance: balanceAfter,
+          hubPointsLastActivityAt: new Date(),
+        },
+      }),
+      prisma.hubPointLedger.create({
+        data: {
+          userId: opts.userId,
+          amount: opts.amount,
+          balanceAfter,
+          type: opts.type,
+          description: opts.description,
+          relatedUserId: opts.relatedUserId,
+          idempotencyKey: opts.idempotencyKey,
+        },
+      }),
+    ]);
+
+    if (opts.notify !== false && opts.amount > 0 && user.email) {
+      void sendEmail({
+        to: user.email,
+        subject: `You earned ${opts.amount} Hub Points — My Tutoring Hub`,
+        html: hubPointsEarnedEmailHtml({
+          name: user.name,
+          points: opts.amount,
+          reason: opts.description,
+          balance: balanceAfter,
+          dashboardUrl: `${appUrl()}/dashboard`,
+        }),
+      }).catch((err) => console.error("[hub-points] earn email failed", err));
+    }
+
+    return { awarded: true as const, balanceAfter };
+  } catch (err) {
+    console.error("[hub-points] award failed", opts, err);
+    return { awarded: false as const, reason: "error" as const };
+  }
+}
+
+export async function attributeReferralOnSignup(refereeId: string, referrerIdRaw: string) {
+  const referrerId = referrerIdRaw.trim();
+  if (!referrerId || referrerId === refereeId) return;
+
+  const [referee, referrer] = await Promise.all([
+    prisma.user.findUnique({ where: { id: refereeId }, select: { referredByUserId: true } }),
+    prisma.user.findUnique({
+      where: { id: referrerId },
+      select: { id: true, name: true, email: true, suspended: true },
+    }),
+  ]);
+  if (!referee || referee.referredByUserId || !referrer || referrer.suspended) return;
+
+  await prisma.user.update({
+    where: { id: refereeId },
+    data: { referredByUserId: referrerId },
+  });
+
+  if (referrer.email) {
+    void sendEmail({
+      to: referrer.email,
+      subject: "Someone joined with your link — Hub Points pending",
+      html: hubPointsReferralPendingEmailHtml({
+        name: referrer.name,
+        points: HUB_POINTS_REFERRAL,
+        dashboardUrl: `${appUrl()}/dashboard`,
+      }),
+    }).catch((err) => console.error("[hub-points] referral pending email failed", err));
+  }
+}
+
+async function creditReferrerForMilestone(refereeUserId: string, milestoneLabel: string) {
+  const referee = await prisma.user.findUnique({
+    where: { id: refereeUserId },
+    select: { referredByUserId: true, name: true },
+  });
+  if (!referee?.referredByUserId) return;
+
+  const referrerId = referee.referredByUserId;
+  if (referrerId === refereeUserId) return;
+
+  await awardHubPoints({
+    userId: referrerId,
+    amount: HUB_POINTS_REFERRAL,
+    type: HUB_POINT_TYPES.REFERRAL,
+    description: `Referral reward — ${referee.name || "your invite"} ${milestoneLabel}`,
+    idempotencyKey: `referral:${referrerId}:${refereeUserId}`,
+    relatedUserId: refereeUserId,
+  });
+}
+
+export async function tryAwardProfileCompleteBonus(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, tutorProfile: true },
+  });
+  if (user?.role !== "TUTOR" || !user.tutorProfile) return;
+  if (!isTutorProfileListable(user.tutorProfile)) return;
+
+  await awardHubPoints({
+    userId,
+    amount: HUB_POINTS_PROFILE_COMPLETE,
+    type: HUB_POINT_TYPES.PROFILE_COMPLETE,
+    description: "Profile complete — now visible in tutor search",
+    idempotencyKey: `profile_complete:${userId}`,
+  });
+
+  await creditReferrerForMilestone(userId, "completed their tutor profile");
+}
+
+export async function tryAwardStudentReferralMilestone(studentUserId: string) {
+  const student = await prisma.user.findUnique({
+    where: { id: studentUserId },
+    select: { role: true, emailVerified: true },
+  });
+  if (student?.role !== "STUDENT" || !student.emailVerified) return;
+
+  const sentCount = await prisma.message.count({ where: { senderId: studentUserId } });
+  if (sentCount !== 1) return;
+
+  await creditReferrerForMilestone(studentUserId, "sent their first tutor message");
+}
+
+export async function deductHubPointsForRedemption(opts: {
+  userId: string;
+  points: number;
+  subscriptionId: string;
+  planName: string;
+}) {
+  if (opts.points <= 0) return { ok: true as const };
+
+  const result = await awardHubPoints({
+    userId: opts.userId,
+    amount: -opts.points,
+    type: HUB_POINT_TYPES.REDEMPTION,
+    description: `Redeemed on ${opts.planName}`,
+    idempotencyKey: `redemption:${opts.subscriptionId}`,
+    notify: false,
+  });
+  if (!result.awarded) return { ok: false as const, reason: result.reason };
+
+  const user = await prisma.user.findUnique({
+    where: { id: opts.userId },
+    select: { name: true, email: true, hubPointsBalance: true },
+  });
+  if (user?.email) {
+    void sendEmail({
+      to: user.email,
+      subject: `Hub Points applied — ${opts.planName}`,
+      html: hubPointsRedeemedEmailHtml({
+        name: user.name,
+        points: opts.points,
+        planName: opts.planName,
+        balance: user.hubPointsBalance,
+        dashboardUrl: `${appUrl()}/dashboard`,
+      }),
+    }).catch((err) => console.error("[hub-points] redeem email failed", err));
+  }
+
+  return { ok: true as const };
+}
+
+export async function expireInactiveHubPointsForUser(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      hubPointsBalance: true,
+      hubPointsLastActivityAt: true,
+      name: true,
+      email: true,
+    },
+  });
+  if (!user?.hubPointsLastActivityAt || user.hubPointsBalance <= 0) return false;
+
+  const expiryAt = new Date(
+    user.hubPointsLastActivityAt.getTime() + HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000,
+  );
+  if (expiryAt > new Date()) return false;
+
+  const amount = user.hubPointsBalance;
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { hubPointsBalance: 0, hubPointsLastActivityAt: new Date() },
+    }),
+    prisma.hubPointLedger.create({
+      data: {
+        userId,
+        amount: -amount,
+        balanceAfter: 0,
+        type: HUB_POINT_TYPES.EXPIRY,
+        description: `Points expired after ${HUB_POINTS_EXPIRY_MONTHS} months of inactivity`,
+        idempotencyKey: `expiry:${userId}:${expiryAt.toISOString().slice(0, 10)}`,
+      },
+    }),
+  ]);
+  return true;
+}
+
+export async function sendHubPointsExpiryWarnings() {
+  const warnBefore = HUB_POINTS_EXPIRY_WARNING_DAYS * 24 * 60 * 60 * 1000;
+  const inactiveMs = HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const windowStart = new Date(now - inactiveMs + warnBefore - 12 * 60 * 60 * 1000);
+  const windowEnd = new Date(now - inactiveMs + warnBefore + 12 * 60 * 60 * 1000);
+
+  const users = await prisma.user.findMany({
+    where: {
+      hubPointsBalance: { gt: 0 },
+      hubPointsLastActivityAt: { gte: windowStart, lte: windowEnd },
+      suspended: false,
+    },
+    select: { id: true, name: true, email: true, hubPointsBalance: true, hubPointsLastActivityAt: true },
+    take: 50,
+  });
+
+  let sent = 0;
+  for (const user of users) {
+    if (!user.email || !user.hubPointsLastActivityAt) continue;
+    const expiresAt = new Date(user.hubPointsLastActivityAt.getTime() + inactiveMs);
+    const key = `expiry_warn:${user.id}:${expiresAt.toISOString().slice(0, 10)}`;
+    const claimed = await prisma.emailSequenceEvent
+      .create({ data: { userId: user.id, sequence: key } })
+      .then(() => true)
+      .catch(() => false);
+    if (!claimed) continue;
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Your Hub Points expire soon — My Tutoring Hub",
+        html: hubPointsExpiringEmailHtml({
+          name: user.name,
+          points: user.hubPointsBalance,
+          expiresAt,
+          pricingUrl: `${appUrl()}/pricing`,
+        }),
+      });
+      sent += 1;
+    } catch (err) {
+      await prisma.emailSequenceEvent
+        .delete({ where: { userId_sequence: { userId: user.id, sequence: key } } })
+        .catch(() => undefined);
+      console.error("[hub-points] expiry warning failed", user.id, err);
+    }
+  }
+  return sent;
+}
+
+export async function runHubPointsMaintenance() {
+  const stale = await prisma.user.findMany({
+    where: {
+      hubPointsBalance: { gt: 0 },
+      hubPointsLastActivityAt: {
+        lt: new Date(Date.now() - HUB_POINTS_EXPIRY_MONTHS * 30 * 24 * 60 * 60 * 1000),
+      },
+    },
+    select: { id: true },
+    take: 100,
+  });
+
+  let expired = 0;
+  for (const row of stale) {
+    if (await expireInactiveHubPointsForUser(row.id)) expired += 1;
+  }
+  const warnings = await sendHubPointsExpiryWarnings();
+  return { expired, warnings };
+}
+
+export async function ensureHubPointsFresh(userId: string) {
+  await expireInactiveHubPointsForUser(userId).catch(() => undefined);
+}

@@ -5,6 +5,7 @@ import { canMessage, canReceiveMessages } from "@/lib/subscription";
 import { canPerformAction, recordUsage } from "@/lib/plan-limits";
 import { resolveMessageRecipient } from "@/lib/message-recipient";
 import { notifyNewMessage } from "@/lib/message-notify";
+import { tryAwardStudentReferralMilestone } from "@/lib/hub-points";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
@@ -202,6 +203,12 @@ export async function POST(req: Request) {
       conversationId: conversation.id,
       error: mail.error,
     });
+  }
+
+  if (session.user.role === "STUDENT") {
+    void tryAwardStudentReferralMilestone(session.user.id).catch((err) =>
+      console.error("[hub-points] student referral milestone failed", err),
+    );
   }
 
   return NextResponse.json({ conversationId: conversation.id, message, emailSent: mail.sent });
