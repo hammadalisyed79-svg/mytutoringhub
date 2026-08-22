@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/admin";
-import { AdminActionButton } from "@/components/AdminActions";
-import { formatVerifySlotLabel, parseVerificationDocs } from "@/lib/verification-docs";
+import { AdminVerificationQueueItem } from "@/components/AdminVerificationQueueItem";
 
 export const metadata = { title: "Verifications · Admin" };
 
@@ -17,38 +15,23 @@ export default async function AdminVerificationsPage() {
   return (
     <section className="panel">
       <h2>Verification requests</h2>
-      <p className="muted">Approve photo ID and certificate submissions to grant the verified tutor badge.</p>
+      <p className="muted">
+        Approve photo ID and certificate submissions to grant the verified tutor badge.
+      </p>
       {verifications.length === 0 && <p className="muted">No requests yet.</p>}
-      <div className="results">
+      <div className="admin-verify-queue">
         {verifications.map((v) => (
-          <article key={v.id} className="ad-row">
-            <strong>
-              <Link href={`/admin/users/${v.user.id}`}>{v.user.name}</Link> · {v.user.email} · {v.status}
-            </strong>
-            {parseVerificationDocs(v.docUrls).length ? (
-              <ul className="verify-files">
-                {parseVerificationDocs(v.docUrls).map((doc) => (
-                  <li key={`${doc.slot}-${doc.side}-${doc.url}`}>
-                    <a href={doc.url} target="_blank" rel="noreferrer">
-                      {formatVerifySlotLabel(doc.slot, doc.side, doc.idType)}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted" style={{ whiteSpace: "pre-wrap" }}>
-                {v.docUrls}
-              </p>
-            )}
-            {v.notes && <p>{v.notes}</p>}
-            {v.adminNote && <p className="muted">Admin note: {v.adminNote}</p>}
-            {v.status === "PENDING" && (
-              <div className="admin-actions">
-                <AdminActionButton action="verify_approve" id={v.id} label="Approve" />
-                <AdminActionButton action="verify_reject" id={v.id} label="Reject" />
-              </div>
-            )}
-          </article>
+          <AdminVerificationQueueItem
+            key={v.id}
+            id={v.id}
+            status={v.status}
+            createdAt={v.createdAt}
+            adminNote={v.adminNote}
+            user={v.user}
+            docUrls={v.docUrls}
+            notes={v.notes}
+            showActions={v.status === "PENDING"}
+          />
         ))}
       </div>
     </section>

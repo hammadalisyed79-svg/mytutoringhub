@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminActionButton } from "@/components/AdminActions";
+import { AdminVerificationQueueItem } from "@/components/AdminVerificationQueueItem";
 
 export const dynamic = "force-dynamic";
 
@@ -34,35 +35,18 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
       <section className="panel">
         <h2>Verification queue ({verifications.length})</h2>
         {verifications.length === 0 && <p className="muted">No pending verification requests.</p>}
-        <div className="results">
+        <div className="admin-verify-queue">
           {verifications.map((v) => (
-            <article key={v.id} className="ad-row">
-              <strong>
-                <Link href={`/admin/users/${v.user.id}`}>
-                  {v.user.name} · {v.user.email}
-                </Link>
-              </strong>
-              <p className="muted" style={{ whiteSpace: "pre-wrap" }}>
-                {v.docUrls}
-              </p>
-              {v.notes && <p>{v.notes}</p>}
-              <div className="admin-actions">
-                <AdminActionButton
-                  action="verify_approve"
-                  id={v.id}
-                  label="Approve"
-                  confirm="Approve and set the verified tutor badge?"
-                />
-                <AdminActionButton
-                  action="verify_reject"
-                  id={v.id}
-                  label="Reject"
-                  promptKey="adminNote"
-                  promptLabel="Optional rejection note"
-                  danger
-                />
-              </div>
-            </article>
+            <AdminVerificationQueueItem
+              key={v.id}
+              id={v.id}
+              status={v.status}
+              createdAt={v.createdAt}
+              adminNote={v.adminNote}
+              user={v.user}
+              docUrls={v.docUrls}
+              notes={v.notes}
+            />
           ))}
         </div>
       </section>
