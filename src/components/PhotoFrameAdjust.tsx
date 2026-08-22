@@ -36,19 +36,26 @@ export function PhotoFrameAdjust({
   const frameRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
+  const cropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
   const [draggingUi, setDraggingUi] = useState(false);
+
+  useEffect(() => {
+    cropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
+  }, [cropX, cropY, cropZoom]);
 
   const hasPhoto = Boolean(photoUrl?.startsWith("http"));
 
   const applyCrop = useCallback(
     (patch: Partial<PhotoCrop>) => {
-      onChange({
-        x: patch.x ?? cropX,
-        y: patch.y ?? cropY,
-        zoom: patch.zoom ?? cropZoom,
-      });
+      const next = {
+        x: patch.x ?? cropRef.current.x,
+        y: patch.y ?? cropRef.current.y,
+        zoom: patch.zoom ?? cropRef.current.zoom,
+      };
+      cropRef.current = next;
+      onChange(next);
     },
-    [cropX, cropY, cropZoom, onChange],
+    [onChange],
   );
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -68,13 +75,13 @@ export function PhotoFrameAdjust({
       const dx = ((e.clientX - lastPos.current.x) / rect.width) * 100;
       const dy = ((e.clientY - lastPos.current.y) / rect.height) * 100;
       lastPos.current = { x: e.clientX, y: e.clientY };
-      const zoom = cropZoom || 1;
+      const zoom = cropRef.current.zoom || 1;
       applyCrop({
-        x: clamp(cropX + dx / zoom, -100, 100),
-        y: clamp(cropY + dy / zoom, -100, 100),
+        x: clamp(cropRef.current.x + dx / zoom, -100, 100),
+        y: clamp(cropRef.current.y + dy / zoom, -100, 100),
       });
     },
-    [applyCrop, cropX, cropY, cropZoom, hasPhoto],
+    [applyCrop, hasPhoto],
   );
 
   const endDrag = useCallback(() => {
@@ -88,13 +95,14 @@ export function PhotoFrameAdjust({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      applyCrop({ zoom: clamp((cropZoom || 1) + delta, 1, 3) });
+      applyCrop({ zoom: clamp((cropRef.current.zoom || 1) + delta, 1, 3) });
     };
 
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
-  }, [applyCrop, cropZoom, hasPhoto]);
+  }, [applyCrop, hasPhoto]);
 
   return (
     <div

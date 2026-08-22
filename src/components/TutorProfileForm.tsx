@@ -339,6 +339,9 @@ export function TutorProfileForm({
         setError(data.error || "Save failed");
         return;
       }
+      if (typeof data.photoCropX === "number") setPhotoCropX(data.photoCropX);
+      if (typeof data.photoCropY === "number") setPhotoCropY(data.photoCropY);
+      if (typeof data.photoCropZoom === "number") setPhotoCropZoom(data.photoCropZoom);
       setMsg("Profile saved. You can edit any of these details anytime.");
       await update({ name: name.trim() });
       router.refresh();
@@ -370,6 +373,7 @@ export function TutorProfileForm({
             <h3>Display picture</h3>
             <p className="field-hint">
               Shown on your public listing. Drag inside the frame to reposition · scroll to zoom in or out.
+              Then click <strong>Save profile</strong> below.
             </p>
             <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB</p>
             <div className="profile-photo-actions">
