@@ -67,6 +67,7 @@ function primaryLinks(role?: string | null) {
   }
   return [
     { href: "/search", label: "Find tutors" },
+    { href: "/become-a-tutor", label: "Become a tutor" },
     { href: "/past-papers", label: "Past papers" },
     { href: "/pricing", label: "Pricing" },
   ];

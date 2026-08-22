@@ -133,6 +133,11 @@ export default async function HomePage() {
           <h1>My Tutoring Hub</h1>
           <p>Trusted tutors worldwide — online or at home, priced in your currency.</p>
           <HeroSearch />
+          <div className="hero-ctas" style={{ marginTop: "1rem" }}>
+            <Link href="/become-a-tutor" className="btn btn-secondary">
+              I&apos;m a tutor
+            </Link>
+          </div>
         </div>
       </section>
 

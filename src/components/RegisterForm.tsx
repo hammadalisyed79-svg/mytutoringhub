@@ -6,19 +6,24 @@ import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
+import { registerRoleFromParams, type RegisterRole } from "@/lib/register-intent";
 
 function RegisterFormInner({
   googleEnabled = true,
   microsoftEnabled = false,
+  initialRole,
   onSwitchToLogin,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
+  initialRole?: RegisterRole;
   onSwitchToLogin?: () => void;
 }) {
   const searchParams = useSearchParams();
-  const defaultRole = searchParams.get("role") === "tutor" ? "TUTOR" : "STUDENT";
-  const [role, setRole] = useState<"STUDENT" | "TUTOR">(defaultRole);
+  const defaultRole =
+    initialRole ??
+    registerRoleFromParams(searchParams.get("intent"), searchParams.get("role"));
+  const [role, setRole] = useState<RegisterRole>(defaultRole);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -142,10 +147,12 @@ function RegisterFormInner({
 export function RegisterForm({
   googleEnabled = true,
   microsoftEnabled = false,
+  initialRole,
   onSwitchToLogin,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
+  initialRole?: RegisterRole;
   onSwitchToLogin?: () => void;
 }) {
   return (
@@ -153,6 +160,7 @@ export function RegisterForm({
       <RegisterFormInner
         googleEnabled={googleEnabled}
         microsoftEnabled={microsoftEnabled}
+        initialRole={initialRole}
         onSwitchToLogin={onSwitchToLogin}
       />
     </Suspense>
