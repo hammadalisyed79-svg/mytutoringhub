@@ -26,3 +26,6 @@ export const EXAM_PREP_CTA =
 
 export const REFERRAL_LINE =
   "Invite a friend — you both get +1 extra free tutor contact when they join.";
+
+export const TUTOR_INVITE_LINE =
+  "Know a tutor? Share your link — free listing, no commission on lessons. They appear in search worldwide.";

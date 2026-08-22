@@ -7,6 +7,7 @@ import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { ReferralShareButton } from "@/components/ReferralShareButton";
+import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import {
   type DashboardSearchParams,
@@ -150,6 +151,11 @@ export default async function StudentDashboardPage({
             </p>
             {!corePlan && <RecoverPaymentForm />}
             <ReferralShareButton userId={session.user.id} />
+            <InviteTutorShare
+              referrerId={session.user.id}
+              referrerName={session.user.name}
+              compact
+            />
           </section>
 
           <section className="panel">

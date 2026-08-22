@@ -22,6 +22,7 @@ import {
   STUDENT_REQUESTS_LINE,
   VALUE_PROPOSITION,
 } from "@/lib/marketing-copy";
+import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -334,6 +335,11 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+        <InviteTutorShare
+          referrerId={session?.user?.id}
+          referrerName={session?.user?.name}
+          compact
+        />
       </section>
     </>
   );

@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 
     await issueEmailVerification({ id: user.id, name: user.name, email: user.email });
 
-    if (data.role === "STUDENT" && data.ref?.trim()) {
+    if (data.ref?.trim()) {
       try {
         await applyReferralSignup(user.id, data.ref.trim());
       } catch {

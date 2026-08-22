@@ -2909,6 +2909,47 @@ select:focus {
   font-size: 1rem;
 }
 
+.invite-tutor-share {
+  margin-top: 1.5rem;
+}
+
+.invite-tutor-share-compact {
+  margin-top: 1rem;
+}
+
+.invite-tutor-share h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.invite-tutor-share-note {
+  font-size: 0.9rem;
+  margin: 0.35rem 0 0;
+}
+
+.invite-tutor-share-link {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(10, 77, 66, 0.06);
+  border: 1px solid rgba(10, 77, 66, 0.12);
+  overflow-x: auto;
+}
+
+.invite-tutor-share-link code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  word-break: break-all;
+  color: var(--brand);
+}
+
+.invite-tutor-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
 .ads-board-note {
   margin: 0 0 1rem;
 }

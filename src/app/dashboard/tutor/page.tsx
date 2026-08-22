@@ -8,6 +8,7 @@ import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
+import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
@@ -157,8 +158,17 @@ export default async function TutorDashboardPage({
               <Link href="/dashboard/tutor/analytics">Analytics</Link>
               <Link href="/dashboard/tutor/plan">Your plan</Link>
               <Link href="/settings">Account settings</Link>
+              <Link href="/dashboard/tutor#invite-tutor">Invite a tutor</Link>
             </div>
           </section>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <InviteTutorShare
+              referrerId={session.user.id}
+              referrerName={session.user.name}
+              compact
+            />
+          </div>
 
           {user.tutorProfile && (
             <div style={{ gridColumn: "1 / -1" }}>

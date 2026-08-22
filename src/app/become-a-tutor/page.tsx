@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
+import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -13,12 +15,19 @@ export const metadata = pageMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function BecomeATutorPage() {
+export default async function BecomeATutorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>;
+}) {
   const session = await auth();
   if (session?.user?.role === "ADMIN") redirect("/admin");
-  if (session?.user?.role === "TUTOR") redirect("/dashboard");
+  if (session?.user?.role === "TUTOR") redirect("/dashboard/tutor#invite-tutor");
 
+  const sp = await searchParams;
+  const inviteRef = sp.ref?.trim() || null;
   const isStudent = session?.user?.role === "STUDENT";
+  const signupHref = tutorRegisterPath(inviteRef);
 
   return (
     <div className="page">
@@ -58,7 +67,7 @@ export default async function BecomeATutorPage() {
           {isStudent ? (
             <BecomeTutorForm />
           ) : (
-            <Link href="/register?role=tutor" className="btn">
+            <Link href={signupHref} className="btn">
               Sign up as a tutor
             </Link>
           )}
@@ -66,6 +75,11 @@ export default async function BecomeATutorPage() {
         <p className="muted" style={{ marginTop: "1rem" }}>
           <Link href="/pricing">See tutor plans</Link>
         </p>
+
+        <InviteTutorShare
+          referrerId={session?.user?.id}
+          referrerName={session?.user?.name}
+        />
       </div>
     </div>
   );
