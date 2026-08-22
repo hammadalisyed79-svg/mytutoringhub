@@ -527,7 +527,8 @@ svg {
 
 .hero-findtutor {
   align-items: center;
-  min-height: min(82vh, 700px);
+  /* Keep the first viewport as one composition: brand, headline, line, search, hero visual */
+  min-height: calc(100svh - 4.5rem);
 }
 
 .hero-content {

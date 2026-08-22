@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 export const metadata = {
   title: "How it works",
   description:
-    "Search private tutors, message with free monthly contacts or a Student Pass, then arrange lessons directly. Tutors list with Tutor Basic.",
+    "Search private tutors, message with free monthly contacts or a Student Pass, then arrange lessons directly. Tutors list free when their profile is complete; Tutor Basic adds priority.",
 };
 
 export const dynamic = "force-dynamic";
@@ -77,7 +77,11 @@ export default async function HowItWorksPage() {
             <h2>For tutors</h2>
             <ul className="check-list">
               <li>
-                Tutor Basic lists your profile (complimentary until 30 September 2026)
+                Complete your profile (subjects + headline) to appear in search for free
+              </li>
+              <li>
+                Tutor Basic unlocks priority ranking, unlimited enquiry reveals, and subject ads
+                (complimentary until 30 September 2026)
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is

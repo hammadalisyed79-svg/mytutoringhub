@@ -38,7 +38,7 @@ export default async function NewAdPage() {
         </p>
         {!allowed ? (
           <div className="panel">
-            <p>An active Student Pass is required to post ads.</p>
+            <p>An active Student Pass is required to post a request.</p>
             <Link href="/pricing" className="btn">
               Get Student Pass
             </Link>

@@ -143,7 +143,10 @@ function AccountLinks({
         ) : null}
       </Link>
       {user.role !== "ADMIN" && (
-        <Link href="/dashboard" onClick={onNavigate}>
+        <Link
+          href={user.role === "TUTOR" ? "/dashboard/tutor" : "/dashboard/student"}
+          onClick={onNavigate}
+        >
           Dashboard
         </Link>
       )}

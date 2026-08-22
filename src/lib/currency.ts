@@ -200,9 +200,14 @@ export function formatHourly(amountPkr: number | null | undefined, currency: Cur
   return `${formatMoney(local, currency)}/hr`;
 }
 
-export function formatPlanPrice(amountPkr: number, currency: CurrencyCode) {
+export function formatPlanPrice(
+  amountPkr: number,
+  currency: CurrencyCode,
+  period: "month" | "year" = "month",
+) {
   const local = pkrToCurrency(amountPkr, currency);
-  return `${formatMoney(local, currency)}/mo`;
+  const suffix = period === "year" ? "/yr" : "/mo";
+  return `${formatMoney(local, currency)}${suffix}`;
 }
 
 /** Minor units for Safepay (cents/paisa). */

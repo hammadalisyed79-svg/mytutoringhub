@@ -5,7 +5,7 @@ import { sendEmail, studentAdDigestHtml } from "@/lib/email";
 export const runtime = "nodejs";
 
 /**
- * Lightweight tutor digest of new student ads.
+ * Lightweight tutor digest of new student requests (StudentAd).
  * Protect with CRON_SECRET (Authorization: Bearer …) or DIGEST_SECRET query param.
  * Feature-flags off when RESEND_API_KEY is missing (emails are logged only).
  */

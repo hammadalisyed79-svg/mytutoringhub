@@ -131,11 +131,41 @@ export default async function HomePage() {
             <p className="hero-kicker">Private lessons & tutors</p>
           </div>
           <h1>My Tutoring Hub</h1>
-          <p>
-            Connect with trusted private tutors worldwide — boards, languages, and exam prep.
-            Online or at home. Prices shown in your local currency.
-          </p>
+          <p>Trusted tutors worldwide — online or at home, priced in your currency.</p>
           <HeroSearch />
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <h2>How My Tutoring Hub works</h2>
+          <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>
+          <div className="steps">
+            <div className="step">
+              <span>1</span>
+              <h3>Search</h3>
+              <p className="muted">Tell us what you want to learn and pick tutors that fit your needs.</p>
+            </div>
+            <div className="step">
+              <span>2</span>
+              <h3>Contact</h3>
+              <p className="muted">
+                With a Student Pass, message as many tutors as you like and compare replies.
+              </p>
+            </div>
+            <div className="step">
+              <span>3</span>
+              <h3>Learn</h3>
+              <p className="muted">
+                Arrange lessons and pay your tutor directly — keep it personal and flexible.
+              </p>
+            </div>
+          </div>
+          <p className="section-actions">
+            <Link href="/search" className="btn">
+              Find a tutor
+            </Link>
+          </p>
         </div>
       </section>
 
@@ -151,36 +181,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      <section className="section">
-        <div className="container">
-          <h2>Find and contact private tutors</h2>
-          <p className="section-lead">
-            Browse profiles, compare rates, message tutors with a Student Pass, then arrange
-            lessons directly — we never take a lesson commission.
-          </p>
-          <div className="feature-split">
-            <article>
-              <h3>Choose the perfect tutor</h3>
-              <p className="muted">
-                Filter by subject, city or online, budget, and verified badges.
-              </p>
-            </article>
-            <article>
-              <h3>Learn at your own pace</h3>
-              <p className="muted">
-                Fully personalised private lessons tailored to your goals and schedule.
-              </p>
-            </article>
-            <article>
-              <h3>Online or in person</h3>
-              <p className="muted">
-                Video lessons from home, or meet a local tutor near you.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
 
       {featured.length > 0 && (
         <section className="section section-alt">
@@ -233,10 +233,9 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Private lessons for every goal</h2>
+          <h2>Popular subjects</h2>
           <p className="section-lead">
-            School boards, O/A Levels, IELTS, SAT, languages, and university subjects — learn online
-            or in person.
+            School boards, exam prep, languages, and university subjects — online or in person.
           </p>
           <div className="subject-chips">
             {POPULAR_SUBJECTS.map((s) => (
@@ -257,43 +256,10 @@ export default async function HomePage() {
         <div className="container">
           <h2>Top subjects by country</h2>
           <p className="section-lead">
-            Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — top 8 markets on the
-            homepage, plus 42 more countries to browse. Open a chip to search tutors in that country.
+            Popular subjects with codes such as MATH, PHY, and IB-DP-MATH — top markets first, plus
+            more countries to browse.
           </p>
           <CountryMarkets compact pinnedCountry={pinnedCountry} />
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <h2>How My Tutoring Hub works</h2>
-          <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>
-          <div className="steps">
-            <div className="step">
-              <span>1</span>
-              <h3>Search</h3>
-              <p className="muted">Tell us what you want to learn and pick tutors that fit your needs.</p>
-            </div>
-            <div className="step">
-              <span>2</span>
-              <h3>Contact</h3>
-              <p className="muted">
-                With a Student Pass, message as many tutors as you like and compare replies.
-              </p>
-            </div>
-            <div className="step">
-              <span>3</span>
-              <h3>Learn</h3>
-              <p className="muted">
-                Arrange lessons and pay your tutor directly — keep it personal and flexible.
-              </p>
-            </div>
-          </div>
-          <p className="section-actions">
-            <Link href="/search" className="btn">
-              Find a tutor
-            </Link>
-          </p>
         </div>
       </section>
 

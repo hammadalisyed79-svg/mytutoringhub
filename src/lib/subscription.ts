@@ -127,7 +127,7 @@ export async function canCreateTutorAd(userId: string) {
   return { ok: true as const, profile };
 }
 
-/** Map active tutor subscriptions to search priority: Free=0, Basic/Pro=1, Verified/Elite=2. */
+/** Map active tutor subscriptions to search priority: Free=0, Basic=1, Verified/Elite=2. */
 export function computeTutorPlanTier(plans: Set<string>): number {
   if (plans.has("VERIFIED_TUTOR")) return 2;
   if (
@@ -141,7 +141,26 @@ export function computeTutorPlanTier(plans: Set<string>): number {
   return 0;
 }
 
-/** Apply paid plan side-effects: listing active, highlight/boost windows, verified entitlement, planTier. */
+/**
+ * Minimum for free search listing: at least one subject plus a headline or photo
+ * (matches the profile form’s required subjects + headline-or-photo completeness).
+ */
+export function isTutorProfileListable(profile: {
+  subjects?: string | null;
+  headline?: string | null;
+  photoUrl?: string | null;
+  bio?: string | null;
+}): boolean {
+  const hasSubjects = Boolean(profile.subjects?.trim());
+  const hasHeadline = Boolean(profile.headline && profile.headline.trim().length >= 8);
+  const hasPhoto = Boolean(profile.photoUrl?.trim());
+  const hasBio = Boolean(profile.bio && profile.bio.trim().length >= 40);
+  // Saved profiles from the form always have bio+headline; allow photo+subjects for older rows.
+  return hasSubjects && (hasHeadline || hasPhoto) && (hasBio || hasHeadline || hasPhoto);
+}
+
+/** Apply paid plan side-effects: highlight/boost windows, verified entitlement, planTier.
+ * Free tutors with a complete-enough profile stay `active` for search (paid plans add priority). */
 export async function syncTutorBadges(userId: string) {
   const profile = await prisma.tutorProfile.findUnique({
     where: { userId },
@@ -174,6 +193,7 @@ export async function syncTutorBadges(userId: string) {
     plans.has("AD_BOOST") ||
     plans.has("UNLIMITED_ADS");
   const planTier = computeTutorPlanTier(plans);
+  const listable = isTutorProfileListable(profile);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },
@@ -183,7 +203,7 @@ export async function syncTutorBadges(userId: string) {
       highlighted: Boolean(periodEnd && periodEnd > now) || plans.has("HIGHLIGHTED_AD"),
       highlightedUntil: periodEnd && periodEnd > now ? periodEnd : profile.highlightedUntil,
       boostUntil: boostEnd && boostEnd > now ? boostEnd : profile.boostUntil,
-      active: profile.forceActive || hasPaidListing,
+      active: profile.forceActive || hasPaidListing || listable,
     },
   });
 

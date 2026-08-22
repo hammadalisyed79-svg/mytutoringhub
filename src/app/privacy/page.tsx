@@ -13,9 +13,9 @@ export default function PrivacyPage() {
         <div className="legal-body">
           <h2>1. Data we collect</h2>
           <p>
-            Account details (name, email, password hash), role, tutor profile content, student ads,
-            messages, reviews, subscription and payment references from Safepay/Stripe, and basic
-            technical logs (IP, browser) for security.
+            Account details (name, email, password hash), role, tutor profile content, student
+            requests, messages, reviews, subscription and payment references from Safepay (Stripe
+            fields may store Safepay trackers), and basic technical logs (IP, browser) for security.
           </p>
           <h2>2. How we use data</h2>
           <p>

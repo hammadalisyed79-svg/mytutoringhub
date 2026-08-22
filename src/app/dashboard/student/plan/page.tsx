@@ -34,7 +34,7 @@ export default async function StudentPlanPage() {
           <Link href="/pricing" className="btn">
             {summary.planTier === "free" ? "Upgrade plan" : "View pricing"}
           </Link>{" "}
-          <Link href="/dashboard" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
+          <Link href="/dashboard/student" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
             Back to dashboard
           </Link>
         </p>

@@ -152,9 +152,10 @@ export default async function AdminUserDetailPage({ params }: Params) {
         <h2>Activity</h2>
         <p>
           {conversationCount} conversation{conversationCount === 1 ? "" : "s"} · {user._count.messages}{" "}
-          messages sent · {user._count.studentAds} student ads
+          messages sent · {user._count.studentAds} student request
+          {user._count.studentAds === 1 ? "" : "s"}
         </p>
-        {user.studentAds.length === 0 && <p className="muted">No student ads.</p>}
+        {user.studentAds.length === 0 && <p className="muted">No student requests.</p>}
         <div className="results">
           {user.studentAds.map((ad) => (
             <article key={ad.id} className="ad-row">

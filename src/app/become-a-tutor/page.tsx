@@ -6,7 +6,7 @@ import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 export const metadata = {
   title: "Become a tutor",
   description:
-    "List on My Tutoring Hub, keep 100% of lesson fees, and get Tutor Basic complimentary until 30 September 2026. Verified, highlight, and boost stay paid.",
+    "List on My Tutoring Hub for free when your profile is complete. Keep 100% of lesson fees. Tutor Basic adds priority until 30 September 2026 complimentary. Verified, highlight, and boost stay paid.",
 };
 
 export const dynamic = "force-dynamic";
@@ -23,9 +23,10 @@ export default async function BecomeATutorPage() {
       <div className="container">
         <h1 className="page-title">Are you a tutor? Join My Tutoring Hub</h1>
         <p className="section-lead">
-          Publish a profile, run optional subject ads, get verified, and keep 100% of lesson fees.
-          Tutor Basic is complimentary until 30 September 2026. Verified badge, highlight, and ad
-          boost stay paid.
+          Publish a complete profile to appear in search for free, run optional subject ads with
+          Tutor Basic, get verified, and keep 100% of lesson fees. Tutor Basic is complimentary
+          until 30 September 2026 for priority, unlimited reveals, and ads. Verified badge,
+          highlight, and ad boost stay paid.
         </p>
 
         <div className="steps" style={{ marginBottom: "2rem" }}>
@@ -35,14 +36,15 @@ export default async function BecomeATutorPage() {
             <p className="muted">
               {isStudent
                 ? "Keep the same login. We turn this account into a tutor listing you can edit anytime."
-                : "Add subjects, rates, qualifications, languages, availability, and a photo."}
+                : "Add subjects, a headline, rates, qualifications, languages, availability, and a photo."}
             </p>
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Activate Tutor Basic</h3>
+            <h3>Get listed free</h3>
             <p className="muted">
-              Appear in search. Launch offer: complimentary until 30 September 2026.
+              A complete profile appears in search. Optional: activate Tutor Basic for priority
+              ranking and ads (complimentary until 30 September 2026).
             </p>
           </div>
           <div className="step">

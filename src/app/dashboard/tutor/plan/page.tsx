@@ -34,7 +34,7 @@ export default async function TutorPlanPage() {
           <Link href="/pricing" className="btn">
             {summary.planTier === "free" ? "Upgrade plan" : "Tutor add-ons"}
           </Link>{" "}
-          <Link href="/dashboard" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
+          <Link href="/dashboard/tutor" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
             Back to dashboard
           </Link>
         </p>

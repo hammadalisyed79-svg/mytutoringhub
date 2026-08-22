@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
-const createSchema = z.object({
-  subject: z.string().trim().min(1).max(100),
-  level: z.string().trim().min(1).max(80),
-  board: z.string().trim().max(80).optional(),
-  description: z.string().trim().min(10).max(2000),
-  schedule: z.string().trim().max(500).optional(),
-  isPublic: z.boolean().optional().default(true),
-});
+const DEPRECATION =
+  "Deprecated. Use GET/POST /api/ads and the /ads board (StudentAd). StudentRequest writes are frozen.";
+
+function deprecationHeaders(extra?: HeadersInit): Headers {
+  const h = new Headers(extra);
+  h.set("Deprecation", "true");
+  h.set("Sunset", "Sat, 01 Aug 2026 00:00:00 GMT");
+  h.set("Link", '</api/ads>; rel="successor-version", </ads>; rel="alternate"');
+  h.set("X-Deprecated-Message", DEPRECATION);
+  return h;
+}
 
 /**
- * Legacy StudentRequest API. Prefer StudentAd via /ads.
- * Returns studentId only to the request owner, admins, or tutors whose
- * subjects match the request (never email/phone).
+ * Legacy StudentRequest API — frozen write path.
+ * GET proxies open StudentAd rows (canonical board). POST returns 410.
  */
 export async function GET(req: Request) {
   try {
@@ -35,23 +36,23 @@ export async function GET(req: Request) {
         .filter(Boolean);
     }
 
-    const requests = await prisma.studentRequest.findMany({
+    const ads = await prisma.studentAd.findMany({
       where: {
-        isPublic: true,
+        status: "OPEN",
         ...(subject ? { subject: { contains: subject, mode: "insensitive" } } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 50,
       select: {
         id: true,
+        title: true,
         subject: true,
         level: true,
-        board: true,
+        location: true,
         description: true,
-        schedule: true,
         createdAt: true,
-        studentId: true,
-        student: { select: { name: true } },
+        userId: true,
+        user: { select: { name: true } },
       },
     });
 
@@ -59,73 +60,51 @@ export async function GET(req: Request) {
     const role = session?.user?.role;
     const isAdmin = role === "ADMIN";
 
-    let scoped = requests;
+    let scoped = ads;
     if (role === "TUTOR" && tutorSubjects.length > 0 && !subject) {
-      const matching = requests.filter((r) =>
-        tutorSubjects.some((s) => r.subject.toLowerCase().includes(s) || s.includes(r.subject.toLowerCase())),
+      const matching = ads.filter((a) =>
+        tutorSubjects.some(
+          (s) => a.subject.toLowerCase().includes(s) || s.includes(a.subject.toLowerCase()),
+        ),
       );
       if (matching.length > 0) scoped = matching;
     }
 
-    const sanitized = scoped.map((r) => {
-      const isOwner = Boolean(uid && r.studentId === uid);
+    const sanitized = scoped.map((a) => {
+      const isOwner = Boolean(uid && a.userId === uid);
       const subjectMatch =
         role === "TUTOR" &&
         tutorSubjects.some(
-          (s) => r.subject.toLowerCase().includes(s) || s.includes(r.subject.toLowerCase()),
+          (s) => a.subject.toLowerCase().includes(s) || s.includes(a.subject.toLowerCase()),
         );
       const canSeeStudentId = isOwner || isAdmin || subjectMatch;
       return {
-        id: r.id,
-        subject: r.subject,
-        level: r.level,
-        board: r.board,
-        description: r.description,
-        schedule: r.schedule,
-        createdAt: r.createdAt,
-        student: r.student,
-        ...(canSeeStudentId ? { studentId: r.studentId } : {}),
+        id: a.id,
+        subject: a.subject,
+        level: a.level,
+        board: null as string | null,
+        description: a.description,
+        schedule: a.location,
+        title: a.title,
+        createdAt: a.createdAt,
+        student: a.user,
+        ...(canSeeStudentId ? { studentId: a.userId } : {}),
       };
     });
 
-    return NextResponse.json(sanitized);
+    return NextResponse.json(sanitized, { headers: deprecationHeaders() });
   } catch (e) {
-    console.error("student-requests GET failed:", e);
-    return NextResponse.json([], { status: 200 });
+    console.error("student-requests GET (deprecated proxy) failed:", e);
+    return NextResponse.json([], { status: 200, headers: deprecationHeaders() });
   }
 }
 
-export async function POST(req: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Sign in to post a request" }, { status: 401 });
-    }
-    if (session.user.role !== "STUDENT") {
-      return NextResponse.json({ error: "Only students can post requests" }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const data = createSchema.parse(body);
-
-    const request = await prisma.studentRequest.create({
-      data: {
-        studentId: session.user.id,
-        subject: data.subject,
-        level: data.level,
-        board: data.board || null,
-        description: data.description,
-        schedule: data.schedule || null,
-        isPublic: data.isPublic ?? true,
-      },
-    });
-
-    return NextResponse.json(request, { status: 201 });
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      return NextResponse.json({ error: e.issues[0]?.message || "Invalid request" }, { status: 400 });
-    }
-    console.error("student-requests POST failed:", e);
-    return NextResponse.json({ error: "Could not create request" }, { status: 500 });
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: DEPRECATION,
+      use: { board: "/ads", create: "/ads/new", api: "POST /api/ads" },
+    },
+    { status: 410, headers: deprecationHeaders() },
+  );
 }

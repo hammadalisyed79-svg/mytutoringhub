@@ -42,7 +42,8 @@ export default async function AssistantPage() {
           <h1 className="page-title">Study assistant</h1>
           <p className="section-lead">
             The AI study assistant is included with Student Pro. Free study tools (progress log and
-            exam countdown) stay available without a paid plan.
+            exam countdown) stay in this browser only — no cloud sync — and do not require a paid
+            plan.
           </p>
           <p>
             <Link className="btn" href="/pricing">

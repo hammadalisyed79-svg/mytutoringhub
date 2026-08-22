@@ -71,7 +71,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
           Type
           <select name="kind" defaultValue={kind}>
             <option value="all">All</option>
-            <option value="student">Student ads</option>
+            <option value="student">Student requests</option>
             <option value="tutor">Tutor ads</option>
           </select>
         </label>
@@ -93,8 +93,8 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
 
       {kind !== "tutor" && (
         <section className="panel">
-          <h2>Student ads</h2>
-          {studentAds.length === 0 && <p className="muted">No student ads match.</p>}
+          <h2>Student requests</h2>
+          {studentAds.length === 0 && <p className="muted">No student requests match.</p>}
           <div className="results">
             {studentAds.map((ad) => (
               <article key={ad.id} className="ad-row">

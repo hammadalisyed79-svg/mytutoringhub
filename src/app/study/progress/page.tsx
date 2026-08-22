@@ -153,7 +153,7 @@ export default function ProgressPage() {
     <div className="page">
       <div className="container" style={{ maxWidth: 800 }}>
         <div style={{ marginBottom: "0.5rem" }}>
-          <Link href="/dashboard" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
+          <Link href="/dashboard/student" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
             ← Dashboard
           </Link>
         </div>

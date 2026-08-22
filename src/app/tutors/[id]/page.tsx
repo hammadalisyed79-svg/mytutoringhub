@@ -189,6 +189,14 @@ export default async function TutorProfilePage({ params }: Params) {
     tutor.verified && tutor.phone && (isOwner || isAdmin || hasConversation),
   );
   const canMessage = session?.user?.role === "STUDENT";
+  const viewer =
+    canMessage && session?.user
+      ? await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { emailVerified: true, email: true },
+        })
+      : null;
+  const viewerEmailVerified = Boolean(viewer?.emailVerified);
   const initial = tutor.user.name.slice(0, 1).toUpperCase();
   const firstName = tutor.user.name.split(" ")[0];
   const profileIncomplete = isOwner && isProfileIncomplete(tutor);
@@ -202,10 +210,12 @@ export default async function TutorProfilePage({ params }: Params) {
             This listing is hidden from search until{" "}
             {isOwner ? (
               <>
-                you activate <Link href="/pricing">Tutor Basic</Link>
+                you add subjects and a headline (or photo) on your{" "}
+                <Link href="/dashboard">dashboard</Link>. Tutor Basic adds priority ranking, not
+                basic visibility.
               </>
             ) : (
-              "Tutor Basic is active"
+              "the profile is complete enough to list"
             )}
             .
           </p>
@@ -546,13 +556,18 @@ export default async function TutorProfilePage({ params }: Params) {
                 )
               )}
               {canMessage ? (
-                <ContactTutorForm recipientId={tutor.user.id} tutorName={tutor.user.name} />
+                <ContactTutorForm
+                  recipientId={tutor.user.id}
+                  tutorName={tutor.user.name}
+                  emailVerified={viewerEmailVerified}
+                  viewerEmail={viewer?.email ?? session?.user?.email}
+                />
               ) : isOwner ? (
-                <p className="muted">Students with a Pass can message you from this page.</p>
+                <p className="muted">Students can message you from this page (3 free contacts/month, or unlimited with Student Pass).</p>
               ) : !session ? (
                 <div className="profile-book-cta">
                   <p className="muted">
-                    Create a student account and subscribe to message this tutor.
+                    Create a free student account to message this tutor (3 contacts/month included).
                   </p>
                   <Link href="/register?role=student" className="btn btn-block">
                     Join as student
@@ -563,7 +578,8 @@ export default async function TutorProfilePage({ params }: Params) {
                 </div>
               ) : (
                 <p className="muted">
-                  Switch to a student account with a Student Pass to send a message.
+                  Switch to a student account to send a message. Free accounts get 3 contacts/month;
+                  Student Pass unlocks unlimited messaging.
                 </p>
               )}
               <p className="muted profile-fee-note">

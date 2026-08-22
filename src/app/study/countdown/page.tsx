@@ -252,14 +252,14 @@ export default function CountdownPage() {
     <div className="page">
       <div className="container" style={{ maxWidth: 860 }}>
         <div style={{ marginBottom: "0.5rem" }}>
-          <Link href="/dashboard" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
+          <Link href="/dashboard/student" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
             ← Dashboard
           </Link>
         </div>
         <h1 className="page-title">Exam Countdown ⏳</h1>
         <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "2rem" }}>
-          Free study tool — no subscription required. Live countdowns for major exam sessions. Add
-          the ones you&apos;re sitting to track them at the top.
+          Free study tool — no subscription required. Live countdowns for major exam sessions. Your
+          personal exam list is stored only in this browser (no cloud sync).
         </p>
 
         {myExamList.length > 0 && (

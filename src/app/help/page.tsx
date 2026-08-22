@@ -10,7 +10,7 @@ export const metadata = {
 const FAQS = [
   {
     q: "How do I contact a tutor?",
-    a: "Browse Find tutors, open a profile, and send a message. Students need an active Student Pass to message and to post requests.",
+    a: "Browse Find tutors, open a profile, and send a message. Free student accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited messaging and request ads.",
   },
   {
     q: "Which email can I use to sign up?",
@@ -26,19 +26,19 @@ const FAQS = [
   },
   {
     q: "What is the Study assistant?",
-    a: "Students with Student Pro (and tutors) can use an AI study coach for explanations and practice. It is not a live tutor and has a daily message limit. Progress log and exam countdown are free tools. For human help, search Find tutors.",
+    a: "Students with Student Pro (and tutors) can use an AI study coach for explanations and practice. It is not a live tutor and has a daily message limit. Progress log and exam countdown are free tools stored in this browser only (no cloud sync). For human help, search Find tutors.",
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. One-time booking fees, group class listings, and resource uploads are not available yet.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Ad Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. One-time booking fees, one-time profile boosts, group class listings, and resource uploads are not available yet (Coming soon).",
   },
   {
     q: "Is Tutor Basic free?",
-    a: "There is a launch offer: Tutor Basic listing is complimentary until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons. After that date the standard Tutor Basic price applies.",
+    a: "Complete tutor profiles appear in search for free. Tutor Basic (complimentary until 30 September 2026) unlocks priority ranking, unlimited enquiry reveals, and subject ads. Verified badge, highlight, and ad boost remain paid add-ons. After that date the standard Tutor Basic price applies.",
   },
   {
     q: "Why do I need to verify my email?",
-    a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging and ads stay locked until you confirm. The AI study assistant also needs Student Pro. Resend the link from Pricing, Dashboard, or Settings.",
+    a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging and student requests stay locked until you confirm. The AI study assistant also needs Student Pro. Resend the link from Pricing, Dashboard, or Settings.",
   },
   {
     q: "What is a Verified tutor?",

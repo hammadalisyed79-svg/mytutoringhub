@@ -19,19 +19,9 @@ import {
   safepayPublicError,
 } from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
-import { getPricingForCountry } from "@/lib/pricing";
 import { z } from "zod";
 
 export const runtime = "nodejs";
-
-// Maps subscription plan IDs to their key in the per-country pricing table.
-// Add-ons are one-time charges and do not have an annual variant.
-const PLAN_PRICING_KEY: Record<string, keyof ReturnType<typeof getPricingForCountry> & string> = {
-  STUDENT_PASS: "studentPlus",
-  STUDENT_PRO: "studentPro",
-  TUTOR_BASIC: "tutorPro",
-  VERIFIED_TUTOR: "tutorElite",
-};
 
 const schema = z.object({
   plan: z.enum([
@@ -67,27 +57,6 @@ function resolveCurrency(req: Request, bodyCurrency?: string, bodyCountry?: stri
     return checkoutCurrency(currencyFromCountry(country));
   }
   return checkoutCurrency(currencyFromAcceptLanguage(req.headers.get("accept-language")));
-}
-
-type PricingRow = { monthly: number; annual: number };
-
-/** Returns the annual price in PKR for a plan if annual billing is requested, else undefined. */
-function resolveAnnualPricePkr(
-  plan: string,
-  billing: "monthly" | "annual",
-  country: string | null,
-): number | undefined {
-  if (billing !== "annual") return undefined;
-  const pricingKey = PLAN_PRICING_KEY[plan];
-  if (!pricingKey) return undefined;
-  const entry = getPricingForCountry(country ?? "");
-  const row = (entry as unknown as Record<string, PricingRow>)[pricingKey];
-  if (!row) return undefined;
-  // Annual prices in pricing.ts are already in local currency units, not PKR.
-  // We need the PKR equivalent: use PK (PKR) pricing to get the PKR amount.
-  const pkEntry = getPricingForCountry("PK");
-  const pkRow = (pkEntry as unknown as Record<string, PricingRow>)[pricingKey];
-  return pkRow?.annual;
 }
 
 export async function POST(req: Request) {
@@ -127,17 +96,15 @@ export async function POST(req: Request) {
     );
   }
 
-  const detectedCountry = resolveCountry(req, body.country);
   // Sandbox Cybersource 3DS dummy cards are most reliable in PKR.
   // Production/live uses the visitor or preferred currency (never forced to PKR).
   const preferred = resolveCurrency(req, body.currency, body.country);
   const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
 
-  // For annual billing, use the annual PKR price if available; otherwise fall back to monthly.
-  const annualPricePkr = resolveAnnualPricePkr(plan, billing, detectedCountry);
-  const basePricePkr = billing === "annual" && annualPricePkr != null
-    ? annualPricePkr
-    : def.chargePricePkr;
+  // Annual amounts come from plans.ts (canonical PKR); geo conversion via currency helpers.
+  const annualPricePkr = def.annualChargePricePkr;
+  const basePricePkr =
+    billing === "annual" && annualPricePkr != null ? annualPricePkr : def.chargePricePkr;
 
   const amountMajor = pkrToCurrency(basePricePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);

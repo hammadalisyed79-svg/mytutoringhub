@@ -199,7 +199,7 @@ export function studentAdDigestHtml(opts: {
     preheader: "New student requests matching your subjects.",
     title: "New student requests",
     body: `<p>Hi ${opts.name},</p>
-<p>New student ads matching your subjects:</p>
+<p>New student requests matching your subjects:</p>
 <ul>${opts.listHtml}</ul>`,
     cta: { label: "Browse student requests", href: opts.adsUrl },
   });
@@ -207,10 +207,10 @@ export function studentAdDigestHtml(opts: {
 
 export function verifyEmailHtml(name: string, verifyUrl: string) {
   return emailLayout({
-    preheader: "Confirm your email to unlock messaging and ads.",
+    preheader: "Confirm your email to unlock messaging and requests.",
     title: "Confirm your email",
     body: `<p>Hi ${name},</p>
-<p>Please confirm your email address to unlock messaging, student ads, and the study assistant on ${brand}.</p>
+<p>Please confirm your email address to unlock messaging, student requests, and the study assistant on ${brand}.</p>
 <p>This link expires in 24 hours.</p>`,
     cta: { label: "Confirm email address", href: verifyUrl },
   });

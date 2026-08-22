@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       { source: "/study/assistant", destination: "/assistant", permanent: false },
       { source: "/student-requests", destination: "/ads", permanent: false },
       { source: "/student-requests/:path*", destination: "/ads", permanent: false },
+      { source: "/requests", destination: "/ads", permanent: false },
+      { source: "/requests/:path*", destination: "/ads", permanent: false },
     ];
   },
 };

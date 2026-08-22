@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata = { title: "Analytics — Tutor Dashboard" };
 export const dynamic = "force-dynamic";
 
-function hasActiveListing(subscriptions: { plan: string; status: string }[]) {
+function hasPaidTutorPlan(subscriptions: { plan: string; status: string }[]) {
   return subscriptions.some(
     (s) =>
       ["ACTIVE", "TRIALING"].includes(s.status) &&
@@ -55,7 +55,8 @@ export default async function TutorAnalyticsPage() {
   const profile = user.tutorProfile;
   if (!profile) redirect("/dashboard");
 
-  const listed = hasActiveListing(user.subscriptions);
+  const listed = Boolean(profile.active);
+  const hasPaidPlan = hasPaidTutorPlan(user.subscriptions);
   const completeness = profileCompleteness(profile);
 
   let totalEnquiries = 0;
@@ -213,7 +214,7 @@ export default async function TutorAnalyticsPage() {
     <div className="page">
       <div className="container" style={{ maxWidth: 900 }}>
         <div style={{ marginBottom: "0.5rem" }}>
-          <Link href="/dashboard" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
+          <Link href="/dashboard/tutor" style={{ color: "var(--brand)", fontSize: "0.9rem" }}>
             ← Dashboard
           </Link>
         </div>
@@ -409,14 +410,16 @@ export default async function TutorAnalyticsPage() {
                   textTransform: "uppercase",
                 }}
               >
-                {listed ? "Tutor Basic" : "Not listed"}
+                {hasPaidPlan ? "Tutor Basic+" : listed ? "Free listing" : "Not listed"}
               </span>
               <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>plan</span>
             </div>
             <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--muted)" }}>
               {listed
-                ? "Listed in search while Tutor Basic is active. Paid add-ons on Pricing can highlight or boost you."
-                : "Activate Tutor Basic on Pricing to appear in search."}
+                ? hasPaidPlan
+                  ? "Listed with paid priority. Add-ons on Pricing can highlight or boost you."
+                  : "Listed in search for free. Tutor Basic adds priority, unlimited reveals, and ads."
+                : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
           </section>
         </div>
@@ -479,14 +482,15 @@ export default async function TutorAnalyticsPage() {
             <h2
               style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700, color: "var(--brand)" }}
             >
-              Appear in search with Tutor Basic
+              Complete your profile to appear in search
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
-              Activate complimentary Tutor Basic, then add verification, highlight, or boost from
-              the same Pricing page.
+              Add subjects and a headline (or photo) on your dashboard. Tutor Basic is optional for
+              priority ranking, unlimited reveals, and ads — verification, highlight, and boost stay
+              on Pricing.
             </p>
             <Link
-              href="/pricing"
+              href="/dashboard/tutor"
               style={{
                 background: "var(--brand)",
                 color: "#fff",
@@ -497,7 +501,7 @@ export default async function TutorAnalyticsPage() {
                 display: "inline-block",
               }}
             >
-              Open tutor plans →
+              Edit tutor profile →
             </Link>
           </section>
         )}

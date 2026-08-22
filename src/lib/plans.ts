@@ -7,6 +7,11 @@ export type PlanDefinition = {
   audience: "student" | "tutor";
   /** Monthly list price stored in PKR base units (converted at display/checkout). */
   pricePkr: number;
+  /**
+   * Annual list price in PKR (~9.6× monthly = ~2 months free).
+   * Add-ons are one-time and omit this.
+   */
+  annualPricePkr?: number;
   features: string[];
   envPriceId: string;
   isAddOn?: boolean;
@@ -32,11 +37,18 @@ export type PlanPriceOverride = {
 export type ResolvedPlan = PlanDefinition & {
   listPricePkr: number;
   chargePricePkr: number;
+  /** Annual charge in PKR when billing annually exists; null for one-time add-ons. */
+  annualChargePricePkr: number | null;
   isPromoActive: boolean;
   isComplimentary: boolean;
   promoEndsAt: Date | null;
   savingsPercent: number;
 };
+
+/** ~2 months free vs paying monthly for a year. */
+export function defaultAnnualPricePkr(monthlyPkr: number) {
+  return Math.round(monthlyPkr * 9.6);
+}
 
 export const DEFAULT_PLANS: PlanDefinition[] = [
   {
@@ -45,6 +57,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     description: "Unlimited tutor contacts and student request ads. Free accounts get 3 contacts/month.",
     audience: "student",
     pricePkr: 1999,
+    annualPricePkr: defaultAnnualPricePkr(1999),
     features: [
       "Unlimited new tutor contacts",
       "Post “need a tutor” ads",
@@ -59,6 +72,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     description: "Everything in Student Pass, plus the AI study assistant.",
     audience: "student",
     pricePkr: 3499,
+    annualPricePkr: defaultAnnualPricePkr(3499),
     features: [
       "Everything in Student Pass",
       "AI study assistant",
@@ -70,14 +84,16 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   {
     id: "TUTOR_BASIC",
     name: "Tutor Basic",
-    description: "Publish your profile and message students without monthly reveal limits.",
+    description:
+      "Priority placement, unlimited enquiry reveals, and subject ads. Complete free profiles already appear in search.",
     audience: "tutor",
     pricePkr: 1499,
+    annualPricePkr: defaultAnnualPricePkr(1499),
     features: [
-      "Public tutor profile in search",
+      "Priority ranking in search (planTier boost)",
       "Unlimited enquiry reveals when contacting students",
       "Up to 3 active subject ads",
-      "Receive student messages (free listed tutors always can)",
+      "Free complete profiles stay listed; Basic adds reach",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
     promoEnabled: true,
@@ -85,7 +101,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Complimentary listing until 30 September 2026. Verified badge, highlight, and ad boost remain paid add-ons. Free listed tutors still receive messages and get 5 enquiry reveals/month.",
+      "Tutor Basic is complimentary until 30 September 2026. Free tutors with a complete profile already appear in search; Basic unlocks priority, unlimited reveals, and ads. Verified badge, highlight, and ad boost remain paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",
@@ -96,7 +112,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     features: [
       "Verified badge on profile",
       "Priority verification queue",
-      "Higher trust ranking",
+      "Higher trust ranking (Elite tier)",
     ],
     envPriceId: "STRIPE_PRICE_VERIFIED_TUTOR",
     isAddOn: true,
@@ -194,10 +210,15 @@ export function resolvePlan(plan: PlanDefinition, now = new Date()): ResolvedPla
     isPromoActive && plan.pricePkr > 0
       ? Math.round(((plan.pricePkr - chargePricePkr) / plan.pricePkr) * 100)
       : 0;
+  const annualList = plan.isAddOn
+    ? null
+    : plan.annualPricePkr ?? defaultAnnualPricePkr(plan.pricePkr);
   return {
     ...plan,
+    annualPricePkr: annualList ?? undefined,
     listPricePkr: plan.pricePkr,
     chargePricePkr,
+    annualChargePricePkr: annualList,
     isPromoActive,
     isComplimentary: isPromoActive && chargePricePkr === 0,
     promoEndsAt: isPromoActive ? endsAt : null,

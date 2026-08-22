@@ -16,6 +16,7 @@ import { curriculumLevels } from "@/lib/curriculum";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
+import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
 
 const schema = z
   .object({
@@ -147,55 +148,42 @@ export async function PUT(req: Request) {
       data: { name: parsedName.name },
     });
 
+    const profilePayload = {
+      headline: data.headline,
+      bio: data.bio,
+      subjects: subjectCsv,
+      hourlyRate: data.hourlyRate,
+      location,
+      country: data.country,
+      expertise: expertise || null,
+      online: data.online,
+      inPerson: data.inPerson,
+      photoUrl,
+      qualifications: data.qualifications?.trim() || null,
+      experienceYears,
+      teachingMethod: data.teachingMethod?.trim() || null,
+      languages: languages || null,
+      levels: levels || null,
+      availability: availability || null,
+      videoUrl: data.videoUrl?.trim() || null,
+      introVideoUrl: data.introVideoUrl?.trim() || null,
+      offersFreeTrial: Boolean(data.offersFreeTrial),
+      phone: data.phone?.trim() || null,
+    };
+    const listable = isTutorProfileListable(profilePayload);
+
     const profile = await prisma.tutorProfile.upsert({
       where: { userId: session.user.id },
-      update: {
-        headline: data.headline,
-        bio: data.bio,
-        subjects: subjectCsv,
-        hourlyRate: data.hourlyRate,
-        location,
-        country: data.country,
-        expertise: expertise || null,
-        online: data.online,
-        inPerson: data.inPerson,
-        photoUrl,
-        qualifications: data.qualifications?.trim() || null,
-        experienceYears,
-        teachingMethod: data.teachingMethod?.trim() || null,
-        languages: languages || null,
-        levels: levels || null,
-        availability: availability || null,
-        videoUrl: data.videoUrl?.trim() || null,
-        introVideoUrl: data.introVideoUrl?.trim() || null,
-        offersFreeTrial: Boolean(data.offersFreeTrial),
-        phone: data.phone?.trim() || null,
-      },
+      update: profilePayload,
       create: {
         userId: session.user.id,
-        headline: data.headline,
-        bio: data.bio,
-        subjects: subjectCsv,
-        hourlyRate: data.hourlyRate,
-        location,
-        country: data.country,
-        expertise: expertise || null,
-        online: data.online,
-        inPerson: data.inPerson,
-        photoUrl,
-        qualifications: data.qualifications?.trim() || null,
-        experienceYears,
-        teachingMethod: data.teachingMethod?.trim() || null,
-        languages: languages || null,
-        levels: levels || null,
-        availability: availability || null,
-        videoUrl: data.videoUrl?.trim() || null,
-        introVideoUrl: data.introVideoUrl?.trim() || null,
-        offersFreeTrial: Boolean(data.offersFreeTrial),
-        phone: data.phone?.trim() || null,
-        active: false,
+        ...profilePayload,
+        // Free complete profiles list in search; paid plans add priority via syncTutorBadges.
+        active: listable,
       },
     });
+
+    await syncTutorBadges(session.user.id);
 
     const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
     if (adCount === 0) {
@@ -216,7 +204,10 @@ export async function PUT(req: Request) {
       });
     }
 
-    return NextResponse.json(profile);
+    await syncTutorBadges(session.user.id);
+
+    const refreshed = await prisma.tutorProfile.findUnique({ where: { id: profile.id } });
+    return NextResponse.json(refreshed ?? profile);
   } catch (e) {
     if (e instanceof z.ZodError) {
       return NextResponse.json({ error: e.issues[0]?.message || "Check the required fields" }, { status: 400 });

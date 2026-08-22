@@ -57,7 +57,11 @@ export async function POST(req: Request) {
   const allowed = await canMessage(session.user.id, session.user.role as Role);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Verify your email to send messages" },
+      {
+        error: "email_unverified",
+        message: "Verify your email to send messages",
+        upgradeUrl: "/pricing?verify=1",
+      },
       { status: 403 },
     );
   }

@@ -160,14 +160,14 @@ export async function getPlanDashboardSummary(
       "UNLIMITED_ADS",
     ] as SubscriptionPlan[]));
   return {
-    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor Basic" : "Free",
+    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor Basic" : "Free listing",
     planTier: hasElite ? "elite" : hasBasic ? "pro" : "free",
     usageUsed: check.used,
     usageLimit: check.limit,
     usageLabel: "enquiry reveals this month",
     renewsOn: hasBasic ? renewsOn : null,
     upgradeHint: hasBasic
-      ? "Unlimited student contact when you initiate. Listed tutors always receive messages."
-      : `Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} enquiry reveals/month when contacting students.`,
+      ? "Unlimited student contact when you initiate. Complete free profiles stay listed; Basic adds priority and ads."
+      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} enquiry reveals/month. Tutor Basic unlocks priority, unlimited reveals, and subject ads.`,
   };
 }

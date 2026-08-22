@@ -3,7 +3,7 @@ import Link from "next/link";
 export type PlanBannerProps = {
   role: "TUTOR" | "STUDENT";
   planName: string;
-  /** "free" | "pro" | "elite" */
+  /** Internal tier for styling: free | pro (Pass/Basic) | elite (Pro/Verified) */
   planTier: "free" | "pro" | "elite";
   usageUsed: number;
   usageLimit: number;
