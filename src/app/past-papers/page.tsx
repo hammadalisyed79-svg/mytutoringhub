@@ -7,6 +7,8 @@ import { formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
+import { PastPaperResultList } from "@/components/PastPaperResultList";
+import { PaginationNav } from "@/components/PaginationNav";
 import {
   PAST_PAPER_YEARS,
   getPastPaperFeePkr,
@@ -318,48 +320,29 @@ export default async function PastPapersPage({
         {searchResult && (sp.q || sp.code || sp.paper) ? (
           <section className="panel">
             <h2>Search results</h2>
-            <p className="muted">{searchResult.total} paper{searchResult.total === 1 ? "" : "s"}</p>
-            <div className="paper-rows">
-              {searchResult.papers.length === 0 ? (
-                <p className="muted">No uploaded papers matched. Catalog listings without files stay “Coming soon”.</p>
-              ) : (
-                searchResult.papers.map((paper) => (
-                  <article key={paper.id} className="paper-row">
-                    <div>
-                      <h3>
-                        {paper.subject} · {documentTypeLabel(paper.documentType) || paper.paperType}
-                      </h3>
-                      <p className="muted">
-                        {paper.board} · {paper.year}
-                        {paper.session ? ` · ${paper.session}` : ""}
-                        {paper.componentCode ? ` · Paper ${paper.componentCode}` : ""}
-                        {paper.syllabusCode ? ` · ${paper.syllabusCode}` : ""}
-                      </p>
-                    </div>
-                    <PastPaperBuyButton
-                      catalogKey={paper.catalogKey}
-                      available
-                      owned={owned.has(paper.catalogKey) || session?.user?.role === "ADMIN"}
-                      feeLabel={feeLabel}
-                      signedIn={Boolean(session?.user)}
-                    />
-                  </article>
-                ))
-              )}
-            </div>
-            {pages > 1 ? (
-              <nav className="year-tabs" aria-label="Pages">
-                {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-                  <Link
-                    key={n}
-                    href={hrefWith({ ...sp, page: n })}
-                    className={`page-tab ${n === page ? "is-active" : ""}`}
-                  >
-                    {n}
-                  </Link>
-                ))}
-              </nav>
-            ) : null}
+            <p className="muted paper-results-meta">
+              {searchResult.total.toLocaleString()} paper{searchResult.total === 1 ? "" : "s"}
+              {pages > 1 ? ` · Page ${page} of ${pages.toLocaleString()}` : ""}
+              {searchResult.total > 48 ? (
+                <>
+                  {" "}
+                  · Add year, board, or paper code above to narrow results
+                </>
+              ) : null}
+            </p>
+            <PastPaperResultList
+              papers={searchResult.papers}
+              ownedKeys={owned}
+              feeLabel={feeLabel}
+              signedIn={Boolean(session?.user)}
+              isAdmin={session?.user?.role === "ADMIN"}
+            />
+            <PaginationNav
+              page={page}
+              pages={pages}
+              hrefForPage={(n) => hrefWith({ ...sp, page: n })}
+              label="Search results pages"
+            />
           </section>
         ) : !country && !subject ? (
           <div className="subject-directory" style={{ marginTop: "1rem" }}>

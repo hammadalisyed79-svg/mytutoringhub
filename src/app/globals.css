@@ -2702,6 +2702,105 @@ select:focus {
   font-size: 1rem;
 }
 
+.paper-results-meta {
+  margin: 0 0 1rem;
+}
+
+.paper-results-grouped {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.paper-year-block {
+  border: 1px solid rgba(13, 95, 82, 0.1);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  background: rgba(255, 252, 247, 0.6);
+}
+
+.paper-year-heading {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--brand-deep);
+}
+
+.paper-session-heading {
+  margin: 0 0 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.paper-component-block + .paper-component-block {
+  margin-top: 0.75rem;
+}
+
+.pagination-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(13, 95, 82, 0.1);
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.pagination-btn.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.pagination-page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  padding: 0 0.45rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: #fff;
+  font-weight: 650;
+  font-size: 0.88rem;
+}
+
+.pagination-page.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.pagination-gap {
+  padding: 0 0.25rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .paper-session h3 {
   margin: 0.85rem 0 0.4rem;
   font-size: 1.02rem;
