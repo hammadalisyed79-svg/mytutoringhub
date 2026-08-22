@@ -28,10 +28,10 @@ import {
   profileStrength,
   resolveTutorDashboardTab,
   roleDashboardPath,
-  tutorDashboardTabHref,
   isTutorDashboardProfileComplete,
 } from "@/lib/dashboard-home";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
+import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 
 export const metadata = { title: "Tutor dashboard" };
 export const dynamic = "force-dynamic";
@@ -199,26 +199,9 @@ export default async function TutorDashboardPage({
             </p>
             {!corePlan && <RecoverPaymentForm />}
           </section>
-
-          <section className="panel tutor-dashboard-card">
-            <h2>Quick links</h2>
-            <div className="dash-links">
-              <Link href="/ads">Student requests</Link>
-              <Link href="/messages">
-                Messages
-                {inbox.unread > 0 ? ` (${inbox.unread} unread)` : ""}
-              </Link>
-              <Link href="/past-papers">Past papers</Link>
-              <Link href="/dashboard/tutor/analytics">Analytics</Link>
-              <Link href="/settings">Account settings</Link>
-              <Link href={tutorDashboardTabHref(sp, "growth", "invite-tutor")}>Invite a tutor</Link>
-              <Link href={tutorDashboardTabHref(sp, "growth", "tutor-recommendations")}>
-                Recommendations
-              </Link>
-              <Link href={tutorDashboardTabHref(sp, "profile")}>Edit profile</Link>
-            </div>
-          </section>
         </div>
+
+        <TutorDashboardShortcuts unread={inbox.unread} sp={sp} />
 
         {activeTab === "growth" ? (
           <div className="tutor-dashboard-stack">

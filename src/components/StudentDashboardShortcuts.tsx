@@ -1,14 +1,6 @@
-import Link from "next/link";
+import { DashboardShortcutCards } from "@/components/DashboardShortcutCards";
 
-type Shortcut = {
-  href: string;
-  label: string;
-  description: string;
-  icon: string;
-  badge?: string;
-};
-
-const SHORTCUTS: Shortcut[] = [
+const SHORTCUTS = [
   {
     href: "/messages",
     label: "Messages",
@@ -81,35 +73,14 @@ const SHORTCUTS: Shortcut[] = [
     description: "Start teaching",
     icon: "👩‍🏫",
   },
-];
+] as const;
 
 export function StudentDashboardShortcuts({ unread = 0 }: { unread?: number }) {
-  return (
-    <section className="panel student-dashboard-shortcuts-panel">
-      <div className="student-dashboard-shortcuts-head">
-        <h2>Shortcuts</h2>
-        <p className="muted section-lead-tight">Jump to the tools you use most.</p>
-      </div>
-      <div className="dash-shortcut-grid">
-        {SHORTCUTS.map((item) => {
-          const badge =
-            item.href === "/messages" && unread > 0
-              ? `${unread} unread`
-              : item.badge;
-          return (
-            <Link key={item.href} href={item.href} className="dash-shortcut-card">
-              <span className="dash-shortcut-icon" aria-hidden>
-                {item.icon}
-              </span>
-              <span className="dash-shortcut-copy">
-                <strong>{item.label}</strong>
-                <span className="muted">{item.description}</span>
-              </span>
-              {badge ? <span className="dash-shortcut-badge">{badge}</span> : null}
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
+  const items = SHORTCUTS.map((item) => ({
+    ...item,
+    badge:
+      item.href === "/messages" && unread > 0 ? `${unread} unread` : undefined,
+  }));
+
+  return <DashboardShortcutCards items={items} />;
 }

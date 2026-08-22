@@ -2320,7 +2320,7 @@ select:focus {
 
 .tutor-dashboard-overview {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 1.25rem;
   margin-top: 1.25rem;
   align-items: stretch;
@@ -2447,11 +2447,7 @@ select:focus {
 
 @media (max-width: 1100px) {
   .tutor-dashboard-overview {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .tutor-dashboard-overview > :first-child {
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -2521,11 +2517,13 @@ select:focus {
   align-items: stretch;
 }
 
-.student-dashboard-shortcuts-panel {
+.student-dashboard-shortcuts-panel,
+.dashboard-shortcuts-panel {
   margin-top: 1.25rem;
 }
 
-.student-dashboard-shortcuts-head {
+.student-dashboard-shortcuts-head,
+.dashboard-shortcuts-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -2534,7 +2532,8 @@ select:focus {
   margin-bottom: 1rem;
 }
 
-.student-dashboard-shortcuts-head h2 {
+.student-dashboard-shortcuts-head h2,
+.dashboard-shortcuts-head h2 {
   margin: 0;
 }
 
