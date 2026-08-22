@@ -6,6 +6,7 @@ import { StartMessageFromQuery } from "@/components/StartMessageFromQuery";
 import { MessagesPlanPanel } from "@/components/MessagesPlanPanel";
 import { isImageAttachment } from "@/lib/media";
 import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { getPlanDashboardSummary } from "@/lib/plan-limits";
 
 export const metadata = { title: "Messages" };
 
@@ -40,6 +41,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     },
   });
 
+  const studentPlanSummary =
+    session.user.role === "STUDENT" ? await getPlanDashboardSummary(uid, "STUDENT") : null;
+
   return (
     <div className="page">
       <div className="container">
@@ -56,7 +60,11 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             <p className="muted">
               {session.user.role === "TUTOR"
                 ? "Browse student requests and reply. Tutor Basic unlocks unlimited enquiry reveals when you message first."
-                : "Search tutors and send a message. Use your free monthly contacts or upgrade above for unlimited messaging."}
+                : studentPlanSummary && studentPlanSummary.usageLimit < 0
+                  ? "Search tutors and send a message — your plan includes unlimited tutor contacts this month."
+                  : studentPlanSummary
+                    ? `Search tutors and send a message. You have ${Math.max(0, studentPlanSummary.usageLimit - studentPlanSummary.usageUsed)} of ${studentPlanSummary.usageLimit} free tutor contacts left this month.`
+                    : "Search tutors and send a message. Free accounts get 3 new tutor contacts per month."}
             </p>
             <p>
               {session.user.role === "TUTOR" ? (
