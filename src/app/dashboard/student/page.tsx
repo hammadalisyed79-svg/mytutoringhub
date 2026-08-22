@@ -45,28 +45,33 @@ export default async function StudentDashboardPage({
   const hubPoints = await getHubPointsSummary(session.user.id, { currency, role: "STUDENT" });
 
   return (
-    <div className="page">
+    <div className="page student-dashboard-page">
       <div className="container">
-        <h1 className="page-title">Hi, {user.name}</h1>
-        <p className="muted">
-          Find a tutor, use free monthly contacts or a Student Pass, or post a request.
-        </p>
+        <header className="student-dashboard-hero">
+          <div>
+            <h1 className="page-title">Hi, {user.name}</h1>
+            <p className="muted">
+              Find a tutor, use free monthly contacts or a Student Pass, or post a request.
+            </p>
+          </div>
+          <div className="student-dashboard-hero-actions">
+            <Link href="/search" className="btn btn-sm">
+              Search tutors
+            </Link>
+            <Link href="/messages" className="btn btn-secondary btn-sm">
+              Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
+            </Link>
+          </div>
+        </header>
 
         {sp.verified === "1" && (
-          <p className="success panel" style={{ marginTop: "1rem" }}>
+          <p className="success panel student-dashboard-alert">
             Email verified. Messaging and ads unlock with your plan; the AI study assistant needs
             Student Pro.
           </p>
         )}
         {!user.emailVerified && (
-          <div
-            className="panel"
-            style={{
-              marginTop: "1rem",
-              borderColor: "var(--brand)",
-              background: "rgba(15, 90, 70, 0.06)",
-            }}
-          >
+          <div className="panel student-dashboard-alert student-dashboard-alert--verify">
             <p style={{ marginTop: 0 }}>
               Please verify {user.email}. Mail is sent from admin@mytutoringhub.com. Check inbox,
               junk, and promotions.
@@ -81,32 +86,16 @@ export default async function StudentDashboardPage({
         />
         <DashboardMessageAlert userId={session.user.id} />
         {sp.subscribed === "1" && sp.checkout !== "success" && (
-          <p className="success panel" style={{ marginTop: "1rem" }}>
+          <p className="success panel student-dashboard-alert">
             Payment confirmed. Your plan is active
             {sp.plan ? ` (${getPlan(sp.plan as never)?.name || sp.plan})` : ""}.
           </p>
         )}
 
-        <div className="dashboard-grid" style={{ marginTop: "1.5rem" }}>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <PointsWalletPanel summary={hubPoints} role="STUDENT" />
-          </div>
-          <section className="panel" style={{ gridColumn: "1 / -1" }}>
-            <h2>Find a tutor</h2>
-            <p className="muted" style={{ marginTop: 0 }}>
-              Search by subject, level, and location — then message tutors that fit.
-            </p>
-            <div className="hero-ctas" style={{ marginTop: "0.75rem" }}>
-              <Link href="/search" className="btn">
-                Search tutors
-              </Link>
-              <Link href="/ads/new" className="btn btn-secondary">
-                Post a request
-              </Link>
-            </div>
-          </section>
+        <div className="student-dashboard-overview">
+          <PointsWalletPanel summary={hubPoints} role="STUDENT" />
 
-          <section className="panel">
+          <section className="panel student-dashboard-card">
             <h2>Your plan</h2>
             {corePlan ? (
               <ul className="sub-list">
@@ -124,19 +113,19 @@ export default async function StudentDashboardPage({
               </p>
             )}
             {pendingSubs.length > 0 && (
-              <div style={{ marginTop: "0.75rem" }}>
-                <p className="muted" style={{ fontSize: "0.9rem" }}>
+              <div className="student-dashboard-pending">
+                <p className="muted">
                   {pendingSubs.length} unfinished checkout
                   {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, open
                   Dashboard again to confirm, or tap confirm below.
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                <div className="student-dashboard-pending-actions">
                   {pendingSubs
                     .filter((s) => s.stripeSubscriptionId?.startsWith("track_"))
                     .map((s) => (
                       <a
                         key={s.id}
-                        className="btn btn-secondary btn-sm"
+                        className="btn btn-sm"
                         href={`/api/safepay/complete?tracker=${encodeURIComponent(s.stripeSubscriptionId!)}&plan=${encodeURIComponent(s.plan)}`}
                       >
                         Confirm {getPlan(s.plan as never)?.name || s.plan}
@@ -157,22 +146,17 @@ export default async function StudentDashboardPage({
                 />
               </div>
             )}
-            <p style={{ marginTop: "0.85rem", marginBottom: 0 }}>
+            <p className="student-dashboard-card-foot">
               <Link href="/dashboard/student/plan">Your plan details</Link>
               {" · "}
               <Link href="/pricing">See Student Pass →</Link>
             </p>
             {!corePlan && <RecoverPaymentForm />}
-            <InviteTutorShare
-              referrerId={session.user.id}
-              referrerName={session.user.name}
-              compact
-            />
           </section>
 
-          <section className="panel">
+          <section className="panel student-dashboard-card student-dashboard-shortcuts">
             <h2>Shortcuts</h2>
-            <div className="dash-links">
+            <div className="dash-links dash-links-grid">
               <Link href="/messages">
                 Messages
                 {inbox.unread > 0 ? ` (${inbox.unread} unread)` : ""}
@@ -188,9 +172,34 @@ export default async function StudentDashboardPage({
               <Link href="/become-a-tutor">Become a tutor</Link>
             </div>
           </section>
+        </div>
+
+        <div className="student-dashboard-stack">
+          <section className="panel student-dashboard-find">
+            <div className="student-dashboard-find-copy">
+              <h2>Find a tutor</h2>
+              <p className="muted section-lead-tight">
+                Search by subject, level, and location — then message tutors that fit.
+              </p>
+            </div>
+            <div className="student-dashboard-find-actions">
+              <Link href="/search" className="btn btn-sm">
+                Search tutors
+              </Link>
+              <Link href="/ads/new" className="btn btn-secondary btn-sm">
+                Post a request
+              </Link>
+            </div>
+          </section>
+
+          <InviteTutorShare
+            referrerId={session.user.id}
+            referrerName={session.user.name}
+            compact
+          />
 
           {user.reviewRequestsRecv.length > 0 && (
-            <section className="panel" style={{ gridColumn: "1 / -1" }}>
+            <section className="panel">
               <h2>Review requests</h2>
               <ul className="sub-list">
                 {user.reviewRequestsRecv.map((r) => (
@@ -203,7 +212,7 @@ export default async function StudentDashboardPage({
             </section>
           )}
 
-          <section className="panel dashboard-section-card" style={{ gridColumn: "1 / -1" }}>
+          <section className="panel dashboard-section-card">
             <div className="dashboard-section-head">
               <div>
                 <h2>Your requests</h2>
