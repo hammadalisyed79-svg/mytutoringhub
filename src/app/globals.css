@@ -44,6 +44,11 @@
   --surface-glass: rgba(255, 253, 249, 0.88);
   --shadow-lg: 0 20px 50px rgba(8, 46, 40, 0.14);
   --shadow-glow: 0 0 0 1px rgba(10, 92, 80, 0.1), 0 12px 40px rgba(10, 92, 80, 0.12);
+  --on-dark-fg: #ffffff;
+  --btn-on-dark-bg: rgba(255, 252, 247, 0.12);
+  --btn-on-dark-border: rgba(255, 252, 247, 0.58);
+  --btn-on-dark-hover-bg: rgba(255, 252, 247, 0.2);
+  --btn-on-dark-hover-border: rgba(255, 252, 247, 0.78);
 }
 
 @theme inline {
@@ -563,6 +568,29 @@ svg {
   box-shadow: none;
 }
 
+/* Secondary buttons on dark hero / bands — avoid white-on-white */
+.hero .btn-secondary,
+.logged-in-welcome .btn-secondary,
+.cta-band .btn-secondary,
+.points-wallet-hero .btn-secondary,
+.pricing-hero-copy .btn-secondary {
+  background: var(--btn-on-dark-bg);
+  color: var(--on-dark-fg);
+  border-color: var(--btn-on-dark-border);
+  box-shadow: none;
+}
+
+.hero .btn-secondary:hover,
+.logged-in-welcome .btn-secondary:hover,
+.cta-band .btn-secondary:hover,
+.points-wallet-hero .btn-secondary:hover,
+.pricing-hero-copy .btn-secondary:hover {
+  background: var(--btn-on-dark-hover-bg);
+  border-color: var(--btn-on-dark-hover-border);
+  color: var(--on-dark-fg);
+  box-shadow: none;
+}
+
 /* —— Footer —— */
 .site-footer {
   margin-top: auto;
@@ -699,15 +727,6 @@ svg {
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
-}
-
-.hero .btn-secondary {
-  color: var(--white);
-  border-color: rgba(255, 252, 247, 0.5);
-}
-
-.hero .btn-secondary:hover {
-  background: rgba(255, 252, 247, 0.12);
 }
 
 .hero-kicker {
@@ -4333,16 +4352,6 @@ select:focus {
 .cta-band .btn:hover {
   background: #fff;
   color: var(--brand-deep);
-}
-
-.cta-band .btn-secondary {
-  background: transparent;
-  color: var(--white);
-  border-color: rgba(255, 252, 247, 0.45);
-}
-
-.cta-band .btn-secondary:hover {
-  background: rgba(255, 252, 247, 0.1);
 }
 
 .check-list {
