@@ -26,8 +26,12 @@ import {
   type DashboardSearchParams,
   prepareDashboardHome,
   profileStrength,
+  resolveTutorDashboardTab,
   roleDashboardPath,
+  tutorDashboardTabHref,
+  isTutorDashboardProfileComplete,
 } from "@/lib/dashboard-home";
+import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 
 export const metadata = { title: "Tutor dashboard" };
 export const dynamic = "force-dynamic";
@@ -59,6 +63,10 @@ export default async function TutorDashboardPage({
   const profileStats = user.tutorProfile
     ? profileStrength(user.tutorProfile, user.name)
     : null;
+  const profileComplete = user.tutorProfile
+    ? isTutorDashboardProfileComplete(user.tutorProfile, user.name)
+    : false;
+  const activeTab = resolveTutorDashboardTab(sp, profileComplete);
 
   return (
     <div className="page tutor-dashboard-page">
@@ -116,11 +124,7 @@ export default async function TutorDashboardPage({
           </p>
         )}
 
-        {badgeProgress ? (
-          <div className="tutor-dashboard-timeline">
-            <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />
-          </div>
-        ) : null}
+        <TutorDashboardTabs active={activeTab} sp={sp} profilePct={profileStats?.pct} />
 
         <div className="tutor-dashboard-overview">
           <PointsWalletPanel summary={hubPoints} role="TUTOR" />
@@ -207,28 +211,44 @@ export default async function TutorDashboardPage({
               <Link href="/past-papers">Past papers</Link>
               <Link href="/dashboard/tutor/analytics">Analytics</Link>
               <Link href="/settings">Account settings</Link>
-              <Link href="#invite-tutor">Invite a tutor</Link>
-              <Link href="#tutor-recommendations">Recommendations</Link>
-              <Link href="#tutor-profile">Edit profile</Link>
+              <Link href={tutorDashboardTabHref(sp, "growth", "invite-tutor")}>Invite a tutor</Link>
+              <Link href={tutorDashboardTabHref(sp, "growth", "tutor-recommendations")}>
+                Recommendations
+              </Link>
+              <Link href={tutorDashboardTabHref(sp, "profile")}>Edit profile</Link>
             </div>
           </section>
         </div>
 
-        <div className="tutor-dashboard-stack">
-          <InviteTutorShare
-            referrerId={session.user.id}
-            referrerName={session.user.name}
-            compact
-          />
+        {activeTab === "growth" ? (
+          <div className="tutor-dashboard-stack">
+            {badgeProgress ? (
+              <div className="tutor-dashboard-timeline">
+                <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />
+              </div>
+            ) : null}
 
-          {user.tutorProfile ? (
-            <ProfileBoostPanel boostUntil={user.tutorProfile.boostUntil} currency={currency} />
-          ) : null}
+            <InviteTutorShare
+              referrerId={session.user.id}
+              referrerName={session.user.name}
+              compact
+              id="invite-tutor"
+            />
 
-          {user.tutorProfile && badgeProgress ? <TutorRecommendationForm /> : null}
+            {user.tutorProfile ? (
+              <ProfileBoostPanel boostUntil={user.tutorProfile.boostUntil} currency={currency} />
+            ) : null}
 
-          {user.tutorProfile ? (
-            <section className="panel tutor-profile-workspace" id="tutor-profile">
+            {user.tutorProfile && badgeProgress ? (
+              <div id="tutor-recommendations">
+                <TutorRecommendationForm />
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="tutor-dashboard-stack">
+            {user.tutorProfile ? (
+              <section className="panel tutor-profile-workspace" id="tutor-profile">
               <div className="tutor-profile-workspace-head">
                 <div>
                   <h2>Your tutor profile</h2>
@@ -301,28 +321,29 @@ export default async function TutorDashboardPage({
             </section>
           ) : null}
 
-          {user.tutorProfile ? (
-            <>
-              <section className="panel">
-                <h2>Optional subject ads</h2>
-                <p className="muted">
-                  Extra subject-specific ads on top of your profile. Not required to get found.
-                </p>
-                <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
-              </section>
+            {user.tutorProfile ? (
+              <>
+                <section className="panel">
+                  <h2>Optional subject ads</h2>
+                  <p className="muted">
+                    Extra subject-specific ads on top of your profile. Not required to get found.
+                  </p>
+                  <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
+                </section>
 
-              <section className="panel" id="get-verified">
-                <h2>Get verified</h2>
-                <p className="muted">
-                  Upload a government photo ID (passport, national ID / CNIC, or driving licence).
-                  Your profile shows <strong>Unverified</strong> until an admin approves your
-                  documents. Documents stay private — admins only.
-                </p>
-                <VerificationForm />
-              </section>
-            </>
-          ) : null}
-        </div>
+                <section className="panel" id="get-verified">
+                  <h2>Get verified</h2>
+                  <p className="muted">
+                    Upload a government photo ID (passport, national ID / CNIC, or driving licence).
+                    Your profile shows <strong>Unverified</strong> until an admin approves your
+                    documents. Documents stay private — admins only.
+                  </p>
+                  <VerificationForm />
+                </section>
+              </>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

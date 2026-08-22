@@ -17,9 +17,10 @@ export type DashboardSearchParams = {
   state?: string;
   verify?: string;
   verified?: string;
+  tab?: string;
 };
 
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, isTutorProfileComplete } from "@/lib/tutor-profile-completion";
 
 export function profileStrength(
   tp: {
@@ -63,12 +64,57 @@ export function profileStrength(
 
 export function dashboardQueryString(sp: DashboardSearchParams) {
   const q = new URLSearchParams();
-  for (const key of ["checkout", "subscribed", "plan", "state", "verify", "verified"] as const) {
+  for (const key of ["checkout", "subscribed", "plan", "state", "verify", "verified", "tab"] as const) {
     const value = sp[key];
     if (value) q.set(key, value);
   }
   const s = q.toString();
   return s ? `?${s}` : "";
+}
+
+export type TutorDashboardTab = "growth" | "profile";
+
+export function tutorDashboardTabHref(
+  sp: DashboardSearchParams,
+  tab: TutorDashboardTab,
+  hash?: string,
+) {
+  const q = new URLSearchParams();
+  for (const key of ["checkout", "subscribed", "plan", "state", "verify", "verified"] as const) {
+    const value = sp[key];
+    if (value) q.set(key, value);
+  }
+  if (tab === "profile") q.set("tab", "profile");
+  const query = q.toString();
+  const base = `/dashboard/tutor${query ? `?${query}` : ""}`;
+  return hash ? `${base}#${hash}` : base;
+}
+
+export function resolveTutorDashboardTab(
+  sp: DashboardSearchParams,
+  profileComplete: boolean,
+): TutorDashboardTab {
+  if (sp.tab === "profile" || sp.tab === "growth") return sp.tab;
+  return profileComplete ? "growth" : "profile";
+}
+
+export function isTutorDashboardProfileComplete(
+  tp: Parameters<typeof profileStrength>[0],
+  name?: string | null,
+) {
+  return isTutorProfileComplete({
+    name,
+    photoUrl: tp.photoUrl,
+    headline: tp.headline,
+    bio: tp.bio,
+    country: tp.country,
+    location: tp.location,
+    subjects: tp.subjects,
+    hourlyRate: tp.hourlyRate,
+    online: tp.online,
+    inPerson: tp.inPerson,
+    qualifications: tp.qualifications,
+  });
 }
 
 export function roleDashboardPath(role: Role, sp: DashboardSearchParams = {}) {
