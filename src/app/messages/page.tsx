@@ -169,7 +169,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             const preview = last?.body?.trim()
               ? last.body
               : last?.attachmentUrl
-                ? "Photo"
+                ? "Document"
                 : "No messages";
             return (
               <Link

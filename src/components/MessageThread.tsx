@@ -111,7 +111,7 @@ export function MessageThread({
     if (sending || uploading) return;
     const trimmed = body.trim();
     if (!trimmed && !attachmentUrl) {
-      setError("Write a message or attach a photo.");
+      setError("Write a message or attach a document.");
       return;
     }
     setError("");
@@ -189,7 +189,7 @@ export function MessageThread({
       )}
       <div className="thread-messages" ref={listRef}>
         {messages.length === 0 && (
-          <p className="muted">No messages yet. Say hello or attach a photo.</p>
+          <p className="muted">No messages yet. Say hello or attach a document.</p>
         )}
         {messages.map((m) => (
           <div
@@ -225,21 +225,33 @@ export function MessageThread({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
-          placeholder="Write a reply or attach a photo…"
+          placeholder="Write a reply or attach a document…"
         />
         {attachmentUrl && (
           <div className="thread-attach-preview">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={attachmentUrl} alt="" />
+            {isImageAttachment(attachmentUrl) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={attachmentUrl} alt="" />
+            ) : (
+              <p style={{ margin: 0 }}>
+                <a href={attachmentUrl} target="_blank" rel="noreferrer">
+                  Document attached
+                </a>
+              </p>
+            )}
             <button type="button" className="link-btn" onClick={() => setAttachmentUrl("")}>
-              Remove photo
+              Remove document
             </button>
           </div>
         )}
         <div className="thread-compose-actions">
           <label className="btn btn-secondary btn-sm thread-attach-btn">
-            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onFile} />
-            {uploading ? "Uploading…" : attachmentUrl ? "Change photo" : "Attach photo"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+              onChange={onFile}
+            />
+            {uploading ? "Uploading…" : attachmentUrl ? "Change document" : "Attach document"}
           </label>
           <button
             className={`btn${sendPulse ? " btn--sent" : ""}`}
