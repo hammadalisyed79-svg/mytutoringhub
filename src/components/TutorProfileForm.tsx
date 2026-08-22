@@ -172,7 +172,7 @@ export function TutorProfileForm({
   const checks = useMemo(
     () => [
       { label: "Name", ok: name.trim().length >= 2, required: true },
-      { label: "Photo", ok: photoUrl.startsWith("https://"), required: false },
+      { label: "Photo", ok: photoUrl.startsWith("https://"), required: true },
       { label: "Headline", ok: headline.trim().length >= 8, required: true },
       { label: "About you", ok: bio.trim().length >= 40, required: true },
       { label: "Country", ok: country.trim().length >= 2, required: true },
@@ -237,14 +237,15 @@ export function TutorProfileForm({
     setSlots((current) => current.map((slot, i) => (i === index ? { ...slot, ...patch } : slot)));
   }
 
-  function removePhoto() {
-    setPhotoUrl("");
+  function focusCrop() {
+    setPhotoMsg("Drag inside the frame to reposition · scroll to zoom in or out.");
+  }
+
+  function resetCrop() {
     setPhotoCropX(0);
     setPhotoCropY(0);
     setPhotoCropZoom(1);
-    setPhotoError("");
-    setPhotoMsg("Photo removed. Save profile to update your listing.");
-    if (photoInput.current) photoInput.current.value = "";
+    setPhotoMsg("Crop reset. Drag inside the frame to reposition · scroll to zoom.");
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -301,6 +302,10 @@ export function TutorProfileForm({
       setError("Enter the name students see (at least 2 characters).");
       return;
     }
+    if (!photoUrl.startsWith("https://")) {
+      setError("Upload a profile photo before saving.");
+      return;
+    }
     const payload = {
       name: name.trim(),
       headline: headline.trim(),
@@ -354,7 +359,7 @@ export function TutorProfileForm({
 
   return (
     <form className="stack-form profile-form" onSubmit={save}>
-      <section className="form-section profile-photo-top">
+      <section className="form-section profile-photo-top profile-photo-required">
         <div className="profile-photo-hero">
           <PhotoFrameAdjust
             className="profile-photo-preview profile-photo-preview-lg"
@@ -367,13 +372,16 @@ export function TutorProfileForm({
               setPhotoCropY(y);
               setPhotoCropZoom(zoom);
             }}
-            emptyLabel="Add photo"
+            emptyLabel="Add photo *"
           />
           <div className="profile-photo-hero-copy">
-            <h3>Display picture</h3>
+            <h3>
+              Profile photo <abbr className="req" title="Required">*</abbr>
+            </h3>
             <p className="field-hint">
-              Shown on your public listing. Drag inside the frame to reposition · scroll to zoom in or out.
-              Then click <strong>Save profile</strong> below.
+              Required on your public listing. After uploading, <strong>drag inside the frame</strong>{" "}
+              to crop and reposition, or <strong>scroll to zoom</strong>. Then click{" "}
+              <strong>Save profile</strong> below.
             </p>
             <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB</p>
             <div className="profile-photo-actions">
@@ -383,17 +391,31 @@ export function TutorProfileForm({
                 onClick={() => photoInput.current?.click()}
                 disabled={uploading}
               >
-                {uploading ? "Uploading…" : photoUrl.startsWith("http") ? "Change photo" : "Add photo"}
+                {uploading
+                  ? "Uploading…"
+                  : photoUrl.startsWith("http")
+                    ? "Change photo"
+                    : "Upload photo"}
               </button>
               {photoUrl.startsWith("http") && (
-                <button
-                  className="profile-photo-clear"
-                  type="button"
-                  onClick={removePhoto}
-                  disabled={uploading}
-                >
-                  Clear
-                </button>
+                <>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    type="button"
+                    onClick={focusCrop}
+                    disabled={uploading}
+                  >
+                    Adjust crop
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    type="button"
+                    onClick={resetCrop}
+                    disabled={uploading}
+                  >
+                    Reset crop
+                  </button>
+                </>
               )}
             </div>
             <input
@@ -405,6 +427,11 @@ export function TutorProfileForm({
             />
             {photoError && <p className="form-error">{photoError}</p>}
             {photoMsg && <p className="success">{photoMsg}</p>}
+            {!photoUrl.startsWith("http") && (
+              <p className="form-error" style={{ marginBottom: 0 }}>
+                A profile photo is required before your listing can go live.
+              </p>
+            )}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input
@@ -417,6 +444,7 @@ export function TutorProfileForm({
                 }}
                 placeholder="https://"
                 inputMode="url"
+                required
               />
             </details>
           </div>

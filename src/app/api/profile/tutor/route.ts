@@ -41,7 +41,11 @@ const schema = z
     expertise: z.string().max(1000).optional(),
     online: z.boolean(),
     inPerson: z.boolean(),
-    photoUrl: z.string().optional().or(z.literal("")),
+    photoUrl: z
+      .string()
+      .trim()
+      .min(1, "Upload a profile photo")
+      .refine((u) => /^https:\/\//i.test(u), { message: "Upload a profile photo" }),
     photoCropX: z.coerce.number().min(-100).max(100).optional().default(0),
     photoCropY: z.coerce.number().min(-100).max(100).optional().default(0),
     photoCropZoom: z.coerce.number().min(1).max(3).optional().default(1),
@@ -93,7 +97,10 @@ export async function PUT(req: Request) {
     if (rawPhoto && !/^https:\/\//i.test(rawPhoto)) {
       return NextResponse.json({ error: "Photo must be an https:// URL" }, { status: 400 });
     }
-    const photoUrl = rawPhoto || null;
+    if (!rawPhoto) {
+      return NextResponse.json({ error: "A profile photo is required" }, { status: 400 });
+    }
+    const photoUrl = rawPhoto;
 
     const listed = await prisma.subject.findMany({ select: { name: true } });
     const existing = await prisma.tutorProfile.findUnique({

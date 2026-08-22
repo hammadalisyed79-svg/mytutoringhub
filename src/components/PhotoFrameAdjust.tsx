@@ -114,7 +114,7 @@ export function PhotoFrameAdjust({
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       role={hasPhoto ? "img" : undefined}
-      aria-label={hasPhoto ? "Profile photo — drag to reposition, scroll to zoom" : undefined}
+      aria-label={hasPhoto ? "Profile photo — drag to reposition, scroll to zoom (crop & adjust)" : undefined}
     >
       {hasPhoto ? (
         <>
@@ -128,7 +128,7 @@ export function PhotoFrameAdjust({
               transform: `translate(${cropX}%, ${cropY}%) scale(${cropZoom || 1})`,
             }}
           />
-          <span className="photo-frame-adjust-hint">Drag · Scroll to zoom</span>
+          <span className="photo-frame-adjust-hint">Crop & adjust · Drag · Scroll to zoom</span>
         </>
       ) : (
         <span className="photo-frame-adjust-empty">{emptyLabel}</span>

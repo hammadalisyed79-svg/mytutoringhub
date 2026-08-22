@@ -196,22 +196,43 @@ export default async function TutorDashboardPage({
             <>
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Your tutor profile</h2>
-                <p className="muted">
+                <p className="muted" style={{ marginTop: 0 }}>
+                  Start with your profile photo, then complete the rest of your listing.
+                </p>
+                <TutorProfileForm
+                  initial={user.tutorProfile}
+                  displayName={user.name}
+                  subjects={catalogSubjects}
+                  extraLevels={extraLevels}
+                />
+                <p className="muted" style={{ marginTop: "1.25rem" }}>
                   Status:{" "}
                   {user.tutorProfile.active
                     ? "Listed in search"
-                    : "Hidden until profile is complete (subjects + headline or photo)"}{" "}
-                  · {user.tutorProfile.verified ? "✓ Verified" : "Not verified"} ·{" "}
+                    : "Hidden until profile is complete (photo, subjects, headline, and bio)"}{" "}
+                  ·{" "}
+                  {user.tutorProfile.verified ? (
+                    <span className="badge badge-verified">✓ Verified</span>
+                  ) : (
+                    <span className="badge">Unverified</span>
+                  )}{" "}
+                  ·{" "}
                   {user.tutorProfile.highlighted ||
                   (user.tutorProfile.highlightedUntil &&
                     user.tutorProfile.highlightedUntil > new Date())
                     ? "Highlighted"
                     : "Standard listing"}
                 </p>
+                {!user.tutorProfile.verified && (
+                  <p className="field-hint" style={{ marginTop: "0.35rem" }}>
+                    Upload your government ID in <a href="#get-verified">Get verified</a> below. An
+                    admin reviews your documents before the verified label appears on your profile.
+                  </p>
+                )}
                 {(() => {
                   const { pct, missing } = profileStrength(user.tutorProfile);
                   return (
-                    <div className="profile-strength">
+                    <div className="profile-strength" style={{ marginTop: "1rem" }}>
                       <div className="profile-strength-label">
                         <span>Profile strength</span>
                         <span>{pct}%</span>
@@ -242,17 +263,11 @@ export default async function TutorDashboardPage({
                       marginBottom: "1rem",
                     }}
                   >
-                    Students cannot see this listing yet. Add subjects and a headline (or photo),
+                    Students cannot see this listing yet. Add a photo, subjects, headline, and bio,
                     then save — free complete profiles appear in search. Tutor Basic adds priority
                     ranking, unlimited reveals, and ads.
                   </p>
                 )}
-                <TutorProfileForm
-                  initial={user.tutorProfile}
-                  displayName={user.name}
-                  subjects={catalogSubjects}
-                  extraLevels={extraLevels}
-                />
                 <p style={{ marginTop: "1rem" }}>
                   {user.tutorProfile.active ? (
                     <Link href={`/tutors/${user.tutorProfile.id}`}>View public profile</Link>
@@ -261,7 +276,7 @@ export default async function TutorDashboardPage({
                       <Link href={`/tutors/${user.tutorProfile.id}`}>Preview your profile</Link>
                       <span className="muted">
                         {" "}
-                        (only you can see it until subjects and a headline or photo are saved)
+                        (only you can see it until photo, subjects, headline, and bio are saved)
                       </span>
                     </>
                   )}
@@ -274,12 +289,13 @@ export default async function TutorDashboardPage({
                 </p>
                 <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
               </section>
-              <section className="panel" style={{ gridColumn: "1 / -1" }}>
+              <section className="panel" style={{ gridColumn: "1 / -1" }} id="get-verified">
                 <h2>Get verified</h2>
                 <p className="muted">
                   Required: a government photo ID (passport, national ID / CNIC, or driving licence).
-                  Recommended: your highest qualification. Documents stay private — admins only.
-                  The Verified Tutor add-on on Pricing prioritises your request.
+                  Your profile shows <strong>Unverified</strong> until an admin reviews and approves
+                  your documents. Recommended: your highest qualification. Documents stay private —
+                  admins only. The Verified Tutor add-on on Pricing prioritises your request.
                 </p>
                 <VerificationForm />
               </section>

@@ -170,8 +170,7 @@ export function computeTutorPlanTier(plans: Set<string>): number {
 }
 
 /**
- * Minimum for free search listing: at least one subject plus a headline or photo
- * (matches the profile form’s required subjects + headline-or-photo completeness).
+ * Minimum for free search listing: subjects, headline, bio, and a profile photo.
  */
 export function isTutorProfileListable(profile: {
   subjects?: string | null;
@@ -183,8 +182,7 @@ export function isTutorProfileListable(profile: {
   const hasHeadline = Boolean(profile.headline && profile.headline.trim().length >= 8);
   const hasPhoto = Boolean(profile.photoUrl?.trim());
   const hasBio = Boolean(profile.bio && profile.bio.trim().length >= 40);
-  // Saved profiles from the form always have bio+headline; allow photo+subjects for older rows.
-  return hasSubjects && (hasHeadline || hasPhoto) && (hasBio || hasHeadline || hasPhoto);
+  return hasSubjects && hasHeadline && hasPhoto && hasBio;
 }
 
 /** Apply paid plan side-effects: highlight/boost windows, verified entitlement, planTier.
@@ -234,8 +232,8 @@ export async function syncTutorBadges(userId: string) {
         ? boostEnd
         : profile.boostUntil;
 
-  // Do not clear admin-approved verified when Verified plan lapses — only set true from plan.
-  const verified = profile.verified || plans.has("VERIFIED_TUTOR");
+  // Verified badge is granted only by admin document review (verify_approve / set_verified).
+  const verified = profile.verified;
   const hasPaidListing =
     plans.has("TUTOR_BASIC") ||
     plans.has("VERIFIED_TUTOR") ||
