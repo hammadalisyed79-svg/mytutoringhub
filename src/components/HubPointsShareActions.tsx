@@ -28,13 +28,30 @@ export function HubPointsShareActions({
   )}`;
 
   return (
-    <div className="points-share-actions">
-      <button type="button" className="btn btn-secondary btn-sm" onClick={copyLink}>
-        {copied ? "Link copied" : "Copy referral link"}
-      </button>
-      <a href={whatsAppHref} className="btn btn-secondary btn-sm" target="_blank" rel="noreferrer">
-        Share on WhatsApp
-      </a>
+    <div className="points-share-block">
+      <p className="points-share-lead">
+        <strong>Your referral link</strong> — share to start earning
+      </p>
+      <div className="points-share-url" title={referralLink}>
+        {referralLink.replace(/^https?:\/\//, "")}
+      </div>
+      <div className="points-share-actions">
+        <button
+          type="button"
+          className={`btn btn-sm ${copied ? "points-share-copied" : ""}`}
+          onClick={copyLink}
+        >
+          {copied ? "✓ Copied!" : "Copy link"}
+        </button>
+        <a
+          href={whatsAppHref}
+          className="btn btn-secondary btn-sm points-share-whatsapp"
+          target="_blank"
+          rel="noreferrer"
+        >
+          WhatsApp
+        </a>
+      </div>
     </div>
   );
 }

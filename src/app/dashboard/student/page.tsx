@@ -7,6 +7,7 @@ import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { PointsWalletPanel } from "@/components/PointsWalletPanel";
+import { StudentAdCard } from "@/components/StudentAdCard";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { ensureHubPointsFresh, getHubPointsSummary } from "@/lib/hub-points";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
@@ -202,24 +203,40 @@ export default async function StudentDashboardPage({
             </section>
           )}
 
-          <section className="panel" style={{ gridColumn: "1 / -1" }}>
-            <h2>Your requests</h2>
-            {user.studentAds.length === 0 && (
-              <p className="muted">You have not posted any requests.</p>
-            )}
-            <div className="results">
-              {user.studentAds.map((ad) => (
-                <div key={ad.id} className="ad-row">
-                  <strong>
-                    {ad.title} ({ad.status})
-                  </strong>
-                  <span className="muted">{ad.subject}</span>
-                </div>
-              ))}
+          <section className="panel dashboard-section-card" style={{ gridColumn: "1 / -1" }}>
+            <div className="dashboard-section-head">
+              <div>
+                <h2>Your requests</h2>
+                <p className="muted section-lead-tight">
+                  Tutors browse open requests — post what you need and get replies.
+                </p>
+              </div>
+              <Link href="/ads/new" className="btn btn-secondary btn-sm">
+                + New request
+              </Link>
             </div>
-            <Link href="/ads/new" className="btn btn-sm" style={{ marginTop: "0.75rem" }}>
-              Post a request
-            </Link>
+            {user.studentAds.length === 0 ? (
+              <div className="dashboard-empty-card">
+                <p>
+                  <strong>No requests yet.</strong> Post what you need and matching tutors can
+                  message you.
+                </p>
+                <Link href="/ads/new" className="btn btn-sm">
+                  Post your first request
+                </Link>
+              </div>
+            ) : (
+              <div className="student-ad-grid">
+                {user.studentAds.map((ad) => (
+                  <StudentAdCard
+                    key={ad.id}
+                    ad={ad}
+                    currency={currency}
+                    href="/ads"
+                  />
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </div>

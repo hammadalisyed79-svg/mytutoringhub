@@ -50,6 +50,108 @@ export type HubPointsSummary = {
   redeemHints: string[];
 };
 
+export type HubPointsEarnCard = {
+  id: string;
+  emoji: string;
+  title: string;
+  points: number;
+  description: string;
+  badge?: string;
+};
+
+export type HubPointsRedeemCard = {
+  title: string;
+  description: string;
+  href: string;
+  badge?: string;
+};
+
+export function hubPointsEarnCards(role: string): HubPointsEarnCard[] {
+  if (role === "TUTOR") {
+    return [
+      {
+        id: "profile",
+        emoji: "✨",
+        title: "Complete your profile",
+        points: HUB_POINTS_PROFILE_COMPLETE,
+        description: "Photo, subjects, headline & bio — appear in search",
+        badge: "One-time",
+      },
+      {
+        id: "refer-tutor",
+        emoji: "🎓",
+        title: "Invite a tutor",
+        points: HUB_POINTS_REFERRAL,
+        description: "When their profile goes live in search",
+      },
+      {
+        id: "refer-student",
+        emoji: "📚",
+        title: "Invite a student",
+        points: HUB_POINTS_REFERRAL,
+        description: "When they message a tutor for the first time",
+      },
+    ];
+  }
+  return [
+    {
+      id: "refer-student",
+      emoji: "📚",
+      title: "Invite a student",
+      points: HUB_POINTS_REFERRAL,
+      description: "When they verify email and message a tutor",
+    },
+    {
+      id: "refer-tutor",
+      emoji: "🎓",
+      title: "Invite a tutor",
+      points: HUB_POINTS_REFERRAL,
+      description: "When they complete their tutor profile",
+    },
+  ];
+}
+
+export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
+  if (role === "TUTOR") {
+    return [
+      {
+        title: "Tutor Basic",
+        description: "Priority ranking & subject ads",
+        href: "/pricing?plan=TUTOR_BASIC",
+        badge: "Popular",
+      },
+      {
+        title: "Profile Boost",
+        description: "30 days extra search visibility",
+        href: "/pricing",
+      },
+      {
+        title: "Highlighted listing",
+        description: "Stand out in search results",
+        href: "/pricing",
+      },
+      {
+        title: "Unlimited Ads",
+        description: "Post beyond the 3-ad cap",
+        href: "/pricing",
+      },
+    ];
+  }
+  return [
+    {
+      title: "Student Pass",
+      description: "Unlimited messaging & request ads",
+      href: "/pricing?plan=STUDENT_PASS",
+      badge: "Popular",
+    },
+    {
+      title: "Student Pro",
+      description: "AI study assistant + unlimited papers",
+      href: "/pricing?plan=STUDENT_PRO",
+    },
+  ];
+}
+
 const appUrl = () => process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
 function hubPointsEarnHints(role: string) {

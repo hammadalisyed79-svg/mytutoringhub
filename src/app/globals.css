@@ -4072,7 +4072,37 @@ select:focus {
   }
 }
 
-.points-wallet-head {
+.points-wallet {
+  border-radius: calc(var(--radius) + 4px);
+  overflow: hidden;
+  border: 1px solid rgba(13, 95, 82, 0.14);
+  box-shadow: var(--shadow);
+  background: rgba(255, 252, 247, 0.98);
+}
+
+.points-wallet-hero {
+  position: relative;
+  padding: 1.35rem 1.35rem 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(13, 95, 82, 0.96) 0%,
+    rgba(8, 62, 54, 0.98) 55%,
+    rgba(15, 90, 70, 0.92) 100%
+  );
+  color: #f8f6f0;
+}
+
+.points-wallet-hero-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.14), transparent 42%),
+    radial-gradient(circle at 10% 90%, rgba(255, 214, 120, 0.12), transparent 35%);
+  pointer-events: none;
+}
+
+.points-wallet-hero-inner {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -4080,27 +4110,520 @@ select:focus {
   flex-wrap: wrap;
 }
 
-.points-wallet-grid {
+.points-wallet-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.points-wallet-kicker-icon {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.7rem;
+}
+
+.points-balance-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.points-balance-number {
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.points-balance-unit {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+.points-balance-equiv {
+  margin: 0.45rem 0 0;
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+.points-balance-equiv strong {
+  color: #fff;
+}
+
+.points-wallet-meta {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.points-wallet-meta strong {
+  color: #fff;
+}
+
+.points-wallet-meta-sep {
+  margin: 0 0.35rem;
+  opacity: 0.65;
+}
+
+.points-wallet-expiry {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.points-wallet-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  min-width: 10.5rem;
+}
+
+.points-wallet-cta {
+  background: #fff;
+  color: var(--brand);
+  border-color: #fff;
+}
+
+.points-wallet-cta:hover {
+  background: #f3efe6;
+  color: var(--brand);
+}
+
+.points-stat-row {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
   margin-top: 1rem;
+}
+
+.points-stat-chip {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(4px);
+}
+
+.points-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.78;
+  margin-bottom: 0.2rem;
+}
+
+.points-stat-chip strong {
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.points-promo-banner {
+  margin: 0;
+  padding: 0.9rem 1.35rem;
+  background: linear-gradient(90deg, rgba(184, 90, 40, 0.1), rgba(13, 95, 82, 0.08));
+  border-bottom: 1px solid var(--line);
+}
+
+.points-promo-banner strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ink);
+}
+
+.points-promo-banner p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.points-wallet-body {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1.25rem;
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+
+.points-section-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.points-section-head .muted {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+}
+
+.points-earn-grid,
+.points-redeem-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.points-earn-grid {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.points-redeem-grid {
+  grid-template-columns: 1fr;
+}
+
+.points-action-card {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #fff;
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.points-action-card--earn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(13, 95, 82, 0.22);
+}
+
+.points-action-card--redeem {
+  text-decoration: none;
+  color: inherit;
+}
+
+.points-action-card--redeem:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(13, 95, 82, 0.28);
+  background: rgba(13, 95, 82, 0.03);
+}
+
+.points-card-badge {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(13, 95, 82, 0.12);
+  color: var(--brand);
+}
+
+.points-card-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.points-action-card h4 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.points-card-reward {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.points-card-reward strong {
+  color: var(--brand);
+}
+
+.points-card-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.points-card-link {
+  margin-top: 0.15rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.points-share-block {
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(13, 95, 82, 0.25);
+  background: rgba(13, 95, 82, 0.04);
+}
+
+.points-share-lead {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.points-share-url {
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--muted);
+  word-break: break-all;
+  margin-bottom: 0.65rem;
 }
 
 .points-share-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-top: 0.75rem;
+}
+
+.points-share-copied {
+  background: rgba(13, 95, 82, 0.12);
+  border-color: rgba(13, 95, 82, 0.2);
 }
 
 .points-ledger {
-  margin-top: 1rem;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding: 0 1.35rem 1.1rem;
 }
 
-.points-ledger ul {
-  margin: 0.65rem 0 0;
-  padding-left: 1.1rem;
+.points-ledger summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 0.95rem 0 0.65rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.points-ledger summary::-webkit-details-marker {
+  display: none;
+}
+
+.points-ledger-count {
+  display: inline-flex;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(13, 95, 82, 0.1);
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.points-ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.points-ledger-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.points-ledger-amount {
+  flex-shrink: 0;
+  min-width: 4.5rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.points-ledger-amount.is-credit {
+  color: var(--brand);
+}
+
+.points-ledger-amount.is-debit {
+  color: #9a4c2a;
+}
+
+.points-ledger-detail {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.points-ledger-detail strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.student-ad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.student-ad-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1.05rem;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.student-ad-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(13, 95, 82, 0.24);
+}
+
+.student-ad-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.student-ad-status {
+  display: inline-flex;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ad-status-open {
+  background: rgba(13, 95, 82, 0.12);
+  color: var(--brand);
+}
+
+.ad-status-closed {
+  background: rgba(120, 120, 120, 0.12);
+  color: #666;
+}
+
+.ad-status-default {
+  background: rgba(184, 90, 40, 0.12);
+  color: #9a4c2a;
+}
+
+.student-ad-card-title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.student-ad-card-meta {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.student-ad-card-meta strong {
+  color: var(--ink);
+}
+
+.student-ad-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(13, 95, 82, 0.08);
+  font-size: 0.84rem;
+}
+
+.student-ad-budget strong {
+  color: var(--brand);
+}
+
+.dashboard-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-section-head h2 {
+  margin: 0;
+}
+
+.section-lead-tight {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+}
+
+.dashboard-empty-card {
+  margin-top: 0.85rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(13, 95, 82, 0.22);
+  background: rgba(13, 95, 82, 0.04);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dashboard-empty-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .points-wallet-body {
+    grid-template-columns: 1fr;
+  }
+
+  .points-stat-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .points-wallet-hero {
+    padding: 1.1rem;
+  }
+
+  .points-wallet-body {
+    padding: 1rem;
+  }
+
+  .points-ledger {
+    padding: 0 1rem 1rem;
+  }
 }
 
 .points-checkout-toggle {
@@ -4110,12 +4633,6 @@ select:focus {
   margin-bottom: 0.65rem;
   font-size: 0.92rem;
   color: var(--muted);
-}
-
-@media (max-width: 720px) {
-  .points-wallet-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .pagination {
