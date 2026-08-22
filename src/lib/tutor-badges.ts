@@ -4,7 +4,7 @@ export const TUTOR_TRUST_BADGES = {
   NEW: {
     id: "NEW",
     label: "New Tutor",
-    shortLabel: "New",
+    shortLabel: "New Tutor",
     emoji: "🎓",
     order: 0,
   },

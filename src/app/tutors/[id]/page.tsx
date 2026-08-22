@@ -6,6 +6,10 @@ import { ContactTutorForm } from "@/components/ContactTutorForm";
 import { ShareTutorButton } from "@/components/ShareTutorButton";
 import { ReviewForm } from "@/components/ReviewForm";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
+import {
+  publicTutorBio,
+  TUTOR_VERIFY_PROFILE_MESSAGE,
+} from "@/lib/tutor-listing-copy";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -305,11 +309,25 @@ export default async function TutorProfilePage({ params }: Params) {
               )}
 
               <div className="profile-badges-row">
-                <TutorTrustBadgePill badge={tutor.trustBadge} />
-                {tutor.verified && <span className="badge badge-verified">✓ Verified</span>}
+                {isOwner ? (
+                  tutor.verified ? (
+                    <span className="badge badge-verified">✓ Verified</span>
+                  ) : (
+                    <span className="badge tutor-owner-verify-badge">Not Verified</span>
+                  )
+                ) : (
+                  <>
+                    <TutorTrustBadgePill badge={tutor.trustBadge || "NEW"} fullLabel />
+                    {tutor.verified && <span className="badge badge-verified">✓ Verified</span>}
+                  </>
+                )}
                 {highlighted && <span className="badge accent">Featured</span>}
                 {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
               </div>
+
+              {isOwner && !tutor.verified && (
+                <p className="profile-owner-verify-hint muted">{TUTOR_VERIFY_PROFILE_MESSAGE}</p>
+              )}
 
               {avg !== null ? (
                 <p className="profile-rating-block">
@@ -408,8 +426,8 @@ export default async function TutorProfilePage({ params }: Params) {
 
             <section className="profile-content-card">
               <h2>About</h2>
-              {tutor.bio.trim() ? (
-                <p className="prose-block profile-bio">{tutor.bio}</p>
+              {publicTutorBio(tutor.bio, isOwner) ? (
+                <p className="prose-block profile-bio">{publicTutorBio(tutor.bio, isOwner)}</p>
               ) : isOwner ? (
                 <p className="profile-placeholder">
                   Tell students about your teaching style and experience — profiles with a strong

@@ -11,6 +11,7 @@ import { SearchStudentBanner } from "@/components/SearchStudentBanner";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
+import { isDefaultTutorBio, TUTOR_VERIFY_PROFILE_MESSAGE } from "@/lib/tutor-listing-copy";
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
@@ -216,12 +217,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               .map((s) => s.trim())
               .filter(Boolean)
               .slice(0, 2);
-            const snippet = (t.bio || "").slice(0, 90).trim();
+            const snippet = isDefaultTutorBio(t.bio) ? "" : (t.bio || "").slice(0, 90).trim();
             const reviewSnippet = (t.reviews.find((r) => r.comment?.trim())?.comment || "")
               .slice(0, 72)
               .trim();
             const place = formatTutorPlace(t.location, t.country);
             const tutorName = t.user.name?.trim() || "Tutor";
+            const isOwner = session?.user?.id === t.user.id;
             const modes = [t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online";
             return (
               <article
@@ -237,7 +239,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     cropZoom={t.photoCropZoom}
                     initial={tutorName.slice(0, 1).toUpperCase()}
                   />
-                  <TutorTrustBadgePill badge={t.trustBadge} size="sm" />
+                  {isOwner ? (
+                    !t.verified && (
+                      <span className="badge tutor-owner-verify-badge" title={TUTOR_VERIFY_PROFILE_MESSAGE}>
+                        Not Verified
+                      </span>
+                    )
+                  ) : (
+                    <TutorTrustBadgePill badge={t.trustBadge || "NEW"} size="sm" fullLabel />
+                  )}
                 </div>
 
                 <div className="tc-card-main">
@@ -261,11 +271,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   </div>
 
                   <div className="tc-badges">
-                    {t.verified && <span className="badge badge-verified">Verified</span>}
+                    {isOwner ? (
+                      !t.verified && (
+                        <span className="badge tutor-owner-verify-badge">Not Verified</span>
+                      )
+                    ) : (
+                      t.verified && <span className="badge badge-verified">Verified</span>
+                    )}
                     {boosted && <span className="badge accent">Boosted</span>}
                     {highlighted && <span className="badge accent">Featured</span>}
                     {t.offersFreeTrial && <span className="badge">Free trial</span>}
                   </div>
+
+                  {isOwner && !t.verified && (
+                    <p className="tc-owner-verify-hint muted">{TUTOR_VERIFY_PROFILE_MESSAGE}</p>
+                  )}
 
                   {reviewSnippet && (
                     <p className="tc-review-snippet muted">
