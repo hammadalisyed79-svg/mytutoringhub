@@ -7,6 +7,11 @@ import {
   AdminGrantPlanForm,
   AdminRoleForm,
 } from "@/components/AdminActions";
+import {
+  emailSequenceLabel,
+  PROFILE_NURTURE_SEQUENCES,
+} from "@/lib/email-sequence-labels";
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +27,7 @@ export default async function AdminUserDetailPage({ params }: Params) {
       subscriptions: { orderBy: { createdAt: "desc" } },
       reportsFiled: { orderBy: { createdAt: "desc" }, take: 10 },
       verificationRequests: { orderBy: { createdAt: "desc" }, take: 10 },
+      emailSequenceEvents: { orderBy: { sentAt: "desc" }, take: 30 },
       _count: {
         select: {
           messages: true,
@@ -35,6 +41,26 @@ export default async function AdminUserDetailPage({ params }: Params) {
   if (!user) notFound();
 
   const conversationCount = user._count.conversationsAsA + user._count.conversationsAsB;
+
+  const profileCompletion =
+    user.tutorProfile &&
+    getTutorProfileCompletion({
+      name: user.name,
+      photoUrl: user.tutorProfile.photoUrl,
+      headline: user.tutorProfile.headline,
+      bio: user.tutorProfile.bio,
+      country: user.tutorProfile.country,
+      location: user.tutorProfile.location,
+      subjects: user.tutorProfile.subjects,
+      hourlyRate: user.tutorProfile.hourlyRate,
+      online: user.tutorProfile.online,
+      inPerson: user.tutorProfile.inPerson,
+      qualifications: user.tutorProfile.qualifications,
+    });
+
+  const profileNurtureEvents = user.emailSequenceEvents.filter((e) =>
+    PROFILE_NURTURE_SEQUENCES.includes(e.sequence as (typeof PROFILE_NURTURE_SEQUENCES)[number]),
+  );
 
   return (
     <>
@@ -106,8 +132,51 @@ export default async function AdminUserDetailPage({ params }: Params) {
               extra={{ verified: !user.tutorProfile.verified }}
             />
           </div>
+          {profileCompletion && !profileCompletion.complete && (
+            <p className="muted" style={{ marginTop: "0.75rem" }}>
+              Profile {profileCompletion.requiredDone}/{profileCompletion.requiredTotal} complete —
+              missing: {profileCompletion.missingRequired.join(", ")}
+            </p>
+          )}
         </section>
       )}
+
+      <section className="panel">
+        <h2>Automated nurture emails</h2>
+        <p className="muted">
+          Reminder emails sent to this user (not in-app messages).{" "}
+          <Link href="/admin/nurture">View all nurture emails</Link>
+        </p>
+        {user.emailSequenceEvents.length === 0 && (
+          <p className="muted">No automated emails recorded yet.</p>
+        )}
+        {user.emailSequenceEvents.length > 0 && (
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Sent</th>
+                </tr>
+              </thead>
+              <tbody>
+                {user.emailSequenceEvents.map((event) => (
+                  <tr key={event.id}>
+                    <td>{emailSequenceLabel(event.sequence)}</td>
+                    <td>{event.sentAt.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {profileNurtureEvents.length === 0 && user.tutorProfile && profileCompletion && !profileCompletion.complete && (
+          <p className="muted" style={{ marginTop: "0.75rem" }}>
+            No profile reminder sent yet — eligible after daily cron (10:00 UTC) if profile is started
+            and email is verified.
+          </p>
+        )}
+      </section>
 
       <section className="panel">
         <h2>Subscriptions & checkouts</h2>

@@ -17,6 +17,7 @@ const LINKS = [
   { href: "/admin/reviews", label: "Reviews" },
   { href: "/admin/recommendations", label: "Recommendations" },
   { href: "/admin/messages", label: "Messages" },
+  { href: "/admin/nurture", label: "Nurture emails" },
   { href: "/admin/subjects", label: "Subjects" },
   { href: "/admin/past-papers", label: "Past papers" },
   { href: "/admin/settings", label: "Settings" },

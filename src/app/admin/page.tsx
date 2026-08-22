@@ -90,6 +90,7 @@ export default async function AdminOverviewPage() {
         <Link href="/admin/payments">Recover a payment</Link>
         <Link href="/admin/reports">Safety queue</Link>
         <Link href="/admin/audit">Audit log</Link>
+        <Link href="/admin/nurture">Nurture emails</Link>
       </div>
 
       <section className="panel">
