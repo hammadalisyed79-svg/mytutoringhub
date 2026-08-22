@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { BrandMarkOg } from "@/lib/brand-mark-og";
 import { VALUE_PROPOSITION_SHORT } from "@/lib/marketing-copy";
 
 export const runtime = "edge";
@@ -23,27 +24,7 @@ export default function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              background: "#0a4d42",
-              border: "3px solid rgba(255, 251, 247, 0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "#f7f3ea",
-              }}
-            />
-          </div>
+          <BrandMarkOg size={72} />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span
               style={{

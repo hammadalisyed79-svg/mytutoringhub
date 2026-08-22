@@ -8,7 +8,13 @@ import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
-import { DEFAULT_SITE_URL, SITE_NAME, SITE_NAME_COMPACT, siteUrl } from "@/lib/seo";
+import {
+  DEFAULT_SITE_URL,
+  SITE_NAME,
+  SITE_NAME_COMPACT,
+  defaultOgImages,
+  siteUrl,
+} from "@/lib/seo";
 import "./globals.css";
 
 const display = Fraunces({
@@ -50,12 +56,14 @@ export const metadata: Metadata = {
     description:
       "Search free · No lesson commission · Student Pass unlocks unlimited contacts. Find tutors worldwide.",
     url: DEFAULT_SITE_URL,
+    images: defaultOgImages(),
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} – Private tutoring, elevated.`,
     description:
       "Search free · No lesson commission · Student Pass unlocks unlimited contacts.",
+    images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
@@ -65,9 +73,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/logo.svg" }],
-    shortcut: ["/logo.svg"],
+    icon: [{ url: "/icon", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/icon"],
   },
 };
 

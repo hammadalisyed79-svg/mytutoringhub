@@ -6,6 +6,10 @@ export const SITE_NAME = "My Tutoring Hub";
 export const SITE_NAME_COMPACT = "MyTutoringHub";
 export const DEFAULT_SITE_URL = "https://www.mytutoringhub.com";
 
+export const DEFAULT_OG_IMAGE_PATH = "/opengraph-image";
+export const DEFAULT_OG_IMAGE_ALT =
+  "My Tutoring Hub — Find tutors free. Pay only for messaging access.";
+
 const DEFAULT_DESCRIPTION =
   "Find tutors free. Pay only for messaging access and study tools — lesson fees stay between you and the tutor. GCSE, IGCSE, A-Level, IB, Matric, and more.";
 
@@ -16,6 +20,19 @@ export function siteUrl() {
 export function absoluteUrl(path: string) {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${siteUrl()}${normalized}`;
+}
+
+/** Shared Open Graph / Twitter preview image for all public pages. */
+export function defaultOgImages() {
+  return [
+    {
+      url: DEFAULT_OG_IMAGE_PATH,
+      width: 1200,
+      height: 630,
+      alt: DEFAULT_OG_IMAGE_ALT,
+      type: "image/png" as const,
+    },
+  ];
 }
 
 export function truncateDescription(text: string, max = 160) {
@@ -54,11 +71,13 @@ export function pageMetadata(opts: PageMetaInput): Metadata {
       title: ogTitle,
       description: ogDescription,
       url,
+      images: defaultOgImages(),
     },
     twitter: {
       card: "summary_large_image",
       title: ogTitle,
       description: ogDescription,
+      images: [DEFAULT_OG_IMAGE_PATH],
     },
   };
 }
