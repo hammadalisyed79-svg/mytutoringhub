@@ -223,8 +223,7 @@ export default async function DashboardPage({
             <div className="dash-links">
               {isTutor ? (
                 <>
-                  <Link href="/student-requests">Student requests</Link>
-                  <Link href="/ads">Student ads</Link>
+                  <Link href="/ads">Student requests</Link>
                   <Link href="/messages">Messages</Link>
                   <Link href="/past-papers">Past papers</Link>
                   <Link href="/dashboard/tutor/analytics">Analytics</Link>
@@ -233,10 +232,12 @@ export default async function DashboardPage({
               ) : (
                 <>
                   <Link href="/search">Find a tutor</Link>
-                  <Link href="/student-requests">Student requests</Link>
+                  <Link href="/ads">Student requests</Link>
                   <Link href="/ads/new">Post a request</Link>
                   <Link href="/past-papers">Past papers</Link>
                   <Link href="/messages">Messages</Link>
+                  <Link href="/study/countdown">Exam countdown</Link>
+                  <Link href="/study/progress">Study progress</Link>
                   <Link href="/assistant">Study assistant</Link>
                   <Link href="/settings">Account settings</Link>
                   <Link href="/become-a-tutor">Become a tutor</Link>

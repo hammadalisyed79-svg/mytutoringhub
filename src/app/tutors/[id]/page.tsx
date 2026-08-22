@@ -165,8 +165,21 @@ export default async function TutorProfilePage({ params }: Params) {
   const modes = [tutor.online ? "Online" : null, tutor.inPerson ? "In person" : null].filter(
     Boolean,
   ) as string[];
+  let hasConversation = false;
+  if (viewerId && !isOwner && !isAdmin) {
+    const talked = await prisma.conversation.findFirst({
+      where: {
+        OR: [
+          { userAId: viewerId, userBId: tutor.userId },
+          { userAId: tutor.userId, userBId: viewerId },
+        ],
+      },
+      select: { id: true },
+    });
+    hasConversation = Boolean(talked);
+  }
   const showPhone = Boolean(
-    tutor.verified && tutor.phone && (isOwner || isAdmin || session?.user?.role === "STUDENT"),
+    tutor.verified && tutor.phone && (isOwner || isAdmin || hasConversation),
   );
   const canMessage = session?.user?.role === "STUDENT";
   const initial = tutor.user.name.slice(0, 1).toUpperCase();
@@ -516,7 +529,15 @@ export default async function TutorProfilePage({ params }: Params) {
                 {place}
                 {modes.length ? ` · ${modes.join(" · ")}` : ""}
               </p>
-              {showPhone && <p>Phone: {tutor.phone}</p>}
+              {showPhone ? (
+                <p>Phone: {tutor.phone}</p>
+              ) : (
+                canMessage &&
+                tutor.verified &&
+                tutor.phone && (
+                  <p className="muted">Phone is shared after you message each other. Use Message below.</p>
+                )
+              )}
               {canMessage ? (
                 <ContactTutorForm recipientId={tutor.user.id} tutorName={tutor.user.name} />
               ) : isOwner ? (

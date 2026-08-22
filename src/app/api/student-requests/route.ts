@@ -12,10 +12,28 @@ const createSchema = z.object({
   isPublic: z.boolean().optional().default(true),
 });
 
+/**
+ * Legacy StudentRequest API. Prefer StudentAd via /ads.
+ * Returns studentId only to the request owner, admins, or tutors whose
+ * subjects match the request (never email/phone).
+ */
 export async function GET(req: Request) {
   try {
+    const session = await auth();
     const { searchParams } = new URL(req.url);
     const subject = searchParams.get("subject") || undefined;
+
+    let tutorSubjects: string[] = [];
+    if (session?.user?.role === "TUTOR") {
+      const profile = await prisma.tutorProfile.findUnique({
+        where: { userId: session.user.id },
+        select: { subjects: true },
+      });
+      tutorSubjects = (profile?.subjects || "")
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+    }
 
     const requests = await prisma.studentRequest.findMany({
       where: {
@@ -32,11 +50,45 @@ export async function GET(req: Request) {
         description: true,
         schedule: true,
         createdAt: true,
+        studentId: true,
         student: { select: { name: true } },
       },
     });
 
-    return NextResponse.json(requests);
+    const uid = session?.user?.id;
+    const role = session?.user?.role;
+    const isAdmin = role === "ADMIN";
+
+    let scoped = requests;
+    if (role === "TUTOR" && tutorSubjects.length > 0 && !subject) {
+      const matching = requests.filter((r) =>
+        tutorSubjects.some((s) => r.subject.toLowerCase().includes(s) || s.includes(r.subject.toLowerCase())),
+      );
+      if (matching.length > 0) scoped = matching;
+    }
+
+    const sanitized = scoped.map((r) => {
+      const isOwner = Boolean(uid && r.studentId === uid);
+      const subjectMatch =
+        role === "TUTOR" &&
+        tutorSubjects.some(
+          (s) => r.subject.toLowerCase().includes(s) || s.includes(r.subject.toLowerCase()),
+        );
+      const canSeeStudentId = isOwner || isAdmin || subjectMatch;
+      return {
+        id: r.id,
+        subject: r.subject,
+        level: r.level,
+        board: r.board,
+        description: r.description,
+        schedule: r.schedule,
+        createdAt: r.createdAt,
+        student: r.student,
+        ...(canSeeStudentId ? { studentId: r.studentId } : {}),
+      };
+    });
+
+    return NextResponse.json(sanitized);
   } catch (e) {
     console.error("student-requests GET failed:", e);
     return NextResponse.json([], { status: 200 });

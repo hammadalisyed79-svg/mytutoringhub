@@ -11,6 +11,18 @@ export const metadata = {
     "Browse open student requests for private tutors. Students with a Pass post what they need. Tutors with Tutor Basic can reply.",
 };
 
+function subjectTokens(value: string) {
+  return value
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function subjectsMatch(adSubject: string, tutorSubjects: string[]) {
+  const ad = adSubject.toLowerCase();
+  return tutorSubjects.some((s) => ad.includes(s) || s.includes(ad));
+}
+
 export default async function AdsPage() {
   const session = await auth();
   const currency = await getVisitorCurrency();
@@ -20,6 +32,24 @@ export default async function AdsPage() {
     include: { user: { select: { id: true, name: true } } },
   });
 
+  let tutorSubjects: string[] = [];
+  if (session?.user?.role === "TUTOR") {
+    const profile = await prisma.tutorProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { subjects: true },
+    });
+    tutorSubjects = subjectTokens(profile?.subjects || "");
+  }
+
+  const sortedAds =
+    tutorSubjects.length > 0
+      ? [...ads].sort((a, b) => {
+          const aMatch = subjectsMatch(a.subject, tutorSubjects) ? 0 : 1;
+          const bMatch = subjectsMatch(b.subject, tutorSubjects) ? 0 : 1;
+          return aMatch - bMatch;
+        })
+      : ads;
+
   return (
     <div className="page">
       <div className="container">
@@ -28,6 +58,7 @@ export default async function AdsPage() {
             <h1 className="page-title">Student requests</h1>
             <p className="section-lead">
               Students with a Pass post what they need. Tutors with Tutor Basic can reach out.
+              {tutorSubjects.length > 0 && " Requests matching your subjects appear first."}
             </p>
           </div>
           {session?.user?.role === "STUDENT" && (
@@ -38,7 +69,7 @@ export default async function AdsPage() {
         </div>
 
         <div className="results">
-          {ads.length === 0 && (
+          {sortedAds.length === 0 && (
             <div className="panel empty-state">
               <h2>No open requests right now</h2>
               <p className="muted">
@@ -56,7 +87,7 @@ export default async function AdsPage() {
               )}
             </div>
           )}
-          {ads.map((ad) => (
+          {sortedAds.map((ad) => (
             <article key={ad.id} className="ad-row">
               <div className="meta">
                 <span className="badge">{ad.subject}</span>

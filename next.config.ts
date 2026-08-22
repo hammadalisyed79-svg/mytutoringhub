@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/student/plan", destination: "/pricing", permanent: false },
       { source: "/dashboard/tutor/plan", destination: "/pricing", permanent: false },
       { source: "/study/assistant", destination: "/assistant", permanent: false },
+      { source: "/student-requests", destination: "/ads", permanent: false },
+      { source: "/student-requests/:path*", destination: "/ads", permanent: false },
     ];
   },
 };
