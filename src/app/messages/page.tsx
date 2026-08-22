@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StartMessageFromQuery } from "@/components/StartMessageFromQuery";
+import { MessagesPlanPanel } from "@/components/MessagesPlanPanel";
 import { isImageAttachment } from "@/lib/media";
 
 export const metadata = { title: "Messages" };
@@ -43,9 +44,11 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
       <div className="container">
         <h1 className="page-title">Messages</h1>
         <p className="section-lead">
-          Chat with tutors and students after you both have active plans. Photos stay on the
-          thread; lesson fees stay off-platform.
+          Chat with tutors and students. Free students get 3 new tutor contacts per month; Student
+          Pass unlocks unlimited messaging. Lesson fees stay off-platform.
         </p>
+
+        <MessagesPlanPanel userId={uid} role={session.user.role} />
 
         {sp.to && <StartMessageFromQuery recipientId={sp.to} relatedAdId={sp.ad} />}
 
@@ -53,8 +56,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
           <div className="panel empty-state">
             <h2>No conversations yet</h2>
             <p className="muted">
-              Find a tutor and send a message with Student Pass. Tutors need Tutor Basic to
-              reply. You can attach a photo once a thread is open.
+              {session.user.role === "TUTOR"
+                ? "Browse student requests and reply. Tutor Basic unlocks unlimited enquiry reveals when you message first."
+                : "Search tutors and send a message. Use your free monthly contacts or upgrade above for unlimited messaging."}
             </p>
             <p>
               {session.user.role === "TUTOR" ? (
