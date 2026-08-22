@@ -36,7 +36,11 @@ export default async function ConversationPage({ params }: Params) {
     <div className="page">
       <div className="container narrow" style={{ width: "min(720px, calc(100% - 2rem))" }}>
         <MessagesAccountBanner email={session.user.email || ""} role={session.user.role} />
-        <MessageThread conversationId={id} currentUserId={session.user.id} />
+        <MessageThread
+          conversationId={id}
+          currentUserId={session.user.id}
+          viewerRole={session.user.role}
+        />
       </div>
     </div>
   );

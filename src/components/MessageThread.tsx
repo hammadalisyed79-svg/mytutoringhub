@@ -23,9 +23,11 @@ type ReviewMeta = {
 export function MessageThread({
   conversationId,
   currentUserId,
+  viewerRole,
 }: {
   conversationId: string;
   currentUserId: string;
+  viewerRole?: string;
 }) {
   const router = useRouter();
   const routerRef = useRef(router);
@@ -33,6 +35,7 @@ export function MessageThread({
   const listRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [otherName, setOtherName] = useState("");
+  const [otherRole, setOtherRole] = useState<string | null>(null);
   const [reviewMeta, setReviewMeta] = useState<ReviewMeta>(null);
   const [body, setBody] = useState("");
   const [attachmentUrl, setAttachmentUrl] = useState("");
@@ -41,6 +44,7 @@ export function MessageThread({
   const [sendPulse, setSendPulse] = useState(false);
   const [enteringIds, setEnteringIds] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   async function load(opts?: { refreshNav?: boolean }) {
     const res = await fetch(`/api/messages/${conversationId}`);
@@ -52,6 +56,7 @@ export function MessageThread({
     setMessages(data.messages);
     const other = data.userA.id === currentUserId ? data.userB : data.userA;
     setOtherName(other.name);
+    setOtherRole(other.role || null);
     setReviewMeta(data.reviewRequest || null);
     if (opts?.refreshNav) routerRef.current.refresh();
   }
@@ -100,6 +105,7 @@ export function MessageThread({
       return;
     }
     setError("");
+    setInfo("");
     setSending(true);
     try {
       const res = await fetch(`/api/messages/${conversationId}`, {
@@ -110,7 +116,7 @@ export function MessageThread({
           ...(attachmentUrl ? { attachmentUrl } : {}),
         }),
       });
-      let data: { error?: string; message?: string; id?: string } = {};
+      let data: { error?: string; message?: string; id?: string; emailSent?: boolean } = {};
       try {
         data = await res.json();
       } catch {
@@ -128,6 +134,11 @@ export function MessageThread({
         window.setTimeout(() => setSendPulse(false), 520);
       }
       await load({ refreshNav: true });
+      if (data.emailSent === false) {
+        setInfo(
+          "Message delivered in chat. Email alert could not be sent — the tutor will still see it when they log in to Messages.",
+        );
+      }
     } catch {
       setError("Network error — your message may not have sent. Refresh and check the thread.");
     } finally {
@@ -135,9 +146,31 @@ export function MessageThread({
     }
   }
 
+  const tutorReplied = messages.some((m) => m.senderId !== currentUserId);
+  const myMessages = messages.filter((m) => m.senderId === currentUserId);
+  const tutorHasSeen = myMessages.some((m) => m.readAt);
+  const waitingOnTutor =
+    viewerRole === "STUDENT" && otherRole === "TUTOR" && myMessages.length > 0 && !tutorReplied;
+
   return (
     <div className="thread">
       <h2>Chat with {otherName || "…"}</h2>
+      {waitingOnTutor && (
+        <p
+          className="muted"
+          style={{
+            margin: "0 0 1rem",
+            padding: "0.65rem 0.9rem",
+            background: "rgba(15, 90, 70, 0.06)",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "0.88rem",
+          }}
+        >
+          {tutorHasSeen
+            ? "The tutor has opened this chat. Waiting for their reply."
+            : "Your messages are delivered to the tutor's inbox. They must log in to their own account to read and reply. You'll see Seen when they open this chat."}
+        </p>
+      )}
       {reviewMeta && (
         <RequestReviewButton
           studentId={reviewMeta.studentId}
@@ -171,7 +204,7 @@ export function MessageThread({
             <time>
               {new Date(m.createdAt).toLocaleString()}
               {m.senderId === currentUserId && (
-                <span className="receipt">{m.readAt ? "Seen" : "Sent"}</span>
+                <span className="receipt">{m.readAt ? "Seen" : "Delivered"}</span>
               )}
             </time>
           </div>
@@ -206,6 +239,11 @@ export function MessageThread({
             {sending ? "Sending…" : "Send"}
           </button>
         </div>
+        {info && (
+          <p className="muted" style={{ margin: "0.5rem 0 0" }}>
+            {info}
+          </p>
+        )}
         {error && <p className="form-error">{error}</p>}
       </form>
     </div>
