@@ -58,6 +58,7 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
   const [location, setLocation] = useState(initial.location || "");
   const [level, setLevel] = useState(initial.level || "");
   const [language, setLanguage] = useState(initial.language || "");
+  const [applying, setApplying] = useState(false);
 
   const cityPool = useMemo(
     () => (country ? citiesForSearchCountry(country) : undefined),
@@ -142,7 +143,10 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
       const text = String(value).trim();
       if (text) params.set(key, text);
     }
-    window.location.assign(`/search?${params.toString()}`);
+    setApplying(true);
+    window.setTimeout(() => {
+      window.location.assign(`/search?${params.toString()}`);
+    }, 240);
   }
 
   const active = [
@@ -160,7 +164,12 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
   ].filter(Boolean) as { key: string; label: string }[];
 
   return (
-    <form className="search-panel" method="get" action="/search" onSubmit={onSubmit}>
+    <form
+      className={`search-panel${applying ? " search-panel--applying" : ""}`}
+      method="get"
+      action="/search"
+      onSubmit={onSubmit}
+    >
       <div className="search-primary">
         <label className="search-q">
           <span>Search</span>
@@ -173,8 +182,8 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
             spellCheck={false}
           />
         </label>
-        <button className="btn" type="submit">
-          Find tutors
+        <button className={`btn${applying ? " btn--pulse" : ""}`} type="submit" disabled={applying}>
+          {applying ? "Searching…" : "Find tutors"}
         </button>
       </div>
 

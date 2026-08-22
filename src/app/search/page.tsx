@@ -169,7 +169,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           </p>
         )}
 
-        <div className="tutor-grid tutor-grid-cards">
+        <div className="tutor-grid tutor-grid-cards search-results-enter">
           {tutors.map((t) => {
             const avg =
               t.reviews.length > 0

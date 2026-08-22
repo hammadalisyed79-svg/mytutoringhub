@@ -216,6 +216,69 @@ export function verifyEmailHtml(name: string, verifyUrl: string) {
   });
 }
 
+export function postVerifyStudentEmailHtml(opts: {
+  name: string;
+  searchUrl: string;
+}) {
+  return emailLayout({
+    preheader: "You're verified — start browsing tutors.",
+    title: "Email confirmed",
+    body: `<p>Hi ${opts.name},</p>
+<p>Your email is confirmed. You can now message tutors, post student requests, and use the study tools on ${brand}.</p>
+<p>Your free account includes <strong>3 new tutor contacts per month</strong>. Lesson fees always stay between you and the tutor — we never take a cut.</p>`,
+    cta: { label: "Find tutors", href: opts.searchUrl },
+  });
+}
+
+export function postVerifyTutorEmailHtml(opts: {
+  name: string;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: "You're verified — complete your profile to appear in search.",
+    title: "Email confirmed",
+    body: `<p>Hi ${opts.name},</p>
+<p>Your email is confirmed. Complete your tutor profile (subjects, headline, and photo) to appear in search for free.</p>
+<p>When you're ready to grow, Tutor Basic adds priority placement, unlimited enquiry reveals, and subject ads. Profile Boost puts you at the top of search for 30 days.</p>`,
+    cta: { label: "Complete tutor profile", href: opts.dashboardUrl },
+  });
+}
+
+export function tutorPicksEmailHtml(opts: {
+  name: string;
+  tutorsHtml: string;
+  searchUrl: string;
+}) {
+  return emailLayout({
+    preheader: "Hand-picked tutors to get you started.",
+    title: "Tutors we think you'll like",
+    body: `<p>Hi ${opts.name},</p>
+<p>Here are active tutors on ${brand} — browse profiles and send your first message free (within your monthly contact limit).</p>
+<ul style="padding-left:0;list-style:none;margin:16px 0">${opts.tutorsHtml}</ul>`,
+    cta: { label: "Browse all tutors", href: opts.searchUrl },
+  });
+}
+
+export function studentUpgradeNudgeEmailHtml(opts: {
+  name: string;
+  pricingUrl: string;
+  contactsRemaining?: number;
+}) {
+  const contactsLine =
+    opts.contactsRemaining != null
+      ? `<p>You have <strong>${opts.contactsRemaining} free contact${opts.contactsRemaining === 1 ? "" : "s"}</strong> left this month.</p>`
+      : "";
+  return emailLayout({
+    preheader: "Unlock unlimited tutor messaging with Student Pass.",
+    title: "Need more tutor contacts?",
+    body: `<p>Hi ${opts.name},</p>
+<p>Exams coming up? <strong>Student Pass</strong> unlocks unlimited tutor messaging, 10 past paper downloads per month, and faster replies from tutors.</p>
+${contactsLine}
+<p>Lesson fees stay off-platform — Student Pass is only for platform access.</p>`,
+    cta: { label: "View Student Pass", href: opts.pricingUrl },
+  });
+}
+
 export async function sendLoginConfirmationEmail(opts: {
   name: string;
   email: string;

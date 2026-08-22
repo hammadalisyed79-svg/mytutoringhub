@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | MyTutoringHub",
   },
   description:
-    "Connect with qualified tutors for GCSE, A-Level, IGCSE, IB and more. Find tutors in your country or online. Browse past papers free.",
+    "Find tutors free. Pay only for messaging access and study tools — lesson fees stay between you and the tutor. GCSE, A-Level, IGCSE, IB and more.",
   keywords: [
     "tutor",
     "online tutor",
@@ -44,24 +44,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GB",
     siteName: "MyTutoringHub",
-    title: "MyTutoringHub – Find Expert Tutors Online Worldwide",
+    title: "MyTutoringHub – Private tutoring, elevated.",
     description:
-      "Connect with qualified tutors for GCSE, A-Level, IGCSE, IB and more. Find tutors in your country or online.",
+      "Search free · No lesson commission · Student Pass unlocks unlimited contacts. Find tutors worldwide.",
     url: "https://www.mytutoringhub.com",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "MyTutoringHub – Find Expert Tutors Online Worldwide",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MyTutoringHub – Find Expert Tutors Online Worldwide",
-    description: "Connect with qualified tutors for GCSE, A-Level, IGCSE, IB and more.",
-    images: ["/og-image.png"],
+    title: "MyTutoringHub – Private tutoring, elevated.",
+    description:
+      "Search free · No lesson commission · Student Pass unlocks unlimited contacts.",
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",

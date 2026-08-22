@@ -38,6 +38,8 @@ export function MessageThread({
   const [attachmentUrl, setAttachmentUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendPulse, setSendPulse] = useState(false);
+  const [enteringIds, setEnteringIds] = useState<string[]>([]);
   const [error, setError] = useState("");
 
   async function load(opts?: { refreshNav?: boolean }) {
@@ -110,6 +112,11 @@ export function MessageThread({
     }
     setBody("");
     setAttachmentUrl("");
+    if (data.id) {
+      setEnteringIds((prev) => [...prev, data.id as string]);
+      setSendPulse(true);
+      window.setTimeout(() => setSendPulse(false), 520);
+    }
     await load({ refreshNav: true });
   }
 
@@ -129,7 +136,9 @@ export function MessageThread({
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`bubble ${m.senderId === currentUserId ? "mine" : "theirs"}`}
+            className={`bubble ${m.senderId === currentUserId ? "mine" : "theirs"}${
+              enteringIds.includes(m.id) ? " bubble--enter" : ""
+            }`}
           >
             <strong>{m.sender.name}</strong>
             {m.attachmentUrl &&
@@ -174,7 +183,11 @@ export function MessageThread({
             <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={onFile} />
             {uploading ? "Uploading…" : attachmentUrl ? "Change photo" : "Attach photo"}
           </label>
-          <button className="btn" type="submit" disabled={sending || uploading}>
+          <button
+            className={`btn${sendPulse ? " btn--sent" : ""}`}
+            type="submit"
+            disabled={sending || uploading}
+          >
             {sending ? "Sending…" : "Send"}
           </button>
         </div>

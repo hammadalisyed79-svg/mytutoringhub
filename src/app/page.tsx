@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { HeroPathCards } from "@/components/HeroPathCards";
 import { PrestigePillars } from "@/components/PrestigePillars";
+import { LoggedInWelcome } from "@/components/LoggedInWelcome";
 import { LogoMark } from "@/components/Logo";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { JsonLd } from "@/components/JsonLd";
@@ -33,6 +35,7 @@ export const metadata = {
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
 export default async function HomePage() {
+  const session = await auth();
   const currency = await getVisitorCurrency();
   const pinnedCountry = getUserCountry(await headers());
   const curriculumCodeCount = CURRICULUM.length;
@@ -134,6 +137,13 @@ export default async function HomePage() {
       />
       <section className="hero hero-findtutor">
         <div className="hero-content">
+          {session?.user && (
+            <LoggedInWelcome
+              userId={session.user.id}
+              name={session.user.name || "there"}
+              role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
+            />
+          )}
           <div className="hero-brand-row">
             <LogoMark className="hero-brand-mark" />
             <p className="hero-kicker">World-class tutoring marketplace</p>

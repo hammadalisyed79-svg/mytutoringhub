@@ -28,6 +28,7 @@ model User {
   accounts                 Account[]
   tutorProfile             TutorProfile?
   emailVerificationTokens  EmailVerificationToken[]
+  emailSequenceEvents      EmailSequenceEvent[]
   subscriptions            Subscription[]
   studentAds           StudentAd[]
   reviewsGiven         Review[]              @relation("ReviewsGiven")
@@ -296,6 +297,18 @@ model EmailVerificationToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+/// Tracks onboarding / nurture emails so we never double-send.
+model EmailSequenceEvent {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sequence String
+  sentAt   DateTime @default(now())
+
+  @@unique([userId, sequence])
+  @@index([sequence, sentAt])
 }
 
 model SiteSettings {
