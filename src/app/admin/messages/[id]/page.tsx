@@ -3,7 +3,14 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { AdminActionButton } from "@/components/AdminActions";
 import { AdminResendMessageNotifyButton } from "@/components/AdminResendMessageNotifyButton";
+import {
+  AdminHighlightedMessageBody,
+  AdminModerationBadge,
+  AdminModerationReasons,
+} from "@/components/AdminMessageModeration";
+import { AdminSendWarningButton, AdminWarnAllButton } from "@/components/AdminSendWarningButton";
 import { emailConfigured } from "@/lib/email";
+import { conversationModerationSummary, scanMessages } from "@/lib/message-moderation";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +31,14 @@ export default async function AdminConversationPage({ params }: Params) {
   });
   if (!conversation) notFound();
 
+  const scans = scanMessages(conversation.messages);
+  const summary = conversationModerationSummary(scans.values());
+  const flaggedSenders = new Set(
+    conversation.messages
+      .filter((m) => scans.get(m.id)?.flagged)
+      .map((m) => m.senderId),
+  );
+
   return (
     <>
       <div>
@@ -32,11 +47,25 @@ export default async function AdminConversationPage({ params }: Params) {
         </p>
         <h1 className="page-title">Thread</h1>
         <p className="muted">
-          <Link href={`/admin/users/${conversation.userA.id}`}>{conversation.userA.name}</Link> ({conversation.userA.email})
-          ↔ <Link href={`/admin/users/${conversation.userB.id}`}>{conversation.userB.name}</Link> (
+          <Link href={`/admin/users/${conversation.userA.id}`}>{conversation.userA.name}</Link> (
+          {conversation.userA.email}) ↔{" "}
+          <Link href={`/admin/users/${conversation.userB.id}`}>{conversation.userB.name}</Link> (
           {conversation.userB.email})
         </p>
       </div>
+
+      {summary.flagged ? (
+        <div className="admin-mod-alert" id="flagged">
+          <div className="admin-mod-row-head">
+            <strong>Auto-detection flagged this thread</strong>
+            <AdminModerationBadge result={summary} compact />
+          </div>
+          <AdminModerationReasons result={summary} />
+          <div className="admin-actions" style={{ marginTop: "0.75rem" }}>
+            <AdminWarnAllButton conversationId={conversation.id} count={flaggedSenders.size} />
+          </div>
+        </div>
+      ) : null}
 
       <div className="admin-actions">
         <AdminActionButton
@@ -62,27 +91,43 @@ export default async function AdminConversationPage({ params }: Params) {
       {conversation.messages.length === 0 && <p className="muted">No messages in this thread.</p>}
 
       <div className="thread-messages admin-thread">
-        {conversation.messages.map((m) => (
-          <article key={m.id} className="ad-row">
-            <strong>{m.sender.name}</strong>
-            <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{m.body}</p>
-            {m.attachmentUrl && (
-              <p>
-                <a href={m.attachmentUrl} target="_blank" rel="noreferrer">
-                  Attachment
-                </a>
-              </p>
-            )}
-            <time className="muted">{m.createdAt.toLocaleString()}</time>
-            <AdminActionButton
-              action="delete_message"
-              id={m.id}
-              label="Delete message"
-              confirm="Delete this message?"
-              danger
-            />
-          </article>
-        ))}
+        {conversation.messages.map((m) => {
+          const mod = scans.get(m.id)!;
+          return (
+            <article
+              key={m.id}
+              className={`ad-row admin-mod-message${mod.flagged ? " is-flagged" : ""}`}
+              id={mod.flagged ? `flagged-${m.id}` : undefined}
+            >
+              <div className="admin-mod-row-head">
+                <strong>{m.sender.name}</strong>
+                <AdminModerationBadge result={mod} compact />
+              </div>
+              <AdminModerationReasons result={mod} />
+              <AdminHighlightedMessageBody body={m.body} result={mod} />
+              {m.attachmentUrl && (
+                <p>
+                  <a href={m.attachmentUrl} target="_blank" rel="noreferrer">
+                    Attachment
+                  </a>
+                </p>
+              )}
+              <time className="muted">{m.createdAt.toLocaleString()}</time>
+              <div className="admin-actions">
+                {mod.flagged ? (
+                  <AdminSendWarningButton messageId={m.id} senderName={m.sender.name} />
+                ) : null}
+                <AdminActionButton
+                  action="delete_message"
+                  id={m.id}
+                  label="Delete message"
+                  confirm="Delete this message?"
+                  danger
+                />
+              </div>
+            </article>
+          );
+        })}
       </div>
     </>
   );

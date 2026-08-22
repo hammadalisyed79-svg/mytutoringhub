@@ -6732,6 +6732,112 @@ img {
   background: #7f1616;
 }
 
+.admin-mod-alert {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: linear-gradient(180deg, #fff8ed 0%, #fff4e6 100%);
+  color: #92400e;
+}
+
+.admin-mod-row.is-flagged,
+.admin-mod-message.is-flagged {
+  border-color: rgba(217, 119, 6, 0.45);
+  background: linear-gradient(180deg, #fffdf9 0%, #fff8ef 100%);
+  box-shadow: inset 3px 0 0 #d97706;
+}
+
+.admin-mod-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-mod-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mod-risk-low {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.mod-risk-medium {
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+}
+
+.mod-risk-high {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+}
+
+.admin-mod-reasons {
+  margin: 0.35rem 0 0.5rem;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.admin-mod-reasons li + li {
+  margin-top: 0.2rem;
+}
+
+.admin-mod-preview {
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  color: #7c2d12;
+}
+
+.admin-mod-preview-label {
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-mod-latest {
+  margin: 0.25rem 0 0;
+  font-size: 0.86rem;
+}
+
+.admin-mod-filter {
+  align-self: end;
+  margin: 0;
+}
+
+.admin-message-body {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.admin-mod-highlight {
+  background: #fde68a;
+  color: #78350f;
+  padding: 0 0.12rem;
+  border-radius: 3px;
+}
+
+.admin-warn-btn {
+  color: #b45309;
+  font-weight: 600;
+}
+
 .admin-toolbar {
   display: flex;
   flex-wrap: wrap;

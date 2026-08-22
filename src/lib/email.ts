@@ -253,6 +253,35 @@ export function newMessageEmailHtml(fromName: string, preview: string, conversat
   });
 }
 
+export function messageWarningEmailHtml(opts: {
+  name: string;
+  preview: string;
+  adminNote?: string;
+}) {
+  const safeName = escapeHtml(opts.name);
+  const safePreview = escapeHtml(opts.preview.slice(0, 200));
+  const extra = opts.adminNote?.trim()
+    ? `<p><strong>Note from our team:</strong> ${escapeHtml(opts.adminNote.trim())}</p>`
+    : "";
+  return emailLayout({
+    preheader: "A message in your account was flagged for review",
+    title: "Community guidelines reminder",
+    body: `<p>Hi ${safeName},</p>
+<p>Our moderation system flagged a recent message in your My Tutoring Hub inbox. Please keep conversations respectful and safe for students and tutors.</p>
+<p style="padding:12px 14px;background:#fff4e6;border-left:4px solid #d97706;border-radius:8px;color:#92400e">“${safePreview}”</p>
+${extra}
+<p><strong>Please remember:</strong></p>
+<ul style="margin:0;padding-left:1.2rem">
+  <li>Keep all payments on the platform — never ask for or send money off-site.</li>
+  <li>Do not share passwords, OTP codes, or suspicious links.</li>
+  <li>Harassment, scams, and spam are not allowed and may lead to suspension.</li>
+</ul>
+<p>Repeated violations can result in account suspension. If you believe this was a mistake, reply to this email.</p>`,
+    cta: { label: "Open messages", href: `${appUrl}/messages` },
+    footer: `Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
+  });
+}
+
 export function subscriptionEmailHtml(planName: string, active: boolean) {
   return emailLayout({
     preheader: active ? `${planName} is now active` : `${planName} status changed`,

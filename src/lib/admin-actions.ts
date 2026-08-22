@@ -17,6 +17,8 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 import { isR2Configured, r2NotConfiguredMessage } from "@/lib/past-papers/r2";
 import { syncPastPapersFromR2 } from "@/lib/past-papers/past-paper-sync";
 import { syncSubjectsFromSources } from "@/lib/subject-sync";
+import { scanMessage } from "@/lib/message-moderation";
+import { notifyMessageWarning } from "@/lib/message-warning";
 import { z } from "zod";
 
 const PLANS_SET = new Set(PLANS.map((p) => p.id));
@@ -588,6 +590,65 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "Conversation";
       targetId = id;
       await prisma.conversation.delete({ where: { id } });
+      break;
+    }
+    case "warn_message_sender": {
+      const id = needId(payload.messageId || payload.id);
+      targetType = "Message";
+      targetId = id;
+      const message = await prisma.message.findUnique({
+        where: { id },
+        include: { sender: { select: { id: true, name: true, email: true } } },
+      });
+      if (!message) throw new AdminActionError("Message not found", 404);
+      const result = await notifyMessageWarning({
+        to: message.sender.email,
+        name: message.sender.name,
+        preview: message.body,
+        adminNote: payload.adminNote || undefined,
+      });
+      if (!result.sent) {
+        throw new AdminActionError(result.error || "Could not send warning email", 502);
+      }
+      extra = { warnedUserId: message.sender.id };
+      break;
+    }
+    case "warn_conversation_offenders": {
+      const id = needId(payload.conversationId || payload.id);
+      targetType = "Conversation";
+      targetId = id;
+      const conversation = await prisma.conversation.findUnique({
+        where: { id },
+        include: {
+          messages: {
+            include: { sender: { select: { id: true, name: true, email: true } } },
+          },
+        },
+      });
+      if (!conversation) throw new AdminActionError("Conversation not found", 404);
+      const warned = new Set<string>();
+      let sent = 0;
+      const errors: string[] = [];
+      for (const message of conversation.messages) {
+        if (!scanMessage(message.body).flagged) continue;
+        if (warned.has(message.senderId)) continue;
+        warned.add(message.senderId);
+        const result = await notifyMessageWarning({
+          to: message.sender.email,
+          name: message.sender.name,
+          preview: message.body,
+          adminNote: payload.adminNote || undefined,
+        });
+        if (result.sent) sent += 1;
+        else if (result.error) errors.push(result.error);
+      }
+      if (!sent) {
+        throw new AdminActionError(
+          errors[0] || "No flagged senders to warn in this conversation",
+          errors.length ? 502 : 400,
+        );
+      }
+      extra = { warningsSent: sent };
       break;
     }
     case "subject_create": {
