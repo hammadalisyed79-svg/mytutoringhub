@@ -411,6 +411,224 @@ ${contactsLine}
   });
 }
 
+function missingFieldsList(missing: string[]) {
+  if (!missing.length) return "";
+  return `<ul style="margin:12px 0;padding-left:1.2rem">${missing
+    .map((item) => `<li><strong>${escapeHtml(item)}</strong></li>`)
+    .join("")}</ul>`;
+}
+
+export function tutorProfileIncompleteEmailHtml(opts: {
+  name: string;
+  missing: string[];
+  requiredDone: number;
+  requiredTotal: number;
+  step: number;
+  dashboardUrl: string;
+}) {
+  const urgency =
+    opts.step === 1
+      ? "You're off to a good start — finish the required fields so students can find you."
+      : opts.step === 2
+        ? "Students still can't see your full listing. A few more details will put you in search."
+        : opts.step === 3
+          ? "Complete your profile this week and earn <strong>200 Hub Points</strong> toward plans and ads."
+          : "Final reminder — your draft profile stays hidden until all required fields are saved.";
+  return emailLayout({
+    preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete`,
+    title: `Finish your tutor profile (${opts.requiredDone}/${opts.requiredTotal})`,
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>${urgency}</p>
+<p><strong>Still needed:</strong></p>
+${missingFieldsList(opts.missing)}
+<p>All fields marked with * on your dashboard are required, including your <strong>highest qualification</strong>.</p>`,
+    cta: { label: "Complete my profile", href: opts.dashboardUrl },
+  });
+}
+
+export function tutorProfileNeverStartedEmailHtml(opts: { name: string; dashboardUrl: string }) {
+  return emailLayout({
+    preheader: "Your tutor account is ready — add your first details.",
+    title: "Start your tutor profile",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>You verified your email but haven't started your tutor profile yet. It only takes a few minutes to add a photo, subjects, headline, and your highest qualification.</p>
+<p>Complete profiles appear in search for free. Tutor Basic adds priority placement when you're ready to grow.</p>`,
+    cta: { label: "Start my profile", href: opts.dashboardUrl },
+  });
+}
+
+export function tutorProfileLiveEmailHtml(opts: {
+  name: string;
+  profileUrl: string;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: "Your profile is now visible in tutor search.",
+    title: "You're live in search",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Congratulations — your tutor profile is complete and now visible to students browsing ${brand}.</p>
+<p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward subscriptions and tutor ads.</p>
+<p>Share your public profile link with students and start replying to requests.</p>`,
+    cta: { label: "View public profile", href: opts.profileUrl },
+    footer: `<a href="${opts.dashboardUrl}">Open dashboard</a> · Questions? Contact admin@mytutoringhub.com`,
+  });
+}
+
+export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string }) {
+  return emailLayout({
+    preheader: "Unlock priority placement and unlimited enquiry reveals.",
+    title: "Grow with Tutor Basic",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search, unlimited enquiry reveals, and subject ads.</p>
+<p>Complimentary access may be available — check Pricing for current offers.</p>`,
+    cta: { label: "View tutor plans", href: opts.pricingUrl },
+  });
+}
+
+export function tutorVerifyNudgeEmailHtml(opts: { name: string; dashboardUrl: string }) {
+  return emailLayout({
+    preheader: "Upload your ID to earn the verified tutor badge.",
+    title: "Get your verified badge",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Verified tutors build more trust with parents and students. Upload your government photo ID from your dashboard — our team reviews it within a few days.</p>
+<p>The verified badge appears on your profile and helps you stand out in search.</p>`,
+    cta: { label: "Upload verification documents", href: `${opts.dashboardUrl}#get-verified` },
+  });
+}
+
+export function tutorVerificationApprovedEmailHtml(opts: { name: string; profileUrl: string }) {
+  return emailLayout({
+    preheader: "Your verified tutor badge is now active.",
+    title: "You're verified",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Great news — our team approved your verification documents. The <strong>Verified</strong> badge is now shown on your public profile.</p>
+<p>Parents and students trust verified tutors. Keep your profile up to date and respond promptly to enquiries.</p>`,
+    cta: { label: "View your profile", href: opts.profileUrl },
+  });
+}
+
+export function recommendationSubmittedEmailHtml(opts: {
+  name: string;
+  recommenderName: string;
+  dashboardUrl: string;
+}) {
+  return emailLayout({
+    preheader: "We received your recommendation submission.",
+    title: "Recommendation submitted",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>We received your recommendation from <strong>${escapeHtml(opts.recommenderName)}</strong>. Our team will review it before it appears on your profile and counts toward your tutor badge.</p>
+<p>Reviews usually take 1–3 business days. You'll get another email when it's approved or if we need more information.</p>`,
+    cta: { label: "View submissions", href: opts.dashboardUrl },
+  });
+}
+
+export function recommendationApprovedEmailHtml(opts: {
+  name: string;
+  recommenderName: string;
+  profileUrl: string;
+  badgeLabel?: string;
+}) {
+  const badgeLine = opts.badgeLabel
+    ? `<p>This counts toward your <strong>${escapeHtml(opts.badgeLabel)}</strong> badge progression.</p>`
+    : "";
+  return emailLayout({
+    preheader: "A recommendation was approved on your profile.",
+    title: "Recommendation approved",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Your recommendation from <strong>${escapeHtml(opts.recommenderName)}</strong> has been verified and is now visible on your public profile.</p>
+${badgeLine}`,
+    cta: { label: "View your profile", href: opts.profileUrl },
+  });
+}
+
+export function recommendationRejectedEmailHtml(opts: {
+  name: string;
+  recommenderName: string;
+  adminNote?: string;
+  dashboardUrl: string;
+}) {
+  const note = opts.adminNote?.trim()
+    ? `<p><strong>Note from our team:</strong> ${escapeHtml(opts.adminNote.trim())}</p>`
+    : "";
+  return emailLayout({
+    preheader: "We could not approve a recommendation submission.",
+    title: "Recommendation not approved",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>We reviewed the recommendation from <strong>${escapeHtml(opts.recommenderName)}</strong> but could not approve it at this time.</p>
+${note}
+<p>You can submit a new recommendation with clearer proof or contact admin@mytutoringhub.com if you have questions.</p>`,
+    cta: { label: "Submit another", href: opts.dashboardUrl },
+  });
+}
+
+export function reviewPublishedEmailHtml(opts: {
+  name: string;
+  studentName: string;
+  rating: number;
+  commentPreview: string;
+  profileUrl: string;
+}) {
+  return emailLayout({
+    preheader: "A new student review is live on your profile.",
+    title: "New review published",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p><strong>${escapeHtml(opts.studentName)}</strong> left a <strong>${opts.rating}/5</strong> review on your profile:</p>
+<p style="padding:12px 14px;background:#f6f1e8;border-radius:8px;color:#486581">“${escapeHtml(opts.commentPreview.slice(0, 220))}”</p>
+<p>On-platform reviews count toward your <strong>Super Tutor</strong> and <strong>Top Tutor</strong> badges.</p>`,
+    cta: { label: "View your profile", href: opts.profileUrl },
+  });
+}
+
+export function studentBrowseNudgeEmailHtml(opts: {
+  name: string;
+  searchUrl: string;
+  step: number;
+}) {
+  const body =
+    opts.step === 1
+      ? `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>You verified your email but haven't messaged a tutor yet. Browse profiles, compare subjects and rates, and send your first message free.</p>`
+      : `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Still looking for the right tutor? Try filtering by subject and city — most tutors reply within a day.</p>
+<p>Your free account includes <strong>3 new tutor contacts per month</strong>.</p>`;
+  return emailLayout({
+    preheader: "Find and message tutors on My Tutoring Hub.",
+    title: opts.step === 1 ? "Ready to find your tutor?" : "Tutors are waiting to hear from you",
+    body,
+    cta: { label: "Browse tutors", href: opts.searchUrl },
+  });
+}
+
+export function studentPostAdNudgeEmailHtml(opts: {
+  name: string;
+  adsUrl: string;
+  step: number;
+}) {
+  const body =
+    opts.step === 1
+      ? `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>With Student Pass active, you can post a <strong>student request</strong> so tutors come to you. Describe your subject, level, and budget — tutors in your area will see it.</p>`
+      : `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Posting a request takes two minutes and often gets faster replies than browsing alone. Tutors with matching subjects are notified.</p>`;
+  return emailLayout({
+    preheader: "Post a student request and let tutors apply.",
+    title: opts.step === 1 ? "Post your first student request" : "Let tutors find you",
+    body,
+    cta: { label: "Post a request", href: opts.adsUrl },
+  });
+}
+
+export function studentReferralNudgeEmailHtml(opts: { name: string; dashboardUrl: string }) {
+  return emailLayout({
+    preheader: "Earn 50 Hub Points per successful referral.",
+    title: "Invite friends, earn Hub Points",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Share ${brand} with classmates or friends. When they join and complete their milestone, you earn <strong>50 Hub Points</strong> (worth Rs 1 each toward subscriptions and ads).</p>
+<p>Find your personal invite link on your dashboard.</p>`,
+    cta: { label: "Open dashboard", href: opts.dashboardUrl },
+  });
+}
+
 export async function sendLoginConfirmationEmail(opts: {
   name: string;
   email: string;

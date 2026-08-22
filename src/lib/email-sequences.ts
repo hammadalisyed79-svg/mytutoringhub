@@ -214,14 +214,18 @@ export async function runPostVerifySequence(userId: string) {
   return results;
 }
 
-/** Cron: backup tutor picks + delayed upgrade nudges + verify reminders + Hub Points maintenance. */
+/** Cron: backup tutor picks + delayed upgrade nudges + verify reminders + nurture drips + Hub Points maintenance. */
 export async function runOnboardingDigest() {
   if (!emailConfigured()) {
-    const points = await runHubPointsMaintenance().catch(() => ({ expired: 0, warnings: 0 }));
+    const [points, nurture] = await Promise.all([
+      runHubPointsMaintenance().catch(() => ({ expired: 0, warnings: 0 })),
+      import("@/lib/email-nurture").then((m) => m.runNurtureDigest()),
+    ]);
     return {
       ok: true,
       skipped: true,
       sent: { tutorPicks: 0, upgradeNudge: 0, verifyReminder: 0 },
+      nurture: nurture.sent,
       hubPoints: points,
     };
   }
@@ -317,10 +321,13 @@ export async function runOnboardingDigest() {
   }
 
   const hubPoints = await runHubPointsMaintenance().catch(() => ({ expired: 0, warnings: 0 }));
+  const { runNurtureDigest } = await import("@/lib/email-nurture");
+  const nurture = await runNurtureDigest();
 
   return {
     ok: true,
     sent: { tutorPicks, upgradeNudge, verifyReminder },
+    nurture: nurture.sent,
     candidates: {
       tutorPicks: pickCandidates.length,
       upgradeNudge: nudgeCandidates.length,

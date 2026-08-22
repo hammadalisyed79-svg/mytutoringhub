@@ -1,3 +1,4 @@
+import { isTutorProfileComplete } from "@/lib/tutor-profile-completion";
 import { prisma } from "@/lib/prisma";
 import { syncTutorTrustBadge } from "@/lib/tutor-badges";
 import { FREE_TUTOR_AD_CAP } from "@/lib/types";
@@ -171,28 +172,48 @@ export function computeTutorPlanTier(plans: Set<string>): number {
 }
 
 /**
- * Minimum for free search listing: subjects, headline, bio, and a profile photo.
+ * Full profile completion required for free search listing (all * fields including highest qualification).
  */
-export function isTutorProfileListable(profile: {
-  subjects?: string | null;
-  headline?: string | null;
-  photoUrl?: string | null;
-  bio?: string | null;
-}): boolean {
-  const hasSubjects = Boolean(profile.subjects?.trim());
-  const hasHeadline = Boolean(profile.headline && profile.headline.trim().length >= 8);
-  const hasPhoto = Boolean(profile.photoUrl?.trim());
-  const hasBio = Boolean(profile.bio && profile.bio.trim().length >= 40);
-  return hasSubjects && hasHeadline && hasPhoto && hasBio;
+export function isTutorProfileListable(
+  profile: {
+    subjects?: string | null;
+    headline?: string | null;
+    photoUrl?: string | null;
+    bio?: string | null;
+    country?: string | null;
+    location?: string | null;
+    hourlyRate?: number | null;
+    online?: boolean;
+    inPerson?: boolean;
+    qualifications?: string | null;
+  },
+  name?: string | null,
+): boolean {
+  return isTutorProfileComplete({
+    name,
+    photoUrl: profile.photoUrl,
+    headline: profile.headline,
+    bio: profile.bio,
+    country: profile.country,
+    location: profile.location,
+    subjects: profile.subjects,
+    hourlyRate: profile.hourlyRate,
+    online: profile.online,
+    inPerson: profile.inPerson,
+    qualifications: profile.qualifications,
+  });
 }
 
 /** Apply paid plan side-effects: highlight/boost windows, verified entitlement, planTier.
  * Free tutors with a complete-enough profile stay `active` for search (paid plans add priority). */
 export async function syncTutorBadges(userId: string) {
-  const profile = await prisma.tutorProfile.findUnique({
-    where: { userId },
-    include: { ads: true },
-  });
+  const [profile, user] = await Promise.all([
+    prisma.tutorProfile.findUnique({
+      where: { userId },
+      include: { ads: true },
+    }),
+    prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
+  ]);
   if (!profile) return;
 
   const now = new Date();
@@ -242,7 +263,7 @@ export async function syncTutorBadges(userId: string) {
     plans.has("AD_BOOST") ||
     plans.has("UNLIMITED_ADS");
   const planTier = computeTutorPlanTier(plans);
-  const listable = isTutorProfileListable(profile);
+  const listable = isTutorProfileListable(profile, user?.name);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },

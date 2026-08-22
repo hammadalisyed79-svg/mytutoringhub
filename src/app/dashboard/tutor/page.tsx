@@ -224,7 +224,7 @@ export default async function TutorDashboardPage({
                   Status:{" "}
                   {user.tutorProfile.active
                     ? "Listed in search"
-                    : "Hidden until profile is complete (photo, subjects, headline, and bio)"}{" "}
+                    : "Hidden until all required fields are complete (photo, headline, bio, subjects, location, rate, lesson type, and highest qualification)"}{" "}
                   ·{" "}
                   {user.tutorProfile.verified ? (
                     <span className="badge badge-verified">✓ Verified</span>
@@ -245,7 +245,7 @@ export default async function TutorDashboardPage({
                   </p>
                 )}
                 {(() => {
-                  const { pct, missing } = profileStrength(user.tutorProfile);
+                  const { pct, missing } = profileStrength(user.tutorProfile, user.name);
                   return (
                     <div className="profile-strength" style={{ marginTop: "1rem" }}>
                       <div className="profile-strength-label">

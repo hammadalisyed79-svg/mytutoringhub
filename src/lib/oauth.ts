@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { Account } from "@auth/core/types";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmailHtml } from "@/lib/email";
+import { runPostVerifySequence } from "@/lib/email-sequences";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { oauthUserDisplayName } from "@/lib/display-name";
 import type { Role } from "@/lib/types";
@@ -206,8 +207,15 @@ export async function handleOAuthSignIn(opts: {
       subject: "Welcome to My Tutoring Hub",
       html: welcomeEmailHtml(dbUser.name, role),
     }).catch((err) => console.error("[email] welcome failed", err));
+
+    if (!needsOnboarding) {
+      void runPostVerifySequence(dbUser.id).catch((err) =>
+        console.error("[email-sequence] oauth post-verify failed", err),
+      );
+    }
   } else {
     if (dbUser.suspended) return { ok: false as const, reason: "suspended" };
+    const wasVerified = Boolean(dbUser.emailVerified);
     const nextName = oauthUserDisplayName({
       existingName: dbUser.name,
       email,
@@ -223,6 +231,11 @@ export async function handleOAuthSignIn(opts: {
       },
     });
     dbUser = await prisma.user.findUniqueOrThrow({ where: { id: dbUser.id } });
+    if (!wasVerified && dbUser.emailVerified) {
+      void runPostVerifySequence(dbUser.id).catch((err) =>
+        console.error("[email-sequence] oauth verify post-verify failed", err),
+      );
+    }
   }
 
   await linkOAuthAccount(dbUser.id, opts.account);
@@ -249,6 +262,12 @@ export async function completeOnboarding(userId: string, role: Role) {
   if (role === "TUTOR" && !user.tutorProfile) {
     await createTutorProfile(userId);
   }
+
+  void import("@/lib/email-sequences").then(({ runPostVerifySequence }) =>
+    runPostVerifySequence(userId).catch((err) =>
+      console.error("[email-sequence] onboarding post-verify failed", err),
+    ),
+  );
 
   return { role };
 }

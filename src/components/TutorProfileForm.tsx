@@ -183,7 +183,7 @@ export function TutorProfileForm({
       { label: "Languages", ok: languageList.length > 0, required: false },
       { label: "Hourly rate", ok: Number(hourlyRate) >= 500, required: true },
       { label: "Lesson type", ok: online || inPerson, required: true },
-      { label: "Qualifications", ok: qualifications.trim().length > 0, required: false },
+      { label: "Highest qualification", ok: qualifications.trim().length > 0, required: true },
       { label: "Experience", ok: experienceYears !== "", required: false },
       { label: "Availability", ok: slots.length > 0, required: false },
       { label: "Phone", ok: phone.trim().length > 0, required: false },
@@ -728,10 +728,11 @@ export function TutorProfileForm({
       <section className="form-section">
         <h3>Background</h3>
         <label>
-          Qualifications
+          Highest qualification <abbr className="req" title="Required">*</abbr>
           <textarea
             name="qualifications"
             rows={3}
+            required
             value={qualifications}
             onChange={(e) => setQualifications(e.target.value)}
             placeholder="MSc Chemistry, examiner experience, teaching licence…"

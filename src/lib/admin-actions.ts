@@ -17,6 +17,12 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 import { isR2Configured, r2NotConfiguredMessage } from "@/lib/past-papers/r2";
 import { syncPastPapersFromR2 } from "@/lib/past-papers/past-paper-sync";
 import { syncSubjectsFromSources } from "@/lib/subject-sync";
+import {
+  sendRecommendationApprovedEmail,
+  sendRecommendationRejectedEmail,
+  sendReviewPublishedEmail,
+  sendVerificationApprovedEmail,
+} from "@/lib/email-nurture";
 import { scanMessage } from "@/lib/message-moderation";
 import { notifyMessageWarning } from "@/lib/message-warning";
 import { z } from "zod";
@@ -333,6 +339,9 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           where: { userId: reqItem.userId },
           data: { verified: true },
         });
+        void sendVerificationApprovedEmail(reqItem.userId).catch((err) =>
+          console.error("[email-nurture] verification approved", err),
+        );
       }
       break;
     }
@@ -347,6 +356,11 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         select: { tutorProfileId: true },
       });
       await syncTutorTrustBadge(review.tutorProfileId);
+      if (action === "review_publish") {
+        void sendReviewPublishedEmail(id).catch((err) =>
+          console.error("[email-nurture] review published", err),
+        );
+      }
       break;
     }
     case "review_delete": {
@@ -375,6 +389,15 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         select: { tutorProfileId: true },
       });
       await syncTutorTrustBadge(item.tutorProfileId);
+      if (action === "recommendation_approve") {
+        void sendRecommendationApprovedEmail(id).catch((err) =>
+          console.error("[email-nurture] recommendation approved", err),
+        );
+      } else {
+        void sendRecommendationRejectedEmail(id, payload.adminNote || undefined).catch((err) =>
+          console.error("[email-nurture] recommendation rejected", err),
+        );
+      }
       break;
     }
     case "report_resolve":

@@ -53,19 +53,40 @@ function stars(rating: number) {
   return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(n);
 }
 
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+
 function formatReviewDate(value: Date) {
   return value.toLocaleDateString(undefined, { month: "short", year: "numeric", day: "numeric" });
 }
 
-function isProfileIncomplete(tutor: {
-  photoUrl?: string | null;
-  bio: string;
-  subjects: string;
-}) {
-  const hasPhoto = Boolean(tutor.photoUrl?.startsWith("http"));
-  const hasBio = tutor.bio.trim().length >= 40;
-  const hasSubjects = splitList(tutor.subjects).length > 0;
-  return !hasPhoto || !hasBio || !hasSubjects;
+function isProfileIncomplete(
+  tutor: {
+    photoUrl?: string | null;
+    headline?: string | null;
+    bio: string;
+    subjects: string;
+    country?: string | null;
+    location: string;
+    hourlyRate: number;
+    online: boolean;
+    inPerson: boolean;
+    qualifications?: string | null;
+  },
+  name: string,
+) {
+  return !getTutorProfileCompletion({
+    name,
+    photoUrl: tutor.photoUrl,
+    headline: tutor.headline,
+    bio: tutor.bio,
+    country: tutor.country,
+    location: tutor.location,
+    subjects: tutor.subjects,
+    hourlyRate: tutor.hourlyRate,
+    online: tutor.online,
+    inPerson: tutor.inPerson,
+    qualifications: tutor.qualifications,
+  }).complete;
 }
 
 function ProfileCtaButtons({
@@ -234,7 +255,7 @@ export default async function TutorProfilePage({ params }: Params) {
   const viewerEmailVerified = Boolean(viewer?.emailVerified);
   const initial = tutor.user.name.slice(0, 1).toUpperCase();
   const firstName = tutor.user.name.split(" ")[0];
-  const profileIncomplete = isOwner && isProfileIncomplete(tutor);
+  const profileIncomplete = isOwner && isProfileIncomplete(tutor, tutor.user.name);
   const hasStructuredAvailability = availabilitySlots.length > 0;
 
   return (

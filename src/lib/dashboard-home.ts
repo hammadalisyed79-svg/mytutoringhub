@@ -19,25 +19,46 @@ export type DashboardSearchParams = {
   verified?: string;
 };
 
-export function profileStrength(tp: {
-  photoUrl: string | null;
-  bio: string | null;
-  subjects: string | null;
-  qualifications: string | null;
-  hourlyRate: number;
-  availability: string | null;
-}) {
-  const missing = [
-    !tp.photoUrl && "photo",
-    !tp.bio?.trim() && "bio",
-    !tp.subjects?.trim() && "subjects",
-    !tp.qualifications?.trim() && "qualifications",
-    !(tp.hourlyRate > 0) && "hourly rate",
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+
+export function profileStrength(
+  tp: {
+    photoUrl: string | null;
+    bio: string | null;
+    subjects: string | null;
+    headline?: string | null;
+    country?: string | null;
+    location?: string | null;
+    hourlyRate: number;
+    online?: boolean;
+    inPerson?: boolean;
+    qualifications: string | null;
+    availability: string | null;
+  },
+  name?: string | null,
+) {
+  const completion = getTutorProfileCompletion({
+    name,
+    photoUrl: tp.photoUrl,
+    headline: tp.headline,
+    bio: tp.bio,
+    country: tp.country,
+    location: tp.location,
+    subjects: tp.subjects,
+    hourlyRate: tp.hourlyRate,
+    online: tp.online,
+    inPerson: tp.inPerson,
+    qualifications: tp.qualifications,
+  });
+  const recommended = [
     !tp.availability?.trim() && "availability",
   ].filter(Boolean) as string[];
-  const total = 6;
-  const done = total - missing.length;
-  return { pct: Math.round((done / total) * 100), missing };
+  const pct = Math.round(
+    ((completion.requiredDone + (recommended.length === 0 ? 1 : 0)) /
+      (completion.requiredTotal + 1)) *
+      100,
+  );
+  return { pct, missing: [...completion.missingRequired, ...recommended] };
 }
 
 export function dashboardQueryString(sp: DashboardSearchParams) {

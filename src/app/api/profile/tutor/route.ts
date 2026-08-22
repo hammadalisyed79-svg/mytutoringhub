@@ -18,6 +18,7 @@ import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
 import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
 import { tryAwardProfileCompleteBonus } from "@/lib/hub-points";
+import { sendTutorProfileLiveEmail } from "@/lib/email-nurture";
 
 const schema = z
   .object({
@@ -50,7 +51,11 @@ const schema = z
     photoCropX: z.coerce.number().min(-100).max(100).optional().default(0),
     photoCropY: z.coerce.number().min(-100).max(100).optional().default(0),
     photoCropZoom: z.coerce.number().min(1).max(3).optional().default(1),
-    qualifications: z.string().max(2000).optional(),    teachingMethod: z.string().max(2000).optional(),
+    qualifications: z
+      .string()
+      .trim()
+      .min(1, "Enter your highest qualification")
+      .max(2000),    teachingMethod: z.string().max(2000).optional(),
     languages: z.string().max(500).optional(),
     levels: z.string().max(500).optional(),
     availability: z.string().max(4000).optional(),
@@ -106,7 +111,6 @@ export async function PUT(req: Request) {
     const listed = await prisma.subject.findMany({ select: { name: true } });
     const existing = await prisma.tutorProfile.findUnique({
       where: { userId: session.user.id },
-      select: { subjects: true, levels: true, languages: true, expertise: true, location: true },
     });
     const subjectCatalog = mergeSubjectNames(
       listed.map((row) => row.name),
@@ -172,7 +176,8 @@ export async function PUT(req: Request) {
       photoCropX: data.photoCropX,
       photoCropY: data.photoCropY,
       photoCropZoom: data.photoCropZoom,
-      qualifications: data.qualifications?.trim() || null,      experienceYears,
+      qualifications: data.qualifications.trim(),
+      experienceYears,
       teachingMethod: data.teachingMethod?.trim() || null,
       languages: languages || null,
       levels: levels || null,
@@ -182,7 +187,10 @@ export async function PUT(req: Request) {
       offersFreeTrial: Boolean(data.offersFreeTrial),
       phone: data.phone?.trim() || null,
     };
-    const listable = isTutorProfileListable(profilePayload);
+    const wasListable = existing
+      ? isTutorProfileListable(existing, parsedName.name)
+      : false;
+    const listable = isTutorProfileListable(profilePayload, parsedName.name);
 
     const profile = await prisma.tutorProfile.upsert({
       where: { userId: session.user.id },
@@ -219,6 +227,12 @@ export async function PUT(req: Request) {
     void tryAwardProfileCompleteBonus(session.user.id).catch((err) =>
       console.error("[hub-points] profile complete bonus failed", err),
     );
+
+    if (!wasListable && listable) {
+      void sendTutorProfileLiveEmail(session.user.id, profile.id).catch((err) =>
+        console.error("[email-nurture] profile live failed", err),
+      );
+    }
 
     const refreshed = await prisma.tutorProfile.findUnique({ where: { id: profile.id } });
     return NextResponse.json(refreshed ?? profile);

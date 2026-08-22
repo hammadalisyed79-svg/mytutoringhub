@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendRecommendationSubmittedEmail } from "@/lib/email-nurture";
 import { z } from "zod";
 
 const submitSchema = z.object({
@@ -78,6 +79,10 @@ export async function POST(req: Request) {
       status: "PENDING",
     },
   });
+
+  void sendRecommendationSubmittedEmail(item.id).catch((err) =>
+    console.error("[email-nurture] recommendation submitted", err),
+  );
 
   return NextResponse.json(item, { status: 201 });
 }

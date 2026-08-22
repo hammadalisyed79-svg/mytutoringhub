@@ -425,10 +425,10 @@ async function creditReferrerForMilestone(refereeUserId: string, milestoneLabel:
 export async function tryAwardProfileCompleteBonus(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true, tutorProfile: true },
+    select: { role: true, name: true, tutorProfile: true },
   });
   if (user?.role !== "TUTOR" || !user.tutorProfile) return;
-  if (!isTutorProfileListable(user.tutorProfile)) return;
+  if (!isTutorProfileListable(user.tutorProfile, user.name)) return;
 
   await awardHubPoints({
     userId,
