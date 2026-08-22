@@ -193,6 +193,41 @@ export function formatMoney(amount: number, currency: CurrencyCode, locale = "en
   }
 }
 
+/** Currency display for Hub Points — adds decimals when 2 places would show 0.00. */
+export function formatHubPointsMoney(amountPkr: number, currency: CurrencyCode, locale = "en") {
+  const local = pkrToCurrency(amountPkr, currency);
+  if (!Number.isFinite(local) || amountPkr === 0) {
+    return formatMoney(0, currency, locale);
+  }
+
+  if (ZERO_DECIMAL.has(currency)) {
+    const value = local < 1 ? 1 : Math.round(local);
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  for (let digits = 2; digits <= 6; digits++) {
+    if (Number(local.toFixed(digits)) > 0) {
+      return new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency,
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      }).format(local);
+    }
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  }).format(local);
+}
+
 /** Tutor/ad fees are stored in PKR base units; show in the visitor currency. */
 export function formatHourly(amountPkr: number | null | undefined, currency: CurrencyCode = "USD") {
   if (amountPkr == null || Number.isNaN(amountPkr)) return "—";

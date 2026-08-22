@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import {
-  formatMoney,
+  formatHubPointsMoney,
   pkrToCurrency,
   type CurrencyCode,
 } from "@/lib/currency";
@@ -96,7 +96,7 @@ function emptyHubPointsSummary(
 }
 
 export function hubPointValueLabel(currency: CurrencyCode) {
-  const onePoint = formatMoney(pkrToCurrency(1, currency), currency);
+  const onePoint = formatHubPointsMoney(1, currency);
   return `1 point ≈ ${onePoint}`;
 }
 
@@ -114,8 +114,7 @@ export async function getHubPointsBalanceSafe(userId: string): Promise<number> {
 }
 
 export function formatHubPoints(points: number, currency: CurrencyCode = "USD") {
-  const local = pkrToCurrency(points, currency);
-  return `${points.toLocaleString()} pts (${formatMoney(local, currency)})`;
+  return `${points.toLocaleString()} pts (${formatHubPointsMoney(points, currency)})`;
 }
 
 export function computeMaxRedeemablePoints(balance: number, orderPkr: number) {
