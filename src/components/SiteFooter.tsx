@@ -15,10 +15,15 @@ export async function SiteFooter() {
           <Link href="/" className="logo-link" aria-label="My Tutoring Hub home">
             <Logo />
           </Link>
-          <p className="muted footer-blurb">
-            Private tutors worldwide. Lesson fees stay between you — prices shown in your local
-            currency.
+          <p className="footer-blurb footer-prestige">
+            A premium tutoring marketplace for students and tutors worldwide. Discover with
+            confidence — lesson fees stay between you and your tutor.
           </p>
+          <div className="footer-trust-badges" aria-label="Platform highlights">
+            <span>Verified profiles</span>
+            <span>Local currency</span>
+            <span>No commission</span>
+          </div>
         </div>
         <div>
           <h4>Students</h4>
@@ -74,7 +79,7 @@ export async function SiteFooter() {
         </div>
       </div>
       <div className="container footer-note">
-        © {new Date().getFullYear()} My Tutoring Hub · Private tutors marketplace
+        © {new Date().getFullYear()} My Tutoring Hub · Private tutoring, elevated.
       </div>
     </footer>
   );

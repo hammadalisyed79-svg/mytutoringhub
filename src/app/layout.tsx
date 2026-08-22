@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SiteHeader } from "@/components/SiteHeader";
+import { TrustRibbon } from "@/components/TrustRibbon";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -88,8 +89,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full flex flex-col antialiased">
         <Providers>
           <SiteHeader />
+          <TrustRibbon />
           <SiteAnnouncement />
-          <main className="flex-1">
+          <main className="flex-1 site-main">
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
           <SiteFooter />

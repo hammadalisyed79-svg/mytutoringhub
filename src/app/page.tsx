@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
 import { HeroPathCards } from "@/components/HeroPathCards";
+import { PrestigePillars } from "@/components/PrestigePillars";
 import { LogoMark } from "@/components/Logo";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { JsonLd } from "@/components/JsonLd";
@@ -135,16 +136,20 @@ export default async function HomePage() {
         <div className="hero-content">
           <div className="hero-brand-row">
             <LogoMark className="hero-brand-mark" />
-            <p className="hero-kicker">Private lessons & tutors</p>
+            <p className="hero-kicker">World-class tutoring marketplace</p>
           </div>
-          <h1>My Tutoring Hub</h1>
-          <p>{VALUE_PROPOSITION}</p>
-          <p className="hero-sub muted">{GEO_CURRENCY_LINE}</p>
-          <HeroSearch />
+          <h1>Private tutoring, elevated.</h1>
+          <p className="hero-lead">{VALUE_PROPOSITION}</p>
+          <p className="hero-sub">{GEO_CURRENCY_LINE}</p>
+          <div className="hero-search-shell">
+            <HeroSearch />
+          </div>
           <HeroPathCards />
           <ValuePropStrip className="hero-value-strip" />
         </div>
       </section>
+
+      <PrestigePillars />
 
       <section className="section">
         <div className="container">
@@ -181,10 +186,10 @@ export default async function HomePage() {
       </section>
 
       {stats.length > 0 && (
-        <section className="section section-stats">
+        <section className="section section-stats prestige-stats">
           <div className="container stats-row">
             {stats.map((stat) => (
-              <div key={stat.label}>
+              <div key={stat.label} className="prestige-stat">
                 <strong>{stat.value}</strong>
                 <span>{stat.label}</span>
               </div>

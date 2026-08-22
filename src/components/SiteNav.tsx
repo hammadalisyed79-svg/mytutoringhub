@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/SignOutButton";
+import { NavLink } from "@/components/NavLink";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { LoginForm } from "@/components/LoginForm";
 import { RegisterForm } from "@/components/RegisterForm";
@@ -198,9 +199,9 @@ export function SiteNav({
       <nav className="nav nav-desktop" aria-label="Primary">
         <div className="nav-primary">
           {primaryLinks(user?.role).map((item) => (
-            <Link key={item.href} href={item.href} onClick={closeMenu}>
+            <NavLink key={item.href} href={item.href} pathname={pathname} onClick={closeMenu}>
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </div>
       </nav>
@@ -241,9 +242,9 @@ export function SiteNav({
       <nav id="mobile-nav" className={`nav-drawer ${open ? "is-open" : ""}`} aria-label="Mobile">
         <div className="nav-drawer-inner">
           {primaryLinks(user?.role).map((item) => (
-            <Link key={item.href} href={item.href} onClick={closeMenu}>
+            <NavLink key={item.href} href={item.href} pathname={pathname} onClick={closeMenu}>
               {item.label}
-            </Link>
+            </NavLink>
           ))}
           <div className="nav-drawer-account">
             {user ? (
