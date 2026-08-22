@@ -15,6 +15,12 @@ import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
+  TutorBadgeProgressPanel,
+  TutorRecommendationForm,
+} from "@/components/TutorBadgeProgress";
+import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
+import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
+import {
   type DashboardSearchParams,
   prepareDashboardHome,
   profileStrength,
@@ -43,6 +49,9 @@ export default async function TutorDashboardPage({
       prepareDashboardHome(session.user.id, "TUTOR", sp),
       getUnreadMessageSummary(session.user.id),
     ]);
+  const badgeProgress = user.tutorProfile
+    ? tutorBadgeProgress(await getTutorBadgeStats(user.tutorProfile.id))
+    : null;
 
   return (
     <div className="page">
@@ -216,7 +225,7 @@ export default async function TutorDashboardPage({
                   ) : (
                     <span className="badge">Unverified</span>
                   )}{" "}
-                  ·{" "}
+                  · {badgeProgress && <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />} ·{" "}
                   {user.tutorProfile.highlighted ||
                   (user.tutorProfile.highlightedUntil &&
                     user.tutorProfile.highlightedUntil > new Date())
@@ -282,6 +291,8 @@ export default async function TutorDashboardPage({
                   )}
                 </p>
               </section>
+              {badgeProgress && <TutorBadgeProgressPanel progress={badgeProgress} />}
+              <TutorRecommendationForm />
               <section className="panel" style={{ gridColumn: "1 / -1" }}>
                 <h2>Optional subject ads</h2>
                 <p className="muted">

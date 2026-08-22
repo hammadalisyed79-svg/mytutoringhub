@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
 import { ShareTutorButton } from "@/components/ShareTutorButton";
 import { ReviewForm } from "@/components/ReviewForm";
+import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -139,6 +140,11 @@ export default async function TutorProfilePage({ params }: Params) {
         orderBy: { createdAt: "desc" },
         include: { student: { select: { name: true } } },
       },
+      recommendations: {
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      },
       ads: { where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" } },
     },
   });
@@ -163,7 +169,6 @@ export default async function TutorProfilePage({ params }: Params) {
 
   const highlighted =
     tutor.highlighted || (tutor.highlightedUntil && tutor.highlightedUntil > new Date());
-  const isStarTutor = (tutor.planTier ?? 0) >= 2;
 
   const subjects = splitList(tutor.subjects);
   const expertise = splitList(tutor.expertise);
@@ -300,8 +305,8 @@ export default async function TutorProfilePage({ params }: Params) {
               )}
 
               <div className="profile-badges-row">
+                <TutorTrustBadgePill badge={tutor.trustBadge} />
                 {tutor.verified && <span className="badge badge-verified">✓ Verified</span>}
-                {isStarTutor && <span className="badge badge-featured">⭐ Star Tutor</span>}
                 {highlighted && <span className="badge accent">Featured</span>}
                 {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
               </div>
@@ -541,6 +546,27 @@ export default async function TutorProfilePage({ params }: Params) {
               </section>
             )}
 
+            <section className="profile-content-card" id="recommendations">
+              <h2>Recommendations</h2>
+              {tutor.recommendations.length === 0 ? (
+                <p className="muted">
+                  {isOwner
+                    ? "Submit off-platform recommendations from your dashboard. We verify each one before it appears here."
+                    : "No verified recommendations yet."}
+                </p>
+              ) : (
+                <div className="profile-reviews-v2">
+                  {tutor.recommendations.map((rec) => (
+                    <article key={rec.id} className="profile-review-card">
+                      <strong>{rec.recommenderName}</strong>
+                      {rec.relationship && <p className="muted">{rec.relationship}</p>}
+                      <p>{rec.comment}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+
             <section className="profile-content-card" id="reviews">
               <h2>Student reviews</h2>
               {avg !== null && (
@@ -644,7 +670,6 @@ export default async function TutorProfilePage({ params }: Params) {
                   t.reviews.length > 0
                     ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                     : null;
-                const tStar = (t.planTier ?? 0) >= 2;
                 const tSubjects = splitList(t.subjects).slice(0, 3);
                 return (
                   <div key={t.id} className="tc-card">
@@ -657,11 +682,7 @@ export default async function TutorProfilePage({ params }: Params) {
                         cropZoom={t.photoCropZoom}
                         initial={t.user.name.slice(0, 1).toUpperCase()}
                       />
-                      {tStar && (
-                        <div className="tc-star-badge" title="Star Tutor">
-                          ⭐ Star
-                        </div>
-                      )}
+                      <TutorTrustBadgePill badge={t.trustBadge} size="sm" />
                     </div>
                     <div className="tc-body">
                       <div className="tc-top-row">

@@ -9,6 +9,7 @@ import {
   resolveSubjectName,
 } from "@/lib/search-smart";
 import { isBoostActive } from "@/lib/subscription";
+import { trustBadgeSearchScore } from "@/lib/tutor-badges";
 import { citiesForSearchCountry } from "@/lib/tutor-catalog";
 
 export type TutorSearchFilters = {
@@ -163,6 +164,7 @@ export async function searchTutors(
         country: true,
         expertise: true,
         verified: true,
+        trustBadge: true,
         planTier: true,
         highlighted: true,
         highlightedUntil: true,
@@ -202,6 +204,7 @@ export async function searchTutors(
       const highlight =
         (t.highlightedUntil && t.highlightedUntil > now) || t.highlighted ? 1 : 0;
       const verified = t.verified ? 1 : 0;
+      const trustScore = trustBadgeSearchScore(t.trustBadge);
       const tierScore = (t.planTier ?? 0) * 5;
       const locBoost =
         location && (t.location || "").toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
@@ -226,6 +229,7 @@ export async function searchTutors(
           boost * 1000 +
           highlight * 100 +
           verified * 10 +
+          trustScore * 15 +
           locBoost +
           countryBoost +
           subjectFieldMatch +
@@ -304,6 +308,7 @@ export async function similarTutors(opts: {
       photoCropY: true,
       photoCropZoom: true,
       verified: true,
+      trustBadge: true,
       planTier: true,
       headline: true,
       subjects: true,

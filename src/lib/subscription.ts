@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { syncTutorTrustBadge } from "@/lib/tutor-badges";
 import { FREE_TUTOR_AD_CAP } from "@/lib/types";
 import type { Role, SubscriptionPlan } from "@/lib/types";
 
@@ -254,6 +255,8 @@ export async function syncTutorBadges(userId: string) {
       active: profile.forceActive || hasPaidListing || listable,
     },
   });
+
+  await syncTutorTrustBadge(profile.id);
 
   if (highlightUntil && highlightUntil > now) {
     await prisma.tutorAd.updateMany({

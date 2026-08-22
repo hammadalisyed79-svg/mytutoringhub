@@ -1919,6 +1919,72 @@ select:focus {
   border: 1px solid rgba(202, 138, 4, 0.3);
 }
 
+.tutor-trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.tutor-trust-badge--sm {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.tutor-trust-badge--new {
+  color: #1e3a5f;
+  background: rgba(30, 58, 95, 0.1);
+  border-color: rgba(30, 58, 95, 0.18);
+}
+
+.tutor-trust-badge--recommended {
+  color: #854d0e;
+  background: rgba(202, 138, 4, 0.12);
+  border-color: rgba(202, 138, 4, 0.25);
+}
+
+.tutor-trust-badge--super {
+  color: #166534;
+  background: rgba(22, 101, 52, 0.12);
+  border-color: rgba(22, 101, 52, 0.22);
+}
+
+.tutor-trust-badge--top {
+  color: #7c2d12;
+  background: rgba(234, 88, 12, 0.12);
+  border-color: rgba(234, 88, 12, 0.25);
+}
+
+.tutor-badge-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tutor-badge-steps {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.tutor-badge-steps li {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.tutor-badge-steps li.is-done strong {
+  color: var(--brand);
+}
+
 .profile-strength {
   margin-top: 1rem;
 }

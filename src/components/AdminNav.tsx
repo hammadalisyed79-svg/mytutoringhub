@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/verifications", label: "Verifications" },
   { href: "/admin/reviews", label: "Reviews" },
+  { href: "/admin/recommendations", label: "Recommendations" },
   { href: "/admin/messages", label: "Messages" },
   { href: "/admin/subjects", label: "Subjects" },
   { href: "/admin/past-papers", label: "Past papers" },

@@ -5,6 +5,7 @@ import { parsePastPaperKey } from "@/lib/past-papers";
 import { pastPaperVisibility } from "@/lib/past-papers/import-service";
 import { slugify } from "@/lib/search-tutors";
 import { syncTutorBadges } from "@/lib/subscription";
+import { syncTutorTrustBadge } from "@/lib/tutor-badges";
 import {
   activatePaidSafepaySubscription,
   fetchSafepayTrackerState,
@@ -338,17 +339,40 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const id = needId(payload.id);
       targetType = "Review";
       targetId = id;
-      await prisma.review.update({
+      const review = await prisma.review.update({
         where: { id },
         data: { status: action === "review_publish" ? "PUBLISHED" : "HIDDEN" },
+        select: { tutorProfileId: true },
       });
+      await syncTutorTrustBadge(review.tutorProfileId);
       break;
     }
     case "review_delete": {
       const id = needId(payload.id);
       targetType = "Review";
       targetId = id;
+      const review = await prisma.review.findUnique({
+        where: { id },
+        select: { tutorProfileId: true },
+      });
       await prisma.review.delete({ where: { id } });
+      if (review) await syncTutorTrustBadge(review.tutorProfileId);
+      break;
+    }
+    case "recommendation_approve":
+    case "recommendation_reject": {
+      const id = needId(payload.id);
+      targetType = "TutorRecommendation";
+      targetId = id;
+      const item = await prisma.tutorRecommendation.update({
+        where: { id },
+        data: {
+          status: action === "recommendation_approve" ? "APPROVED" : "REJECTED",
+          adminNote: payload.adminNote ? String(payload.adminNote) : null,
+        },
+        select: { tutorProfileId: true },
+      });
+      await syncTutorTrustBadge(item.tutorProfileId);
       break;
     }
     case "report_resolve":

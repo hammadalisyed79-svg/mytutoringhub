@@ -101,6 +101,7 @@ model TutorProfile {
   photoCropY      Float?    @default(0)
   photoCropZoom   Float?    @default(1)
   verified        Boolean   @default(false)
+  trustBadge      String    @default("NEW")
   planTier        Int       @default(0)
   highlighted     Boolean   @default(false)
   highlightedUntil DateTime?
@@ -111,7 +112,26 @@ model TutorProfile {
   updatedAt       DateTime  @updatedAt
 
   reviews Review[]
+  recommendations TutorRecommendation[]
   ads     TutorAd[]
+}
+
+model TutorRecommendation {
+  id               String       @id @default(cuid())
+  tutorProfileId   String
+  tutorProfile     TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  recommenderName  String
+  recommenderEmail String?
+  relationship     String?
+  comment          String
+  proofUrl         String?
+  status           String       @default("PENDING")
+  adminNote        String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([tutorProfileId, status])
+  @@index([status, createdAt])
 }
 
 model TutorAd {

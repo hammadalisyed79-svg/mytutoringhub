@@ -10,6 +10,7 @@ import { SearchFiltersForm } from "@/components/SearchFiltersForm";
 import { SearchStudentBanner } from "@/components/SearchStudentBanner";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
+import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
@@ -205,7 +206,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             const boosted = isBoostActive(t.boostUntil);
             const highlighted =
               t.highlighted || (t.highlightedUntil && t.highlightedUntil > new Date());
-            const isStarTutor = (t.planTier ?? 0) >= 2;
             const subjectChips = (t.subjects || "")
               .split(/[,;|]/)
               .map((s) => s.trim())
@@ -237,11 +237,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     cropZoom={t.photoCropZoom}
                     initial={tutorName.slice(0, 1).toUpperCase()}
                   />
-                  {isStarTutor && (
-                    <span className="tc-star-badge" title="Star Tutor">
-                      Star tutor
-                    </span>
-                  )}
+                  <TutorTrustBadgePill badge={t.trustBadge} size="sm" />
                 </div>
 
                 <div className="tc-card-main">
