@@ -12,11 +12,37 @@ export const metadata = { title: "Messages" };
 
 type SearchParams = Promise<{ to?: string; tutor?: string; ad?: string }>;
 
+/** Accept user id or tutor-profile id (search historically linked profile ids). */
+async function resolveRecipientUserId(raw: string): Promise<{
+  userId: string;
+  name: string;
+} | null> {
+  const asUser = await prisma.user.findUnique({
+    where: { id: raw },
+    select: { id: true, name: true, role: true, suspended: true },
+  });
+  if (asUser && !asUser.suspended) {
+    return { userId: asUser.id, name: asUser.name };
+  }
+
+  const asProfile = await prisma.tutorProfile.findUnique({
+    where: { id: raw },
+    select: {
+      user: { select: { id: true, name: true, suspended: true } },
+    },
+  });
+  if (asProfile?.user && !asProfile.user.suspended) {
+    return { userId: asProfile.user.id, name: asProfile.user.name };
+  }
+
+  return null;
+}
+
 export default async function MessagesPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const sp = await searchParams;
-  const recipientId = sp.to?.trim() || sp.tutor?.trim();
+  const rawRecipient = sp.to?.trim() || sp.tutor?.trim();
 
   const uid = session.user.id;
   if (session.user.role !== "ADMIN") {
@@ -27,6 +53,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     if (me?.suspended) redirect("/dashboard");
     if (!me?.emailVerified) redirect("/dashboard?verify=1");
   }
+
+  const recipient = rawRecipient ? await resolveRecipientUserId(rawRecipient) : null;
+  const recipientId = recipient?.userId;
 
   if (recipientId && recipientId !== uid) {
     const existing = await prisma.conversation.findFirst({
@@ -40,6 +69,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     });
     if (existing) redirect(`/messages/${existing.id}`);
   }
+
   const conversations = await prisma.conversation.findMany({
     where: { OR: [{ userAId: uid }, { userBId: uid }] },
     orderBy: { lastMessageAt: "desc" },
@@ -58,26 +88,66 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
   const studentPlanSummary =
     session.user.role === "STUDENT" ? await getPlanDashboardSummary(uid, "STUDENT") : null;
 
+  const hasUnlimited = Boolean(studentPlanSummary && studentPlanSummary.usageLimit < 0);
+  const contactsLimit =
+    studentPlanSummary && studentPlanSummary.usageLimit > 0
+      ? studentPlanSummary.usageLimit
+      : null;
+  const contactsRemaining =
+    studentPlanSummary && studentPlanSummary.usageLimit > 0
+      ? Math.max(0, studentPlanSummary.usageLimit - studentPlanSummary.usageUsed)
+      : hasUnlimited
+        ? null
+        : null;
+
+  const composing = Boolean(recipientId && recipientId !== uid);
+
   return (
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
         <p className="section-lead">{VALUE_PROPOSITION}</p>
 
-        <MessagesPlanPanel userId={uid} role={session.user.role} />
+        {/* Compose first — messaging is the job of this page when a tutor is selected */}
+        {composing && recipientId && (
+          <StartMessageFromQuery
+            recipientId={recipientId}
+            recipientName={recipient?.name}
+            relatedAdId={sp.ad}
+            contactsRemaining={contactsRemaining}
+            contactsLimit={contactsLimit}
+            hasUnlimited={hasUnlimited || session.user.role !== "STUDENT"}
+          />
+        )}
 
-        {recipientId && <StartMessageFromQuery recipientId={recipientId} relatedAdId={sp.ad} />}
+        {rawRecipient && !recipientId && (
+          <div className="panel empty-state" style={{ marginBottom: "1.5rem" }}>
+            <h2>Tutor not found</h2>
+            <p className="muted">That tutor link is invalid or no longer available.</p>
+            <p>
+              <Link href="/search" className="btn">
+                Find tutors
+              </Link>
+            </p>
+          </div>
+        )}
 
-        {conversations.length === 0 && !recipientId && (
+        <MessagesPlanPanel
+          userId={uid}
+          role={session.user.role}
+          composing={composing}
+        />
+
+        {conversations.length === 0 && !composing && (
           <div className="panel empty-state">
             <h2>No conversations yet</h2>
             <p className="muted">
               {session.user.role === "TUTOR"
                 ? "Browse student requests and reply. Tutor Basic unlocks unlimited enquiry reveals when you message first."
-                : studentPlanSummary && studentPlanSummary.usageLimit < 0
+                : hasUnlimited
                   ? "Search tutors and send a message — your plan includes unlimited tutor contacts this month."
-                  : studentPlanSummary
-                    ? `Search tutors and send a message. You have ${Math.max(0, studentPlanSummary.usageLimit - studentPlanSummary.usageUsed)} of ${studentPlanSummary.usageLimit} free tutor contacts left this month.`
+                  : studentPlanSummary && contactsRemaining != null && contactsLimit != null
+                    ? `Search tutors and send a message. You have ${contactsRemaining} of ${contactsLimit} free tutor contacts left this month.`
                     : "Search tutors and send a message. Free accounts get 3 new tutor contacts per month."}
             </p>
             <p>

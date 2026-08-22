@@ -60,7 +60,22 @@ function CompactPlanCard({
   );
 }
 
-export async function MessagesPlanPanel({ userId, role }: { userId: string; role: Role }) {
+/**
+ * Messaging flow:
+ * - Free + contacts left → banner with "X of 3 left" only (no checkout wall)
+ * - Free + 0 left → show Student Pass upgrade
+ * - Student Pass / Pro → banner only (unlimited); no messaging paywall
+ */
+export async function MessagesPlanPanel({
+  userId,
+  role,
+  composing = false,
+}: {
+  userId: string;
+  role: Role;
+  /** True when opening a new message to someone — keep UI focused on compose */
+  composing?: boolean;
+}) {
   if (role === "ADMIN") return null;
 
   const [summary, currency, plans, paidCheckoutLive] = await Promise.all([
@@ -73,25 +88,56 @@ export async function MessagesPlanPanel({ userId, role }: { userId: string; role
   const audience = role === "TUTOR" ? "tutor" : "student";
   const corePlans = plans.filter((p) => !p.isAddOn && p.audience === audience);
 
+  const freeLimitExhausted =
+    summary.planTier === "free" &&
+    summary.usageLimit > 0 &&
+    summary.usageUsed >= summary.usageLimit;
+
+  const remaining =
+    summary.usageLimit > 0
+      ? Math.max(0, summary.usageLimit - summary.usageUsed)
+      : summary.usageLimit < 0
+        ? null
+        : 0;
+
+  // Only sell messaging when free quota is gone. Never wall Student Pass with Pro here.
   let checkoutPlans: ResolvedPlan[] = [];
-  if (role === "STUDENT") {
-    if (summary.planTier === "free") {
-      checkoutPlans = corePlans.filter((p) => p.id === "STUDENT_PASS" || p.id === "STUDENT_PRO");
-    } else if (summary.planName === "Student Pass") {
-      checkoutPlans = corePlans.filter((p) => p.id === "STUDENT_PRO");
-    }
-  } else if (summary.planTier === "free") {
+  if (role === "STUDENT" && freeLimitExhausted) {
+    checkoutPlans = corePlans.filter((p) => p.id === "STUDENT_PASS" || p.id === "STUDENT_PRO");
+  } else if (role === "TUTOR" && freeLimitExhausted) {
     checkoutPlans = corePlans.filter((p) => p.id === "TUTOR_BASIC");
   }
 
   const heading =
-    role === "STUDENT" ? "Buy messaging access" : "Unlock unlimited student replies";
+    role === "STUDENT" ? "You've used your free contacts" : "Monthly enquiry limit reached";
   const lead =
     role === "STUDENT"
-      ? summary.planTier === "free"
-        ? `Free accounts include ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Student Pass unlocks unlimited messaging — no cart needed, checkout starts here.`
-        : "Student Pro adds the AI study assistant on top of unlimited tutor contacts."
-      : "Listed tutors receive messages anytime. Tutor Basic removes the monthly cap when you contact students first.";
+      ? `Free accounts include ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Upgrade to Student Pass for unlimited messaging.`
+      : "Tutor Basic removes the monthly cap when you contact students first.";
+
+  // While composing a new message and still allowed to send, keep the page focused.
+  if (composing && !freeLimitExhausted) {
+    return (
+      <section className="panel messages-plan-panel messages-plan-panel-compact">
+        <PlanBanner
+          role={role}
+          planName={summary.planName}
+          planTier={summary.planTier}
+          usageUsed={summary.usageUsed}
+          usageLimit={summary.usageLimit}
+          usageLabel={summary.usageLabel}
+          renewsOn={summary.renewsOn}
+        />
+        {role === "STUDENT" && summary.planTier === "free" && remaining != null && (
+          <p className="muted messages-plan-foot" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
+            {remaining} free tutor contact{remaining === 1 ? "" : "s"} left this month. After that,
+            upgrade to <Link href="/pricing?plan=STUDENT_PASS">Student Pass</Link> for unlimited
+            messaging.
+          </p>
+        )}
+      </section>
+    );
+  }
 
   return (
     <section className="panel messages-plan-panel">
@@ -104,6 +150,13 @@ export async function MessagesPlanPanel({ userId, role }: { userId: string; role
         usageLabel={summary.usageLabel}
         renewsOn={summary.renewsOn}
       />
+
+      {role === "STUDENT" && summary.planTier === "free" && !freeLimitExhausted && remaining != null && (
+        <p className="muted messages-plan-foot" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
+          {remaining} of {summary.usageLimit} free tutor contacts left this month.{" "}
+          <Link href="/pricing?plan=STUDENT_PASS">Get unlimited with Student Pass</Link>
+        </p>
+      )}
 
       {checkoutPlans.length > 0 && (
         <div className="messages-plan-checkout">
@@ -141,7 +194,7 @@ export async function MessagesPlanPanel({ userId, role }: { userId: string; role
         </div>
       )}
 
-      {checkoutPlans.length === 0 && summary.planTier !== "free" && (
+      {checkoutPlans.length === 0 && summary.planTier !== "free" && !composing && (
         <p className="muted messages-plan-foot" style={{ marginTop: "0.85rem", marginBottom: 0 }}>
           {summary.upgradeHint}{" "}
           <Link href="/pricing">View pricing</Link>

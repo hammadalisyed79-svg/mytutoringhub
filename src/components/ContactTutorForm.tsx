@@ -108,8 +108,7 @@ export function ContactTutorForm({
     <form className="contact-form contact-form-embedded" onSubmit={send}>
       <h3>Message {tutorName}</h3>
       <p className="muted">
-        Lesson fees are arranged directly with your tutor in a currency you both agree on. Free
-        accounts get 3 new tutor contacts per month.
+        Lesson fees are arranged directly with your tutor in a currency you both agree on.
       </p>
       <textarea
         value={body}

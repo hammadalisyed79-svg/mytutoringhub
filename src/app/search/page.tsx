@@ -304,7 +304,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 </div>
 
                 <div className="tc-card-actions">
-                  <Link href={`/messages?tutor=${t.id}`} className="btn btn-secondary btn-sm">
+                  <Link href={`/messages?to=${t.userId}`} className="btn btn-secondary btn-sm">
                     Message
                   </Link>
                   <Link href={`/tutors/${t.id}`} className="btn btn-sm">
