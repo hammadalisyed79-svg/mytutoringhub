@@ -3,7 +3,9 @@ import { formatPromoUntil, getLivePlans, getPlan } from "@/lib/plans";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { PricingPlansClient } from "@/components/PricingPlansClient";
+import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { prisma } from "@/lib/prisma";
+import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 
 export const dynamic = "force-dynamic";
@@ -53,12 +55,11 @@ export default async function PricingPage({
             <p className="eyebrow">Platform subscriptions</p>
             <h1 className="page-title">Plans & pricing</h1>
             <p className="section-lead">
-              Prices shown in <strong>{currency}</strong>. Free students get 3 new tutor contacts per
-              month; free tutors with a complete profile appear in search and always receive
-              messages (5 enquiry reveals/month when contacting students). Paid plans remove caps and
-              add priority. There is no shopping cart — choose a plan and pay on Safepay in one
-              step. Lesson fees stay off-platform.
+              {VALUE_PROPOSITION} Prices shown in <strong>{currency}</strong>.{" "}
+              {STUDENT_PASS_PAPERS_LINE} There is no shopping cart — choose a plan and pay on
+              Safepay in one step.
             </p>
+            <ValuePropStrip />
           </div>
           <ol className="checkout-steps" aria-label="Checkout steps">
             <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>

@@ -6,6 +6,8 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
+import { ReferralShareButton } from "@/components/ReferralShareButton";
+import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import {
   type DashboardSearchParams,
   prepareDashboardHome,
@@ -106,8 +108,7 @@ export default async function StudentDashboardPage({
               </ul>
             ) : (
               <p className="muted">
-                Free accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited
-                messaging; Student Pro adds AI.
+                {STUDENT_FREE_CONTACTS_LINE} Student Pro adds unlimited past papers and AI.
               </p>
             )}
             {pendingSubs.length > 0 && (
@@ -148,6 +149,7 @@ export default async function StudentDashboardPage({
               <Link href="/pricing">See Student Pass →</Link>
             </p>
             {!corePlan && <RecoverPaymentForm />}
+            <ReferralShareButton userId={session.user.id} />
           </section>
 
           <section className="panel">

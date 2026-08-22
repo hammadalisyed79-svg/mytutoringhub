@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { EXAM_PREP_CTA } from "@/lib/marketing-copy";
 
 const EXAMS = [
   {
@@ -300,6 +301,24 @@ export default function CountdownPage() {
                 You&apos;re tracking all available sessions!
               </p>
             )}
+          </div>
+        </section>
+
+        <section className="panel exam-prep-cta">
+          <h2 style={{ fontSize: "1rem", fontWeight: 700, margin: "0 0 0.5rem" }}>
+            Exam prep bundle
+          </h2>
+          <p style={{ margin: "0 0 0.85rem", fontSize: "0.95rem" }}>{EXAM_PREP_CTA}</p>
+          <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>
+            <Link href="/pricing" className="btn btn-sm">
+              Student Pass
+            </Link>
+            <Link href="/past-papers" className="btn btn-secondary btn-sm">
+              Past papers
+            </Link>
+            <Link href="/search" className="btn btn-secondary btn-sm">
+              Find tutors
+            </Link>
           </div>
         </section>
 

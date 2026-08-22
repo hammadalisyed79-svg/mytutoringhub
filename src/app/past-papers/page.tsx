@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
+import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
+import { ValuePropStrip } from "@/components/ValuePropStrip";
+import { STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { PastPaperResultList } from "@/components/PastPaperResultList";
 import { PaginationNav } from "@/components/PaginationNav";
@@ -179,8 +182,10 @@ export default async function PastPapersPage({
         <p className="section-lead">
           Browse by country, board, qualification, subject, year and session. Each download is{" "}
           <strong>{feeLabel}</strong>
-          {feePkr === 0 ? " for signed-in users" : " — set by admin, paid once per paper"}.
+          {feePkr === 0 ? " for signed-in users" : " — or included with Student Pass (10/month)"}.
         </p>
+        <ValuePropStrip />
+        {(subject || sp.q) && <PastPaperTutorCta subject={subject || sp.q || ""} />}
         <SubjectHubTabs active="papers" />
 
         {sp.checkout === "success" && (

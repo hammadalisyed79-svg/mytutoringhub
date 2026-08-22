@@ -19,6 +19,8 @@ model User {
   suspended        Boolean   @default(false)
   emailVerified    DateTime?
   onboardingComplete Boolean @default(true)
+  // One-time bonus contacts from successful referrals (+1 per side).
+  referralBonusContacts Int @default(0)
   stripeCustomerId String?   @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

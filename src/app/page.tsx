@@ -2,7 +2,9 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
+import { HeroPathCards } from "@/components/HeroPathCards";
 import { LogoMark } from "@/components/Logo";
+import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { JsonLd } from "@/components/JsonLd";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { formatHourly } from "@/lib/currency";
@@ -12,6 +14,11 @@ import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
+import {
+  GEO_CURRENCY_LINE,
+  STUDENT_REQUESTS_LINE,
+  VALUE_PROPOSITION,
+} from "@/lib/marketing-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -131,13 +138,11 @@ export default async function HomePage() {
             <p className="hero-kicker">Private lessons & tutors</p>
           </div>
           <h1>My Tutoring Hub</h1>
-          <p>Trusted tutors worldwide — online or at home, priced in your currency.</p>
+          <p>{VALUE_PROPOSITION}</p>
+          <p className="hero-sub muted">{GEO_CURRENCY_LINE}</p>
           <HeroSearch />
-          <div className="hero-ctas" style={{ marginTop: "1rem" }}>
-            <Link href="/become-a-tutor" className="btn btn-secondary">
-              I&apos;m a tutor
-            </Link>
-          </div>
+          <HeroPathCards />
+          <ValuePropStrip className="hero-value-strip" />
         </div>
       </section>
 
@@ -155,7 +160,8 @@ export default async function HomePage() {
               <span>2</span>
               <h3>Contact</h3>
               <p className="muted">
-                With a Student Pass, message as many tutors as you like and compare replies.
+                Message tutors free (3 contacts/month) or unlimited with Student Pass. Compare
+                replies and pick the best fit.
               </p>
             </div>
             <div className="step">
@@ -254,6 +260,28 @@ export default async function HomePage() {
               Browse all subjects
             </Link>
           </p>
+        </div>
+      </section>
+
+      <section className="section section-alt">
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <h2>Post a student request</h2>
+              <p className="section-lead">{STUDENT_REQUESTS_LINE}</p>
+            </div>
+            <Link href="/ads" className="btn btn-secondary">
+              Browse requests
+            </Link>
+          </div>
+          <div className="hero-ctas">
+            <Link href="/ads/new" className="btn">
+              Post what you need
+            </Link>
+            <Link href="/pricing" className="btn btn-secondary">
+              Student Pass
+            </Link>
+          </div>
         </div>
       </section>
 

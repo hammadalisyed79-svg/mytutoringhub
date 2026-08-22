@@ -65,7 +65,8 @@ export default async function SeoTutorsPage({ params }: Params) {
               Average rate around{" "}
               <strong>{formatMoney(pkrToCurrency(avg, currency), currency)}/hr</strong>.
             </>
-          )}
+          )}{" "}
+          Search free — message with Student Pass. No commission on lessons.
         </p>
         <p>
           <Link

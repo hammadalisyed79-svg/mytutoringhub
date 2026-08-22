@@ -169,7 +169,11 @@ export async function searchTutors(
         boostUntil: true,
         offersFreeTrial: true,
         user: { select: { id: true, name: true } },
-        reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
+        reviews: {
+          where: { status: "PUBLISHED" },
+          select: { rating: true, comment: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 
@@ -307,7 +311,11 @@ export async function similarTutors(opts: {
       location: true,
       country: true,
       user: { select: { name: true } },
-      reviews: { where: { status: "PUBLISHED" }, select: { rating: true } },
+      reviews: {
+        where: { status: "PUBLISHED" },
+        select: { rating: true, comment: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
     take: opts.take ?? 4,
     orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
+import { TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
 
 export const metadata = {
   title: "Become a tutor",
@@ -22,12 +23,7 @@ export default async function BecomeATutorPage() {
     <div className="page">
       <div className="container">
         <h1 className="page-title">Are you a tutor? Join My Tutoring Hub</h1>
-        <p className="section-lead">
-          Publish a complete profile to appear in search for free, run optional subject ads with
-          Tutor Basic, get verified, and keep 100% of lesson fees. Tutor Basic is complimentary
-          until 30 September 2026 for priority, unlimited reveals, and ads. Verified badge,
-          highlight, and ad boost stay paid.
-        </p>
+        <p className="section-lead">{TUTOR_FREE_LISTING_LINE}</p>
 
         <div className="steps" style={{ marginBottom: "2rem" }}>
           <div className="step">

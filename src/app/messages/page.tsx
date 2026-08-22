@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StartMessageFromQuery } from "@/components/StartMessageFromQuery";
 import { MessagesPlanPanel } from "@/components/MessagesPlanPanel";
 import { isImageAttachment } from "@/lib/media";
+import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
 
 export const metadata = { title: "Messages" };
 
@@ -43,10 +44,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
-        <p className="section-lead">
-          Chat with tutors and students. Free students get 3 new tutor contacts per month; Student
-          Pass unlocks unlimited messaging. Lesson fees stay off-platform.
-        </p>
+        <p className="section-lead">{VALUE_PROPOSITION}</p>
 
         <MessagesPlanPanel userId={uid} role={session.user.role} />
 

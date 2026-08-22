@@ -3,6 +3,7 @@ import { TutorAvatar } from "@/components/TutorAvatar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
+import { ShareTutorButton } from "@/components/ShareTutorButton";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
@@ -297,6 +298,10 @@ export default async function TutorProfilePage({ params }: Params) {
                 canMessage={canMessage}
                 session={session}
               />
+
+              <div className="profile-share-row">
+                <ShareTutorButton tutorId={tutor.id} tutorName={tutor.user.name?.trim() || "Tutor"} />
+              </div>
 
               <dl className="profile-quick-stats">
                 {subjects.length > 0 && (

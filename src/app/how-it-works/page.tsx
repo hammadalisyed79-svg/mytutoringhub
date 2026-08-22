@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
 
 export const metadata = {
   title: "How it works",
@@ -25,10 +26,7 @@ export default async function HowItWorksPage() {
     <div className="page">
       <div className="container">
         <h1 className="page-title">How to find a private tutor</h1>
-        <p className="section-lead">
-          Search tutors, message with free monthly contacts or a Student Pass, then arrange lessons
-          directly.
-        </p>
+        <p className="section-lead">{VALUE_PROPOSITION}</p>
 
         <div className="steps" style={{ marginBottom: "2.5rem" }}>
           <div className="step">
@@ -42,8 +40,9 @@ export default async function HowItWorksPage() {
             <span>2</span>
             <h3>Contact tutors</h3>
             <p className="muted">
-              Free accounts get 3 new tutor contacts per month. A Student Pass unlocks unlimited
-              messaging and “need a tutor” ads. Student Pro adds the AI study assistant.
+              Free accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited
+              messaging, request ads, and included past paper downloads. Student Pro adds unlimited
+              papers and the AI study assistant.
             </p>
           </div>
           <div className="step">

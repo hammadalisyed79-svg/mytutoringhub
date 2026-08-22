@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPastPaperFeePkr, parsePastPaperKey } from "@/lib/past-papers";
 import { paperHasFile } from "@/lib/past-papers/availability";
+import { canDownloadPastPaper, recordUsage } from "@/lib/plan-limits";
 import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
 import {
   checkoutCurrency,
@@ -65,6 +66,35 @@ export async function POST(req: Request) {
   });
   if (paid) {
     return NextResponse.json({ url: `/api/past-papers/download?key=${encodeURIComponent(catalogKey)}` });
+  }
+
+  const passDownload = await canDownloadPastPaper(session.user.id);
+  if (passDownload.includedInPlan && passDownload.allowed) {
+    await prisma.pastPaperPurchase.create({
+      data: {
+        userId: session.user.id,
+        paperId: paper.id,
+        catalogKey,
+        amountPkr: 0,
+        status: "PAID",
+      },
+    });
+    await recordUsage(session.user.id, "paper_download");
+    return NextResponse.json({
+      url: `/api/past-papers/download?key=${encodeURIComponent(catalogKey)}`,
+      granted: true,
+      includedInPlan: true,
+    });
+  }
+  if (passDownload.includedInPlan && !passDownload.allowed) {
+    return NextResponse.json(
+      {
+        error: "paper_limit_exceeded",
+        message: `You've used all ${passDownload.limit} included past paper downloads this month. Upgrade to Student Pro for unlimited downloads.`,
+        upgradeUrl: "/pricing?plan=STUDENT_PRO",
+      },
+      { status: 429 },
+    );
   }
 
   const feePkr = await getPastPaperFeePkr();

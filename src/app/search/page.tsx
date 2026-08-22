@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { searchTutors } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
 import { SearchFiltersForm } from "@/components/SearchFiltersForm";
+import { SearchStudentBanner } from "@/components/SearchStudentBanner";
+import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
@@ -13,6 +16,7 @@ import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 import { formatTutorPlace } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getUserCountry } from "@/lib/geo";
+import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +52,7 @@ function searchQuery(sp: Record<string, string | undefined>, page: number) {
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
+  const session = await auth();
   const currency = await getVisitorCurrency();
   const pinnedCountry = getUserCountry(await headers());
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
@@ -90,10 +95,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     <div className="page">
       <div className="container">
         <h1 className="page-title">Find private tutors</h1>
-        <p className="section-lead">
-          Search by subject, country, or city. Rates are shown in {currency}. Lesson fees stay between
-          you and the tutor.
-        </p>
+        <p className="section-lead">{VALUE_PROPOSITION}</p>
+        <ValuePropStrip />
+
+        {session?.user?.role === "STUDENT" && (
+          <SearchStudentBanner userId={session.user.id} role={session.user.role} />
+        )}
+        {!session?.user && (
+          <p className="muted search-guest-hint">{STUDENT_FREE_CONTACTS_LINE}</p>
+        )}
 
         <SearchFiltersForm
           initial={sp}
@@ -180,6 +190,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               .filter(Boolean)
               .slice(0, 2);
             const snippet = (t.bio || "").slice(0, 90).trim();
+            const reviewSnippet = (t.reviews.find((r) => r.comment?.trim())?.comment || "")
+              .slice(0, 72)
+              .trim();
             const place = formatTutorPlace(t.location, t.country);
             const tutorName = t.user.name?.trim() || "Tutor";
             const modes = [t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online";
@@ -230,6 +243,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     {highlighted && <span className="badge accent">Featured</span>}
                     {t.offersFreeTrial && <span className="badge">Free trial</span>}
                   </div>
+
+                  {reviewSnippet && (
+                    <p className="tc-review-snippet muted">
+                      “{reviewSnippet}{(t.reviews.find((r) => r.comment?.trim())?.comment || "").length > 72 ? "…" : ""}”
+                    </p>
+                  )}
 
                   {snippet && (
                     <p className="tc-snippet tc-snippet-grid">

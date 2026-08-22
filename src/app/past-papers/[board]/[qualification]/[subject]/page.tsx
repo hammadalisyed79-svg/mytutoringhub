@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
+import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { getPastPaperFeePkr } from "@/lib/past-papers";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
@@ -99,6 +100,7 @@ export default async function PastPaperSeoPage({
           {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
         </p>
         <SubjectHubTabs active="papers" />
+        <PastPaperTutorCta subject={titleSubject} />
         <p className="paper-crumb muted">
           <Link href="/past-papers">Past papers</Link>
           {entry ? (

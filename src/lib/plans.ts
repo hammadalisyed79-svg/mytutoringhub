@@ -60,6 +60,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     annualPricePkr: defaultAnnualPricePkr(1999),
     features: [
       "Unlimited new tutor contacts",
+      "10 past paper downloads per month",
       "Post “need a tutor” ads",
       "Browse verified tutors",
       "Online or in-person lessons",
@@ -75,6 +76,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     annualPricePkr: defaultAnnualPricePkr(3499),
     features: [
       "Everything in Student Pass",
+      "Unlimited past paper downloads",
       "AI study assistant",
       "Unlimited tutor contacts",
       "Post “need a tutor” ads",
@@ -85,15 +87,15 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "TUTOR_BASIC",
     name: "Tutor Basic",
     description:
-      "Priority placement, unlimited enquiry reveals, and subject ads. Complete free profiles already appear in search.",
+      "Get more students: priority in search, unlimited enquiry reveals, and subject ads. Free complete profiles already appear in search.",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),
     features: [
-      "Priority ranking in search (planTier boost)",
-      "Unlimited enquiry reveals when contacting students",
+      "Priority ranking — appear above free listings",
+      "Unlimited enquiry reveals when you message students first",
       "Up to 3 active subject ads",
-      "Free complete profiles stay listed; Basic adds reach",
+      "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
     promoEnabled: true,

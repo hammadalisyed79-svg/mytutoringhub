@@ -9,6 +9,8 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 
 export const TUTOR_FREE_REVEAL_LIMIT = 5;
 export const STUDENT_FREE_CONTACT_LIMIT = 3;
+export const STUDENT_PASS_PAPER_DOWNLOADS = 10;
+export const REFERRAL_CONTACT_BONUS = 1;
 
 /** Returns the user's current plan slug — reads Subscription table, falls back to "free". */
 export async function getUserPlan(userId: string): Promise<string> {
@@ -35,10 +37,42 @@ function currentMonth(): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+export async function getReferralContactBonus(userId: string): Promise<number> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { referralBonusContacts: true },
+    });
+    return Math.max(0, user?.referralBonusContacts ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+/** Apply referral bonus to new user and referrer (once each). */
+export async function applyReferralSignup(newUserId: string, referrerId: string): Promise<void> {
+  if (!referrerId || referrerId === newUserId) return;
+  const referrer = await prisma.user.findUnique({
+    where: { id: referrerId },
+    select: { id: true, role: true, suspended: true },
+  });
+  if (!referrer || referrer.suspended) return;
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: newUserId },
+      data: { referralBonusContacts: { increment: REFERRAL_CONTACT_BONUS } },
+    }),
+    prisma.user.update({
+      where: { id: referrerId },
+      data: { referralBonusContacts: { increment: REFERRAL_CONTACT_BONUS } },
+    }),
+  ]);
+}
+
 /** Returns monthly usage count for a user and event type. */
 export async function getMonthlyUsage(
   userId: string,
-  type: "enquiry_reveal" | "tutor_contact",
+  type: "enquiry_reveal" | "tutor_contact" | "paper_download",
 ): Promise<number> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,10 +106,11 @@ export async function canPerformAction(
 
   if (action === "tutor_contact") {
     const isPaid = await hasStudentMessagingPass(userId);
-    const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT;
+    const bonus = isPaid ? 0 : await getReferralContactBonus(userId);
+    const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT + bonus;
     return {
-      allowed: isPaid || used < STUDENT_FREE_CONTACT_LIMIT,
-      limit: isPaid ? -1 : STUDENT_FREE_CONTACT_LIMIT,
+      allowed: isPaid || used < limit,
+      limit: isPaid ? -1 : limit,
       used,
       plan,
     };
@@ -84,10 +119,34 @@ export async function canPerformAction(
   return { allowed: false, limit: 0, used: 0, plan };
 }
 
+/** Student Pass: 10 paper downloads/month. Student Pro: unlimited. */
+export async function canDownloadPastPaper(userId: string): Promise<{
+  allowed: boolean;
+  limit: number;
+  used: number;
+  includedInPlan: boolean;
+}> {
+  const hasPro = await hasActivePlan(userId, "STUDENT_PRO");
+  if (hasPro) {
+    return { allowed: true, limit: -1, used: 0, includedInPlan: true };
+  }
+  const hasPass = await hasStudentMessagingPass(userId);
+  if (!hasPass) {
+    return { allowed: false, limit: 0, used: 0, includedInPlan: false };
+  }
+  const used = await getMonthlyUsage(userId, "paper_download");
+  return {
+    allowed: used < STUDENT_PASS_PAPER_DOWNLOADS,
+    limit: STUDENT_PASS_PAPER_DOWNLOADS,
+    used,
+    includedInPlan: true,
+  };
+}
+
 /** Record a usage event. Silently no-ops if the UsageEvent table doesn't exist yet. */
 export async function recordUsage(
   userId: string,
-  type: "enquiry_reveal" | "tutor_contact",
+  type: "enquiry_reveal" | "tutor_contact" | "paper_download",
 ): Promise<void> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,8 +203,8 @@ export async function getPlanDashboardSummary(
       upgradeHint: hasPro
         ? "You have unlimited contacts and the AI study assistant."
         : hasPass
-          ? "Upgrade to Student Pro for the AI study assistant."
-          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Upgrade for unlimited messaging.`,
+          ? "Upgrade to Student Pro for unlimited past papers and the AI study assistant."
+          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month (+ referral bonus). Upgrade for unlimited messaging and past papers.`,
     };
   }
 

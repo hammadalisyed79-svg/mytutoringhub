@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { STUDENT_REQUESTS_LINE, VALUE_PROPOSITION } from "@/lib/marketing-copy";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -56,10 +57,7 @@ export default async function AdsPage() {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
           <div>
             <h1 className="page-title">Student requests</h1>
-            <p className="section-lead">
-              Students with a Pass post what they need. Tutors with Tutor Basic can reach out.
-              {tutorSubjects.length > 0 && " Requests matching your subjects appear first."}
-            </p>
+            <p className="section-lead">{STUDENT_REQUESTS_LINE}</p>
           </div>
           {session?.user?.role === "STUDENT" && (
             <Link href="/ads/new" className="btn">
@@ -67,6 +65,11 @@ export default async function AdsPage() {
             </Link>
           )}
         </div>
+
+        <p className="muted ads-board-note">
+          {VALUE_PROPOSITION}
+          {tutorSubjects.length > 0 && " Requests matching your subjects appear first."}
+        </p>
 
         <div className="results">
           {sortedAds.length === 0 && (

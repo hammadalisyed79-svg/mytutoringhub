@@ -37,6 +37,7 @@ function RegisterFormInner({
       email: String(fd.get("email")),
       password: String(fd.get("password")),
       role,
+      ref: searchParams.get("ref") || undefined,
     };
     const res = await fetch("/api/register", {
       method: "POST",

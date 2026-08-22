@@ -2801,6 +2801,80 @@ select:focus {
   font-weight: 700;
 }
 
+.paper-tutor-cta {
+  margin: 1rem 0 1.25rem;
+}
+
+.paper-tutor-cta h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.08rem;
+}
+
+.value-prop-strip {
+  margin: 0.65rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--brand-deep);
+}
+
+.hero-value-strip {
+  margin-top: 0.85rem;
+  text-align: center;
+}
+
+.hero-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+}
+
+.search-student-banner {
+  margin-bottom: 1rem;
+}
+
+.search-student-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+}
+
+.search-guest-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.tc-review-snippet {
+  margin: 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.profile-share-row {
+  margin-top: 0.65rem;
+}
+
+.share-tutor-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.referral-share {
+  margin-top: 1rem;
+}
+
+.referral-share h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.ads-board-note {
+  margin: 0 0 1rem;
+}
+
+.exam-prep-cta {
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--brand);
+}
+
 .paper-session h3 {
   margin: 0.85rem 0 0.4rem;
   font-size: 1.02rem;

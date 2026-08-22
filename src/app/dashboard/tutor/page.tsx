@@ -188,7 +188,9 @@ export default async function TutorDashboardPage({
                       </div>
                       {missing.length > 0 && (
                         <p className="profile-strength-nudge">
-                          Complete your profile to appear higher in search — add {missing.join(", ")}.
+                          Complete your profile to get listed in search for free — add{" "}
+                          {missing.join(", ")}. Tutor Basic adds priority when you&apos;re ready to
+                          grow.
                         </p>
                       )}
                     </div>

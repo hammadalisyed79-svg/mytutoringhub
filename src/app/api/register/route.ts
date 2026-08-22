@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueEmailVerification } from "@/lib/email-verification";
+import { applyReferralSignup } from "@/lib/plan-limits";
 import { getSiteSettings } from "@/lib/site-settings";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { normalizeDisplayName } from "@/lib/display-name";
@@ -12,6 +13,7 @@ const schema = z.object({
   email: z.string().min(5).max(254),
   password: z.string().min(6),
   role: z.enum(["STUDENT", "TUTOR"]),
+  ref: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -64,6 +66,14 @@ export async function POST(req: Request) {
     }
 
     await issueEmailVerification({ id: user.id, name: user.name, email: user.email });
+
+    if (data.role === "STUDENT" && data.ref?.trim()) {
+      try {
+        await applyReferralSignup(user.id, data.ref.trim());
+      } catch {
+        // Referral is best-effort — signup still succeeds
+      }
+    }
 
     return NextResponse.json({ id: user.id, email: user.email, role: user.role });
   } catch (e) {
