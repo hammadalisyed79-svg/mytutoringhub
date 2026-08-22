@@ -10,6 +10,7 @@ import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-cop
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { pageMetadata } from "@/lib/seo";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,10 @@ export default async function PricingPage({
     session.user.role !== "ADMIN" &&
     (sp.verify === "sent" || !me?.emailVerified);
   const paidCheckoutLive = isPaidCheckoutLive();
+
+  if (session?.user?.id) {
+    await reconcileUserSafepayPayments(session.user.id).catch(() => undefined);
+  }
 
   return (
     <div className="page checkout-page">

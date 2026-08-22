@@ -1,27 +1,48 @@
 "use client";
 
 import { useState } from "react";
+import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import type { SubscriptionPlan } from "@/lib/types";
 
 export function SubscribeButton({
   plan,
+  planLabel,
   label = "Subscribe securely",
   currency,
   billing,
   featured,
   complimentary,
   oneTime,
+  paidCheckoutLive = true,
 }: {
   plan: SubscriptionPlan;
+  planLabel?: string;
   label?: string;
   currency?: string;
   billing?: "monthly" | "annual";
   featured?: boolean;
   complimentary?: boolean;
   oneTime?: boolean;
+  paidCheckoutLive?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const displayName = planLabel || plan.replace(/_/g, " ");
+
+  if (!paidCheckoutLive && !complimentary) {
+    return (
+      <ManualPlanActivationButton
+        planName={displayName}
+        label={label.startsWith("Pay with") ? `Email to activate ${displayName}` : label}
+        featured={featured}
+        note={
+          oneTime
+            ? "Card checkout opening soon · Email us after payment to activate boost"
+            : "Card checkout opening soon · Manual activation available"
+        }
+      />
+    );
+  }
 
   async function subscribe() {
     setLoading(true);
@@ -48,6 +69,7 @@ export function SubscribeButton({
       return;
     }
     if (data.url) window.location.href = data.url;
+    else if (data.granted) window.location.href = "/dashboard?checkout=success";
   }
 
   return (

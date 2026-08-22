@@ -32,7 +32,7 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Profile Boost) are billed through Safepay. You receive a receipt email after a successful payment. Lesson payments are arranged privately. Tutors can buy Profile Boost from the dashboard for 30 days of extra search visibility. Booking fees, group class listings, and resource uploads are not available yet.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Profile Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Basic and free listings work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
   },
   {
     q: "Is Tutor Basic free?",

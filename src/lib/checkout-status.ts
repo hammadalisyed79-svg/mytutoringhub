@@ -30,7 +30,7 @@ export function checkoutNotice(
     case "safepay_unavailable":
       return {
         tone: "error",
-        text: "Online payments are temporarily unavailable. Please try again later.",
+        text: "Online card checkout is not active yet. Email admin@mytutoringhub.com to activate your plan manually, or try again after Safepay goes live.",
       };
     case "unknown_order":
       return {

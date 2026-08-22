@@ -3,6 +3,7 @@ import { SubscribeButton } from "@/components/SubscribeButton";
 import { getLivePlan } from "@/lib/plans";
 import { isBoostActive } from "@/lib/subscription";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 
 export async function ProfileBoostPanel({
   boostUntil,
@@ -17,6 +18,7 @@ export async function ProfileBoostPanel({
   const active = isBoostActive(boostUntil, now);
   const plan = await getLivePlan("AD_BOOST");
   const priceLabel = plan ? formatPlanPrice(plan.chargePricePkr, currency) : null;
+  const paidCheckoutLive = isPaidCheckoutLive();
 
   return (
     <section
@@ -54,10 +56,12 @@ export async function ProfileBoostPanel({
         )}
         <SubscribeButton
           plan="AD_BOOST"
+          planLabel={plan?.name || "Profile Boost"}
           currency={currency}
           label={active ? "Extend boost 30 days" : "Boost my profile"}
           featured
           oneTime
+          paidCheckoutLive={paidCheckoutLive}
         />
         {!compact && (
           <Link href="/pricing" className="btn btn-secondary">

@@ -3,6 +3,7 @@ import { PlanBanner } from "@/components/PlanBanner";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { getPlanDashboardSummary, STUDENT_FREE_CONTACT_LIMIT } from "@/lib/plan-limits";
 import { getLivePlans } from "@/lib/plans";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import type { ResolvedPlan } from "@/lib/plans";
@@ -12,10 +13,12 @@ function CompactPlanCard({
   plan,
   currency,
   featured,
+  paidCheckoutLive,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
   featured?: boolean;
+  paidCheckoutLive: boolean;
 }) {
   const price = plan.isPromoActive ? plan.chargePricePkr : plan.listPricePkr;
 
@@ -41,9 +44,16 @@ function CompactPlanCard({
       <div className="plan-cta">
         <SubscribeButton
           plan={plan.id}
+          planLabel={plan.name}
           currency={currency}
-          label={`Pay with Safepay · ${plan.name}`}
+          label={
+            plan.isComplimentary
+              ? `Activate ${plan.name} free`
+              : `Pay with Safepay · ${plan.name}`
+          }
           featured={featured}
+          complimentary={plan.isComplimentary}
+          paidCheckoutLive={paidCheckoutLive}
         />
       </div>
     </article>
@@ -53,10 +63,11 @@ function CompactPlanCard({
 export async function MessagesPlanPanel({ userId, role }: { userId: string; role: Role }) {
   if (role === "ADMIN") return null;
 
-  const [summary, currency, plans] = await Promise.all([
+  const [summary, currency, plans, paidCheckoutLive] = await Promise.all([
     getPlanDashboardSummary(userId, role),
     getVisitorCurrency(),
     getLivePlans(),
+    Promise.resolve(isPaidCheckoutLive()),
   ]);
 
   const audience = role === "TUTOR" ? "tutor" : "student";
@@ -105,11 +116,14 @@ export async function MessagesPlanPanel({ userId, role }: { userId: string; role
                 plan={plan}
                 currency={currency}
                 featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
+                paidCheckoutLive={paidCheckoutLive}
               />
             ))}
           </div>
           <p className="muted messages-plan-foot">
-            Encrypted Safepay checkout · Receipt emailed ·{" "}
+            {paidCheckoutLive
+              ? "Encrypted Safepay checkout · Receipt emailed · "
+              : "Manual activation by email until card checkout is live · "}
             <Link href="/pricing">Compare all plans</Link>
             {role === "STUDENT" && (
               <>

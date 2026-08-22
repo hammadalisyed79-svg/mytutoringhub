@@ -6,7 +6,7 @@ import { formatPromoUntil } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
-import { manualPlanActivationMailto } from "@/lib/payments-status";
+import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 
 function PlanActions({
   plan,
@@ -26,15 +26,11 @@ function PlanActions({
   if (signedIn) {
     if (!paidCheckoutLive && !plan.isComplimentary) {
       return (
-        <div className="checkout-action">
-          <a
-            className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
-            href={manualPlanActivationMailto(plan.name)}
-          >
-            Email to activate {plan.name}
-          </a>
-          <p className="checkout-trust muted">Card checkout opening soon · Manual activation available</p>
-        </div>
+        <ManualPlanActivationButton
+          planName={plan.name}
+          label={`Email to activate ${plan.name}`}
+          featured={featured}
+        />
       );
     }
 

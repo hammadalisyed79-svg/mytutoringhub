@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminActionButton, AdminGrantPlanForm } from "@/components/AdminActions";
+import { PaymentsReadinessPanel } from "@/components/PaymentsReadinessPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,8 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
           <Link href="/admin/plans">Plans & prices</Link>.
         </p>
       </div>
+
+      <PaymentsReadinessPanel />
 
       <form className="filters filters-wide" method="get">
         <label>

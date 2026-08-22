@@ -9,6 +9,7 @@ import { ResendVerificationButton } from "@/components/ResendVerificationButton"
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import {
@@ -34,6 +35,7 @@ export default async function TutorDashboardPage({
   }
 
   const sp = await searchParams;
+  const paidCheckoutLive = isPaidCheckoutLive();
   const { user, currency, catalogSubjects, extraLevels, pendingSubs, corePlan, addOnSubs } =
     await prepareDashboardHome(session.user.id, "TUTOR", sp);
 
@@ -135,9 +137,11 @@ export default async function TutorDashboardPage({
               <div className="plan-cta" style={{ marginTop: "0.85rem" }}>
                 <SubscribeButton
                   plan="TUTOR_BASIC"
+                  planLabel="Tutor Basic"
                   currency={currency}
                   label="Activate Tutor Basic free"
                   complimentary
+                  paidCheckoutLive={paidCheckoutLive}
                 />
               </div>
             )}

@@ -8,6 +8,7 @@ import { getPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { ReferralShareButton } from "@/components/ReferralShareButton";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import {
   type DashboardSearchParams,
@@ -31,6 +32,7 @@ export default async function StudentDashboardPage({
   }
 
   const sp = await searchParams;
+  const paidCheckoutLive = isPaidCheckoutLive();
   const { user, currency, pendingSubs, corePlan } = await prepareDashboardHome(
     session.user.id,
     "STUDENT",
@@ -138,9 +140,11 @@ export default async function StudentDashboardPage({
               <div className="plan-cta" style={{ marginTop: "0.85rem" }}>
                 <SubscribeButton
                   plan="STUDENT_PASS"
+                  planLabel="Student Pass"
                   currency={currency}
                   label="Pay with Safepay · Student Pass"
                   featured
+                  paidCheckoutLive={paidCheckoutLive}
                 />
               </div>
             )}
