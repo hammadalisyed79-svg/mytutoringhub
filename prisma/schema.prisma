@@ -101,7 +101,6 @@ model TutorProfile {
   photoCropY      Float?    @default(0)
   photoCropZoom   Float?    @default(1)
   verified        Boolean   @default(false)
-  trustBadge      String    @default("NEW")
   planTier        Int       @default(0)
   highlighted     Boolean   @default(false)
   highlightedUntil DateTime?

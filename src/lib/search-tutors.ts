@@ -9,7 +9,7 @@ import {
   resolveSubjectName,
 } from "@/lib/search-smart";
 import { isBoostActive } from "@/lib/subscription";
-import { trustBadgeSearchScore } from "@/lib/tutor-badges";
+import { getTrustBadgesForProfiles, trustBadgeSearchScore } from "@/lib/tutor-badges";
 import { citiesForSearchCountry } from "@/lib/tutor-catalog";
 
 export type TutorSearchFilters = {
@@ -164,7 +164,6 @@ export async function searchTutors(
         country: true,
         expertise: true,
         verified: true,
-        trustBadge: true,
         planTier: true,
         highlighted: true,
         highlightedUntil: true,
@@ -198,13 +197,15 @@ export async function searchTutors(
     }
   }
 
+  const badgeMap = await getTrustBadgesForProfiles(profiles.map((t) => t.id));
+
   const scored = profiles
     .map((t) => {
       const boost = isBoostActive(t.boostUntil, now) ? 2 : 0;
       const highlight =
         (t.highlightedUntil && t.highlightedUntil > now) || t.highlighted ? 1 : 0;
       const verified = t.verified ? 1 : 0;
-      const trustScore = trustBadgeSearchScore(t.trustBadge);
+      const trustScore = trustBadgeSearchScore(badgeMap.get(t.id) ?? "NEW");
       const tierScore = (t.planTier ?? 0) * 5;
       const locBoost =
         location && (t.location || "").toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
@@ -240,7 +241,10 @@ export async function searchTutors(
     .sort((a, b) => b.score - a.score);
 
   const total = scored.length;
-  const slice = scored.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => s.t);
+  const slice = scored.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => ({
+    ...s.t,
+    trustBadge: badgeMap.get(s.t.id) ?? "NEW",
+  }));
   return {
     tutors: slice,
     total,
@@ -308,7 +312,6 @@ export async function similarTutors(opts: {
       photoCropY: true,
       photoCropZoom: true,
       verified: true,
-      trustBadge: true,
       planTier: true,
       headline: true,
       subjects: true,

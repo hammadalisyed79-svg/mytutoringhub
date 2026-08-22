@@ -140,25 +140,76 @@ export function tutorBadgeProgress(stats: TutorBadgeStats): BadgeProgress {
 }
 
 export async function getTutorBadgeStats(tutorProfileId: string): Promise<TutorBadgeStats> {
-  const [approvedExternalRecs, publishedPlatformReviews] = await Promise.all([
-    prisma.tutorRecommendation.count({
-      where: { tutorProfileId, status: "APPROVED" },
-    }),
-    prisma.review.count({
-      where: { tutorProfileId, status: "PUBLISHED" },
-    }),
-  ]);
-  return { approvedExternalRecs, publishedPlatformReviews };
+  try {
+    const [approvedExternalRecs, publishedPlatformReviews] = await Promise.all([
+      prisma.tutorRecommendation.count({
+        where: { tutorProfileId, status: "APPROVED" },
+      }),
+      prisma.review.count({
+        where: { tutorProfileId, status: "PUBLISHED" },
+      }),
+    ]);
+    return { approvedExternalRecs, publishedPlatformReviews };
+  } catch (err) {
+    console.error("[tutor-badges] stats unavailable", { tutorProfileId, err });
+    const publishedPlatformReviews = await prisma.review
+      .count({ where: { tutorProfileId, status: "PUBLISHED" } })
+      .catch(() => 0);
+    return { approvedExternalRecs: 0, publishedPlatformReviews };
+  }
+}
+
+/** Batch badge lookup for search cards — safe when TutorRecommendation table is not migrated yet. */
+export async function getTrustBadgesForProfiles(
+  profileIds: string[],
+): Promise<Map<string, TutorTrustBadge>> {
+  const badges = new Map<string, TutorTrustBadge>();
+  for (const id of profileIds) badges.set(id, "NEW");
+  if (!profileIds.length) return badges;
+
+  let reviewCounts = new Map<string, number>();
+  let recCounts = new Map<string, number>();
+
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { tutorProfileId: { in: profileIds }, status: "PUBLISHED" },
+      select: { tutorProfileId: true },
+    });
+    for (const row of reviews) {
+      reviewCounts.set(row.tutorProfileId, (reviewCounts.get(row.tutorProfileId) ?? 0) + 1);
+    }
+  } catch (err) {
+    console.error("[tutor-badges] review lookup failed", err);
+  }
+
+  try {
+    const recs = await prisma.tutorRecommendation.findMany({
+      where: { tutorProfileId: { in: profileIds }, status: "APPROVED" },
+      select: { tutorProfileId: true },
+    });
+    for (const row of recs) {
+      recCounts.set(row.tutorProfileId, (recCounts.get(row.tutorProfileId) ?? 0) + 1);
+    }
+  } catch (err) {
+    console.error("[tutor-badges] recommendation lookup failed", err);
+  }
+
+  for (const id of profileIds) {
+    badges.set(
+      id,
+      computeTutorTrustBadge({
+        approvedExternalRecs: recCounts.get(id) ?? 0,
+        publishedPlatformReviews: reviewCounts.get(id) ?? 0,
+      }),
+    );
+  }
+
+  return badges;
 }
 
 export async function syncTutorTrustBadge(tutorProfileId: string) {
   const stats = await getTutorBadgeStats(tutorProfileId);
-  const trustBadge = computeTutorTrustBadge(stats);
-  await prisma.tutorProfile.update({
-    where: { id: tutorProfileId },
-    data: { trustBadge },
-  });
-  return trustBadge;
+  return computeTutorTrustBadge(stats);
 }
 
 export async function syncTutorTrustBadgeForUser(userId: string) {

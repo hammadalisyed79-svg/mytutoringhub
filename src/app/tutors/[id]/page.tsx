@@ -10,6 +10,11 @@ import {
   publicTutorBio,
   TUTOR_VERIFY_PROFILE_MESSAGE,
 } from "@/lib/tutor-listing-copy";
+import {
+  computeTutorTrustBadge,
+  getTutorBadgeStats,
+  getTrustBadgesForProfiles,
+} from "@/lib/tutor-badges";
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
@@ -144,15 +149,22 @@ export default async function TutorProfilePage({ params }: Params) {
         orderBy: { createdAt: "desc" },
         include: { student: { select: { name: true } } },
       },
-      recommendations: {
-        where: { status: "APPROVED" },
-        orderBy: { createdAt: "desc" },
-        take: 12,
-      },
       ads: { where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" } },
     },
   });
   if (!tutor) notFound();
+
+  const [badgeStats, approvedRecommendations] = await Promise.all([
+    getTutorBadgeStats(tutor.id),
+    prisma.tutorRecommendation
+      .findMany({
+        where: { tutorProfileId: tutor.id, status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      })
+      .catch(() => []),
+  ]);
+  const tutorTrustBadge = computeTutorTrustBadge(badgeStats);
 
   const viewerId = session?.user?.id;
   const isOwner = Boolean(viewerId && viewerId === tutor.userId);
@@ -191,6 +203,7 @@ export default async function TutorProfilePage({ params }: Params) {
     location: tutor.location,
     take: 4,
   });
+  const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.id));
   const modes = [tutor.online ? "Online" : null, tutor.inPerson ? "In person" : null].filter(
     Boolean,
   ) as string[];
@@ -317,7 +330,7 @@ export default async function TutorProfilePage({ params }: Params) {
                   )
                 ) : (
                   <>
-                    <TutorTrustBadgePill badge={tutor.trustBadge || "NEW"} fullLabel />
+                    <TutorTrustBadgePill badge={tutorTrustBadge} fullLabel />
                     {tutor.verified && <span className="badge badge-verified">✓ Verified</span>}
                   </>
                 )}
@@ -566,7 +579,7 @@ export default async function TutorProfilePage({ params }: Params) {
 
             <section className="profile-content-card" id="recommendations">
               <h2>Recommendations</h2>
-              {tutor.recommendations.length === 0 ? (
+              {approvedRecommendations.length === 0 ? (
                 <p className="muted">
                   {isOwner
                     ? "Submit off-platform recommendations from your dashboard. We verify each one before it appears here."
@@ -574,7 +587,7 @@ export default async function TutorProfilePage({ params }: Params) {
                 </p>
               ) : (
                 <div className="profile-reviews-v2">
-                  {tutor.recommendations.map((rec) => (
+                  {approvedRecommendations.map((rec) => (
                     <article key={rec.id} className="profile-review-card">
                       <strong>{rec.recommenderName}</strong>
                       {rec.relationship && <p className="muted">{rec.relationship}</p>}
@@ -700,7 +713,7 @@ export default async function TutorProfilePage({ params }: Params) {
                         cropZoom={t.photoCropZoom}
                         initial={t.user.name.slice(0, 1).toUpperCase()}
                       />
-                      <TutorTrustBadgePill badge={t.trustBadge} size="sm" />
+                      <TutorTrustBadgePill badge={similarBadges.get(t.id) ?? "NEW"} size="sm" />
                     </div>
                     <div className="tc-body">
                       <div className="tc-top-row">
