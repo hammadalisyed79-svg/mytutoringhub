@@ -59,6 +59,10 @@ const FAQS = [
     a: "Students who have messaged a tutor can leave a review after the conversation is at least 12 hours old. Reviews may be moderated before they appear publicly.",
   },
   {
+    q: "Is there live chat support?",
+    a: "Yes — log in and tap Support (bottom-right) or open /support for instant AI help with plans, verification, messaging, and payments. For complex issues, email admin@mytutoringhub.com.",
+  },
+  {
     q: "How do I report a problem?",
     a: "Use the Report button on a tutor profile or student ad, or email admin@mytutoringhub.com.",
   },
@@ -87,6 +91,11 @@ export default function HelpPage() {
           ))}
         </div>
         <p className="muted" style={{ marginTop: "1.5rem" }}>
+          <Link href="/support" className="btn btn-sm">
+            Chat with AI support
+          </Link>
+        </p>
+        <p className="muted" style={{ marginTop: "0.85rem" }}>
           Still stuck?{" "}
           <Link href="/contact">Contact</Link> ·{" "}
           <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a> ·{" "}

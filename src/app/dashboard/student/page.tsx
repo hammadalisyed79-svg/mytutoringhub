@@ -169,6 +169,7 @@ export default async function StudentDashboardPage({
               <Link href="/assistant">Study assistant</Link>
               <Link href="/dashboard/student/plan">Your plan</Link>
               <Link href="/settings">Account settings</Link>
+              <Link href="/support">AI support</Link>
               <Link href="/become-a-tutor">Become a tutor</Link>
             </div>
           </section>

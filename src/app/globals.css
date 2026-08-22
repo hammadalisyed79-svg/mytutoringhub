@@ -8231,3 +8231,138 @@ img {
   max-width: 320px;
   margin: 0;
 }
+
+/* —— AI support widget —— */
+.ai-support-widget {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 38;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.ai-support-launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(6, 66, 54, 0.22);
+  background: linear-gradient(165deg, #0f6b5c 0%, var(--brand-deep) 100%);
+  color: #fff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.ai-support-launcher:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+  color: #fff;
+}
+
+.ai-support-launcher > span:first-child {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.ai-support-panel {
+  width: min(22rem, calc(100vw - 2rem));
+  max-height: min(34rem, calc(100vh - 6rem));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 253, 249, 0.98);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+}
+
+.ai-support-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.ai-support-panel-head strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.ai-support-panel-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.ai-support-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.1rem 0.35rem;
+  cursor: pointer;
+}
+
+.ai-support-close:hover {
+  color: var(--ink);
+}
+
+.ai-support-panel-foot {
+  margin: 0;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.assistant-shell-compact {
+  gap: 0.65rem;
+  min-height: 0;
+}
+
+.assistant-thread-compact {
+  max-height: min(16rem, 42vh);
+  padding: 0.75rem;
+}
+
+.ai-chat-quota {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.ai-chat-unconfigured {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 480px) {
+  .ai-support-widget {
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+
+  .ai-support-launcher-label {
+    display: none;
+  }
+
+  .ai-support-launcher {
+    padding: 0.72rem;
+    border-radius: 999px;
+  }
+}

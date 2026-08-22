@@ -322,11 +322,13 @@ model AiMessage {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// "study" = study assistant, "support" = platform help chat
+  kind      String   @default("study")
   role      String
   content   String
   createdAt DateTime @default(now())
 
-  @@index([userId, createdAt])
+  @@index([userId, kind, createdAt])
 }
 
 model EmailVerificationToken {

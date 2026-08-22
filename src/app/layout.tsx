@@ -8,6 +8,7 @@ import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
+import { AiSupportWidget } from "@/components/AiSupportWidget";
 import {
   DEFAULT_SITE_URL,
   SITE_NAME,
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
           <SiteFooter />
+          <AiSupportWidget configured={Boolean(process.env.OPENAI_API_KEY?.trim())} />
           <ServiceWorkerRegister />
           <Analytics />
         </Providers>

@@ -66,6 +66,7 @@ export async function SiteFooter() {
           <div className="footer-col">
             <Link href="/about">About</Link>
             <Link href="/help">Help & FAQ</Link>
+            <Link href="/support">AI support</Link>
             <Link href="/free-vs-paid">Free vs paid</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
