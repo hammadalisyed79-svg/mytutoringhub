@@ -16,9 +16,28 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, role: true, emailVerified: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      emailVerified: true,
+      passwordHash: true,
+      accounts: { select: { provider: true } },
+    },
   });
-  return NextResponse.json(user);
+  if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    emailVerified: user.emailVerified,
+    hasPassword: Boolean(user.passwordHash),
+    oauthProviders: user.accounts.map((a) => a.provider),
+  });
 }
 
 export async function PATCH(req: Request) {

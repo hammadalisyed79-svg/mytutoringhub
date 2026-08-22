@@ -13,6 +13,8 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [oauthProviders, setOauthProviders] = useState<string[]>([]);
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -26,6 +28,8 @@ export default function SettingsPage() {
           setPhone(u.phone || "");
           setEmail(u.email || "");
           setEmailVerified(Boolean(u.emailVerified));
+          setHasPassword(Boolean(u.hasPassword));
+          setOauthProviders(Array.isArray(u.oauthProviders) ? u.oauthProviders : []);
         }
       })
       .catch(() => undefined);
@@ -52,6 +56,7 @@ export default function SettingsPage() {
     setName(data.name || name);
     setMsg("Settings saved.");
     setPassword("");
+    if (password) setHasPassword(true);
     await update({ name: data.name });
     router.refresh();
   }
@@ -118,7 +123,15 @@ export default function SettingsPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
+              autoComplete="new-password"
+              placeholder={hasPassword ? "Leave blank to keep current" : "At least 8 characters"}
             />
+            {!hasPassword && oauthProviders.length > 0 && (
+              <span className="field-hint">
+                You signed in with {oauthProviders.includes("google") ? "Google" : "social login"}.
+                Set a password here to log in with email next time.
+              </span>
+            )}
           </label>
           {error && <p className="form-error">{error}</p>}
           {msg && <p className="success">{msg}</p>}

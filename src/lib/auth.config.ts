@@ -30,6 +30,7 @@ export const authConfig = {
         pathname === "/login" ||
         pathname === "/register" ||
         pathname === "/forgot-password" ||
+        pathname === "/reset-password" ||
         pathname === "/register/complete";
 
       const needsOnboarding =

@@ -8,12 +8,18 @@ export function PasswordField({
   placeholder = "Your password",
   minLength,
   required = true,
+  value,
+  defaultValue,
+  onChange,
 }: {
   name?: string;
   autoComplete?: string;
   placeholder?: string;
   minLength?: number;
   required?: boolean;
+  value?: string;
+  defaultValue?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -26,6 +32,9 @@ export function PasswordField({
         minLength={minLength}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={onChange}
       />
       <button
         type="button"
