@@ -722,6 +722,73 @@ svg {
 
 .hero-findtutor h1 {
   max-width: min(14ch, 100%);
+  /* Reserve ~2-line display heading so fallback→webfont swap cannot collapse height */
+  min-height: 2.1em;
+}
+
+/* Homepage Suspense fallback — same shell as `.hero-findtutor`, no competing H1 */
+.home-route-loading .hero-content {
+  animation: none;
+}
+
+.home-loading-skel {
+  display: block;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.home-loading-skel-mark {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.65rem;
+  flex-shrink: 0;
+}
+
+.home-loading-skel-kicker {
+  width: min(16rem, 70%);
+  height: 0.72rem;
+}
+
+.home-loading-skel-title {
+  width: min(14ch, 92%);
+  height: clamp(4.9rem, 12vw, 9.5rem);
+  margin: 0 0 0.9rem;
+  border-radius: 0.75rem;
+}
+
+.home-loading-skel-lead {
+  width: min(46ch, 100%);
+  height: 3.2rem;
+  margin: 0 0 0.65rem;
+}
+
+.home-loading-skel-sub {
+  width: min(36ch, 90%);
+  height: 2.4rem;
+  margin: 0 0 1.5rem;
+}
+
+.home-loading-skel-search {
+  width: 100%;
+  height: 8.5rem;
+  border-radius: 1rem;
+}
+
+.home-loading-skel-paths {
+  width: 100%;
+  height: 5.5rem;
+  margin-top: 1.1rem;
+}
+
+.home-loading-skel-strip {
+  width: min(40rem, 100%);
+  height: 1.1rem;
+  margin-top: 1.25rem;
+}
+
+.page-loading {
+  /* Keep footer below the first viewport while generic routes stream */
+  min-height: calc(100svh - 8rem);
 }
 
 .hero p {
@@ -8610,6 +8677,8 @@ img {
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--ink-soft);
+  /* Reserve two-row capacity on narrow screens before font metrics settle */
+  min-height: 2.6rem;
 }
 
 .trust-ribbon-item {

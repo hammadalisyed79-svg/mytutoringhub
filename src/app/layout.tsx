@@ -24,6 +24,7 @@ const display = Fraunces({
   subsets: ["latin"],
   display: "swap",
   weight: ["500", "600", "700"],
+  adjustFontFallback: true,
 });
 
 const body = Source_Sans_3({
@@ -31,8 +32,8 @@ const body = Source_Sans_3({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700"],
+  adjustFontFallback: true,
 });
-
 export const metadata: Metadata = {
   title: {
     default: `${SITE_NAME} – Find Expert Tutors Online Worldwide`,
