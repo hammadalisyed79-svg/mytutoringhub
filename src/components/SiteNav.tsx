@@ -176,6 +176,14 @@ export function SiteNav({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [authMode, setAuthMode] = useState<null | "login" | "register">(null);
+  const [navPath, setNavPath] = useState(pathname);
+
+  // Close drawer + auth overlay when the route changes (render-time sync, not an effect).
+  if (navPath !== pathname) {
+    setNavPath(pathname);
+    setOpen(false);
+    setAuthMode(null);
+  }
 
   function closeMenu() {
     setOpen(false);
@@ -193,10 +201,6 @@ export function SiteNav({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  useEffect(() => {
-    setAuthMode(null);
-  }, [pathname]);
 
   return (
     <>

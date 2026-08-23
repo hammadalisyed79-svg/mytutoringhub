@@ -10,10 +10,6 @@ export function ShareTutorButton({
   tutorName: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const url =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/tutors/${tutorId}`
-      : `/tutors/${tutorId}`;
 
   async function share() {
     const shareUrl = `${window.location.origin}/tutors/${tutorId}`;

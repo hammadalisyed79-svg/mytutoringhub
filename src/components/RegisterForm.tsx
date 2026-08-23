@@ -121,7 +121,11 @@ function RegisterFormInner({
           Password
           <PasswordField autoComplete="new-password" minLength={6} placeholder="At least 6 characters" />
         </label>
-        {error && <p className="form-error">{error}</p>}
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
         <button className="btn btn-block btn-pill" type="submit" disabled={loading}>
           {loading ? "Creating account…" : "Sign up"}
         </button>

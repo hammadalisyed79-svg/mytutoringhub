@@ -128,7 +128,11 @@ export function LoginForm({
             {hint}
           </p>
         )}
-        {error && <p className="form-error">{error}</p>}
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
         <button className="btn btn-block btn-pill" type="submit" disabled={loading}>
           {loading ? "Logging in…" : "Log in"}
         </button>

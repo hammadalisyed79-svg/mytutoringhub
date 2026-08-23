@@ -167,8 +167,8 @@ export async function getTrustBadgesForProfiles(
   for (const id of profileIds) badges.set(id, "NEW");
   if (!profileIds.length) return badges;
 
-  let reviewCounts = new Map<string, number>();
-  let recCounts = new Map<string, number>();
+  const reviewCounts = new Map<string, number>();
+  const recCounts = new Map<string, number>();
 
   try {
     const reviews = await prisma.review.findMany({

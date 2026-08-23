@@ -176,6 +176,17 @@ export function SearchFiltersForm({
     initial.max && { key: "max", label: `Up to ${initial.max} ${currency}` },
   ].filter(Boolean) as { key: string; label: string }[];
 
+  const moreFiltersActive = Boolean(
+    level ||
+      language ||
+      initial.mode ||
+      initial.max ||
+      initial.verified === "1" ||
+      initial.trial === "1",
+  );
+
+  const [moreOpen, setMoreOpen] = useState(moreFiltersActive);
+
   return (
     <form
       className={`search-panel${applying ? " search-panel--applying" : ""}`}
@@ -193,6 +204,7 @@ export function SearchFiltersForm({
             placeholder={searchQueryPlaceholder}
             autoComplete="off"
             spellCheck={false}
+            enterKeyHint="search"
           />
         </label>
         <button className={`btn${applying ? " btn--pulse" : ""}`} type="submit" disabled={applying}>
@@ -200,7 +212,7 @@ export function SearchFiltersForm({
         </button>
       </div>
 
-      <div className="search-grid">
+      <div className="search-grid search-grid-core">
         <SuggestField
           name="subject"
           label="Subject"
@@ -238,56 +250,72 @@ export function SearchFiltersForm({
           options={cityOptions}
           placeholder={cityPlaceholder}
         />
-        <SuggestField
-          name="level"
-          label="Level"
-          value={level}
-          onChange={setLevel}
-          options={levelOptions}
-          placeholder={levelPlaceholder}
-        />
-        <SuggestField
-          name="language"
-          label="Language"
-          value={language}
-          onChange={setLanguage}
-          options={languageOptions}
-          placeholder="English, Urdu…"
-        />
-        <label>
-          Format
-          <select name="mode" defaultValue={initial.mode || ""}>
-            <option value="">Online or in person</option>
-            <option value="online">Online</option>
-            <option value="inperson">In person / home</option>
-          </select>
-        </label>
-        <label>
-          Max hourly rate ({currency})
-          <input
-            name="max"
-            type="number"
-            min={1}
-            step="any"
-            defaultValue={initial.max || ""}
-            placeholder="Optional"
-          />
-        </label>
       </div>
 
-      <div className="search-tools">
-        <label className="radio">
-          <input type="checkbox" name="verified" value="1" defaultChecked={initial.verified === "1"} />
-          Verified tutors
-        </label>
-        <label className="radio">
-          <input type="checkbox" name="trial" value="1" defaultChecked={initial.trial === "1"} />
-          Free trial offered
-        </label>
-        <Link href="/search" className="search-clear">
-          Clear all
-        </Link>
-      </div>
+      <details
+        className="search-more-filters"
+        open={moreOpen}
+        onToggle={(e) => setMoreOpen(e.currentTarget.open)}
+      >
+        <summary>More filters</summary>
+        <div className="search-grid search-grid-more">
+          <SuggestField
+            name="level"
+            label="Level"
+            value={level}
+            onChange={setLevel}
+            options={levelOptions}
+            placeholder={levelPlaceholder}
+          />
+          <SuggestField
+            name="language"
+            label="Language"
+            value={language}
+            onChange={setLanguage}
+            options={languageOptions}
+            placeholder="English, Urdu…"
+          />
+          <label>
+            Format
+            <select name="mode" defaultValue={initial.mode || ""}>
+              <option value="">Online or in person</option>
+              <option value="online">Online</option>
+              <option value="inperson">In person / home</option>
+            </select>
+          </label>
+          <label>
+            Max hourly rate ({currency})
+            <input
+              name="max"
+              type="number"
+              min={1}
+              step="any"
+              inputMode="decimal"
+              defaultValue={initial.max || ""}
+              placeholder="Optional"
+            />
+          </label>
+        </div>
+
+        <div className="search-tools">
+          <label className="radio">
+            <input
+              type="checkbox"
+              name="verified"
+              value="1"
+              defaultChecked={initial.verified === "1"}
+            />
+            Verified tutors
+          </label>
+          <label className="radio">
+            <input type="checkbox" name="trial" value="1" defaultChecked={initial.trial === "1"} />
+            Free trial offered
+          </label>
+          <Link href="/search" className="search-clear">
+            Clear all
+          </Link>
+        </div>
+      </details>
 
       {active.length > 0 && (
         <div className="search-chips" aria-label="Active filters">

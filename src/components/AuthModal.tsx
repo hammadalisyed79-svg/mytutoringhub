@@ -17,7 +17,10 @@ export function AuthModalFrame({
 }) {
   const router = useRouter();
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const dismiss = useCallback(() => {
     if (onCloseRef.current) {

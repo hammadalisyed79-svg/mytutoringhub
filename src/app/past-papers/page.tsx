@@ -8,7 +8,6 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
-import { STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { PastPaperResultList } from "@/components/PastPaperResultList";
 import { PaginationNav } from "@/components/PaginationNav";
