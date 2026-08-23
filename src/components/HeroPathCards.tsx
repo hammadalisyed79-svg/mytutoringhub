@@ -14,7 +14,7 @@ export function HeroPathCards() {
         <strong>List your profile free</strong>
         <span className="hero-path-desc">Reach students worldwide. Keep 100% of lesson fees.</span>
       </Link>
-      <p className="hero-path-footnote muted">
+      <p className="hero-path-footnote">
         New here?{" "}
         <Link href={registerHref("student")}>Join as a student</Link>
         {" · "}
