@@ -77,4 +77,22 @@ const base = {
   assert.equal(a.desiredActive, true);
 }
 
+// decorative Unicode obfuscation (production regression) → not eligible
+{
+  const a = computeDesiredTutorPublicActive({
+    ...base,
+    name: "Don*卂乃ᗪㄩ尺乂ᗪ-ㄚㄒ*",
+  });
+  assert.equal(a.suspiciousName, true);
+  assert.equal(a.desiredActive, false);
+  assert.ok(a.blockReasons.includes("suspicious_display_name"));
+}
+
+// additional international scripts remain eligible
+for (const name of ["王小明", "山田太郎", "김민수", "Иван Петров", "François Müller", "John 王"]) {
+  const a = computeDesiredTutorPublicActive({ ...base, name });
+  assert.equal(a.suspiciousName, false, `expected eligible: ${name}`);
+  assert.equal(a.desiredActive, true, `expected public: ${name}`);
+}
+
 console.log("tutor-public-eligibility.test.ts: ok");

@@ -29,15 +29,68 @@ export function normalizeDisplayName(raw?: string | null): string | null {
 }
 
 /**
+ * NFKC form used only for detection (lookalikes / fullwidth).
+ * Stored display names are not rewritten by this helper.
+ */
+function detectionForm(name: string): string {
+  return name.normalize("NFKC").trim();
+}
+
+/**
+ * Latin mixed in the same token with scripts commonly used as decorative
+ * Latin lookalikes (Canadian Aboriginal, Bopomofo, Han ideographs, etc.).
+ * Space-separated bilingual names like "John 王" remain allowed.
+ */
+function hasObfuscatingScriptMix(token: string): boolean {
+  const hasLatin = /\p{Script=Latin}/u.test(token);
+  if (!hasLatin) return false;
+
+  // Scripts frequently used to fake Latin glyphs inside one “word”
+  if (/\p{Script=Canadian_Aboriginal}/u.test(token)) return true;
+  if (/\p{Script=Bopomofo}/u.test(token)) return true;
+  if (/\p{Script=Han}/u.test(token)) return true;
+  if (/\p{Script=Gothic}/u.test(token)) return true;
+  if (/\p{Script=Runic}/u.test(token)) return true;
+  if (/\p{Script=Deseret}/u.test(token)) return true;
+
+  // Same-token Latin + Cyrillic / Greek is a common homoglyph spam pattern
+  if (/\p{Script=Cyrillic}/u.test(token)) return true;
+  if (/\p{Script=Greek}/u.test(token)) return true;
+
+  return false;
+}
+
+function hasConfusableLetterForms(n: string): boolean {
+  // Fullwidth digits/letters after NFKC usually fold, but catch pre-normalize too
+  if (/[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]/u.test(n)) return true;
+  // Mathematical Alphanumeric Symbols (bold/italic/script Latin lookalikes)
+  if (/[\u{1D400}-\u{1D7FF}]/u.test(n)) return true;
+  // Enclosed alphanumerics
+  if (/[\u2460-\u24FF]/u.test(n)) return true;
+  return false;
+}
+
+/**
  * Detect abusive public display names without rejecting legitimate
- * international / non-Latin scripts.
+ * international / non-Latin scripts (Arabic, CJK, Hangul, Cyrillic, etc.).
  */
 export function isSuspiciousDisplayName(name?: string | null): boolean {
-  const n = String(name ?? "").trim();
+  const raw = String(name ?? "").trim();
+  if (!raw) return true;
+
+  // Detection may inspect NFKC while preserving the original stored name elsewhere.
+  const n = detectionForm(raw);
   if (!n) return true;
 
-  // Control / zero-width / excessive decorative symbols
-  if (/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\uFEFF]/.test(n)) return true;
+  // Control / zero-width / bidi overrides
+  if (/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/u.test(n)) return true;
+
+  if (hasConfusableLetterForms(raw) || hasConfusableLetterForms(n)) return true;
+
+  // Token-level Latin + lookalike script mix (e.g. Don*卂乃ᗪㄩ尺…)
+  for (const token of n.split(/\s+/).filter(Boolean)) {
+    if (hasObfuscatingScriptMix(token)) return true;
+  }
 
   const letters = n.replace(/[^\p{L}\p{M}\p{N}\s'-]/gu, "");
   const letterRatio = letters.replace(/\s/g, "").length / Math.max(1, n.replace(/\s/g, "").length);
@@ -46,6 +99,9 @@ export function isSuspiciousDisplayName(name?: string | null): boolean {
   // Repeated punctuation / symbol runs
   if (/(.)\1{4,}/u.test(n.replace(/\s/g, ""))) return true;
   if (/[!@#$%^&*_=+]{3,}/.test(n)) return true;
+
+  // Decorative asterisk wrapping / asterisk-heavy handles
+  if (/^\*.+\*$/.test(n) || (n.match(/\*/g) || []).length >= 2) return true;
 
   // Contact / URL spam
   if (/https?:\/\/|www\.|\.com\b|\.net\b|\.org\b/i.test(n)) return true;
