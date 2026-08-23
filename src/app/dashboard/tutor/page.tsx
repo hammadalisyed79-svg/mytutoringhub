@@ -6,7 +6,7 @@ import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
-import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
+import { TutorPlanPanel } from "@/components/TutorPlanPanel";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { PointsWalletPanel } from "@/components/PointsWalletPanel";
@@ -15,7 +15,6 @@ import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
-import { SubscribeButton } from "@/components/SubscribeButton";
 import {
   TutorBadgeProgressPanel,
   TutorRecommendationForm,
@@ -131,76 +130,13 @@ export default async function TutorDashboardPage({
             <div className="tutor-dashboard-overview">
               <PointsWalletPanel summary={hubPoints} role="TUTOR" />
 
-              <section className="panel tutor-dashboard-card">
-                <h2>Your plan</h2>
-                {corePlan ? (
-                  <ul className="sub-list">
-                    <li>
-                      <strong>{getPlan(corePlan.plan as never)?.name || corePlan.plan}</strong>
-                      {corePlan.currentPeriodEnd
-                        ? ` · until ${corePlan.currentPeriodEnd.toLocaleDateString()}`
-                        : " · active"}{" "}
-                      · <Link href={`/receipt/${corePlan.id}`}>View slip</Link>
-                    </li>
-                    {addOnSubs
-                      .filter((s) => s.id !== corePlan.id)
-                      .map((s) => (
-                        <li key={s.id}>
-                          <strong>{getPlan(s.plan as never)?.name || s.plan}</strong>
-                          {s.currentPeriodEnd
-                            ? ` · until ${s.currentPeriodEnd.toLocaleDateString()}`
-                            : ""}{" "}
-                          · <Link href={`/receipt/${s.id}`}>View slip</Link>
-                        </li>
-                      ))}
-                  </ul>
-                ) : (
-                  <p className="muted">
-                    Complete your profile to appear in search for free. Tutor Basic unlocks priority
-                    ranking, unlimited enquiry reveals, and subject ads.
-                  </p>
-                )}
-                {pendingSubs.length > 0 && (
-                  <div className="tutor-dashboard-pending">
-                    <p className="muted">
-                      {pendingSubs.length} unfinished checkout
-                      {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, confirm
-                      below.
-                    </p>
-                    <div className="tutor-dashboard-pending-actions">
-                      {pendingSubs
-                        .filter((s) => s.stripeSubscriptionId?.startsWith("track_"))
-                        .map((s) => (
-                          <a
-                            key={s.id}
-                            className="btn btn-sm"
-                            href={`/api/safepay/complete?tracker=${encodeURIComponent(s.stripeSubscriptionId!)}&plan=${encodeURIComponent(s.plan)}`}
-                          >
-                            Confirm {getPlan(s.plan as never)?.name || s.plan}
-                          </a>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                {!corePlan && (
-                  <div className="plan-cta">
-                    <SubscribeButton
-                      plan="TUTOR_BASIC"
-                      planLabel="Tutor Basic"
-                      currency={currency}
-                      label="Activate Tutor Basic free"
-                      complimentary
-                      paidCheckoutLive={paidCheckoutLive}
-                    />
-                  </div>
-                )}
-                <p className="tutor-dashboard-card-foot">
-                  <Link href="/dashboard/tutor/plan">Plan details</Link>
-                  {" · "}
-                  <Link href="/pricing">Tutor add-ons</Link>
-                </p>
-                {!corePlan && <RecoverPaymentForm />}
-              </section>
+              <TutorPlanPanel
+                corePlan={corePlan}
+                addOnSubs={addOnSubs}
+                pendingSubs={pendingSubs}
+                currency={currency}
+                paidCheckoutLive={paidCheckoutLive}
+              />
             </div>
 
             <TutorDashboardShortcuts unread={inbox.unread} sp={sp} />
