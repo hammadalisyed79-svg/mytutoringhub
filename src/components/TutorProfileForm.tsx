@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
 import { PhotoFrameAdjust } from "@/components/PhotoFrameAdjust";
+import { PhoneInput } from "@/components/PhoneInput";
+import { countryByName } from "@/lib/markets";
 import {
   citiesForCountry,
   expertiseForSubjects,
@@ -161,6 +163,7 @@ export function TutorProfileForm({
 
   const videoSrc = embedVideoSrc(introVideoUrl || videoUrl);
   const cities = useMemo(() => citiesForCountry(country), [country]);
+  const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
   const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
   const listedSubjects = useMemo(() => {
     const extra = subjectList.filter(
@@ -804,16 +807,12 @@ export function TutorProfileForm({
         ) : null}
         <label>
           Phone
-          <input
-            name="phone"
+          <PhoneInput
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+92 …"
-            inputMode="tel"
+            onChange={setPhone}
+            defaultCountryCode={defaultPhoneCountry}
+            hint="You can update this anytime. Shown on your public profile only after you are verified."
           />
-          <span className="field-hint">
-            You can update this anytime. Shown on your public profile only after you are verified.
-          </span>
         </label>
       </section>
 

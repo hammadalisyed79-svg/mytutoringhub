@@ -13,6 +13,8 @@ import {
   tutorLevelOptions,
 } from "@/lib/tutor-catalog";
 import { curriculumLevels } from "@/lib/curriculum";
+import { countryByName } from "@/lib/markets";
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
@@ -157,6 +159,16 @@ export async function PUT(req: Request) {
     const experienceYears =
       data.experienceYears == null || Number.isNaN(data.experienceYears) ? null : data.experienceYears;
 
+    let normalizedPhone: string | null = null;
+    const rawPhone = data.phone?.trim();
+    if (rawPhone) {
+      const countryCode = countryByName(data.country)?.code || "PK";
+      normalizedPhone = normalizePhone(rawPhone, countryCode);
+      if (!isValidPhone(normalizedPhone)) {
+        return NextResponse.json({ error: "Enter a valid phone number for your country." }, { status: 400 });
+      }
+    }
+
     await prisma.user.update({
       where: { id: session.user.id },
       data: { name: parsedName.name },
@@ -185,7 +197,7 @@ export async function PUT(req: Request) {
       videoUrl: data.videoUrl?.trim() || null,
       introVideoUrl: data.introVideoUrl?.trim() || null,
       offersFreeTrial: Boolean(data.offersFreeTrial),
-      phone: data.phone?.trim() || null,
+      phone: normalizedPhone,
     };
     const wasListable = existing
       ? isTutorProfileListable(existing, parsedName.name)

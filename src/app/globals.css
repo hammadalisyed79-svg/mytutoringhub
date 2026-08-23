@@ -1047,6 +1047,39 @@ p.success.panel,
   box-shadow: var(--shadow-sm);
 }
 
+.phone-input-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.phone-input {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 9.5rem) minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.phone-input-country,
+.phone-input-number {
+  width: 100%;
+  min-width: 0;
+}
+
+.phone-input-country {
+  padding-right: 1.75rem;
+  font-size: max(1rem, 16px);
+}
+
+.phone-input-number {
+  font-size: max(1rem, 16px);
+}
+
+@media (max-width: 480px) {
+  .phone-input {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auth-form-flat {
   background: transparent;
   border: 0;

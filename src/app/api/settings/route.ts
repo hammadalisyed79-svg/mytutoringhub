@@ -1,10 +1,11 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { parseDisplayNameInput } from "@/lib/display-name";
-
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 const updateSchema = z.object({
   name: z.string().optional(),
   phone: z.string().max(40).optional(),
@@ -14,6 +15,12 @@ const updateSchema = z.object({
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const h = await headers();
+  const countryCode =
+    h.get("x-vercel-ip-country") ||
+    h.get("cf-ipcountry") ||
+    h.get("x-country-code") ||
+    "PK";
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -37,6 +44,7 @@ export async function GET() {
     emailVerified: user.emailVerified,
     hasPassword: Boolean(user.passwordHash),
     oauthProviders: user.accounts.map((a) => a.provider),
+    countryCode: countryCode.length === 2 ? countryCode.toUpperCase() : "PK",
   });
 }
 
@@ -58,11 +66,30 @@ export async function PATCH(req: Request) {
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     name = parsed.name;
   }
+  const h = await headers();
+  const countryCode =
+    h.get("x-vercel-ip-country") ||
+    h.get("cf-ipcountry") ||
+    h.get("x-country-code") ||
+    "PK";
+  let phone: string | null | undefined;
+  if (data.phone !== undefined) {
+    const trimmed = data.phone.trim();
+    if (!trimmed) {
+      phone = null;
+    } else {
+      const normalized = normalizePhone(trimmed, countryCode);
+      if (!isValidPhone(normalized)) {
+        return NextResponse.json({ error: "Enter a valid phone number for your country." }, { status: 400 });
+      }
+      phone = normalized;
+    }
+  }
   const updated = await prisma.user.update({
     where: { id: session.user.id },
     data: {
       ...(name ? { name } : {}),
-      ...(data.phone !== undefined ? { phone: data.phone || null } : {}),
+      ...(phone !== undefined ? { phone } : {}),
       ...(data.password
         ? { passwordHash: await bcrypt.hash(data.password, 10) }
         : {}),

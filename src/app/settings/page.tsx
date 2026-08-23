@@ -5,6 +5,8 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhone } from "@/lib/phone";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function SettingsPage() {
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [oauthProviders, setOauthProviders] = useState<string[]>([]);
+  const [defaultCountryCode, setDefaultCountryCode] = useState("PK");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +33,7 @@ export default function SettingsPage() {
           setEmailVerified(Boolean(u.emailVerified));
           setHasPassword(Boolean(u.hasPassword));
           setOauthProviders(Array.isArray(u.oauthProviders) ? u.oauthProviders : []);
+          if (u.countryCode) setDefaultCountryCode(u.countryCode);
         }
       })
       .catch(() => undefined);
@@ -39,6 +43,10 @@ export default function SettingsPage() {
     e.preventDefault();
     setError("");
     setMsg("");
+    if (phone.trim() && !isValidPhone(phone)) {
+      setError("Enter a valid phone number for your selected country.");
+      return;
+    }
     const res = await fetch("/api/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -54,6 +62,7 @@ export default function SettingsPage() {
       return;
     }
     setName(data.name || name);
+    setPhone(data.phone || "");
     setMsg("Settings saved.");
     setPassword("");
     if (password) setHasPassword(true);
@@ -114,7 +123,12 @@ export default function SettingsPage() {
           </label>
           <label>
             Phone
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <PhoneInput
+              value={phone}
+              onChange={setPhone}
+              defaultCountryCode={defaultCountryCode}
+              hint="Include your country code. We format numbers internationally (e.g. +92 321 6001040)."
+            />
           </label>
           <label>
             New password (optional)
