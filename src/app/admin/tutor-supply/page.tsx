@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { getTutorSupplyGapReport, getTutorSupplyOverview } from "@/lib/tutor-supply-metrics";
 import { selectTutorRecoveryAudience } from "@/lib/tutor-recovery-audience";
+import {
+  prepareTutorRecoveryCampaign,
+  recoveryEmailStageCopy,
+} from "@/lib/tutor-recovery-campaign";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tutor supply" };
 
 export default async function AdminTutorSupplyPage() {
-  const [overview, gap, recovery] = await Promise.all([
+  const [overview, gap, recovery, campaign] = await Promise.all([
     getTutorSupplyOverview(),
     getTutorSupplyGapReport(20),
     selectTutorRecoveryAudience({ limit: 500 }),
+    prepareTutorRecoveryCampaign(),
   ]);
+  const email1 = recoveryEmailStageCopy(1);
 
   return (
     <>
@@ -18,7 +24,8 @@ export default async function AdminTutorSupplyPage() {
         <h1 className="page-title">Tutor supply</h1>
         <p className="muted">
           Real marketplace counts for recruitment priorities. No fake activity. Bulk email is never
-          sent from this page — use the dry-run script, then an explicit admin send action.
+          sent from this page — review the campaign below, then use an explicit admin send action
+          only when ready.
         </p>
       </div>
 
@@ -50,6 +57,47 @@ export default async function AdminTutorSupplyPage() {
       </div>
 
       <section className="panel">
+        <h2>Recovery campaign preview</h2>
+        <p className="success" role="status">
+          <strong>SEND STATUS: {campaign.sendStatus}</strong> — this page does not send email.
+        </p>
+        <p className="muted">
+          Eligible audience: <strong>{campaign.audience.eligibleCount}</strong> · Priority group:{" "}
+          <strong>{campaign.priorityGroup.length}</strong> · Personal follow-up shortlist:{" "}
+          <strong>{campaign.personalFollowUp.length}</strong>
+        </p>
+        <ul className="muted">
+          <li>Nearly complete (1–2 missing): {campaign.bands.nearly_complete}</li>
+          <li>Partially complete (3–4 missing): {campaign.bands.partially_complete}</li>
+          <li>Early profile (5+ missing): {campaign.bands.early_profile}</li>
+          <li>
+            With subjects: {campaign.withSubjects} · No subjects yet: {campaign.withoutSubjects}
+          </li>
+          <li>
+            Exclusions — suspicious: {campaign.audience.excluded.suspiciousName}, unverified:{" "}
+            {campaign.audience.excluded.unverifiedEmail}, suspended:{" "}
+            {campaign.audience.excluded.suspended}, already-live:{" "}
+            {campaign.audience.excluded.alreadyLive}
+          </li>
+        </ul>
+        <h3>Email 1 (prepared, not sent)</h3>
+        <p>
+          <strong>Subject:</strong> {email1.subject}
+        </p>
+        <p>
+          <strong>CTA:</strong> {email1.cta}
+        </p>
+        <p className="muted">{email1.bodyPreview}</p>
+        <p className="muted">
+          CLI prep: <code>npx tsx scripts/tutor-recovery-campaign-prep.ts</code>
+          <br />
+          Sent history: <Link href="/admin/nurture?profile=1">Nurture · profile sequences</Link>
+          <br />
+          Candidate list: <Link href="/admin/tutors?supply=incomplete">Incomplete tutors</Link>
+        </p>
+      </section>
+
+      <section className="panel">
         <h2>Recovery dry-run exclusions</h2>
         <p className="muted">
           Scanned {recovery.totalScanned} inactive profiles. Eligible for outreach:{" "}
@@ -60,10 +108,6 @@ export default async function AdminTutorSupplyPage() {
           <li>Excluded unverified email: {recovery.excluded.unverifiedEmail}</li>
           <li>Excluded complete-but-hidden: {recovery.excluded.completeButHidden}</li>
         </ul>
-        <p className="muted">
-          CLI: <code>npx tsx scripts/tutor-recovery-dry-run.ts</code>
-        </p>
-        <Link href="/admin/tutors?supply=incomplete">Open incomplete tutor list</Link>
       </section>
 
       <section className="panel">

@@ -120,9 +120,15 @@ export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 
   if (!claimed) return { sent: false, reason: "already_sent" as const };
 
   try {
+    const subjects: Record<1 | 2 | 3 | 4, string> = {
+      1: "Complete your My Tutoring Hub tutor profile",
+      2: "Finish your tutor profile on My Tutoring Hub",
+      3: "Complete your My Tutoring Hub tutor profile",
+      4: "Complete your My Tutoring Hub tutor profile",
+    };
     await sendEmail({
       to: user.email,
-      subject: `Complete your My Tutoring Hub tutor profile (${completion.requiredDone}/${completion.requiredTotal})`,
+      subject: subjects[step],
       html: tutorProfileIncompleteEmailHtml({
         name: user.name,
         missing: completion.missingRequired,
@@ -638,15 +644,18 @@ export async function runNurtureDigest() {
     ),
   );
 
-  // Tutor profile reminder 3 (5 days after R2 ≈ day 7 total)
+  // Tutor profile reminder 3 (~5 days after R1; requires R2 already claimed)
   const tutorR3Events = await prisma.emailSequenceEvent.findMany({
     where: {
-      sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R2,
-      sentAt: { lte: new Date(now - 4 * day) },
+      sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R1,
+      sentAt: { lte: new Date(now - 5 * day) },
       user: {
         role: "TUTOR",
         suspended: false,
-        emailSequenceEvents: { none: { sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R3 } },
+        AND: [
+          { emailSequenceEvents: { some: { sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R2 } } },
+          { emailSequenceEvents: { none: { sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R3 } } },
+        ],
       },
     },
     select: { userId: true },

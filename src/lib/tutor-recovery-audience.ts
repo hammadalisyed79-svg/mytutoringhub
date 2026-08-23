@@ -13,6 +13,7 @@ export type RecoveryAudienceRow = {
   /** Redacted for logs — never print full email in reports. */
   emailDomain: string;
   name: string;
+  subjects: string;
   requiredDone: number;
   requiredTotal: number;
   missingRequired: string[];
@@ -129,6 +130,7 @@ export async function selectTutorRecoveryAudience(opts?: {
       profileId: profile.id,
       emailDomain: emailDomain(profile.user.email),
       name: profile.user.name,
+      subjects: profile.subjects?.trim() || "",
       requiredDone: completion.requiredDone,
       requiredTotal: completion.requiredTotal,
       missingRequired: completion.missingRequired,

@@ -426,23 +426,60 @@ export function tutorProfileIncompleteEmailHtml(opts: {
   step: number;
   dashboardUrl: string;
 }) {
-  const urgency =
-    opts.step === 1
-      ? "You're off to a good start — finish the required fields so students can find you."
-      : opts.step === 2
-        ? "Students still can't see your full listing. A few more details will put you in search."
-        : opts.step === 3
-          ? "Complete your profile this week and earn <strong>200 Hub Points</strong> toward plans and ads."
-          : "Final reminder — your draft profile stays hidden until all required fields are saved.";
+  const missingSubjects = opts.missing.some((m) => /subject/i.test(m));
+  const missingPreview = opts.missing.slice(0, 4);
+  const more =
+    opts.missing.length > missingPreview.length
+      ? ` and ${opts.missing.length - missingPreview.length} more`
+      : "";
+
+  if (opts.step === 1) {
+    const subjectLead = missingSubjects
+      ? `<p>Start by adding <strong>the subjects you teach</strong>, then finish any other remaining listing details so your profile can become eligible for tutor search.</p>`
+      : `<p>Finish the remaining listing details so your profile can become eligible for tutor search.</p>`;
+    return emailLayout({
+      preheader: "Your tutor account is ready — your profile is not visible to students yet",
+      title: "Complete your tutor profile",
+      body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Your tutor account on ${brand} exists, but your profile is <strong>not currently visible</strong> to students in search.</p>
+${subjectLead}
+<p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>
+<p>Completing these details can make your profile eligible for search when all requirements are met. This is not a rejection — save when you are ready.</p>`,
+      cta: { label: "Complete my profile", href: opts.dashboardUrl },
+    });
+  }
+
+  if (opts.step === 2) {
+    return emailLayout({
+      preheader: "Your tutor profile is still hidden from students",
+      title: "Finish your tutor profile",
+      body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>A quick reminder: your tutor profile is still not visible to students.</p>
+<p>Completing the remaining details can make it eligible to appear in tutor search.</p>
+<p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
+      cta: { label: "Finish my tutor profile", href: opts.dashboardUrl },
+    });
+  }
+
+  // Step 3 = final reminder (~5 days after first); step 4 kept as quiet follow-up for existing cron
+  if (opts.step === 3) {
+    return emailLayout({
+      preheader: "Complete your tutor profile when you are ready",
+      title: "Complete your tutor profile",
+      body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>This is a final, respectful reminder: your listing is still not visible to students.</p>
+<p>When you are ready, complete your profile from the dashboard. Your account stays safe — we will not delete it for being incomplete.</p>
+<p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
+      cta: { label: "Complete my profile", href: opts.dashboardUrl },
+    });
+  }
+
   return emailLayout({
     preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete — your profile is not visible to students yet`,
-    title: `Complete your tutor profile (${opts.requiredDone}/${opts.requiredTotal})`,
+    title: "Complete your tutor profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your tutor account on ${brand} is ready, but your profile is <strong>not currently visible</strong> to students in search.</p>
-<p>${urgency}</p>
-<p><strong>Still needed:</strong></p>
-${missingFieldsList(opts.missing)}
-<p>Completing these details can make your profile eligible for tutor search. This is not a rejection — finish the remaining fields and save when you're ready.</p>`,
+<p>Your tutor profile on ${brand} is still hidden from students until the remaining listing details are saved.</p>
+<p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
     cta: { label: "Complete my profile", href: opts.dashboardUrl },
   });
 }
