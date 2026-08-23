@@ -114,16 +114,16 @@ No behavior change. `similarTutors()` already used `publicListedTutorWhere()`. E
 
 ## PRODUCTION
 
-Post-deploy verification checklist (mytutoringhub.com):
+Verified on **mytutoringhub.com** after deploy (`b4e8269`, 2026-08-23):
 
-| Check | Expected |
-|-------|----------|
-| `/search?subject=Mathematics` | 1 tutor (Ali); availability without duplicate Online |
-| `/tutors/cmsx3iyd20002hekfp2q2g9r7` | Public profile loads; subject listing rate matches hero |
-| `/tutors/cmswio06b0002w4tkh9kapz3p` | 404 for public visitors (Jennifer Alex) |
-| `/s/mathematics` | Count = 1; average rate ≈ profile card rate |
-| `/sitemap.xml` | Only public tutor URL |
-| Recovery campaign | Unchanged |
+| Check | Result |
+|-------|--------|
+| `/search?subject=Mathematics` | **Pass** — 1 tutor (Ali); availability `Online, Pakistan` (no duplicate `· Online`) |
+| `/tutors/cmsx3iyd20002hekfp2q2g9r7` | **Pass** — public profile loads |
+| `/tutors/cmswio06b0002w4tkh9kapz3p` | **Pass** — 404 / “Tutor not found” for Jennifer Alex (hidden) |
+| `/s/mathematics` | **Pass** — count = 1; average rate ~€16.55/hr (matches profile card; was ~€7.19/hr pre-patch) |
+| `/sitemap.xml` | Not re-fetched this session; unchanged code path (`publicListedTutorWhere`) |
+| Recovery campaign | **Unchanged** |
 
 ---
 
