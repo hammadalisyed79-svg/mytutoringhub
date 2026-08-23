@@ -157,6 +157,7 @@ Raw `active: true` counts in admin dashboards remain admin-only.
 | `src/lib/display-name.ts` | Targeted anti-obfuscation rules; NFKC for detection only |
 | `src/lib/business-rules.test.ts` | Exact Don* case + international script matrix |
 | `src/lib/tutor-public-eligibility.test.ts` | Eligibility regression + intl names |
+| `src/app/tutors/[id]/page.tsx` | Inactive profiles: generic “Tutor not found” metadata (no name leak) |
 
 No hard-coded profile ID blacklist. No name rewrite in DB. No payment/subscription changes.
 
@@ -216,11 +217,13 @@ After sync (+ code deploy):
 
 | Surface | Expected | Result |
 |---------|----------|--------|
-| `/search` | Don* absent | Verify post-deploy |
-| Homepage featured | Don* absent | Verify post-deploy |
-| Direct `/tutors/cmszs2z0n0006rfenbufw47yh` | not public (`notFound` for guests) | Verify post-deploy |
-| Sitemap | ID absent when inactive | Verify post-deploy |
-| Legitimate `Ali` listing | still public | Preserved (manual-review short bio only) |
+| `/search` | Don* absent | **PASS** (ID and glyphs absent; Ali still listed) |
+| Homepage featured | Don* absent | **PASS** |
+| Direct `/tutors/cmszs2z0n0006rfenbufw47yh` | not public for guests | **PASS** — `notFound` UI (`Page not found`); no `profile-shell` body. Metadata for inactive listings no longer advertises the display name (follow-up hardening). |
+| Sitemap | ID absent when inactive | **PASS** (cleared after cache refresh) |
+| Legitimate `Ali` listing | still public | **PASS** |
+
+DB confirmation: `active=false`, `forceActive=false` for the profile.
 
 ---
 

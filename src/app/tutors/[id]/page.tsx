@@ -142,7 +142,14 @@ export async function generateMetadata({ params }: Params) {
     where: { id },
     include: { user: { select: { name: true } } },
   });
-  if (!tutor) return { title: "Tutor not found" };
+  if (!tutor || !tutor.active) {
+    return pageMetadata({
+      title: "Tutor not found",
+      description: "This tutor listing is not available on My Tutoring Hub.",
+      path: `/tutors/${id}`,
+      noIndex: true,
+    });
+  }
   const place = formatTutorPlace(tutor.location, tutor.country);
   const primarySubject = splitList(tutor.subjects)[0] || "Private";
   const description =
@@ -152,7 +159,7 @@ export async function generateMetadata({ params }: Params) {
     title: `${tutor.user.name} – ${primarySubject} Tutor${place ? ` in ${place}` : ""}`,
     description: truncateDescription(description),
     path: `/tutors/${id}`,
-    noIndex: !tutor.active,
+    noIndex: false,
     ogType: "profile",
   });
 }
