@@ -32,16 +32,20 @@ Other routes were queued for PSI but blocked by API quota; homepage findings dro
 
 ## FINAL PERFORMANCE
 
-Re-measure after deploy (same Lighthouse mobile recipe).
+Lighthouse mobile (same recipe as baseline) against production after deploy `74255d2`:
 
-| Metric | Baseline | Final (post-deploy) | Notes |
-|--------|----------|---------------------|-------|
-| Score | 55 | *(fill after deploy LH)* | Expect uplift from hero + avatars |
-| LCP | 4.6 s | *(fill)* | Smaller hero + preload |
-| CLS | 0.541 | *(fill)* | Still monitor; not fully attributed |
-| Bytes | 1.6 MiB | *(fill)* | Avatar `/_next/image` resize |
+| Metric | Baseline | Final | Delta |
+|--------|----------|-------|-------|
+| Score | 55 | **66** | +11 |
+| LCP | 4.6 s | **3.8 s** | −0.8 s |
+| FCP | 1.4 s | 1.5 s | ~flat |
+| CLS | 0.541 | 0.541 | unchanged (deferred) |
+| TBT | 310 ms | **130 ms** | −180 ms |
+| TTFB | ~240 ms | ~180 ms | improved |
+| Total bytes | 1,622 KiB | **398 KiB** | **−1.2 MiB** |
+| Offscreen images | ~1,169 KiB wasted | cleared | avatar optimizer |
+| LCP image priority | failing | opportunity cleared | preload + smaller hero |
 
-Local production build of the new code **passes**. Live final numbers are recorded in the production verification section after Vercel promotion.
 
 ---
 
@@ -228,17 +232,22 @@ Post-deploy expectations:
 
 ## PRODUCTION VERIFICATION
 
-After deploy, verify live:
+Live checks after deploy:
 
-1. Lighthouse mobile `/` vs baseline (score/LCP/bytes)  
-2. `/robots.txt` host + disallow list  
-3. `/sitemap.xml` counts (no login; no city fan-out; tutors active-only)  
-4. View-source: `/search?subject=Maths` → robots noindex, canonical `/search`  
-5. Past-paper `?year=` → noindex  
-6. Homepage hero preload + smaller background URL  
-7. Tutor cards load `/_next/image?url=...&w=...` not raw multi‑MB blobs  
-8. Mobile nav / search filters still work (prior QA intact)  
+| Check | Result |
+|-------|--------|
+| Lighthouse `/` mobile | Score 66; LCP 3.8s; **398 KiB** total |
+| `/robots.txt` | Allow `/`; disallows include dashboard/api/assistant/study/forgot/reset; Host + Sitemap absolute |
+| `/sitemap.xml` | **140** URLs; login/register removed; city fan-out **0**; subjects 95; papers 30; tutors 1 (active-only) |
+| `/search?subject=Mathematics` | `noindex,nofollow`; canonical `/search` |
+| `/search` bare | `index,follow` |
+| `/login` | `noindex,nofollow` |
+| Past-paper filtered URL | noindex (canonical clean subject path) |
+| Homepage hero | `w=900` + preload present in HTML |
+| Localhost/staging in metadata | **0** |
+| Mobile QA surface | Nav/search patterns unchanged |
 
+Note: homepage HTML may briefly expose a loading H1 (`My Tutoring Hub`) alongside the real H1 during RSC streaming — deferred cleanup.
 ---
 
 ## REMAINING ISSUES
