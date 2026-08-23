@@ -787,8 +787,8 @@ svg {
 }
 
 .page-loading {
-  /* Keep footer below the first viewport while generic routes stream */
-  min-height: calc(100svh - 8rem);
+  /* Modest reservation for non-home routes — homepage uses HomeLoading instead */
+  min-height: min(28rem, 70svh);
 }
 
 .hero p {
