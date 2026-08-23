@@ -2930,6 +2930,27 @@ select:focus {
   line-height: 1.45;
 }
 
+.recovery-email1-panel {
+  margin: 1rem 0;
+}
+
+.recovery-email1-confirm,
+.recovery-email1-result {
+  margin-top: 0.75rem;
+}
+
+.recovery-email1-stats {
+  margin: 0.75rem 0;
+  padding-left: 1.1rem;
+}
+
+.recovery-email1-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
 .tutor-profile-strength-banner {
   margin-bottom: 1rem;
   padding: 0.9rem 1rem;

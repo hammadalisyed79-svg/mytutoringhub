@@ -5,16 +5,19 @@ import {
   prepareTutorRecoveryCampaign,
   recoveryEmailStageCopy,
 } from "@/lib/tutor-recovery-campaign";
+import { getRecoveryEmail1Preview } from "@/lib/tutor-recovery-send";
+import { AdminRecoveryEmail1Panel } from "@/components/AdminRecoveryEmail1Panel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tutor supply" };
 
 export default async function AdminTutorSupplyPage() {
-  const [overview, gap, recovery, campaign] = await Promise.all([
+  const [overview, gap, recovery, campaign, email1Preview] = await Promise.all([
     getTutorSupplyOverview(),
     getTutorSupplyGapReport(20),
     selectTutorRecoveryAudience({ limit: 500 }),
     prepareTutorRecoveryCampaign(),
+    getRecoveryEmail1Preview(),
   ]);
   const email1 = recoveryEmailStageCopy(1);
 
@@ -88,6 +91,7 @@ export default async function AdminTutorSupplyPage() {
           <strong>CTA:</strong> {email1.cta}
         </p>
         <p className="muted">{email1.bodyPreview}</p>
+        <AdminRecoveryEmail1Panel preview={email1Preview} />
         <p className="muted">
           CLI prep: <code>npx tsx scripts/tutor-recovery-campaign-prep.ts</code>
           <br />

@@ -23,6 +23,7 @@ import {
   sendReviewPublishedEmail,
   sendVerificationApprovedEmail,
 } from "@/lib/email-nurture";
+import { sendRecoveryEmail1Campaign } from "@/lib/tutor-recovery-send";
 import { scanMessage } from "@/lib/message-moderation";
 import { notifyMessageWarning } from "@/lib/message-warning";
 import { z } from "zod";
@@ -38,6 +39,7 @@ const payloadSchema = z.object({
   role: z.enum(ROLES).optional(),
   confirmAdmin: z.boolean().optional(),
   confirmEmail: z.string().email().optional(),
+  confirmSend: z.boolean().optional(),
   plan: z.string().optional(),
   days: z.coerce.number().int().min(1).max(730).optional(),
   until: z.string().optional().nullable(),
@@ -832,6 +834,16 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "PastPaper";
       targetId = id;
       await prisma.pastPaper.delete({ where: { id } });
+      break;
+    }
+    case "send_recovery_email_1": {
+      if (!payload.confirmSend) {
+        throw new AdminActionError("confirmSend is required to send Recovery Email 1", 400);
+      }
+      targetType = "RecoveryCampaign";
+      targetId = "tutor_profile_r1";
+      const summary = await sendRecoveryEmail1Campaign();
+      extra = summary;
       break;
     }
     default:
