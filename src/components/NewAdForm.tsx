@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function NewAdForm({ subjects }: { subjects: string[] }) {
+export function NewAdForm({
+  subjects,
+  titlePlaceholder,
+  levelPlaceholder,
+}: {
+  subjects: string[];
+  titlePlaceholder: string;
+  levelPlaceholder: string;
+}) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,7 +53,7 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
         <span>
           Title <abbr className="req" title="Required">*</abbr>
         </span>
-        <input name="title" required minLength={5} placeholder="Need an A Level Chemistry tutor in Lahore" />
+        <input name="title" required minLength={5} placeholder={titlePlaceholder} />
       </label>
       <label>
         <span>
@@ -63,7 +71,7 @@ export function NewAdForm({ subjects }: { subjects: string[] }) {
         <span>
           Level <abbr className="req" title="Required">*</abbr>
         </span>
-        <input name="level" required placeholder="e.g. Matric / FSc / O Level" />
+        <input name="level" required placeholder={levelPlaceholder} />
       </label>
       <label>
         <span>

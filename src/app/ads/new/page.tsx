@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canPostAd } from "@/lib/subscription";
@@ -6,6 +7,7 @@ import { NewAdForm } from "@/components/NewAdForm";
 import type { Role } from "@/lib/types";
 import Link from "next/link";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
+import { getVisitorRegion } from "@/lib/visitor-region";
 
 export const metadata = { title: "Post a request", description: "Post a student request for a private tutor. Student Pass required." };
 
@@ -22,6 +24,7 @@ export default async function NewAdPage() {
     if (!me?.emailVerified) redirect("/dashboard?verify=1");
   }
   const allowed = await canPostAd(session.user.id, session.user.role as Role);
+  const region = getVisitorRegion(await headers());
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -44,7 +47,11 @@ export default async function NewAdPage() {
             </Link>
           </div>
         ) : (
-          <NewAdForm subjects={subjectNames} />
+          <NewAdForm
+            subjects={subjectNames}
+            titlePlaceholder={region.adTitlePlaceholder}
+            levelPlaceholder={region.adLevelPlaceholder}
+          />
         )}
       </div>
     </div>

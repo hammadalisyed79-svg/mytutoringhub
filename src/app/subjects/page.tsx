@@ -11,6 +11,7 @@ import { subjectCode } from "@/lib/markets";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { CURRICULUM } from "@/lib/curriculum";
 import { getUserCountry } from "@/lib/geo";
+import { getVisitorRegion } from "@/lib/visitor-region";
 import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,9 @@ export default async function SubjectsPage({
   searchParams: Promise<{ country?: string; q?: string; tab?: string }>;
 }) {
   const currency = await getVisitorCurrency();
-  const pinnedCountry = getUserCountry(await headers());
+  const headersList = await headers();
+  const pinnedCountry = getUserCountry(headersList);
+  const region = getVisitorRegion(headersList);
   const { country, q, tab } = await searchParams;
   const showCodes = tab === "codes";
   const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
@@ -56,10 +59,7 @@ export default async function SubjectsPage({
     <div className="page">
       <div className="container">
         <h1 className="page-title">Subjects</h1>
-        <p className="section-lead">
-          School boards, exams, languages, and university subjects across 15 countries — including
-          Pakistan. Each listing uses a subject code such as FBISE-HSSC-MATH or IB-DP-PHY.
-        </p>
+        <p className="section-lead">{region.subjectsLead}</p>
         <SubjectHubTabs active={showCodes ? "codes" : "directory"} />
 
         {showCodes ? (

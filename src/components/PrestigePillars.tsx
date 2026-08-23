@@ -17,7 +17,14 @@ const PILLARS = [
   },
 ] as const;
 
-export function PrestigePillars() {
+export function PrestigePillars({ curriculaLine }: { curriculaLine: string }) {
+  const pillars = [
+    PILLARS[0],
+    PILLARS[1],
+    { ...PILLARS[2], desc: curriculaLine },
+    PILLARS[3],
+  ] as const;
+
   return (
     <section className="section prestige-pillars-section" aria-labelledby="prestige-pillars-title">
       <div className="container">
@@ -28,7 +35,7 @@ export function PrestigePillars() {
           premium from the first search.
         </p>
         <div className="prestige-pillars">
-          {PILLARS.map((pillar, i) => (
+          {pillars.map((pillar, i) => (
             <article key={pillar.title} className="prestige-pillar">
               <span className="prestige-pillar-num" aria-hidden>
                 {String(i + 1).padStart(2, "0")}

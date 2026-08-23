@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import { countryChoices, parseSearchQuery } from "@/lib/search-smart";
 import { citiesForSearchCountry, cityBelongsToCountry } from "@/lib/tutor-catalog";
 
-export function HeroSearch() {
+export function HeroSearch({
+  placeholder,
+  suggestedCountry,
+}: {
+  placeholder: string;
+  suggestedCountry?: string;
+}) {
   const router = useRouter();
   const countries = useMemo(() => countryChoices(), []);
   const [q, setQ] = useState("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(suggestedCountry || "");
   const [location, setLocation] = useState("");
   const [mode, setMode] = useState("");
 
@@ -47,7 +53,7 @@ export function HeroSearch() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Maths Islamabad, IELTS online, FBISE-HSSC-MATH…"
+          placeholder={placeholder}
           aria-label="Search subject, city, or subject code"
           autoComplete="off"
           spellCheck={false}

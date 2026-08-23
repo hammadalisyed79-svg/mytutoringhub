@@ -18,6 +18,7 @@ import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 import { formatTutorPlace } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getUserCountry } from "@/lib/geo";
+import { getVisitorRegion } from "@/lib/visitor-region";
 import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { pageMetadata, truncateDescription } from "@/lib/seo";
 
@@ -83,7 +84,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const sp = await searchParams;
   const session = await auth();
   const currency = await getVisitorCurrency();
-  const pinnedCountry = getUserCountry(await headers());
+  const headersList = await headers();
+  const pinnedCountry = getUserCountry(headersList);
+  const region = getVisitorRegion(headersList);
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -141,6 +144,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           codes={curriculumCodeOptions()}
           currency={currency}
           pinnedCountry={pinnedCountry}
+          searchQueryPlaceholder={region.searchQueryPlaceholder}
+          defaultCityPlaceholder={region.cityPlaceholder}
+          levelPlaceholder={region.levelPlaceholder}
         />
 
         <div className="search-quick" aria-label="Popular subjects">

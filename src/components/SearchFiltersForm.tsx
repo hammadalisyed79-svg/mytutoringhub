@@ -38,6 +38,9 @@ type Props = {
   codes: CurriculumCodeOption[];
   currency: string;
   pinnedCountry?: string | null;
+  searchQueryPlaceholder: string;
+  defaultCityPlaceholder: string;
+  levelPlaceholder: string;
 };
 
 function initialCountryValue(initial: Props["initial"]) {
@@ -46,7 +49,17 @@ function initialCountryValue(initial: Props["initial"]) {
   return inferTutorCountry(initial.location, initial.country);
 }
 
-export function SearchFiltersForm({ initial, subjects, levels, codes, currency, pinnedCountry }: Props) {
+export function SearchFiltersForm({
+  initial,
+  subjects,
+  levels,
+  codes,
+  currency,
+  pinnedCountry,
+  searchQueryPlaceholder,
+  defaultCityPlaceholder,
+  levelPlaceholder,
+}: Props) {
   const countries = useMemo(() => {
     const all = countryChoices();
     if (!pinnedCountry) return all;
@@ -116,7 +129,7 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
 
   const cityPlaceholder = country
     ? `${(cityPool || []).find((city) => city !== "Online") || "City"}, Online…`
-    : "Islamabad, Online…";
+    : defaultCityPlaceholder;
 
   function onCountryChange(next: string) {
     setCountry(next);
@@ -177,7 +190,7 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
             name="q"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Try “Maths Islamabad”, IELTS, or FBISE-HSSC-MATH"
+            placeholder={searchQueryPlaceholder}
             autoComplete="off"
             spellCheck={false}
           />
@@ -231,7 +244,7 @@ export function SearchFiltersForm({ initial, subjects, levels, codes, currency, 
           value={level}
           onChange={setLevel}
           options={levelOptions}
-          placeholder="Matric, A Level, IB…"
+          placeholder={levelPlaceholder}
         />
         <SuggestField
           name="language"

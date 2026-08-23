@@ -17,6 +17,7 @@ import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
+import { getVisitorRegion } from "@/lib/visitor-region";
 import {
   GEO_CURRENCY_LINE,
   STUDENT_REQUESTS_LINE,
@@ -38,7 +39,9 @@ export const metadata = pageMetadata({
 export default async function HomePage() {
   const session = await auth();
   const currency = await getVisitorCurrency();
-  const pinnedCountry = getUserCountry(await headers());
+  const headersList = await headers();
+  const pinnedCountry = getUserCountry(headersList);
+  const region = getVisitorRegion(headersList);
   const curriculumCodeCount = CURRICULUM.length;
   const [tutorCount, studentCount, openAds, pastPaperCount, featured, reviews] =
     await Promise.all([
@@ -133,16 +136,19 @@ export default async function HomePage() {
           </div>
           <h1>Private tutoring, elevated.</h1>
           <p className="hero-lead">{VALUE_PROPOSITION}</p>
-          <p className="hero-sub">{GEO_CURRENCY_LINE}</p>
+          <p className="hero-sub">{region.geoCurrencyLine}</p>
           <div className="hero-search-shell">
-            <HeroSearch />
+            <HeroSearch
+              placeholder={region.searchPlaceholder}
+              suggestedCountry={region.countryName}
+            />
           </div>
           <HeroPathCards />
           <ValuePropStrip className="hero-value-strip" />
         </div>
       </section>
 
-      <PrestigePillars />
+      <PrestigePillars curriculaLine={region.curriculaLine} />
 
       <section className="section section-alt">
         <div className="container">
