@@ -20,7 +20,7 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
-import { formatTutorPlace } from "@/lib/tutor-catalog";
+import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import {
   formatAvailabilityLines,
   formatExperienceYears,
@@ -212,6 +212,12 @@ export default async function TutorProfilePage({ params }: Params) {
   const levels = splitList(tutor.levels);
   const languages = splitList(tutor.languages);
   const place = formatTutorPlace(tutor.location, tutor.country);
+  const availability = formatTutorAvailability({
+    location: tutor.location,
+    country: tutor.country,
+    online: tutor.online,
+    inPerson: tutor.inPerson,
+  });
   const { slots: availabilitySlots, grouped: availabilityByDay } = groupAvailabilityByDay(
     tutor.availability,
   );
@@ -225,9 +231,6 @@ export default async function TutorProfilePage({ params }: Params) {
     take: 4,
   });
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.id));
-  const modes = [tutor.online ? "Online" : null, tutor.inPerson ? "In person" : null].filter(
-    Boolean,
-  ) as string[];
   let hasConversation = false;
   if (viewerId && !isOwner && !isAdmin) {
     const talked = await prisma.conversation.findFirst({
@@ -379,13 +382,10 @@ export default async function TutorProfilePage({ params }: Params) {
               )}
 
               <p className="profile-rate-lg">{formatHourly(tutor.hourlyRate, currency)}</p>
-              <p className="profile-rate-label muted">per hour</p>
 
               <ul className="profile-facts-list">
                 {experienceLabel && <li>{experienceLabel} teaching experience</li>}
-                {place && <li>{place}</li>}
-                {modes.length > 0 && <li>{modes.join(" · ")}</li>}
-                {tutor.country && place !== tutor.country && <li>{tutor.country}</li>}
+                {availability && <li>{availability}</li>}
               </ul>
 
               <ProfileCtaButtons
@@ -662,12 +662,8 @@ export default async function TutorProfilePage({ params }: Params) {
               <h2>Contact {firstName}</h2>
               <p className="profile-rate-lg profile-rate-inline">
                 {formatHourly(tutor.hourlyRate, currency)}
-                <span className="profile-rate-label muted"> per hour</span>
               </p>
-              <p className="muted">
-                {place}
-                {modes.length ? ` · ${modes.join(" · ")}` : ""}
-              </p>
+              <p className="muted">{availability}</p>
               {showPhone ? (
                 <p>Phone: {tutor.phone}</p>
               ) : (

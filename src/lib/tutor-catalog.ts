@@ -336,7 +336,6 @@ export function formatTutorPlace(location?: string | null, country?: string | nu
   return city || nation;
 }
 
-/** Lesson mode label without duplicating an Online city/location. */
 export function formatTutorAvailability(opts: {
   location?: string | null;
   country?: string | null;
@@ -348,11 +347,11 @@ export function formatTutorAvailability(opts: {
   const modes: string[] = [];
   if (opts.online && !placeIsOnline) modes.push("Online");
   if (opts.inPerson) modes.push("In person");
-  if (!modes.length && opts.online) modes.push("Online");
-  if (place && modes.length) {
-    // If place already says Online, don't append Online again
-    const filtered = modes.filter((m) => m.toLowerCase() !== place.toLowerCase());
-    return filtered.length ? `${place} · ${filtered.join(" · ")}` : place;
+  if (!modes.length && opts.online) {
+    // Online-only with no distinct city → single "Online"
+    return "Online";
   }
-  return place || modes.join(" · ") || "Online";
+  if (place && modes.length) return `${place} · ${modes.join(" · ")}`;
+  if (place) return place;
+  return modes.join(" · ") || "Online";
 }

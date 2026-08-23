@@ -173,7 +173,7 @@ export default async function PastPaperSeoPage({
           </label>
           <label>
             Paper / component
-            <input name="paper" defaultValue={sp.paper || ""} placeholder="e.g. 42" />
+            <input name="paper" defaultValue={sp.paper || ""} placeholder="Paper number" aria-label="Paper / component" />
           </label>
           <label>
             Document type
