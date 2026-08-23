@@ -208,7 +208,7 @@ Verified against **https://www.mytutoringhub.com** (live) at **375px** (primary)
 
 Desktop reference: primary nav links present at wide viewport (spot-checked).
 
-**Post-deploy note:** CSS/nav/search/404 improvements ship with this commit; re-spot-check trust ribbon wrap + “More filters” after Vercel promotion.
+**Post-deploy note:** CSS/nav/search/404 improvements confirmed live on production after `f082d20` (trust ribbon `flex-wrap: wrap`, search `More filters` closed by default, 404 Past papers CTA present).
 
 ---
 
