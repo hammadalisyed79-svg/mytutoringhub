@@ -139,7 +139,7 @@ No axe/pa11y dependency in project — did not install new stack. Photo regions 
 
 | File | Change |
 |------|--------|
-| `src/app/globals.css` | On-dark tokens, hero overlay, link/button guards, muted/form/FAQ contrast |
+| `src/app/globals.css` | On-dark tokens, hero overlay, link/button guards, muted/form/FAQ contrast, footnote link specificity fix |
 | `src/components/HeroPathCards.tsx` | Removed erroneous `muted` class from footnote |
 | `scripts/check-contrast-tokens.mjs` | Token-level WCAG contrast audit script |
 | `docs/chatgpt-color-contrast-readability-report.md` | This report |
@@ -160,6 +160,11 @@ No axe/pa11y dependency in project — did not install new stack. Photo regions 
 
 ## PRODUCTION STATUS
 
-Deployed to **mytutoringhub.com** via push to `main`. Visual verification completed on live production pages listed above.
+Deployed to **mytutoringhub.com** via push to `main` (commits `f46d138`, `44f4814`). Visual verification completed on live production pages listed above.
+
+**Production computed checks (post-deploy):**
+- `.hero-path-footnote` text: `rgba(255, 252, 247, 0.94)`
+- `.hero-path-footnote a`: `rgb(255, 248, 243)` (`--on-dark-link`)
+- Help page `.muted a.btn`: white text on brand green gradient
 
 **Sprint complete.** No further development started.
