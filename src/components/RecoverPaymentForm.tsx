@@ -34,7 +34,7 @@ export function RecoverPaymentForm() {
         <input
           value={tracker}
           onChange={(e) => setTracker(e.target.value)}
-          placeholder="track_… or https://sandbox.api.getsafepay.com/…tracker=track_…"
+          placeholder="track_… or paste your Safepay checkout URL"
           required
         />
       </label>

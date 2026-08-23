@@ -1,27 +1,35 @@
 "use client";
 
-import { manualPlanActivationMailto } from "@/lib/payments-status";
+import {
+  manualActivationCtaLabel,
+  manualActivationNote,
+  manualPlanActivationMailto,
+} from "@/lib/payments-status";
 
 export function ManualPlanActivationButton({
   planName,
   label,
   featured,
-  note = "Card checkout opening soon · Manual activation available",
+  note,
+  accountEmail,
+  oneTime,
 }: {
   planName: string;
   label?: string;
   featured?: boolean;
   note?: string;
+  accountEmail?: string;
+  oneTime?: boolean;
 }) {
   return (
     <div className="checkout-action">
       <a
         className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
-        href={manualPlanActivationMailto(planName)}
+        href={manualPlanActivationMailto(planName, accountEmail)}
       >
-        {label || `Email to activate ${planName}`}
+        {label || manualActivationCtaLabel(planName)}
       </a>
-      <p className="checkout-trust muted">{note}</p>
+      <p className="checkout-trust muted">{note || manualActivationNote(oneTime)}</p>
     </div>
   );
 }

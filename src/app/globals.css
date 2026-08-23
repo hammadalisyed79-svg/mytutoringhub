@@ -310,7 +310,7 @@ svg {
   padding-left: 0.65rem;
   border-left: 1px solid var(--line);
   white-space: nowrap;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   font-weight: 500;
 }
 
@@ -1583,9 +1583,9 @@ body.auth-modal-open .nav-backdrop {
 .payments-soon-banner {
   margin: 0 0 1.25rem;
   padding: 1.05rem 1.2rem;
-  border: 1px solid rgba(196, 92, 38, 0.35);
+  border: 1px solid rgba(10, 92, 80, 0.2);
   border-radius: var(--radius);
-  background: linear-gradient(120deg, rgba(196, 92, 38, 0.1), rgba(255, 252, 247, 0.98));
+  background: linear-gradient(120deg, rgba(10, 92, 80, 0.07), rgba(255, 252, 247, 0.98));
 }
 
 .payments-soon-banner strong {
@@ -1593,7 +1593,7 @@ body.auth-modal-open .nav-backdrop {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.78rem;
-  color: #9a4518;
+  color: var(--brand-deep);
   margin-bottom: 0.35rem;
 }
 
@@ -2839,9 +2839,13 @@ select:focus {
   width: 2.35rem;
   height: 2.35rem;
   border-radius: 12px;
-  background: rgba(10, 92, 80, 0.1);
-  font-size: 1.15rem;
+  background: linear-gradient(145deg, rgba(10, 92, 80, 0.08), rgba(184, 134, 11, 0.1));
+  border: 1px solid rgba(184, 134, 11, 0.16);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
   line-height: 1;
+  color: var(--brand-deep);
 }
 
 .dash-shortcut-copy {
@@ -3380,7 +3384,143 @@ select:focus {
 }
 
 .pricing-addons {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.pricing-addons-section {
+  margin-top: 2rem;
+}
+
+.pricing-addons-lead {
+  margin: -0.25rem 0 1rem;
+}
+
+.pricing-coming-soon {
+  margin-top: 2rem;
+}
+
+.pricing-coming-soon .checkout-section-title {
+  margin-top: 0;
+}
+
+.pricing-coming-soon p {
+  margin-bottom: 0;
+}
+
+.billing-toggle {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-deep);
+}
+
+.plan-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.plan-banner-badge--free {
+  background: var(--muted);
+}
+
+.plan-banner-badge--pro {
+  background: var(--ok);
+}
+
+.plan-banner-badge--elite {
+  background: var(--accent);
+}
+
+.plan-banner-usage {
+  font-size: 0.84rem;
+  color: var(--muted);
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.plan-banner-usage--unlimited {
+  flex: 1 1 180px;
+}
+
+.plan-banner-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.plan-banner-meter-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--paper-deep);
+  overflow: hidden;
+}
+
+.plan-banner-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s var(--ease);
+}
+
+.plan-banner-meter-fill.is-default {
+  background: var(--brand);
+}
+
+.plan-banner-meter-fill.is-elite {
+  background: var(--accent);
+}
+
+.plan-banner-meter-fill.is-warn {
+  background: var(--warn);
+}
+
+.plan-banner-renewal {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.plan-banner-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.plan-banner-link {
+  color: var(--brand);
+  font-weight: 600;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.plan-banner-link:hover {
+  color: var(--brand-deep);
+  text-decoration: underline;
 }
 
 .plan {
@@ -8352,13 +8492,6 @@ img {
   color: rgba(255, 252, 247, 0.82);
 }
 
-.eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--brand);
-}
 
 .testimonial {
   transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease);

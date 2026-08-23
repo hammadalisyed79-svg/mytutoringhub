@@ -7,6 +7,7 @@ import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
+import { manualActivationCtaLabel, planBillingFootnote } from "@/lib/payments-status";
 
 function PlanActions({
   plan,
@@ -30,8 +31,8 @@ function PlanActions({
       return (
         <ManualPlanActivationButton
           planName={plan.name}
-          label={`Email to activate ${plan.name}`}
-          featured={featured}
+          label={manualActivationCtaLabel(plan.name)}
+          featured={featured || plan.id === "VERIFIED_TUTOR"}
         />
       );
     }
@@ -82,10 +83,12 @@ function PlanPrice({
   plan,
   currency,
   billing,
+  paidCheckoutLive,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
   billing: "monthly" | "annual";
+  paidCheckoutLive: boolean;
 }) {
   const showAnnual =
     billing === "annual" && !plan.isAddOn && plan.annualChargePricePkr != null && !plan.isComplimentary;
@@ -109,7 +112,8 @@ function PlanPrice({
         <p className="price-was">{formatPlanPrice(plan.listPricePkr, currency)}</p>
         <p className="plan-billing muted">
           Billed annually · about {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)}{" "}
-          equivalent · shown in {currency} · paid on Safepay
+          equivalent · shown in {currency} ·{" "}
+          {paidCheckoutLive ? "paid on Safepay" : "activate after payment"}
         </p>
       </div>
     );
@@ -129,7 +133,7 @@ function PlanPrice({
   return (
     <div className="price-block">
       <div className="price">{formatPlanPrice(plan.listPricePkr, currency)}</div>
-      <p className="plan-billing muted">Billed monthly · shown in {currency} · paid on Safepay</p>
+      <p className="plan-billing muted">{planBillingFootnote(currency, paidCheckoutLive)}</p>
     </div>
   );
 }
@@ -155,20 +159,7 @@ export function PricingPlansClient({
   return (
     <>
       {hasAnnual && (
-        <div
-          className="billing-toggle"
-          role="group"
-          aria-label="Billing period"
-          style={{
-            display: "inline-flex",
-            gap: "0.35rem",
-            marginBottom: "1.25rem",
-            padding: "0.25rem",
-            border: "1px solid var(--line)",
-            borderRadius: "var(--radius)",
-            background: "var(--paper-deep)",
-          }}
-        >
+        <div className="billing-toggle" role="group" aria-label="Billing period">
           <button
             type="button"
             className={`btn btn-sm ${billing === "monthly" ? "" : "btn-secondary"}`}
@@ -209,7 +200,12 @@ export function PricingPlansClient({
                 )}
                 <h3>{plan.name}</h3>
                 <p className="muted">{plan.description}</p>
-                <PlanPrice plan={plan} currency={currency} billing={billing} />
+                <PlanPrice
+                  plan={plan}
+                  currency={currency}
+                  billing={billing}
+                  paidCheckoutLive={paidCheckoutLive}
+                />
                 {plan.promoNote && plan.isPromoActive && (
                   <p className="promo-note">{plan.promoNote}</p>
                 )}
@@ -236,22 +232,32 @@ export function PricingPlansClient({
       </section>
 
       {addOns.length > 0 && (
-        <section style={{ marginTop: "2rem" }}>
+        <section className="pricing-addons-section">
           <h2 className="checkout-section-title">Tutor add-ons</h2>
-          <p className="muted" style={{ marginTop: "-0.4rem", marginBottom: "1rem" }}>
-            Optional visibility upgrades. Verified badge, highlight, boost, and extra ads are billed
-            separately{paidCheckoutLive ? " on Safepay" : ""} (one-time or monthly as shown).
+          <p className="muted pricing-addons-lead">
+            Optional visibility upgrades — verified badge, highlight, boost, and extra ads billed
+            separately{paidCheckoutLive ? " on Safepay" : " after payment"}.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (
-              <article key={plan.id} className="plan">
+              <article
+                key={plan.id}
+                className={`plan${plan.id === "VERIFIED_TUTOR" ? " plan-featured" : ""}`}
+              >
                 <div className="plan-body">
-                  {plan.isPromoActive && (
+                  {plan.id === "VERIFIED_TUTOR" ? (
+                    <span className="plan-badge">Recommended</span>
+                  ) : plan.isPromoActive ? (
                     <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
-                  )}
+                  ) : null}
                   <h3>{plan.name}</h3>
                   <p className="muted">{plan.description}</p>
-                  <PlanPrice plan={plan} currency={currency} billing="monthly" />
+                  <PlanPrice
+                    plan={plan}
+                    currency={currency}
+                    billing="monthly"
+                    paidCheckoutLive={paidCheckoutLive}
+                  />
                   <ul>
                     {plan.features.map((f) => (
                       <li key={f}>{f}</li>
@@ -263,6 +269,7 @@ export function PricingPlansClient({
                     plan={plan}
                     currency={currency}
                     signedIn={signedIn}
+                    featured={plan.id === "VERIFIED_TUTOR"}
                     billing="monthly"
                     paidCheckoutLive={paidCheckoutLive}
                     hubPointsBalance={hubPointsBalance}
@@ -274,13 +281,11 @@ export function PricingPlansClient({
         </section>
       )}
 
-      <aside className="panel" style={{ marginTop: "2rem" }}>
-        <h2 className="checkout-section-title" style={{ marginTop: 0 }}>
-          Coming soon
-        </h2>
-        <p className="muted" style={{ marginBottom: 0 }}>
-          One-time booking / first-lesson fees, one-time profile boosts, group class listings, and
-          resource uploads are not sold yet. Only the plans and add-ons above are live on Safepay.
+      <aside className="panel pricing-coming-soon">
+        <h2 className="checkout-section-title">Coming soon</h2>
+        <p className="muted">
+          One-time booking fees, profile boosts, group class listings, and resource uploads are not
+          sold yet. Only the plans and add-ons above are available today.
         </p>
       </aside>
     </>

@@ -3,9 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
-import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
-import { getPlan } from "@/lib/plans";
-import { SubscribeButton } from "@/components/SubscribeButton";
+import { StudentPlanPanel } from "@/components/StudentPlanPanel";
 import { PointsWalletPanel } from "@/components/PointsWalletPanel";
 import { StudentAdCard } from "@/components/StudentAdCard";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
@@ -13,7 +11,7 @@ import { ensureHubPointsFresh, getHubPointsSummary } from "@/lib/hub-points";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
-import { STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
+import { getPlan } from "@/lib/plans";
 import { StudentDashboardShortcuts } from "@/components/StudentDashboardShortcuts";
 import {
   type DashboardSearchParams,
@@ -44,6 +42,8 @@ export default async function StudentDashboardPage({
   ]);
   await ensureHubPointsFresh(session.user.id);
   const hubPoints = await getHubPointsSummary(session.user.id, { currency, role: "STUDENT" });
+  const studentPassPlan = getPlan("STUDENT_PASS");
+  const studentPassPricePkr = studentPassPlan?.pricePkr;
 
   return (
     <div className="page student-dashboard-page">
@@ -73,9 +73,9 @@ export default async function StudentDashboardPage({
         )}
         {!user.emailVerified && (
           <div className="panel student-dashboard-alert student-dashboard-alert--verify">
-            <p style={{ marginTop: 0 }}>
-              Please verify {user.email}. Mail is sent from admin@mytutoringhub.com. Check inbox,
-              junk, and promotions.
+            <p className="muted">
+              Please verify {user.email}. Check your inbox, junk, and promotions folders for our
+              confirmation email.
             </p>
             <ResendVerificationButton email={user.email} />
           </div>
@@ -96,64 +96,14 @@ export default async function StudentDashboardPage({
         <div className="student-dashboard-overview">
           <PointsWalletPanel summary={hubPoints} role="STUDENT" />
 
-          <section className="panel student-dashboard-card">
-            <h2>Your plan</h2>
-            {corePlan ? (
-              <ul className="sub-list">
-                <li>
-                  <strong>{getPlan(corePlan.plan as never)?.name || corePlan.plan}</strong>
-                  {corePlan.currentPeriodEnd
-                    ? ` · until ${corePlan.currentPeriodEnd.toLocaleDateString()}`
-                    : " · active"}{" "}
-                  · <Link href={`/receipt/${corePlan.id}`}>View slip</Link>
-                </li>
-              </ul>
-            ) : (
-              <p className="muted">
-                {STUDENT_FREE_CONTACTS_LINE} Student Pro adds unlimited past papers and AI.
-              </p>
-            )}
-            {pendingSubs.length > 0 && (
-              <div className="student-dashboard-pending">
-                <p className="muted">
-                  {pendingSubs.length} unfinished checkout
-                  {pendingSubs.length === 1 ? "" : "s"}. If Safepay already charged you, open
-                  Dashboard again to confirm, or tap confirm below.
-                </p>
-                <div className="student-dashboard-pending-actions">
-                  {pendingSubs
-                    .filter((s) => s.stripeSubscriptionId?.startsWith("track_"))
-                    .map((s) => (
-                      <a
-                        key={s.id}
-                        className="btn btn-sm"
-                        href={`/api/safepay/complete?tracker=${encodeURIComponent(s.stripeSubscriptionId!)}&plan=${encodeURIComponent(s.plan)}`}
-                      >
-                        Confirm {getPlan(s.plan as never)?.name || s.plan}
-                      </a>
-                    ))}
-                </div>
-              </div>
-            )}
-            {!corePlan && (
-              <div className="plan-cta" style={{ marginTop: "0.85rem" }}>
-                <SubscribeButton
-                  plan="STUDENT_PASS"
-                  planLabel="Student Pass"
-                  currency={currency}
-                  label="Pay with Safepay · Student Pass"
-                  featured
-                  paidCheckoutLive={paidCheckoutLive}
-                />
-              </div>
-            )}
-            <p className="student-dashboard-card-foot">
-              <Link href="/dashboard/student/plan">Your plan details</Link>
-              {" · "}
-              <Link href="/pricing">See Student Pass →</Link>
-            </p>
-            {!corePlan && <RecoverPaymentForm />}
-          </section>
+          <StudentPlanPanel
+            corePlan={corePlan}
+            pendingSubs={pendingSubs}
+            currency={currency}
+            paidCheckoutLive={paidCheckoutLive}
+            hubPointsBalance={hubPoints.balance}
+            listPricePkr={studentPassPricePkr}
+          />
         </div>
 
         <StudentDashboardShortcuts unread={inbox.unread} />

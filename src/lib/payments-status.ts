@@ -25,12 +25,42 @@ export function getPublicAppUrl() {
   return (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
 }
 
-export function manualPlanActivationMailto(planName?: string) {
+export function manualActivationCtaLabel(planName: string) {
+  return `Request ${planName}`;
+}
+
+export function manualActivationNote(oneTime = false) {
+  return oneTime
+    ? "Bank transfer accepted · Boosts activated within 24 hours"
+    : "Bank transfer accepted · Plans activated within 24 hours";
+}
+
+export function planBillingFootnote(
+  currency: string,
+  paidCheckoutLive: boolean,
+  billing: "monthly" | "annual" = "monthly",
+) {
+  const period = billing === "annual" ? "Billed annually" : "Billed monthly";
+  const payment = paidCheckoutLive ? "paid on Safepay" : "activate after payment";
+  return `${period} · shown in ${currency} · ${payment}`;
+}
+
+export function manualPlanActivationMailto(planName?: string, accountEmail?: string) {
   const subject = planName
     ? `Activate ${planName} on My Tutoring Hub`
     : "Activate my plan on My Tutoring Hub";
-  const body =
-    "Hi,\n\nI would like to activate a plan on My Tutoring Hub.\n\nMy account email:\nPlan requested:\nPayment method used (bank transfer / etc.):\n\nThank you.";
+  const body = [
+    "Hi,",
+    "",
+    "I would like to activate a plan on My Tutoring Hub.",
+    "",
+    `My account email: ${accountEmail?.trim() || ""}`,
+    `Plan requested: ${planName?.trim() || ""}`,
+    "Payment method used (bank transfer / card / other):",
+    "Payment reference (if available):",
+    "",
+    "Thank you.",
+  ].join("\n");
   return `mailto:${PAYMENTS_SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 

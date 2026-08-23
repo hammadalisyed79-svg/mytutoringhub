@@ -64,7 +64,9 @@ export function AiSupportWidget({ configured }: { configured: boolean }) {
               Open full page
             </Link>
             {" · "}
-            <a href="mailto:admin@mytutoringhub.com">Email us</a>
+            <Link href="/contact" onClick={() => setOpen(false)}>
+              Contact billing
+            </Link>
           </p>
         </div>
       ) : null}

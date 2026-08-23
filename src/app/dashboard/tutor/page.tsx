@@ -103,9 +103,9 @@ export default async function TutorDashboardPage({
         )}
         {!user.emailVerified && (
           <div className="panel tutor-dashboard-alert tutor-dashboard-alert--verify">
-            <p style={{ marginTop: 0 }}>
-              Please verify {user.email}. Mail is sent from admin@mytutoringhub.com. Check inbox,
-              junk, and promotions.
+            <p className="muted">
+              Please verify {user.email}. Check your inbox, junk, and promotions folders for our
+              confirmation email.
             </p>
             <ResendVerificationButton email={user.email} />
           </div>

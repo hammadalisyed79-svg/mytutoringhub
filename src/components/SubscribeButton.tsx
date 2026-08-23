@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
+import { manualActivationCtaLabel, manualActivationNote } from "@/lib/payments-status";
 import type { SubscriptionPlan } from "@/lib/types";
 
 export function SubscribeButton({
@@ -38,13 +39,10 @@ export function SubscribeButton({
     return (
       <ManualPlanActivationButton
         planName={displayName}
-        label={label.startsWith("Pay with") ? `Email to activate ${displayName}` : label}
+        label={label.startsWith("Pay with") ? manualActivationCtaLabel(displayName) : label}
         featured={featured}
-        note={
-          oneTime
-            ? "Card checkout opening soon · Email us after payment to activate boost"
-            : "Card checkout opening soon · Manual activation available"
-        }
+        note={manualActivationNote(oneTime)}
+        oneTime={oneTime}
       />
     );
   }
@@ -95,7 +93,7 @@ export function SubscribeButton({
         </label>
       ) : null}
       <button
-        className={`btn btn-block ${featured ? "" : "btn-secondary"}`}
+        className={`btn btn-block ${featured || complimentary ? "" : "btn-secondary"}`}
         type="button"
         onClick={subscribe}
         disabled={loading}

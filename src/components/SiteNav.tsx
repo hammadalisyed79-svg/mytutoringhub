@@ -59,7 +59,7 @@ function primaryLinks(role?: string | null) {
     return [
       { href: "/ads", label: "Student requests" },
       { href: "/past-papers", label: "Past papers" },
-      { href: "/pricing", label: "Plans" },
+      { href: "/pricing", label: "Plans & pricing" },
     ];
   }
   if (role === "STUDENT") {
@@ -67,14 +67,14 @@ function primaryLinks(role?: string | null) {
       { href: "/search", label: "Find tutors" },
       { href: "/ads", label: "Requests" },
       { href: "/past-papers", label: "Past papers" },
-      { href: "/pricing", label: "Student Pass" },
+      { href: "/pricing", label: "Plans & pricing" },
     ];
   }
   return [
     { href: "/search", label: "Find tutors" },
     { href: "/become-a-tutor", label: "Become a tutor" },
     { href: "/past-papers", label: "Past papers" },
-    { href: "/pricing", label: "Pricing" },
+    { href: "/pricing", label: "Plans & pricing" },
   ];
 }
 

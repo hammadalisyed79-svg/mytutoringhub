@@ -73,7 +73,7 @@ export default async function PricingPage({
               {STUDENT_PASS_PAPERS_LINE}{" "}
               {paidCheckoutLive
                 ? "There is no shopping cart — choose a plan and pay on Safepay in one step."
-                : "Card checkout is opening soon — free and complimentary plans work now; paid plans can be activated by email."}
+                : "Card checkout is launching soon — free and complimentary plans work now; paid plans activate within 24 hours after payment."}
             </p>
             <ValuePropStrip />
             <p className="muted" style={{ marginTop: "0.75rem" }}>
@@ -85,7 +85,7 @@ export default async function PricingPage({
           <ol className="checkout-steps" aria-label="Checkout steps">
             <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>
             <li className={session?.user ? "is-current" : ""}>2. Choose plan</li>
-            <li>{paidCheckoutLive ? "3. Pay on Safepay" : "3. Pay (coming soon)"}</li>
+            <li>{paidCheckoutLive ? "3. Pay on Safepay" : "3. Confirm activation"}</li>
           </ol>
         </div>
 
@@ -113,8 +113,8 @@ export default async function PricingPage({
             <>
               <span>Free tutor listings</span>
               <span>Complimentary Tutor Basic</span>
-              <span>Manual plan activation by email</span>
-              <span>Card checkout opening soon</span>
+              <span>Bank transfer accepted</span>
+              <span>Plans activated within 24h</span>
             </>
           )}
         </div>
@@ -127,11 +127,11 @@ export default async function PricingPage({
 
         {needsVerify && (
           <div className="panel checkout-verify">
-            <p style={{ marginTop: 0 }}>
+            <p className="muted checkout-verify-lead">
               {sp.verify === "sent"
-                ? `We tried to send a confirmation to ${me?.email || "your email"} from admin@mytutoringhub.com.`
+                ? `We sent a confirmation link to ${me?.email || "your email"}.`
                 : "Verify your email to unlock messaging and student requests. Student Pro unlocks the AI study assistant."}{" "}
-              Check inbox, junk, and promotions. Hotmail can delay mail by several minutes.
+              Check inbox, junk, and promotions — some providers delay mail by a few minutes.
             </p>
             <ResendVerificationButton email={me?.email || undefined} />
           </div>
