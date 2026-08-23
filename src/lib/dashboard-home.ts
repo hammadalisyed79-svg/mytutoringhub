@@ -84,7 +84,7 @@ export function tutorDashboardTabHref(
     const value = sp[key];
     if (value) q.set(key, value);
   }
-  if (tab === "profile") q.set("tab", "profile");
+  if (tab === "profile" || tab === "growth") q.set("tab", tab);
   const query = q.toString();
   const base = `/dashboard/tutor${query ? `?${query}` : ""}`;
   return hash ? `${base}#${hash}` : base;
