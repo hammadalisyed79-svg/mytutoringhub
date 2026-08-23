@@ -1139,8 +1139,8 @@ p.success.panel,
   line-height: 1.45;
   padding: 0.65rem 0.75rem;
   border-radius: var(--radius-sm);
-  background: rgba(10, 77, 66, 0.06);
-  border: 1px solid rgba(10, 77, 66, 0.12);
+  background: rgba(var(--brand-rgb), 0.06);
+  border: 1px solid rgba(var(--brand-rgb), 0.12);
 }
 
 .auth-switch {
@@ -3588,7 +3588,7 @@ select:focus {
 
 @media (max-width: 1100px) {
   .pricing-addons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
@@ -3605,6 +3605,9 @@ select:focus {
   padding: 1.25rem;
   box-shadow: var(--shadow-sm);
   color: var(--ink);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .thread {
@@ -4261,8 +4264,8 @@ select:focus {
   margin-top: 0.75rem;
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius-sm);
-  background: rgba(10, 77, 66, 0.06);
-  border: 1px solid rgba(10, 77, 66, 0.12);
+  background: rgba(var(--brand-rgb), 0.06);
+  border: 1px solid rgba(var(--brand-rgb), 0.12);
   overflow-x: auto;
 }
 
@@ -7258,7 +7261,7 @@ a.chip-btn {
   }
 
   .pricing-addons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .auth-grid,
@@ -7512,6 +7515,265 @@ img {
 /* Tutor grid: already 1fr at 720px ✓ */
 
 /* CTA band: already stacks at 720px ✓ */
+
+/* ── Mobile layout pass (panels, dashboards, overflow) ───────── */
+
+@media (max-width: 768px) {
+  .page {
+    padding: clamp(1.15rem, 4vw, 1.65rem) 0 clamp(2rem, 6vw, 2.75rem);
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+
+  .page-title {
+    font-size: clamp(1.55rem, 7vw, 2.15rem);
+    overflow-wrap: anywhere;
+  }
+
+  .container,
+  .tutor-dashboard-overview,
+  .student-dashboard-overview,
+  .tutor-dashboard-stack,
+  .student-dashboard-stack,
+  .points-wallet,
+  .tutor-plan-wallet,
+  .pricing-grid,
+  .dashboard-grid,
+  .checkout-page .checkout-hero {
+    min-width: 0;
+  }
+
+  .tutor-dashboard-hero,
+  .student-dashboard-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tutor-dashboard-hero-actions,
+  .student-dashboard-hero-actions {
+    width: 100%;
+  }
+
+  .tutor-dashboard-hero-actions .btn,
+  .student-dashboard-hero-actions .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tutor-dashboard-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.15rem;
+  }
+
+  .tutor-dashboard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tutor-dashboard-tabs .page-tab {
+    flex-shrink: 0;
+  }
+
+  .points-wallet-hero-inner,
+  .tutor-plan-hero-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .points-wallet-hero-actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .points-wallet-hero-actions .btn {
+    width: 100%;
+  }
+
+  .tutor-plan-status-pill {
+    align-self: flex-start;
+  }
+
+  .points-earn-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .points-share-actions,
+  .invite-tutor-share-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .points-share-actions .btn,
+  .invite-tutor-share-actions .btn,
+  .invite-tutor-share-actions a.btn {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .billing-toggle {
+    display: flex;
+    width: 100%;
+  }
+
+  .billing-toggle .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .plan-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .plan-banner-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .plan-banner-actions .btn {
+    width: 100%;
+  }
+
+  .plan-banner-meter,
+  .plan-banner-usage,
+  .plan-banner-usage--unlimited {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .messages-plan-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-recommendation-list li {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .tutor-recommendation-list li > :last-child {
+    justify-self: start;
+  }
+
+  .receipt-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-slip {
+    padding: 1.25rem 1rem;
+  }
+
+  .receipt-head {
+    flex-direction: column;
+  }
+
+  .table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .checkout-trust-bar {
+    gap: 0.45rem 0.75rem;
+    font-size: 0.84rem;
+  }
+
+  .checkout-steps {
+    padding: 0.85rem;
+  }
+
+  .site-main {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  pre,
+  code {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .invite-tutor-share-link {
+    max-width: 100%;
+  }
+
+  .dash-shortcut-card {
+    min-height: 0;
+  }
+
+  .dash-shortcut-copy strong,
+  .dash-shortcut-copy .muted {
+    overflow-wrap: anywhere;
+  }
+
+  .student-dashboard-find {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .student-dashboard-find-actions {
+    width: 100%;
+  }
+
+  .student-dashboard-find-actions .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .tutor-profile-workspace-head {
+    flex-direction: column;
+  }
+
+  .tutor-profile-status-pills {
+    width: 100%;
+  }
+
+  .payments-soon-banner-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .payments-soon-banner-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .points-share-actions,
+  .invite-tutor-share-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutor-plan-title {
+    font-size: 1.35rem;
+  }
+
+  .points-balance-number {
+    font-size: clamp(1.85rem, 10vw, 2.35rem);
+  }
+
+  .ai-support-panel {
+    width: calc(100vw - 1.25rem);
+    max-height: min(32rem, calc(100dvh - 5.5rem));
+  }
+
+  .page-tab {
+    font-size: 0.84rem;
+    padding-inline: 0.75rem;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
