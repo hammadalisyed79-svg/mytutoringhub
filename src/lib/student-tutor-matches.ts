@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
 
 export type StudentWelcomeMatch =
   | { kind: "subjects"; count: number; subjects: string[] }
@@ -55,15 +56,14 @@ export async function getStudentWelcomeMatch(userId: string): Promise<StudentWel
 
   if (subjects.length === 0) {
     const count = await prisma.tutorProfile.count({
-      where: { active: true, user: { suspended: false } },
+      where: publicListedTutorWhere(),
     });
     return { kind: "browse", count };
   }
 
   const count = await prisma.tutorProfile.count({
     where: {
-      active: true,
-      user: { suspended: false },
+      ...publicListedTutorWhere(),
       OR: subjects.map((subject) => ({
         subjects: { contains: subject, mode: "insensitive" as const },
       })),

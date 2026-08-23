@@ -4,6 +4,7 @@ import { TOP_COUNTRIES } from "@/lib/markets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 import { siteUrl } from "@/lib/seo";
+import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
@@ -73,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
       }),
       prisma.tutorProfile.findMany({
-        where: { active: true, user: { suspended: false } },
+        where: publicListedTutorWhere(),
         select: { id: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
       }),

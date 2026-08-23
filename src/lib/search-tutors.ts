@@ -11,6 +11,7 @@ import {
 import { isBoostActive } from "@/lib/subscription";
 import { getTrustBadgesForProfiles, trustBadgeSearchScore } from "@/lib/tutor-badges";
 import { citiesForSearchCountry } from "@/lib/tutor-catalog";
+import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
 
 export type TutorSearchFilters = {
   q?: string;
@@ -88,8 +89,7 @@ export async function searchTutors(
   const query = (useLocation: boolean, useCountry: boolean) =>
     prisma.tutorProfile.findMany({
       where: {
-        active: true,
-        user: { suspended: false, emailVerified: { not: null } },
+        ...publicListedTutorWhere(),
         ...(filters.verified === "1" ? { verified: true } : {}),
         ...(filters.trial === "1" ? { offersFreeTrial: true } : {}),
         ...(maxPkr && Number.isFinite(maxPkr) ? { hourlyRate: { lte: maxPkr } } : {}),
@@ -264,7 +264,7 @@ export async function averageRateForSubject(subject: string) {
   });
   if (ads.length === 0) {
     const profiles = await prisma.tutorProfile.findMany({
-      where: { active: true, subjects: { contains: subject, mode: "insensitive" } },
+      where: { ...publicListedTutorWhere(), subjects: { contains: subject, mode: "insensitive" } },
       select: { hourlyRate: true },
     });
     if (profiles.length === 0) return null;
@@ -300,9 +300,8 @@ export async function similarTutors(opts: {
 
   return prisma.tutorProfile.findMany({
     where: {
-      active: true,
+      ...publicListedTutorWhere(),
       id: { not: opts.id },
-      user: { suspended: false, emailVerified: { not: null } },
       OR: or,
     },
     select: {

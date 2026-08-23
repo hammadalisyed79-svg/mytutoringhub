@@ -18,6 +18,7 @@ import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
+import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
 import {
   HOMEPAGE_PRODUCT_TRIO,
   HOMEPAGE_PRODUCT_TRIO_LEAD,
@@ -47,12 +48,12 @@ export default async function HomePage() {
   const curriculumCodeCount = CURRICULUM.length;
   const [tutorCount, studentCount, openAds, pastPaperCount, featured, reviews] =
     await Promise.all([
-      prisma.tutorProfile.count({ where: { active: true } }),
+      prisma.tutorProfile.count({ where: publicListedTutorWhere() }),
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.studentAd.count({ where: { status: "OPEN" } }),
       prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
       prisma.tutorProfile.findMany({
-        where: { active: true },
+        where: publicListedTutorWhere(),
         take: 3,
         orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
         select: {
