@@ -63,7 +63,7 @@ export function StudentAdCard({
         ) : null}
         {ad.budget != null && ad.budget > 0 ? (
           <span className="student-ad-budget">
-            Budget <strong>{formatHourly(ad.budget, currency)}</strong>/hr
+            Budget <strong>{formatHourly(ad.budget, currency)}</strong>
           </span>
         ) : (
           <span className="muted">Budget flexible</span>

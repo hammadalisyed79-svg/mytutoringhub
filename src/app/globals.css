@@ -8717,6 +8717,53 @@ img {
   border-bottom: 1px solid var(--line);
 }
 
+.product-trio-section {
+  padding-block: 2.25rem 2.5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.product-trio-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  max-width: 28ch;
+}
+
+.product-trio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.product-trio-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.product-trio-card:hover {
+  border-color: rgba(var(--brand-rgb), 0.28);
+  transform: translateY(-1px);
+}
+
+.product-trio-card strong {
+  color: var(--brand-deep);
+  font-size: 1.05rem;
+}
+
+@media (max-width: 720px) {
+  .product-trio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .prestige-eyebrow {
   margin-bottom: 0.35rem;
 }

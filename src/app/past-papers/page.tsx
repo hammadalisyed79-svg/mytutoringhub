@@ -259,7 +259,7 @@ export default async function PastPapersPage({
           </label>
           <label>
             Paper code
-            <input name="paper" defaultValue={sp.paper || ""} placeholder="42" />
+            <input name="paper" defaultValue={sp.paper || ""} placeholder="e.g. 42" />
           </label>
           <label>
             Session

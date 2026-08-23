@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { findTutorCtaCopy, NO_LESSON_COMMISSION_SHORT } from "@/lib/business-rules";
 import { slugify } from "@/lib/search-tutors";
 
 export function PastPaperTutorCta({ subject }: { subject: string }) {
@@ -9,8 +10,7 @@ export function PastPaperTutorCta({ subject }: { subject: string }) {
     <aside className="panel paper-tutor-cta">
       <h2>Need help with {label}?</h2>
       <p className="muted">
-        Find a private tutor for {label} — search free, message with Student Pass, and arrange
-        lessons directly. No commission on lesson fees.
+        {findTutorCtaCopy(label)} {NO_LESSON_COMMISSION_SHORT}.
       </p>
       <div className="hero-ctas">
         <Link href={`/search?subject=${encodeURIComponent(label)}`} className="btn btn-sm">
@@ -21,6 +21,9 @@ export function PastPaperTutorCta({ subject }: { subject: string }) {
         </Link>
         <Link href="/ads/new" className="btn btn-secondary btn-sm">
           Post a request
+        </Link>
+        <Link href="/assistant" className="btn btn-secondary btn-sm">
+          Study assistant
         </Link>
       </div>
     </aside>

@@ -15,7 +15,7 @@ import { isDefaultTutorBio, TUTOR_VERIFY_PROFILE_MESSAGE } from "@/lib/tutor-lis
 import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
-import { formatTutorPlace } from "@/lib/tutor-catalog";
+import { formatTutorAvailability } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
@@ -59,8 +59,8 @@ export async function generateMetadata({
 
   const description = truncateDescription(
     parts.length > 0
-      ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates, read reviews, and message tutors free (3 contacts/month) or with Student Pass. ${VALUE_PROPOSITION}`
-      : `Search verified private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
+                  ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates and reviews. Free accounts include 3 new tutor contacts per month; Student Pass unlocks unlimited messaging. ${VALUE_PROPOSITION}`
+                  : `Search private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
   );
 
   return pageMetadata({
@@ -170,10 +170,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
         {tutors.length === 0 && (
           <div className="panel empty-state">
-            <h2>No tutors match this search</h2>
+            <h2>
+              {sp.verified === "1"
+                ? "No verified tutors match this search"
+                : "No tutors match this search"}
+            </h2>
             <p className="muted">
-              Try a nearby city, search Online, or post a student request so tutors can find you.
-              Listings appear after a tutor activates Tutor Basic.
+              Try a nearby city, browse online tutors, or post a student request so tutors can find
+              you. Complete tutor profiles appear in search for free.
             </p>
             {related.length > 0 && (
               <p className="search-related">
@@ -185,15 +189,26 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 ))}
               </p>
             )}
-            <p>
-              <Link href="/ads/new" className="btn">
+            <p className="hero-ctas" style={{ flexWrap: "wrap" }}>
+              <Link href="/search?mode=online" className="btn">
+                Browse online tutors
+              </Link>
+              <Link href="/ads/new" className="btn btn-secondary">
                 Post a student request
-              </Link>{" "}
+              </Link>
               <Link href="/search" className="btn btn-secondary">
                 Clear filters
               </Link>
             </p>
           </div>
+        )}
+
+        {tutors.length > 0 && tutors.length < 3 && (
+          <p className="search-note muted">
+            Few tutors match right now — try{" "}
+            <Link href="/search?mode=online">online</Link>, a nearby city, or{" "}
+            <Link href="/ads/new">post a request</Link> so tutors can reach you.
+          </p>
         )}
 
         {locationRelaxed && tutors.length > 0 && (
@@ -227,10 +242,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             const reviewSnippet = (t.reviews.find((r) => r.comment?.trim())?.comment || "")
               .slice(0, 72)
               .trim();
-            const place = formatTutorPlace(t.location, t.country);
+            const availability = formatTutorAvailability({
+              location: t.location,
+              country: t.country,
+              online: t.online,
+              inPerson: t.inPerson,
+            });
             const tutorName = t.user.name?.trim() || "Tutor";
             const isOwner = session?.user?.id === t.user.id;
-            const modes = [t.online && "Online", t.inPerson && "In person"].filter(Boolean).join(" · ") || "Online";
             return (
               <article
                 key={t.id}
@@ -273,7 +292,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
                   <div className="tc-rate-row">
                     <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
-                    <span className="tc-rate-label">/ hour</span>
                   </div>
 
                   <div className="tc-badges">
@@ -320,9 +338,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     </div>
                   )}
 
-                  <p className="tc-place muted">
-                    {place ? `${place} · ${modes}` : modes}
-                  </p>
+                  <p className="tc-place muted">{availability}</p>
                 </div>
 
                 <div className="tc-card-actions">

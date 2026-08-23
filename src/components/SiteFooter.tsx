@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { auth } from "@/lib/auth";import { Logo } from "@/components/Logo";
+import { auth } from "@/lib/auth";
+import { Logo } from "@/components/Logo";
 
 export async function SiteFooter() {
   await connection();
@@ -19,9 +20,9 @@ export async function SiteFooter() {
             confidence — lesson fees stay between you and your tutor.
           </p>
           <div className="footer-trust-badges" aria-label="Platform highlights">
-            <span>Verified profiles</span>
+            <span>Identity verification available</span>
             <span>Local currency</span>
-            <span>No commission</span>
+            <span>No commission on lessons</span>
           </div>
         </div>
         <div>

@@ -35,9 +35,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const titleBoard = entry?.board || board.replace(/-/g, " ");
   const titleLevel = entry?.level || qualification.replace(/-/g, " ");
   const code = resolved.syllabusCode || entry?.code || "";
-  const title = `${titleSubject}${code ? ` ${code}` : ""} ${titleLevel} Past Papers – ${titleBoard}`;
+  const title = `${titleSubject}${code ? ` ${code}` : ""} ${titleLevel} Past Papers`;
   const description = truncateDescription(
-    `Download ${titleSubject} ${titleLevel} past papers for ${titleBoard}. Question papers, mark schemes, and examiner reports on My Tutoring Hub.`,
+    `Download ${titleBoard} ${titleLevel} ${titleSubject}${code ? ` ${code}` : ""} past papers and marking schemes by year, session and paper. Find ${titleSubject} tutors for additional support.`,
   );
   return pageMetadata({
     title,
@@ -124,7 +124,7 @@ export default async function PastPaperSeoPage({
       <div className="container">
         <h1 className="page-title">
           {titleSubject}
-          {code ? ` ${code}` : ""} {titleLevel} past papers
+          {code ? ` ${code}` : ""} {titleLevel} Past Papers
         </h1>
         <p className="section-lead">
           {/cambridge/i.test(entry?.board || board) ? "Cambridge International" : entry?.board || "Board"} ·{" "}
@@ -133,15 +133,19 @@ export default async function PastPaperSeoPage({
         <SubjectHubTabs active="papers" />
         <PastPaperTutorCta subject={titleSubject} />
         <p className="paper-crumb muted">
+          <Link href="/subjects">Subjects</Link>
+          {" · "}
           <Link href="/past-papers">Past papers</Link>
           {entry ? (
             <>
-              {" → "}
+              {" · "}
               <Link href={`/past-papers?country=${encodeURIComponent(entry.country)}`}>{entry.country}</Link>
-              {" → "}
+              {" · "}
               {entry.board}
             </>
           ) : null}
+          {" · "}
+          <Link href={`/search?subject=${encodeURIComponent(titleSubject)}`}>Find tutors</Link>
         </p>
 
         <form className="panel filters filters-wide" method="get">
@@ -169,7 +173,7 @@ export default async function PastPaperSeoPage({
           </label>
           <label>
             Paper / component
-            <input name="paper" defaultValue={sp.paper || ""} placeholder="42" />
+            <input name="paper" defaultValue={sp.paper || ""} placeholder="e.g. 42" />
           </label>
           <label>
             Document type

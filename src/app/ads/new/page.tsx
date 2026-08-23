@@ -36,8 +36,8 @@ export default async function NewAdPage() {
       <div className="narrow">
         <h1 className="page-title">Post a tutor request</h1>
         <p className="muted">
-          Describe the subject, level, and city. Tutors with Tutor Basic can message you. An active
-          Student Pass is required.
+          Describe the subject, level, and city. Tutors can reply within their enquiry limits.
+          An active Student Pass is required to post.
         </p>
         {!allowed ? (
           <div className="panel">

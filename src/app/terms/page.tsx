@@ -30,14 +30,17 @@ export default function TermsPage() {
           </p>
           <h2>3. Subscriptions</h2>
           <p>
-            Students need an active Student Pass to message tutors and post requests. Tutors need
-            Tutor Basic to keep a public listing. Optional upgrades (Verified, Highlighted, Ad
-            Boost) improve visibility. Subscriptions renew according to the plan you purchase
-            unless cancelled. Limited-time offers (for example complimentary Tutor Basic until a
-            stated date) end automatically; paid add-ons such as Verified, Highlight, and Ad Boost
-            are never included unless purchased. Platform subscriptions are processed by Safepay
-            (Stripe is a fallback only). Lesson fees stay off-platform and are never collected by
-            My Tutoring Hub.
+            Free student accounts may browse tutors and start a limited number of new tutor contacts
+            each month as shown on Plans &amp; pricing. Student Pass unlocks unlimited tutor
+            contacts and student request ads; Student Pro adds unlimited past-paper downloads and
+            the AI study assistant where offered. Tutors with a complete profile may appear in
+            search without a paid plan. Tutor Basic and optional upgrades (Verified, Highlighted,
+            Profile Boost, Unlimited Ads) improve ranking and visibility tools. Subscriptions renew
+            according to the plan you purchase unless cancelled. Limited-time offers (for example
+            complimentary Tutor Basic until a stated date) end automatically; paid add-ons such as
+            Verified, Highlight, and Profile Boost are never included unless purchased. Platform
+            subscriptions are processed by Safepay (Stripe is a fallback only). Lesson fees stay
+            off-platform and are never collected by My Tutoring Hub.
           </p>
           <h2>4. Conduct</h2>
           <p>

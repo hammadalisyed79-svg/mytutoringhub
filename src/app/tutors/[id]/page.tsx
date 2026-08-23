@@ -746,7 +746,6 @@ export default async function TutorProfilePage({ params }: Params) {
                         </div>
                         <div className="tc-price-area">
                           <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
-                          <span className="tc-rate-label">/ hour</span>
                         </div>
                       </div>
                       <div className="tc-badges">

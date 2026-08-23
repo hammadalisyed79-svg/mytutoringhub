@@ -1,16 +1,21 @@
 import { isPaidCheckoutLive } from "@/lib/payments-status";
+import {
+  NO_LESSON_COMMISSION_SHORT,
+  TRUST_COUNTRIES_BOARDS,
+  TRUST_IDENTITY_VERIFICATION,
+} from "@/lib/business-rules";
 
 export async function TrustRibbon() {
   const checkoutLive = isPaidCheckoutLive();
   const items = [
-    { icon: "✓", label: "Verified tutor profiles" },
+    { icon: "✓", label: TRUST_IDENTITY_VERIFICATION },
     { icon: "◎", label: "Rates in your currency" },
-    { icon: "◆", label: "No lesson commission" },
+    { icon: "◆", label: NO_LESSON_COMMISSION_SHORT },
     {
       icon: checkoutLive ? "◈" : "◇",
       label: checkoutLive ? "Secure Safepay checkout" : "Bank transfer accepted",
     },
-    { icon: "◉", label: "50+ countries & boards" },
+    { icon: "◉", label: TRUST_COUNTRIES_BOARDS },
   ] as const;
 
   return (

@@ -5,6 +5,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
 import { formatTutorPlace, inferTutorCountry } from "@/lib/tutor-catalog";
 import { JsonLd } from "@/components/JsonLd";
+import { findTutorCtaMeta } from "@/lib/business-rules";
 import {
   breadcrumbJsonLd,
   pageMetadata,
@@ -49,8 +50,8 @@ export async function generateMetadata({ params }: Params) {
 
   const description = truncateDescription(
     total > 0
-      ? `${total} ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub.${avgLine} Search free — message with Student Pass. No commission on lessons.`
-      : `Find ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub. Search free and message tutors when listings go live.`,
+      ? `${total} ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub.${avgLine} ${findTutorCtaMeta(label)} No commission on lesson fees.`
+      : `Find ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub. Browse free — ${findTutorCtaMeta(label)}`,
   );
 
   const path = cityName
@@ -128,7 +129,7 @@ export default async function SeoTutorsPage({ params }: Params) {
               <strong>{formatMoney(pkrToCurrency(avg, currency), currency)}/hr</strong>.
             </>
           )}{" "}
-          Search free — message with Student Pass. No commission on lessons.
+          {findTutorCtaMeta(label)} No commission on lesson fees.
         </p>
         <p>
           <Link href={searchHref} className="btn btn-secondary btn-sm">

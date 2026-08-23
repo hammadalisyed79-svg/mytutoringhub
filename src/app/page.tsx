@@ -19,9 +19,11 @@ import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import {
-  GEO_CURRENCY_LINE,
+  HOMEPAGE_PRODUCT_TRIO,
+  HOMEPAGE_PRODUCT_TRIO_LEAD,
   STUDENT_REQUESTS_LINE,
   VALUE_PROPOSITION,
+  GEO_CURRENCY_LINE,
 } from "@/lib/marketing-copy";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { FreeVsPaidHighlights } from "@/components/FreeVsPaidComparison";
@@ -145,6 +147,29 @@ export default async function HomePage() {
           </div>
           <HeroPathCards />
           <ValuePropStrip className="hero-value-strip" />
+        </div>
+      </section>
+
+      <section className="section product-trio-section" aria-labelledby="product-trio-title">
+        <div className="container">
+          <h2 id="product-trio-title" className="product-trio-title">
+            {HOMEPAGE_PRODUCT_TRIO}
+          </h2>
+          <p className="section-lead">{HOMEPAGE_PRODUCT_TRIO_LEAD}</p>
+          <div className="product-trio-grid">
+            <Link href="/search" className="product-trio-card">
+              <strong>Find tutors</strong>
+              <span className="muted">Browse free · 3 new contacts/month included</span>
+            </Link>
+            <Link href="/past-papers" className="product-trio-card">
+              <strong>Past papers</strong>
+              <span className="muted">Exam papers by board, year, and session</span>
+            </Link>
+            <Link href="/assistant" className="product-trio-card">
+              <strong>Study support</strong>
+              <span className="muted">Countdown, progress logs, and AI assistant</span>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -349,9 +374,10 @@ export default async function HomePage() {
           <div>
             <h2>Are you a tutor? Start teaching</h2>
             <p>
-              Create your profile and publish up to 3 subject ads. Tutor Basic listing is
-              complimentary until 30 September 2026. Verified, Highlight, and Ad Boost stay paid.
-              You keep 100% of lesson fees.
+              Complete your profile to appear in search for free. Tutor Basic adds priority
+              ranking, unlimited enquiry reveals, and subject ads — complimentary until 30
+              September 2026. Verified, Highlight, and Profile Boost stay paid. You keep 100% of
+              lesson fees.
             </p>
           </div>
           <div className="hero-ctas">

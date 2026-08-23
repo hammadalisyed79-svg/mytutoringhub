@@ -1,4 +1,5 @@
 import { isTutorProfileComplete } from "@/lib/tutor-profile-completion";
+import { isSuspiciousDisplayName } from "@/lib/display-name";
 import { prisma } from "@/lib/prisma";
 import { syncTutorTrustBadge } from "@/lib/tutor-badges";
 import { FREE_TUTOR_AD_CAP } from "@/lib/types";
@@ -173,6 +174,7 @@ export function computeTutorPlanTier(plans: Set<string>): number {
 
 /**
  * Full profile completion required for free search listing (all * fields including highest qualification).
+ * Paid plans add priority only — they do not bypass completeness (unless admin forceActive).
  */
 export function isTutorProfileListable(
   profile: {
@@ -189,6 +191,7 @@ export function isTutorProfileListable(
   },
   name?: string | null,
 ): boolean {
+  if (isSuspiciousDisplayName(name)) return false;
   return isTutorProfileComplete({
     name,
     photoUrl: profile.photoUrl,
@@ -212,7 +215,10 @@ export async function syncTutorBadges(userId: string) {
       where: { userId },
       include: { ads: true },
     }),
-    prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, emailVerified: true },
+    }),
   ]);
   if (!profile) return;
 
@@ -256,14 +262,9 @@ export async function syncTutorBadges(userId: string) {
 
   // Verified badge is granted only by admin document review (verify_approve / set_verified).
   const verified = profile.verified;
-  const hasPaidListing =
-    plans.has("TUTOR_BASIC") ||
-    plans.has("VERIFIED_TUTOR") ||
-    plans.has("HIGHLIGHTED_AD") ||
-    plans.has("AD_BOOST") ||
-    plans.has("UNLIMITED_ADS");
   const planTier = computeTutorPlanTier(plans);
-  const listable = isTutorProfileListable(profile, user?.name);
+  const listable =
+    Boolean(user?.emailVerified) && isTutorProfileListable(profile, user?.name);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },
@@ -273,7 +274,9 @@ export async function syncTutorBadges(userId: string) {
       highlighted: Boolean(highlightUntil && highlightUntil > now) || plans.has("HIGHLIGHTED_AD"),
       highlightedUntil: highlightUntil,
       boostUntil,
-      active: profile.forceActive || hasPaidListing || listable,
+      // Complete + email-verified profiles list free; paid plans only affect ranking/ads.
+      // Admin forceActive can restore visibility for edge cases without deleting accounts.
+      active: profile.forceActive || listable,
     },
   });
 

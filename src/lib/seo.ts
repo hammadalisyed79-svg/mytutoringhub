@@ -198,7 +198,7 @@ export function subjectLandingJsonLd(opts: {
   return {
     "@type": "CollectionPage",
     name: opts.city ? `${opts.subject} tutors in ${opts.city}` : `${opts.subject} tutors`,
-    description: `${opts.tutorCount} ${opts.subject} tutors on ${SITE_NAME}. Search free, message with Student Pass.`,
+    description: `${opts.tutorCount} ${opts.subject} tutors on ${SITE_NAME}. Browse free — 3 new tutor contacts/month included; Student Pass unlocks unlimited messaging.`,
     url: absoluteUrl(opts.path),
     about: { "@type": "Thing", name: opts.subject },
   };

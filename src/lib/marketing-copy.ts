@@ -1,16 +1,20 @@
 /** Canonical marketing messages — keep wording consistent sitewide. */
 
+import {
+  BUSINESS,
+  NO_LESSON_COMMISSION_LINE,
+  NO_LESSON_COMMISSION_SHORT,
+  studentContactRuleShort,
+} from "@/lib/business-rules";
+
 export const VALUE_PROPOSITION =
-  "Find tutors free. Pay only for messaging access and study tools — lesson fees stay between you and the tutor.";
+  "Find tutors free. Free accounts include 3 new tutor contacts per month — upgrade for unlimited messaging and study tools. Lesson fees stay between you and the tutor.";
 
-export const VALUE_PROPOSITION_SHORT =
-  "Search free · No lesson commission · Student Pass unlocks unlimited contacts";
+export const VALUE_PROPOSITION_SHORT = `Search free · ${NO_LESSON_COMMISSION_SHORT} · Student Pass unlocks unlimited contacts`;
 
-export const STUDENT_FREE_CONTACTS_LINE =
-  "Free accounts include 3 new tutor contacts per month. Student Pass unlocks unlimited messaging.";
+export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month. Student Pass unlocks unlimited messaging.`;
 
-export const STUDENT_PASS_PAPERS_LINE =
-  "Student Pass includes 10 past paper downloads per month. Student Pro includes unlimited downloads.";
+export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited downloads.`;
 
 export const TUTOR_FREE_LISTING_LINE =
   "Complete your profile to appear in search for free. Tutor Basic adds priority placement and unlimited enquiry reveals.";
@@ -29,3 +33,16 @@ export const REFERRAL_LINE =
 
 export const TUTOR_INVITE_LINE =
   "Know a tutor? Share your link — free listing, no commission on lessons. They appear in search worldwide.";
+
+export const HOMEPAGE_PRODUCT_TRIO =
+  "Find tutors. Prepare with past papers. Get smarter study support.";
+
+export const HOMEPAGE_PRODUCT_TRIO_LEAD =
+  "A marketplace for private tutors, exam past papers, and study tools — not just another tutor directory.";
+
+/** @deprecated Prefer findTutorCtaCopy from business-rules — kept for gradual migration. */
+export function subjectTutorContactLine() {
+  return studentContactRuleShort();
+}
+
+export { NO_LESSON_COMMISSION_LINE, NO_LESSON_COMMISSION_SHORT };

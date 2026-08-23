@@ -7,7 +7,6 @@ import {
 } from "@/lib/marketing-copy";
 import {
   STUDENT_FREE_CONTACT_LIMIT,
-  STUDENT_PASS_PAPER_DOWNLOADS,
   TUTOR_FREE_REVEAL_LIMIT,
 } from "@/lib/plan-limits";
 

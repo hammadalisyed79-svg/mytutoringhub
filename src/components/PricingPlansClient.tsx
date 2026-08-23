@@ -8,6 +8,7 @@ import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import { manualActivationCtaLabel, planBillingFootnote } from "@/lib/payments-status";
+import { STUDENT_FREE_CONTACT_LIMIT } from "@/lib/plan-limits";
 
 function PlanActions({
   plan,
@@ -180,6 +181,69 @@ export function PricingPlansClient({
       )}
 
       <section>
+        <h2 className="checkout-section-title">Start free</h2>
+        <p className="muted pricing-addons-lead">
+          Create an account at no cost before you upgrade. Students get{" "}
+          {STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month; tutors with a complete profile
+          appear in search free.
+        </p>
+        <div className="pricing-grid" style={{ marginBottom: "1.75rem" }}>
+          <article className="plan">
+            <div className="plan-body">
+              <h3>Student Free</h3>
+              <p className="muted">Browse tutors and message with a monthly contact allowance.</p>
+              <div className="price-block">
+                <div className="price">Free</div>
+              </div>
+              <ul>
+                <li>Search &amp; browse tutors</li>
+                <li>{STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month</li>
+                <li>Reply in existing conversations</li>
+                <li>No commission on lesson fees</li>
+              </ul>
+            </div>
+            <div className="plan-cta">
+              {signedIn ? (
+                <Link href="/search" className="btn btn-block btn-secondary">
+                  Find tutors
+                </Link>
+              ) : (
+                <Link href="/register?role=student" className="btn btn-block btn-secondary">
+                  Join free as student
+                </Link>
+              )}
+            </div>
+          </article>
+          <article className="plan">
+            <div className="plan-body">
+              <h3>Tutor Free</h3>
+              <p className="muted">Complete your profile and appear in search worldwide.</p>
+              <div className="price-block">
+                <div className="price">Free</div>
+              </div>
+              <ul>
+                <li>Appear in search when profile is complete</li>
+                <li>Receive &amp; reply to student messages</li>
+                <li>Monthly enquiry allowance when you message first</li>
+                <li>Keep 100% of lesson fees</li>
+              </ul>
+            </div>
+            <div className="plan-cta">
+              {signedIn ? (
+                <Link href="/become-a-tutor" className="btn btn-block btn-secondary">
+                  Tutor tools
+                </Link>
+              ) : (
+                <Link href="/register?role=tutor" className="btn btn-block btn-secondary">
+                  Join free as tutor
+                </Link>
+              )}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
         <h2 className="checkout-section-title">Core plans</h2>
         <div className="pricing-grid">
           {corePlans.map((plan) => (
@@ -233,10 +297,11 @@ export function PricingPlansClient({
 
       {addOns.length > 0 && (
         <section className="pricing-addons-section">
-          <h2 className="checkout-section-title">Tutor add-ons</h2>
+          <h2 className="checkout-section-title">Optional tutor boosts</h2>
           <p className="muted pricing-addons-lead">
             Optional visibility upgrades — verified badge, highlight, boost, and extra ads billed
-            separately{paidCheckoutLive ? " on Safepay" : " after payment"}.
+            separately{paidCheckoutLive ? " on Safepay" : " after payment"}. These do not replace a
+            complete free listing.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (

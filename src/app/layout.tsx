@@ -16,6 +16,7 @@ import {
   defaultOgImages,
   siteUrl,
 } from "@/lib/seo";
+import { VALUE_PROPOSITION, VALUE_PROPOSITION_SHORT } from "@/lib/marketing-copy";
 import "./globals.css";
 
 const display = Fraunces({
@@ -33,8 +34,7 @@ export const metadata: Metadata = {
     default: `${SITE_NAME} – Find Expert Tutors Online Worldwide`,
     template: `%s | ${SITE_NAME_COMPACT}`,
   },
-  description:
-    "Find tutors free. Pay only for messaging access and study tools — lesson fees stay between you and the tutor. GCSE, A-Level, IGCSE, IB and more.",
+  description: VALUE_PROPOSITION,
   keywords: [
     "private tutor",
     "online tutor",
@@ -54,16 +54,14 @@ export const metadata: Metadata = {
     locale: "en_GB",
     siteName: SITE_NAME_COMPACT,
     title: `${SITE_NAME} – Private tutoring, elevated.`,
-    description:
-      "Search free · No lesson commission · Student Pass unlocks unlimited contacts. Find tutors worldwide.",
+    description: VALUE_PROPOSITION_SHORT,
     url: DEFAULT_SITE_URL,
     images: defaultOgImages(),
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} – Private tutoring, elevated.`,
-    description:
-      "Search free · No lesson commission · Student Pass unlocks unlimited contacts.",
+    description: VALUE_PROPOSITION_SHORT,
     images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },

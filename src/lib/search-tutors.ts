@@ -89,7 +89,7 @@ export async function searchTutors(
     prisma.tutorProfile.findMany({
       where: {
         active: true,
-        user: { suspended: false },
+        user: { suspended: false, emailVerified: { not: null } },
         ...(filters.verified === "1" ? { verified: true } : {}),
         ...(filters.trial === "1" ? { offersFreeTrial: true } : {}),
         ...(maxPkr && Number.isFinite(maxPkr) ? { hourlyRate: { lte: maxPkr } } : {}),
@@ -302,7 +302,7 @@ export async function similarTutors(opts: {
     where: {
       active: true,
       id: { not: opts.id },
-      user: { suspended: false },
+      user: { suspended: false, emailVerified: { not: null } },
       OR: or,
     },
     select: {

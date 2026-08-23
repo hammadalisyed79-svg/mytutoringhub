@@ -9,14 +9,53 @@ export function parseDisplayNameInput(raw: unknown): { ok: true; name: string } 
   if (typeof raw !== "string") return { ok: false, error: "Enter your name" };
   const name = normalizeDisplayName(raw);
   if (!name) return { ok: false, error: displayNameErrorMessage() };
+  if (isSuspiciousDisplayName(name)) {
+    return {
+      ok: false,
+      error: "Use a real name students can trust — avoid symbols, URLs, or spam characters.",
+    };
+  }
   return { ok: true, name };
 }
 
 /** Collapse whitespace and trim. Returns null if the result is not a valid display name. */
 export function normalizeDisplayName(raw?: string | null): string | null {
-  const name = String(raw ?? "").replace(/\s+/g, " ").trim();
+  const name = String(raw ?? "")
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (name.length < DISPLAY_NAME_MIN || name.length > DISPLAY_NAME_MAX) return null;
   return name;
+}
+
+/**
+ * Detect abusive public display names without rejecting legitimate
+ * international / non-Latin scripts.
+ */
+export function isSuspiciousDisplayName(name?: string | null): boolean {
+  const n = String(name ?? "").trim();
+  if (!n) return true;
+
+  // Control / zero-width / excessive decorative symbols
+  if (/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\uFEFF]/.test(n)) return true;
+
+  const letters = n.replace(/[^\p{L}\p{M}\p{N}\s'-]/gu, "");
+  const letterRatio = letters.replace(/\s/g, "").length / Math.max(1, n.replace(/\s/g, "").length);
+  if (letterRatio < 0.45) return true;
+
+  // Repeated punctuation / symbol runs
+  if (/(.)\1{4,}/u.test(n.replace(/\s/g, ""))) return true;
+  if (/[!@#$%^&*_=+]{3,}/.test(n)) return true;
+
+  // Contact / URL spam
+  if (/https?:\/\/|www\.|\.com\b|\.net\b|\.org\b/i.test(n)) return true;
+  if (/whatsapp|telegram|@\w{3,}/i.test(n) && !/\p{L}{2,}\s+\p{L}{2,}/u.test(n)) return true;
+
+  // Mostly emoji / symbols with almost no letters
+  const letterCount = (n.match(/\p{L}/gu) || []).length;
+  if (letterCount < 2) return true;
+
+  return false;
 }
 
 type OAuthNameProfile = {

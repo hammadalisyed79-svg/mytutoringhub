@@ -323,6 +323,36 @@ export function groupByLetter(names: string[]) {
 export function formatTutorPlace(location?: string | null, country?: string | null) {
   const city = (location || "").trim();
   const nation = (country || "").trim();
-  if (city && nation && !city.toLowerCase().includes(nation.toLowerCase())) return `${city}, ${nation}`;
+  if (!city && !nation) return "";
+  if (city && nation) {
+    const cityLower = city.toLowerCase();
+    const nationLower = nation.toLowerCase();
+    if (cityLower === nationLower) return city;
+    if (cityLower.includes(nationLower)) return city;
+    // Avoid "Online, Online" style duplication when country is empty-ish and city is Online
+    if (cityLower === "online" && (nationLower === "online" || !nation)) return "Online";
+    return `${city}, ${nation}`;
+  }
   return city || nation;
+}
+
+/** Lesson mode label without duplicating an Online city/location. */
+export function formatTutorAvailability(opts: {
+  location?: string | null;
+  country?: string | null;
+  online?: boolean;
+  inPerson?: boolean;
+}) {
+  const place = formatTutorPlace(opts.location, opts.country);
+  const placeIsOnline = place.toLowerCase() === "online";
+  const modes: string[] = [];
+  if (opts.online && !placeIsOnline) modes.push("Online");
+  if (opts.inPerson) modes.push("In person");
+  if (!modes.length && opts.online) modes.push("Online");
+  if (place && modes.length) {
+    // If place already says Online, don't append Online again
+    const filtered = modes.filter((m) => m.toLowerCase() !== place.toLowerCase());
+    return filtered.length ? `${place} · ${filtered.join(" · ")}` : place;
+  }
+  return place || modes.join(" · ") || "Online";
 }

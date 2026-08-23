@@ -62,7 +62,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
       "Unlimited new tutor contacts",
       "10 past paper downloads per month",
       "Post “need a tutor” ads",
-      "Browse verified tutors",
+      "Browse tutors worldwide",
       "Online or in-person lessons",
     ],
     envPriceId: "STRIPE_PRICE_STUDENT_PASS",
