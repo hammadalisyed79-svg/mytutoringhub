@@ -21,6 +21,7 @@ import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { pageMetadata, truncateDescription } from "@/lib/seo";
+import { searchResultsShouldNoIndex } from "@/lib/seo-indexation";
 
 export const dynamic = "force-dynamic";
 
@@ -59,15 +60,16 @@ export async function generateMetadata({
 
   const description = truncateDescription(
     parts.length > 0
-                  ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates and reviews. Free accounts include 3 new tutor contacts per month; Student Pass unlocks unlimited messaging. ${VALUE_PROPOSITION}`
-                  : `Search private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
+      ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates and reviews. Free accounts include 3 new tutor contacts per month; Student Pass unlocks unlimited messaging. ${VALUE_PROPOSITION}`
+      : `Search private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
   );
 
   return pageMetadata({
     title,
     description,
+    // Always canonicalize to the hub URL; filtered permutations stay usable but noindex.
     path: "/search",
-    noIndex: pageNum > 1,
+    noIndex: searchResultsShouldNoIndex({ ...sp, page: String(pageNum) }),
   });
 }
 

@@ -668,6 +668,7 @@ svg {
   align-items: end;
   overflow: hidden;
   color: var(--white);
+  /* Mobile-first LCP background — smaller Unsplash derivative; desktop bump below */
   background:
     linear-gradient(
       115deg,
@@ -675,8 +676,24 @@ svg {
       rgba(20, 72, 64, 0.32) 42%,
       rgba(30, 90, 80, 0.18) 100%
     ),
-    url("https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=80")
+    url("https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=70")
       center/cover no-repeat;
+}
+
+@media (min-width: 900px) {
+  .hero {
+    background-image:
+      linear-gradient(
+        115deg,
+        rgba(12, 40, 36, 0.48) 0%,
+        rgba(20, 72, 64, 0.32) 42%,
+        rgba(30, 90, 80, 0.18) 100%
+      ),
+      url("https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=72");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
 }
 
 .hero-findtutor {

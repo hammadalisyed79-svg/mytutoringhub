@@ -22,13 +22,25 @@ import {
   pastPaperLearningResourceJsonLd,
   truncateDescription,
 } from "@/lib/seo";
+import { pastPaperFiltersShouldNoIndex } from "@/lib/seo-indexation";
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ board: string; qualification: string; subject: string }> };
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+type SearchParams = Promise<{
+  year?: string;
+  session?: string;
+  paper?: string;
+  documentType?: string;
+}>;
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Params & { searchParams: SearchParams }): Promise<Metadata> {
   const { board, qualification, subject } = await params;
+  const sp = await searchParams;
   const resolved = resolveSeoCurriculum(board, qualification, subject);
   const entry = resolved.entry;
   const titleSubject = entry?.subject || subject.replace(/-/g, " ");
@@ -43,6 +55,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title,
     description,
     path: `/past-papers/${board}/${qualification}/${subject}`,
+    noIndex: pastPaperFiltersShouldNoIndex(sp),
   });
 }
 

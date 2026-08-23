@@ -1,17 +1,20 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { TOP_COUNTRIES } from "@/lib/markets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 import { siteUrl } from "@/lib/seo";
 import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
 
+/**
+ * Public sitemap only — no auth/utility routes, no thin city mass-generation.
+ * Subject/city landings with zero tutors stay reachable but are noindex via page metadata.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const now = new Date();
   const priorityMap: Record<string, number> = {
     "/": 1.0,
-    "/search": 0.9,
+    "/search": 0.85,
     "/past-papers": 0.85,
     "/subjects": 0.85,
     "/pricing": 0.75,
@@ -21,8 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/ads": 0.65,
     "/about": 0.6,
     "/contact": 0.55,
-    "/register": 0.65,
-    "/login": 0.5,
     "/help": 0.55,
     "/terms": 0.35,
     "/privacy": 0.35,
@@ -51,8 +52,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/become-a-tutor",
     "/about",
     "/contact",
-    "/login",
-    "/register",
   ].map((path) => ({
     url: `${base}${path || "/"}`,
     lastModified: now,
@@ -80,24 +79,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     ]);
 
-    const cities = [...new Set(TOP_COUNTRIES.flatMap((c) => c.cities))].slice(0, 18);
-    const subjectRoutes = subjects.flatMap((s) => {
+    // Subject hubs only (no automatic city fan-out — prevents thin SEO URLs at scale)
+    const subjectRoutes = subjects.map((s) => {
       const slug = s.slug || slugify(s.name);
-      const modified = now;
-      return [
-        {
-          url: `${base}/s/${slug}`,
-          lastModified: modified,
-          changeFrequency: "weekly" as const,
-          priority: 0.7,
-        },
-        ...cities.map((c) => ({
-          url: `${base}/s/${slug}/${slugify(c)}`,
-          lastModified: modified,
-          changeFrequency: "weekly" as const,
-          priority: 0.65,
-        })),
-      ];
+      return {
+        url: `${base}/s/${slug}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      };
     });
 
     const seenPapers = new Set<string>();

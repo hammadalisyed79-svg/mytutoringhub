@@ -1,4 +1,4 @@
-"use client";
+import Image from "next/image";
 
 type TutorAvatarProps = {
   photoUrl?: string | null;
@@ -6,11 +6,18 @@ type TutorAvatarProps = {
   cropY?: number | null;
   cropZoom?: number | null;
   initial?: string;
+  /** Optional explicit px size; otherwise CSS class (tutor-avatar / profile-photo-lg) sizes the box. */
   size?: number;
   className?: string;
   style?: React.CSSProperties;
+  /** Prefer for above-the-fold / LCP avatars only. */
+  priority?: boolean;
 };
 
+/**
+ * Cropped avatar. Uses next/image so multi‑MB blob uploads are resized for display
+ * instead of transferring full originals into small cards.
+ */
 export function TutorAvatar({
   photoUrl,
   cropX = 0,
@@ -20,6 +27,7 @@ export function TutorAvatar({
   size,
   className,
   style,
+  priority = false,
 }: TutorAvatarProps) {
   const x = cropX ?? 0;
   const y = cropY ?? 0;
@@ -29,7 +37,7 @@ export function TutorAvatar({
     overflow: "hidden",
     position: "relative",
     flexShrink: 0,
-    ...(size ? { width: size, height: size } : {}),
+    ...(size != null ? { width: size, height: size } : {}),
     ...style,
   };
 
@@ -41,20 +49,28 @@ export function TutorAvatar({
     );
   }
 
+  const sizesHint =
+    size != null
+      ? `${size}px`
+      : className?.includes("profile-photo")
+        ? "(max-width: 520px) 120px, 160px"
+        : className?.includes("tc-avatar")
+          ? "64px"
+          : "54px";
+
   return (
     <div className={className} style={containerStyle} aria-hidden>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={photoUrl}
         alt=""
+        fill
+        sizes={sizesHint}
+        quality={72}
+        priority={priority}
         style={{
-          width: "100%",
-          height: "100%",
           objectFit: "cover",
           transform: `translate(${x}%, ${y}%) scale(${zoom})`,
           transformOrigin: "center center",
-          position: "absolute",
-          inset: 0,
         }}
       />
     </div>

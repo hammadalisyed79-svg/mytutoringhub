@@ -4,14 +4,12 @@ import { auth } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { microsoftConfigured } from "@/lib/oauth";
-import { pageMetadata } from "@/lib/seo";
+import { privateMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata({
-  title: "Log In – My Tutoring Hub",
-  description:
-    "Log in to My Tutoring Hub with Google, Microsoft, or any email. Access messages, tutor dashboard, and Student Pass features.",
-  path: "/login",
-});
+export const metadata = privateMetadata(
+  "Log In – My Tutoring Hub",
+  "Log in to My Tutoring Hub with Google, Microsoft, or any email. Access messages, tutor dashboard, and Student Pass features.",
+);
 
 export default async function LoginPage({
   searchParams,

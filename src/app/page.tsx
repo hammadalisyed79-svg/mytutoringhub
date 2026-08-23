@@ -29,6 +29,7 @@ import {
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { FreeVsPaidHighlights } from "@/components/FreeVsPaidComparison";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
+import { HeroImagePreload } from "@/components/HeroImagePreload";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <HeroImagePreload />
       <JsonLd
         data={{
           "@context": "https://schema.org",

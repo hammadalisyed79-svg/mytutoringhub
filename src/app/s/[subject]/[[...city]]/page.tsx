@@ -12,6 +12,7 @@ import {
   subjectLandingJsonLd,
   truncateDescription,
 } from "@/lib/seo";
+import { subjectLandingShouldNoIndex } from "@/lib/seo-indexation";
 
 type Params = { params: Promise<{ subject: string; city?: string[] }> };
 
@@ -34,13 +35,15 @@ export async function generateMetadata({ params }: Params) {
     },
   });
   const label = known?.name || subjectName;
-  const { total } = await searchTutors({
-    subject: label,
-    location: cityName || undefined,
-    page: "1",
-  });
-  const avg = await averageRateForSubject(label);
-  const currency = await getVisitorCurrency();
+  const [{ total }, avg, currency] = await Promise.all([
+    searchTutors({
+      subject: label,
+      location: cityName || undefined,
+      page: "1",
+    }),
+    averageRateForSubject(label),
+    getVisitorCurrency(),
+  ]);
   const avgLine =
     avg != null ? ` Average rate around ${formatMoney(pkrToCurrency(avg, currency), currency)}/hr.` : "";
 
@@ -54,15 +57,13 @@ export async function generateMetadata({ params }: Params) {
       : `Find ${label} tutors${cityName ? ` in ${cityName}` : ""} on My Tutoring Hub. Browse free — ${findTutorCtaMeta(label)}`,
   );
 
-  const path = cityName
-    ? `/s/${subject}/${city![0]}`
-    : `/s/${subject}`;
+  const path = cityName ? `/s/${subject}/${city![0]}` : `/s/${subject}`;
 
   return pageMetadata({
     title,
     description,
     path,
-    noIndex: total === 0,
+    noIndex: subjectLandingShouldNoIndex(total),
   });
 }
 

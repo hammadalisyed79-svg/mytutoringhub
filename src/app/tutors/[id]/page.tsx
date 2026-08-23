@@ -343,6 +343,7 @@ export default async function TutorProfilePage({ params }: Params) {
                 cropY={tutor.photoCropY}
                 cropZoom={tutor.photoCropZoom}
                 initial={initial}
+                priority
               />
 
               <h1 className="profile-name">{tutor.user.name}</h1>

@@ -8,7 +8,7 @@ import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
-import { AiSupportWidget } from "@/components/AiSupportWidget";
+import { AiSupportWidgetLazy } from "@/components/AiSupportWidgetLazy";
 import {
   DEFAULT_SITE_URL,
   SITE_NAME,
@@ -22,11 +22,15 @@ import "./globals.css";
 const display = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 const body = Source_Sans_3({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -97,7 +101,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
           <SiteFooter />
-          <AiSupportWidget configured={Boolean(process.env.OPENAI_API_KEY?.trim())} />
+          <AiSupportWidgetLazy configured={Boolean(process.env.OPENAI_API_KEY?.trim())} />
           <ServiceWorkerRegister />
           <Analytics />
         </Providers>
