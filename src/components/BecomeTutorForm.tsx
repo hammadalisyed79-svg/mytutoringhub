@@ -19,7 +19,7 @@ export function BecomeTutorForm() {
         throw new Error((data as { error?: string }).error || "Could not switch to a tutor account");
       }
       await update();
-      window.location.href = "/dashboard";
+      window.location.href = "/dashboard/tutor?tab=profile";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -30,7 +30,7 @@ export function BecomeTutorForm() {
     <form onSubmit={submit}>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={loading}>
-        {loading ? "Setting up your tutor profile…" : "Continue as a tutor"}
+        {loading ? "Setting up your tutor profile…" : "Create your tutor profile"}
       </button>
     </form>
   );

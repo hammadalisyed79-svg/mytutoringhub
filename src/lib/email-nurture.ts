@@ -122,14 +122,14 @@ export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 
   try {
     await sendEmail({
       to: user.email,
-      subject: `Finish your tutor profile (${completion.requiredDone}/${completion.requiredTotal}) · My Tutoring Hub`,
+      subject: `Complete your My Tutoring Hub tutor profile (${completion.requiredDone}/${completion.requiredTotal})`,
       html: tutorProfileIncompleteEmailHtml({
         name: user.name,
         missing: completion.missingRequired,
         requiredDone: completion.requiredDone,
         requiredTotal: completion.requiredTotal,
         step,
-        dashboardUrl: `${appUrl()}/dashboard/tutor`,
+        dashboardUrl: `${appUrl()}/dashboard/tutor?tab=profile`,
       }),
     });
     return { sent: true as const };

@@ -435,13 +435,14 @@ export function tutorProfileIncompleteEmailHtml(opts: {
           ? "Complete your profile this week and earn <strong>200 Hub Points</strong> toward plans and ads."
           : "Final reminder — your draft profile stays hidden until all required fields are saved.";
   return emailLayout({
-    preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete`,
-    title: `Finish your tutor profile (${opts.requiredDone}/${opts.requiredTotal})`,
+    preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete — your profile is not visible to students yet`,
+    title: `Complete your tutor profile (${opts.requiredDone}/${opts.requiredTotal})`,
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Your tutor account on ${brand} is ready, but your profile is <strong>not currently visible</strong> to students in search.</p>
 <p>${urgency}</p>
 <p><strong>Still needed:</strong></p>
 ${missingFieldsList(opts.missing)}
-<p>All fields marked with * on your dashboard are required, including your <strong>highest qualification</strong>.</p>`,
+<p>Completing these details can make your profile eligible for tutor search. This is not a rejection — finish the remaining fields and save when you're ready.</p>`,
     cta: { label: "Complete my profile", href: opts.dashboardUrl },
   });
 }

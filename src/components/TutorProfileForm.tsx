@@ -28,6 +28,7 @@ import {
   type AvailabilitySlot,
 } from "@/lib/availability";
 import { embedVideoSrc } from "@/lib/media";
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 
 type Initial = {
   headline?: string | null;
@@ -115,11 +116,16 @@ export function TutorProfileForm({
   displayName,
   subjects: catalogSubjects,
   extraLevels = [],
+  emailVerified = true,
+  listingActive = false,
 }: {
   initial: Initial;
   displayName: string;
   subjects: string[];
   extraLevels?: string[];
+  emailVerified?: boolean;
+  /** Whether the listing is currently public (DB active flag). */
+  listingActive?: boolean;
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -172,53 +178,51 @@ export function TutorProfileForm({
     return [...catalogSubjects, ...extra];
   }, [catalogSubjects, subjectList]);
 
-  const checks = useMemo(
-    () => [
-      { label: "Name", ok: name.trim().length >= 2, required: true },
-      { label: "Photo", ok: photoUrl.startsWith("https://"), required: true },
-      { label: "Headline", ok: headline.trim().length >= 8, required: true },
-      { label: "About you", ok: bio.trim().length >= 40, required: true },
-      { label: "Country", ok: country.trim().length >= 2, required: true },
-      { label: "City", ok: location.trim().length >= 2, required: true },
-      { label: "Subjects", ok: subjectList.length > 0, required: true },
-      { label: "Expertise", ok: expertiseList.length > 0, required: false },
-      { label: "Levels", ok: levelList.length > 0, required: false },
-      { label: "Languages", ok: languageList.length > 0, required: false },
-      { label: "Hourly rate", ok: Number(hourlyRate) >= 500, required: true },
-      { label: "Lesson type", ok: online || inPerson, required: true },
-      { label: "Highest qualification", ok: qualifications.trim().length > 0, required: true },
-      { label: "Experience", ok: experienceYears !== "", required: false },
-      { label: "Availability", ok: slots.length > 0, required: false },
-      { label: "Phone", ok: phone.trim().length > 0, required: false },
-    ],
+  const completion = useMemo(
+    () =>
+      getTutorProfileCompletion({
+        name,
+        photoUrl,
+        headline,
+        bio,
+        country,
+        location,
+        subjects: joinCsv(subjectList),
+        hourlyRate: Number(hourlyRate) || 0,
+        online,
+        inPerson,
+        qualifications,
+      }),
     [
-      photoUrl,
       name,
+      photoUrl,
       headline,
       bio,
       country,
       location,
       subjectList,
-      expertiseList,
-      levelList,
-      languageList,
       hourlyRate,
       online,
       inPerson,
       qualifications,
-      experienceYears,
-      slots,
-      phone,
     ],
   );
 
-  const requiredDone = checks.filter((c) => c.required && c.ok).length;
-  const requiredTotal = checks.filter((c) => c.required).length;
-  const recommendedDone = checks.filter((c) => !c.required && c.ok).length;
-  const progress = Math.round(
-    ((requiredDone + recommendedDone * 0.5) / (requiredTotal + checks.filter((c) => !c.required).length * 0.5)) *
-      100,
+  const recommendedChecks = useMemo(
+    () => [
+      { label: "Expertise", ok: expertiseList.length > 0 },
+      { label: "Levels", ok: levelList.length > 0 },
+      { label: "Languages", ok: languageList.length > 0 },
+      { label: "Experience", ok: experienceYears !== "" },
+      { label: "Availability", ok: slots.length > 0 },
+      { label: "Phone", ok: phone.trim().length > 0 },
+    ],
+    [expertiseList, levelList, languageList, experienceYears, slots, phone],
   );
+
+  const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
+  const requiredTotal = completion.requiredTotal + 1;
+  const progress = Math.round((requiredDone / requiredTotal) * 100);
 
   function setCountryAndCity(nextCountry: string) {
     setCountry(nextCountry);
@@ -350,8 +354,18 @@ export function TutorProfileForm({
       if (typeof data.photoCropX === "number") setPhotoCropX(data.photoCropX);
       if (typeof data.photoCropY === "number") setPhotoCropY(data.photoCropY);
       if (typeof data.photoCropZoom === "number") setPhotoCropZoom(data.photoCropZoom);
-      setMsg("Profile saved. You can edit any of these details anytime.");
+      const nowLive = Boolean(data.active);
+      setMsg(
+        nowLive
+          ? "Profile saved — your listing is live in search."
+          : "Profile saved. Finish the remaining required fields to go live.",
+      );
       await update({ name: name.trim() });
+      if (nowLive && !listingActive) {
+        router.push("/dashboard/tutor?tab=growth&live=1");
+        router.refresh();
+        return;
+      }
       router.refresh();
     } catch {
       setError("Save failed. Try again.");
@@ -382,11 +396,9 @@ export function TutorProfileForm({
               Profile photo <abbr className="req" title="Required">*</abbr>
             </h3>
             <p className="field-hint">
-              Required on your public listing. After uploading, <strong>drag inside the frame</strong>{" "}
-              to crop and reposition, or <strong>scroll to zoom</strong>. Then click{" "}
-              <strong>Save profile</strong> below.
+              A clear, professional-looking headshot helps students trust your listing. Face clearly
+              visible works best — no biometric checks are run. JPEG, PNG, WebP, or GIF · max 2 MB.
             </p>
-            <p className="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB</p>
             <div className="profile-photo-actions">
               <button
                 className="btn btn-secondary btn-sm"
@@ -457,29 +469,36 @@ export function TutorProfileForm({
       <div className="profile-complete">
         <div className="profile-complete-head">
           <strong>
-            {requiredDone}/{requiredTotal} required fields complete
+            {requiredDone}/{requiredTotal} listing requirements complete
           </strong>
-          <span className="muted">{progress}% listing strength</span>
+          <span className="muted">{progress}%</span>
         </div>
         <div className="profile-progress" aria-hidden>
           <span style={{ width: `${Math.min(100, progress)}%` }} />
         </div>
         <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
-          Every field on this listing stays editable after you save. Only accepted verification
-          documents are locked.
+          Required fields use the same rules as public search eligibility. Save anytime — you can
+          keep editing after you go live.
         </p>
         <ul className="profile-complete-list">
-          {checks.map((c) => (
-            <li key={c.label} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
-              {c.ok ? "✓" : c.required ? "•" : "○"} {c.label}
-              {c.required ? "" : " (recommended)"}
+          <li className={emailVerified ? "is-done" : "is-needed"}>
+            {emailVerified ? "✓" : "○"} Email verified
+          </li>
+          {completion.checks.map((c) => (
+            <li key={c.key} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
+              {c.ok ? "✓" : "○"} {c.label}
+            </li>
+          ))}
+          {recommendedChecks.map((c) => (
+            <li key={c.label} className={c.ok ? "is-done" : ""}>
+              {c.ok ? "✓" : "○"} {c.label} (recommended)
             </li>
           ))}
         </ul>
       </div>
 
       <section className="form-section">
-        <h3>Listing basics</h3>
+        <h3>Basic information</h3>
         <p className="field-hint">Students use these to decide whether to message you.</p>
 
         <label>
@@ -497,14 +516,13 @@ export function TutorProfileForm({
             placeholder="The name students see"
           />
           <span className="field-hint">
-            Filled from your Gmail profile when you sign in with Google. You can change it anytime —
-            it appears on search cards and your public listing.
+            Use your real teaching name. Placeholder or promotional names cannot go live in search.
           </span>
         </label>
 
         <label>
           <span>
-            Headline <abbr className="req" title="Required">*</abbr>
+            Tutor headline <abbr className="req" title="Required">*</abbr>
           </span>
           <input
             name="headline"
@@ -513,14 +531,17 @@ export function TutorProfileForm({
             maxLength={120}
             value={headline}
             onChange={(e) => setHeadline(e.target.value)}
-            placeholder="A Level Chemistry · 8 years · exam specialist"
+            placeholder="Cambridge IGCSE & A Level Physics Tutor"
           />
-          <span className="field-hint">{headline.trim().length}/120 · One line that says who you teach.</span>
+          <span className="field-hint">
+            {headline.trim().length}/120 · Be specific — e.g. “Cambridge IGCSE &amp; A Level Physics
+            Tutor”, not just “Teacher”.
+          </span>
         </label>
 
         <label>
           <span>
-            About you <abbr className="req" title="Required">*</abbr>
+            About me <abbr className="req" title="Required">*</abbr>
           </span>
           <textarea
             name="bio"
@@ -532,12 +553,15 @@ export function TutorProfileForm({
             onChange={(e) => setBio(e.target.value)}
             placeholder="Who you teach, how you run lessons, and what results students can expect."
           />
-          <span className="field-hint">{bio.trim().length}/4000 · At least 40 characters.</span>
+          <span className="field-hint">
+            Tell students about your teaching experience, subjects, teaching style, and who you can
+            help. Aim for about 120–400 characters (minimum 40). {bio.trim().length}/4000
+          </span>
         </label>
       </section>
 
       <section className="form-section">
-        <h3>Where you teach</h3>
+        <h3>Location</h3>
         <p className="field-hint">Country and city are shown on your public profile and used in search.</p>
         <div className="form-grid-2">
           <label>
@@ -573,7 +597,7 @@ export function TutorProfileForm({
       </section>
 
       <section className="form-section">
-        <h3>Subjects & expertise</h3>
+        <h3>Subjects &amp; teaching levels</h3>
         <CatalogMultiSelect
           label="Subjects you teach"
           required
@@ -584,7 +608,7 @@ export function TutorProfileForm({
           onChange={setSubjects}
           options={listedSubjects}
           addLabel="Add another listed subject"
-          hint="Choose from the My Tutoring Hub subject catalog. Search or tap a subject — no free typing."
+          hint="Choose from the catalog (e.g. Mathematics) — avoid free-text duplicates like Math / Maths when the listed subject already exists."
         />
 
         <CatalogMultiSelect
@@ -627,7 +651,7 @@ export function TutorProfileForm({
       </section>
 
       <section className="form-section">
-        <h3>Lessons</h3>
+        <h3>Online / in-person &amp; rate</h3>
         <label>
           <span>
             Hourly rate (PKR) <abbr className="req" title="Required">*</abbr>
@@ -729,7 +753,7 @@ export function TutorProfileForm({
       </section>
 
       <section className="form-section">
-        <h3>Background</h3>
+        <h3>Qualifications</h3>
         <label>
           Highest qualification <abbr className="req" title="Required">*</abbr>
           <textarea

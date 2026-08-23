@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
-import { TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE } from "@/lib/marketing-copy";
 import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
 
@@ -22,7 +22,7 @@ export default async function BecomeATutorPage({
 }) {
   const session = await auth();
   if (session?.user?.role === "ADMIN") redirect("/admin");
-  if (session?.user?.role === "TUTOR") redirect("/dashboard/tutor#invite-tutor");
+  if (session?.user?.role === "TUTOR") redirect("/dashboard/tutor?tab=profile");
 
   const sp = await searchParams;
   const inviteRef = sp.ref?.trim() || null;
@@ -31,34 +31,52 @@ export default async function BecomeATutorPage({
 
   return (
     <div className="page">
-      <div className="container">
-        <h1 className="page-title">Are you a tutor? Join My Tutoring Hub</h1>
-        <p className="section-lead">{TUTOR_FREE_LISTING_LINE}</p>
+      <div className="container become-tutor-page">
+        <h1 className="page-title">Create your tutor profile</h1>
+        <p className="section-lead">
+          Reach students online or in person, set your own rate, and keep lesson fees between you and
+          your students. {NO_LESSON_COMMISSION_LINE}
+        </p>
+
+        <ul className="become-tutor-benefits">
+          <li>
+            <strong>Free public listing</strong> when your profile meets the eligibility requirements
+            (photo, subjects, bio, rate, and more).
+          </li>
+          <li>
+            <strong>Set your own rate</strong> — online, in person, or both.
+          </li>
+          <li>
+            <strong>No lesson commission</strong> — platform plans are optional upgrades for
+            visibility and enquiry tools.
+          </li>
+          <li>
+            <strong>Easy to start</strong> — create an account first, then complete your listing on
+            the dashboard. High-quality requirements apply only when going public.
+          </li>
+        </ul>
 
         <div className="steps" style={{ marginBottom: "2rem" }}>
           <div className="step">
             <span>1</span>
-            <h3>{isStudent ? "Switch this account" : "Create your profile"}</h3>
+            <h3>{isStudent ? "Switch this account" : "Create your account"}</h3>
             <p className="muted">
               {isStudent
                 ? "Keep the same login. We turn this account into a tutor listing you can edit anytime."
-                : "Add subjects, a headline, rates, qualifications, languages, availability, and a photo."}
+                : "Sign up in minutes — you can finish profile details after email verification."}
             </p>
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Get listed free</h3>
-            <p className="muted">
-              A complete profile appears in search. Optional: activate Tutor Basic for priority
-              ranking and ads (complimentary until 30 September 2026).
-            </p>
+            <h3>Complete your profile</h3>
+            <p className="muted">{TUTOR_FREE_LISTING_LINE}</p>
           </div>
           <div className="step">
             <span>3</span>
-            <h3>Get found</h3>
+            <h3>Go live automatically</h3>
             <p className="muted">
-              Students search by country, city, and subject. Optional: verify, highlight, or boost
-              from Pricing.
+              Eligible profiles appear in search with no manual approval queue. Optional: Tutor Basic
+              for priority ranking and ads (complimentary until 30 September 2026).
             </p>
           </div>
         </div>
@@ -68,12 +86,14 @@ export default async function BecomeATutorPage({
             <BecomeTutorForm />
           ) : (
             <Link href={signupHref} className="btn">
-              Sign up as a tutor
+              Create your tutor profile
             </Link>
           )}
         </div>
         <p className="muted" style={{ marginTop: "1rem" }}>
-          <Link href="/pricing">See tutor plans</Link>
+          We do not promise a specific number of students. Visibility depends on subjects, location,
+          and how complete your listing is.{" "}
+          <Link href="/pricing">See optional tutor plans</Link>
         </p>
 
         <InviteTutorShare

@@ -24,13 +24,14 @@ import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
 import {
   type DashboardSearchParams,
   prepareDashboardHome,
-  profileStrength,
   resolveTutorDashboardTab,
   roleDashboardPath,
   isTutorDashboardProfileComplete,
 } from "@/lib/dashboard-home";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
+import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
+import { buildTutorProfileStatus } from "@/lib/tutor-profile-status";
 
 export const metadata = { title: "Tutor dashboard" };
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export const dynamic = "force-dynamic";
 export default async function TutorDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<DashboardSearchParams>;
+  searchParams: Promise<DashboardSearchParams & { live?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/dashboard/tutor");
@@ -59,13 +60,31 @@ export default async function TutorDashboardPage({
   const badgeProgress = user.tutorProfile
     ? tutorBadgeProgress(await getTutorBadgeStats(user.tutorProfile.id))
     : null;
-  const profileStats = user.tutorProfile
-    ? profileStrength(user.tutorProfile, user.name)
-    : null;
   const profileComplete = user.tutorProfile
     ? isTutorDashboardProfileComplete(user.tutorProfile, user.name)
     : false;
   const activeTab = resolveTutorDashboardTab(sp, profileComplete);
+  const statusView = user.tutorProfile
+    ? buildTutorProfileStatus({
+        profileId: user.tutorProfile.id,
+        name: user.name,
+        photoUrl: user.tutorProfile.photoUrl,
+        headline: user.tutorProfile.headline,
+        bio: user.tutorProfile.bio,
+        country: user.tutorProfile.country,
+        location: user.tutorProfile.location,
+        subjects: user.tutorProfile.subjects,
+        hourlyRate: user.tutorProfile.hourlyRate,
+        online: user.tutorProfile.online,
+        inPerson: user.tutorProfile.inPerson,
+        qualifications: user.tutorProfile.qualifications,
+        emailVerified: user.emailVerified,
+        forceActive: user.tutorProfile.forceActive,
+        active: user.tutorProfile.active,
+        suspended: user.suspended,
+      })
+    : null;
+  const justWentLive = sp.live === "1" && statusView?.status === "LIVE";
 
   return (
     <div className="page tutor-dashboard-page">
@@ -74,8 +93,9 @@ export default async function TutorDashboardPage({
           <div>
             <h1 className="page-title">Hi, {user.name}</h1>
             <p className="muted">
-              Complete your profile to appear in search, grow your badge, and reply to student
-              requests.
+              {statusView?.status === "LIVE"
+                ? "Your listing is live — grow your badge and reply to student requests."
+                : "Complete your profile to appear in search, then reply to student requests."}
             </p>
           </div>
           {user.tutorProfile ? (
@@ -86,7 +106,7 @@ export default async function TutorDashboardPage({
                 </Link>
               ) : (
                 <Link className="btn btn-secondary btn-sm" href={`/tutors/${user.tutorProfile.id}`}>
-                  Preview profile
+                  Preview my public profile
                 </Link>
               )}
               <Link className="btn btn-sm" href="/messages">
@@ -95,6 +115,10 @@ export default async function TutorDashboardPage({
             </div>
           ) : null}
         </header>
+
+        {statusView ? (
+          <TutorProfileStatusCard view={statusView} justWentLive={justWentLive} />
+        ) : null}
 
         {sp.verified === "1" && (
           <p className="success panel tutor-dashboard-alert">
@@ -123,10 +147,21 @@ export default async function TutorDashboardPage({
           </p>
         )}
 
-        <TutorDashboardTabs active={activeTab} sp={sp} profilePct={profileStats?.pct} />
+        <TutorDashboardTabs active={activeTab} sp={sp} profilePct={statusView?.percent} />
 
         {activeTab === "growth" ? (
           <>
+            <section className="panel tutor-student-requests-panel">
+              <h2>Students looking for tutors</h2>
+              <p className="muted">
+                Browse open student requests that match subjects you teach. Messaging limits follow
+                your current plan — free accounts can still reply within existing rules.
+              </p>
+              <Link className="btn btn-secondary" href="/ads">
+                View student requests
+              </Link>
+            </section>
+
             <div className="tutor-dashboard-overview">
               <PointsWalletPanel summary={hubPoints} role="TUTOR" />
 
@@ -172,22 +207,22 @@ export default async function TutorDashboardPage({
               <section className="panel tutor-profile-workspace" id="tutor-profile">
               <div className="tutor-profile-workspace-head">
                 <div>
-                  <h2>Your tutor profile</h2>
+                  <h2>Edit your public listing</h2>
                   <p className="muted">
-                    This is your public listing. Students find you here — complete every field marked
-                    with * to go live in search.
+                    Fields marked with * are required before your profile can appear in student
+                    search. A paid plan does not override incomplete fields.
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
                   <span
                     className={`tutor-status-pill${user.tutorProfile.active ? " is-live" : ""}`}
                   >
-                    {user.tutorProfile.active ? "Live in search" : "Draft — not visible"}
+                    {user.tutorProfile.active ? "LIVE" : "INCOMPLETE"}
                   </span>
                   {user.tutorProfile.verified ? (
                     <span className="badge badge-verified">✓ Verified</span>
                   ) : (
-                    <span className="badge">Unverified</span>
+                    <span className="badge">Unverified badge</span>
                   )}
                   {badgeProgress ? (
                     <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />
@@ -195,41 +230,18 @@ export default async function TutorDashboardPage({
                 </div>
               </div>
 
-              {profileStats ? (
-                <div className="profile-strength tutor-profile-strength-banner">
-                  <div className="profile-strength-label">
-                    <span>Profile completion</span>
-                    <span>{profileStats.pct}%</span>
-                  </div>
-                  <div className="profile-strength-bar">
-                    <div
-                      className="profile-strength-fill"
-                      style={{ width: `${profileStats.pct}%` }}
-                    />
-                  </div>
-                  {profileStats.missing.length > 0 ? (
-                    <p className="profile-strength-nudge">
-                      Still needed: <strong>{profileStats.missing.join(", ")}</strong>
-                    </p>
-                  ) : (
-                    <p className="success" style={{ margin: "0.5rem 0 0" }}>
-                      All required fields complete — your profile can appear in search.
-                    </p>
-                  )}
-                </div>
-              ) : null}
-
               {!user.tutorProfile.active ? (
                 <div className="tutor-profile-hidden-note">
-                  Students cannot see this listing yet. Save your profile with all required fields
-                  to appear in search for free.
+                  Students cannot find this listing in search yet. Finish the required fields above,
+                  verify your email, then save — eligible profiles go live automatically.
                 </div>
               ) : null}
 
               {!user.tutorProfile.verified ? (
                 <p className="field-hint">
-                  Upload your government ID in{" "}
-                  <a href="#get-verified">Get verified</a> below for the verified badge.
+                  Optional: upload your government ID in{" "}
+                  <a href="#get-verified">Get verified</a> below for the verified badge. Verification
+                  is not required to go live.
                 </p>
               ) : null}
 
@@ -238,6 +250,8 @@ export default async function TutorDashboardPage({
                 displayName={user.name}
                 subjects={catalogSubjects}
                 extraLevels={extraLevels}
+                emailVerified={Boolean(user.emailVerified)}
+                listingActive={user.tutorProfile.active}
               />
             </section>
           ) : null}

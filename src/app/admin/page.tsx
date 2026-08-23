@@ -70,8 +70,9 @@ export default async function AdminOverviewPage() {
 
       <div className="admin-stat-grid">
         <Stat href="/admin/users" label="Users" value={users} />
-        <Stat href="/admin/tutors" label="Active tutors" value={tutorsActive} />
-        <Stat href="/admin/tutors" label="Inactive tutors" value={tutors - tutorsActive} />
+        <Stat href="/admin/tutors?active=1" label="Active tutors" value={tutorsActive} />
+        <Stat href="/admin/tutors?active=0" label="Inactive tutors" value={tutors - tutorsActive} />
+        <Stat href="/admin/tutor-supply" label="Tutor supply desk" value={tutorsActive} />
         <Stat href="/admin/users?role=STUDENT" label="Students" value={students} />
         <Stat href="/admin/users?suspended=1" label="Suspended" value={suspended} />
         <Stat href="/admin/users?verified=0" label="Unverified emails" value={unverified} />
@@ -84,6 +85,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       <div className="admin-quick-links">
+        <Link href="/admin/tutor-supply">Tutor supply</Link>
         <Link href="/admin/users">Find a user</Link>
         <Link href="/admin/plans">Plans & prices</Link>
         <Link href="/admin/settings">Site settings</Link>
