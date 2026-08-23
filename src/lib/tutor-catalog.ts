@@ -343,15 +343,18 @@ export function formatTutorAvailability(opts: {
   inPerson?: boolean;
 }) {
   const place = formatTutorPlace(opts.location, opts.country);
-  const placeIsOnline = place.toLowerCase() === "online";
+  const locationIsOnline = (opts.location || "").trim().toLowerCase() === "online";
+  const placeIsOnlineOnly = place.toLowerCase() === "online";
+
   const modes: string[] = [];
-  if (opts.online && !placeIsOnline) modes.push("Online");
   if (opts.inPerson) modes.push("In person");
-  if (!modes.length && opts.online) {
-    // Online-only with no distinct city → single "Online"
-    return "Online";
+  if (opts.online && !locationIsOnline && !placeIsOnlineOnly) {
+    modes.push("Online");
   }
+
   if (place && modes.length) return `${place} · ${modes.join(" · ")}`;
   if (place) return place;
-  return modes.join(" · ") || "Online";
+  if (modes.length) return modes.join(" · ");
+  if (opts.online) return "Online";
+  return "";
 }

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { computeDesiredTutorPublicActive } from "@/lib/tutor-public-eligibility";
+import {
+  canViewTutorProfilePublicly,
+  computeDesiredTutorPublicActive,
+} from "@/lib/tutor-public-eligibility";
 
 const base = {
   name: "Sara Ahmed",
@@ -93,6 +96,28 @@ for (const name of ["王小明", "山田太郎", "김민수", "Иван Петр
   const a = computeDesiredTutorPublicActive({ ...base, name });
   assert.equal(a.suspiciousName, false, `expected eligible: ${name}`);
   assert.equal(a.desiredActive, true, `expected public: ${name}`);
+}
+
+// canViewTutorProfilePublicly — public profile route gate
+{
+  assert.equal(canViewTutorProfilePublicly({ ...base, active: true }), true);
+  assert.equal(canViewTutorProfilePublicly({ ...base, active: false }), false);
+  assert.equal(
+    canViewTutorProfilePublicly({ ...base, active: true, suspended: true }),
+    false,
+  );
+  assert.equal(
+    canViewTutorProfilePublicly({ ...base, active: true, emailVerified: null }),
+    false,
+  );
+  assert.equal(
+    canViewTutorProfilePublicly({ ...base, active: true, headline: "" }),
+    false,
+  );
+  assert.equal(
+    canViewTutorProfilePublicly({ ...base, active: true, forceActive: true, headline: "" }),
+    true,
+  );
 }
 
 console.log("tutor-public-eligibility.test.ts: ok");

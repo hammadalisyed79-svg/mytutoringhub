@@ -21,6 +21,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
+import { canViewTutorProfilePublicly } from "@/lib/tutor-public-eligibility";
 import {
   formatAvailabilityLines,
   formatExperienceYears,
@@ -136,13 +137,49 @@ function ProfileCtaButtons({
   );
 }
 
+function tutorPublicVisibilityInput(
+  tutor: {
+    active: boolean;
+    forceActive: boolean;
+    photoUrl: string | null;
+    headline: string | null;
+    bio: string;
+    country: string | null;
+    location: string;
+    subjects: string;
+    hourlyRate: number;
+    online: boolean;
+    inPerson: boolean;
+    qualifications: string | null;
+    user: { name: string | null; emailVerified: Date | null; suspended: boolean };
+  },
+) {
+  return {
+    active: tutor.active,
+    forceActive: tutor.forceActive,
+    emailVerified: tutor.user.emailVerified,
+    name: tutor.user.name,
+    photoUrl: tutor.photoUrl,
+    headline: tutor.headline,
+    bio: tutor.bio,
+    country: tutor.country,
+    location: tutor.location,
+    subjects: tutor.subjects,
+    hourlyRate: tutor.hourlyRate,
+    online: tutor.online,
+    inPerson: tutor.inPerson,
+    qualifications: tutor.qualifications,
+    suspended: tutor.user.suspended,
+  };
+}
+
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
-    include: { user: { select: { name: true } } },
+    include: { user: { select: { name: true, emailVerified: true, suspended: true } } },
   });
-  if (!tutor || !tutor.active) {
+  if (!tutor || !canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor))) {
     return pageMetadata({
       title: "Tutor not found",
       description: "This tutor listing is not available on My Tutoring Hub.",
@@ -171,7 +208,7 @@ export default async function TutorProfilePage({ params }: Params) {
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
     include: {
-      user: { select: { id: true, name: true } },
+      user: { select: { id: true, name: true, emailVerified: true, suspended: true } },
       reviews: {
         where: { status: "PUBLISHED" },
         orderBy: { createdAt: "desc" },
@@ -197,7 +234,9 @@ export default async function TutorProfilePage({ params }: Params) {
   const viewerId = session?.user?.id;
   const isOwner = Boolean(viewerId && viewerId === tutor.userId);
   const isAdmin = session?.user?.role === "ADMIN";
-  if (!tutor.active && !isOwner && !isAdmin) notFound();
+  if (!isOwner && !isAdmin && !canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor))) {
+    notFound();
+  }
 
   // Fire-and-forget profile view (skip owner views; ignore missing table)
   if (!isOwner) {
@@ -594,7 +633,7 @@ export default async function TutorProfilePage({ params }: Params) {
                     <article key={ad.id} className="profile-ad">
                       <h3>{ad.title}</h3>
                       <p className="muted">
-                        {ad.subject} · {ad.level} · {formatHourly(ad.rate, currency)}
+                        {ad.subject} · {ad.level} · {formatHourly(tutor.hourlyRate, currency)}
                       </p>
                       {ad.description && <p>{ad.description}</p>}
                       <Link href={`/s/${slugify(ad.subject)}`} className="muted">

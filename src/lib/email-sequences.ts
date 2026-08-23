@@ -68,7 +68,7 @@ function tutorPickListHtml(
       const badge = t.verified ? " · Verified" : "";
       return `<li style="margin:0 0 14px;padding:14px 16px;background:#f6f1e8;border-radius:10px;list-style:none">
 <strong>${t.user.name}</strong>${badge}<br/>
-<span style="color:#486581;font-size:14px">${subjects} · ${t.location || "Online"} · ${rate}/hr</span><br/>
+<span style="color:#486581;font-size:14px">${subjects} · ${t.location || "Online"} · ${rate}</span><br/>
 <a href="${appUrl()}/tutors/${t.id}" style="color:#0d5f52;font-weight:600;font-size:14px">View profile →</a>
 </li>`;
     })

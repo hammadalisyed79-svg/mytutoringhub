@@ -74,3 +74,11 @@ export function publicListedTutorWhere() {
     user: { suspended: false },
   } as const;
 }
+
+/** Whether a tutor profile should be visible to the public (not owner/admin preview). */
+export function canViewTutorProfilePublicly(
+  input: TutorVisibilityInput & { active: boolean },
+): boolean {
+  if (!input.active || input.suspended) return false;
+  return computeDesiredTutorPublicActive(input).desiredActive;
+}

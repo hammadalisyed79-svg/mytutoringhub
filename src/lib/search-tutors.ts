@@ -258,34 +258,22 @@ export async function searchTutors(
 }
 
 export async function averageRateForSubject(subject: string) {
-  const ads = await prisma.tutorAd.findMany({
-    where: { status: "ACTIVE", subject: { contains: subject, mode: "insensitive" } },
-    select: { rate: true },
+  const profiles = await prisma.tutorProfile.findMany({
+    where: {
+      ...publicListedTutorWhere(),
+      subjects: { contains: subject, mode: "insensitive" },
+    },
+    select: { hourlyRate: true },
   });
-  if (ads.length === 0) {
-    const profiles = await prisma.tutorProfile.findMany({
-      where: { ...publicListedTutorWhere(), subjects: { contains: subject, mode: "insensitive" } },
-      select: { hourlyRate: true },
-    });
-    if (profiles.length === 0) return null;
-    return profiles.reduce((s, p) => s + p.hourlyRate, 0) / profiles.length;
-  }
-  return ads.reduce((s, a) => s + a.rate, 0) / ads.length;
+  if (profiles.length === 0) return null;
+  return profiles.reduce((s, p) => s + p.hourlyRate, 0) / profiles.length;
 }
 
-export function slugify(input: string) {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-export async function similarTutors(opts: {
+/** Where clause for similar-tutor recommendations (public catalogue only). */
+export function similarTutorsWhereClause(opts: {
   id: string;
   subjects: string;
   location: string;
-  take?: number;
 }) {
   const first = opts.subjects
     .split(/[,;/|]/)
@@ -296,14 +284,26 @@ export async function similarTutors(opts: {
     ...(first ? [{ subjects: { contains: first, mode: "insensitive" as const } }] : []),
     ...(city ? [{ location: { contains: city, mode: "insensitive" as const } }] : []),
   ];
-  if (or.length === 0) return [];
+  if (or.length === 0) return null;
+
+  return {
+    ...publicListedTutorWhere(),
+    id: { not: opts.id },
+    OR: or,
+  };
+}
+
+export async function similarTutors(opts: {
+  id: string;
+  subjects: string;
+  location: string;
+  take?: number;
+}) {
+  const where = similarTutorsWhereClause(opts);
+  if (!where) return [];
 
   return prisma.tutorProfile.findMany({
-    where: {
-      ...publicListedTutorWhere(),
-      id: { not: opts.id },
-      OR: or,
-    },
+    where,
     select: {
       id: true,
       photoUrl: true,
@@ -327,4 +327,12 @@ export async function similarTutors(opts: {
     take: opts.take ?? 4,
     orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],
   });
+}
+
+export function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
