@@ -101,12 +101,19 @@ export default async function AdsPage() {
               </div>
               <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
               <p style={{ margin: 0 }}>{ad.description}</p>
-              <div className="meta">
-                <span>Posted by {ad.user.name}</span>
-                {session?.user?.role === "TUTOR" && (
-                  <Link href={`/messages?to=${ad.user.id}&ad=${ad.id}`}>Message student</Link>
-                )}
-                {session?.user && <ReportButton targetType="STUDENT_AD" targetId={ad.id} />}
+              <div className="ad-row-footer">
+                <span className="ad-row-poster">Posted by {ad.user.name}</span>
+                <div className="ad-row-actions">
+                  {session?.user?.role === "TUTOR" && (
+                    <Link
+                      href={`/messages?to=${ad.user.id}&ad=${ad.id}`}
+                      className="btn btn-sm"
+                    >
+                      Message student
+                    </Link>
+                  )}
+                  {session?.user && <ReportButton targetType="STUDENT_AD" targetId={ad.id} />}
+                </div>
               </div>
             </article>
           ))}
