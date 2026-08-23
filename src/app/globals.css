@@ -8970,7 +8970,13 @@ img {
   text-decoration-color: rgba(255, 252, 247, 0.55);
 }
 
-.hero-path-footnote a:hover {
+.hero p.hero-path-footnote a:not(.btn):not(.btn-secondary):not(.btn-sm) {
+  color: var(--on-dark-link);
+  text-decoration-color: rgba(255, 252, 247, 0.55);
+}
+
+.hero-path-footnote a:hover,
+.hero p.hero-path-footnote a:not(.btn):not(.btn-secondary):not(.btn-sm):hover {
   color: var(--on-dark-link-hover);
   text-decoration-color: currentColor;
 }
