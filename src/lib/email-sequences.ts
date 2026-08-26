@@ -9,6 +9,7 @@ import {
   verificationReminderEmailHtml,
 } from "@/lib/email";
 import { runHubPointsMaintenance } from "@/lib/hub-points";
+import { createEmailVerificationLink } from "@/lib/email-verification";
 import { STUDENT_FREE_CONTACT_LIMIT, canPerformAction } from "@/lib/plan-limits";
 import { hasStudentMessagingPass } from "@/lib/subscription";
 import { formatHourly } from "@/lib/currency";
@@ -306,12 +307,14 @@ export async function runOnboardingDigest() {
     const claimed = await claimSequence(row.id, EMAIL_SEQUENCES.VERIFY_REMINDER);
     if (!claimed) continue;
     try {
+      const verifyUrl = await createEmailVerificationLink(row.id);
+      if (!verifyUrl) continue;
       await sendEmail({
         to: row.email,
         subject: "Reminder: confirm your email · My Tutoring Hub",
         html: verificationReminderEmailHtml({
           name: row.name,
-          verifyUrl: `${appUrl()}/dashboard?verify=1`,
+          verifyUrl,
         }),
       });
       verifyReminder += 1;

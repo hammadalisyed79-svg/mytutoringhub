@@ -24,6 +24,7 @@ import {
 } from "@/lib/tutor-profile-completion";
 import { trustBadgeMeta } from "@/lib/tutor-badges";
 import { hasAnyActivePlan } from "@/lib/subscription";
+import { createEmailVerificationLink } from "@/lib/email-verification";
 
 export const NURTURE_SEQUENCES = {
   TUTOR_PROFILE_R1: "tutor_profile_r1",
@@ -392,12 +393,17 @@ export async function sendVerifyReminder7Email(userId: string) {
   if (!claimed) return { sent: false, reason: "already_sent" as const };
 
   try {
+    const verifyUrl = await createEmailVerificationLink(userId);
+    if (!verifyUrl) {
+      await releaseEmailEvent(userId, NURTURE_SEQUENCES.VERIFY_REMINDER_7);
+      return { sent: false, reason: "ineligible" as const };
+    }
     await sendEmail({
       to: user.email,
       subject: "Still need to confirm your email · My Tutoring Hub",
       html: verificationReminderEmailHtml({
         name: user.name,
-        verifyUrl: `${appUrl()}/dashboard?verify=1`,
+        verifyUrl,
       }),
     });
     return { sent: true as const };

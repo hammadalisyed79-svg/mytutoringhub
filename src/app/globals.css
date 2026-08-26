@@ -1,5 +1,57 @@
 @import "tailwindcss";
 
+.dashboard-verify-banner-wrap {
+  padding-top: 1rem;
+}
+
+.dashboard-verify-banner {
+  margin-bottom: 0;
+  border-left: 4px solid var(--brand);
+}
+
+.dashboard-verify-banner strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.post-verify-checklist {
+  border-left: 4px solid var(--ok);
+  margin-bottom: 1rem;
+}
+
+.post-verify-checklist h2 {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.post-verify-checklist-steps {
+  margin: 1rem 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.post-verify-checklist-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.post-verify-checklist-steps .is-done {
+  color: var(--ok);
+}
+
+.post-verify-checklist-steps .is-needed {
+  color: var(--ink-soft);
+}
+
+.post-verify-checklist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
 .skip-to-main {
   position: absolute;
   left: -9999px;

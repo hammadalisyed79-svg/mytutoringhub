@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
-import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { PostVerifyStudentChecklist } from "@/components/PostVerifyChecklist";
 import { StudentPlanPanel } from "@/components/StudentPlanPanel";
 import { PointsWalletPanel } from "@/components/PointsWalletPanel";
 import { StudentAdCard } from "@/components/StudentAdCard";
@@ -65,21 +65,7 @@ export default async function StudentDashboardPage({
           </div>
         </header>
 
-        {sp.verified === "1" && (
-          <p className="success panel student-dashboard-alert">
-            Email verified. Messaging and ads unlock with your plan; the AI study assistant needs
-            Student Pro.
-          </p>
-        )}
-        {!user.emailVerified && (
-          <div className="panel student-dashboard-alert student-dashboard-alert--verify">
-            <p className="muted">
-              Please verify {user.email}. Check your inbox, junk, and promotions folders for our
-              confirmation email.
-            </p>
-            <ResendVerificationButton email={user.email} />
-          </div>
-        )}
+        {sp.verified === "1" ? <PostVerifyStudentChecklist /> : null}
         <CheckoutNotice
           checkout={sp.checkout}
           state={sp.state}

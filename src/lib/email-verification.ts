@@ -9,29 +9,50 @@ export function hashEmailToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+export function emailVerificationUrl(token: string) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  return `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+}
+
+/** Mint a fresh verification token (replaces any prior token for this user). */
+export async function mintEmailVerificationToken(userId: string) {
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = hashEmailToken(token);
+  const expiresAt = new Date(Date.now() + TTL_MS);
+
+  await prisma.emailVerificationToken.deleteMany({ where: { userId } });
+  await prisma.emailVerificationToken.create({
+    data: { tokenHash, userId, expiresAt },
+  });
+
+  return { token, expiresAt };
+}
+
+/** Fresh verify link for cron/reminder emails — no message sent. */
+export async function createEmailVerificationLink(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { emailVerified: true },
+  });
+  if (!user || user.emailVerified) return null;
+  const { token } = await mintEmailVerificationToken(userId);
+  return emailVerificationUrl(token);
+}
+
 export async function issueEmailVerification(user: {
   id: string;
   name: string;
   email: string;
 }) {
-  const token = randomBytes(32).toString("hex");
-  const tokenHash = hashEmailToken(token);
-  const expiresAt = new Date(Date.now() + TTL_MS);
-
-  await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
-  await prisma.emailVerificationToken.create({
-    data: { tokenHash, userId: user.id, expiresAt },
-  });
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const verifyUrl = `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+  const { token } = await mintEmailVerificationToken(user.id);
+  const verifyUrl = emailVerificationUrl(token);
   await sendEmail({
     to: user.email,
     subject: "Confirm your email · My Tutoring Hub",
     html: verifyEmailHtml(user.name, verifyUrl),
     text: `Hi ${user.name},\n\nPlease confirm your email for My Tutoring Hub:\n${verifyUrl}\n\nThis link expires in 24 hours.\n\nSent from admin@mytutoringhub.com`,
   });
-  return { expiresAt };
+  return { expiresAt: new Date(Date.now() + TTL_MS) };
 }
 
 export async function canResendVerification(userId: string) {

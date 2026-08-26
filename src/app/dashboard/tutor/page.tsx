@@ -5,7 +5,6 @@ import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
-import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { TutorPlanPanel } from "@/components/TutorPlanPanel";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
@@ -31,6 +30,7 @@ import {
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
+import { PostVerifyTutorChecklist } from "@/components/PostVerifyChecklist";
 import { buildTutorProfileStatus } from "@/lib/tutor-profile-status";
 
 export const metadata = { title: "Tutor dashboard" };
@@ -120,20 +120,9 @@ export default async function TutorDashboardPage({
           <TutorProfileStatusCard view={statusView} justWentLive={justWentLive} />
         ) : null}
 
-        {sp.verified === "1" && (
-          <p className="success panel tutor-dashboard-alert">
-            Email verified. Messaging and ads unlock with your plan.
-          </p>
-        )}
-        {!user.emailVerified && (
-          <div className="panel tutor-dashboard-alert tutor-dashboard-alert--verify">
-            <p className="muted">
-              Please verify {user.email}. Check your inbox, junk, and promotions folders for our
-              confirmation email.
-            </p>
-            <ResendVerificationButton email={user.email} />
-          </div>
-        )}
+        {sp.verified === "1" && statusView ? (
+          <PostVerifyTutorChecklist view={statusView} />
+        ) : null}
         <CheckoutNotice
           checkout={sp.checkout}
           state={sp.state}
