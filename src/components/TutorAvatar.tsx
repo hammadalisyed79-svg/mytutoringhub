@@ -49,14 +49,18 @@ export function TutorAvatar({
     );
   }
 
+  const isCardAvatar = className?.includes("tc-avatar-card");
   const sizesHint =
     size != null
       ? `${size}px`
       : className?.includes("profile-photo")
         ? "(max-width: 520px) 120px, 160px"
-        : className?.includes("tc-avatar")
-          ? "64px"
-          : "54px";
+        : isCardAvatar
+          ? "(max-width: 600px) 100vw, (max-width: 960px) 50vw, 320px"
+          : className?.includes("tc-avatar")
+            ? "64px"
+            : "54px";
+  const quality = isCardAvatar ? 80 : 72;
 
   return (
     <div className={className} style={containerStyle} aria-hidden>
@@ -65,7 +69,7 @@ export function TutorAvatar({
         alt=""
         fill
         sizes={sizesHint}
-        quality={72}
+        quality={quality}
         priority={priority}
         style={{
           objectFit: "cover",
