@@ -63,6 +63,12 @@ export default function TermsPage() {
             Questions:{" "}
             <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>
           </p>
+          <p>
+            See also our{" "}
+            <a href="/privacy">Privacy Policy</a>,{" "}
+            <a href="/refund">Refund &amp; cancellation policy</a>, and{" "}
+            <a href="/pricing">Plans &amp; pricing</a>.
+          </p>
         </div>
       </div>
     </div>

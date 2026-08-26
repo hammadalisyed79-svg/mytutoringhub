@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StartMessageFromQuery } from "@/components/StartMessageFromQuery";
 import { MessagesPlanPanel } from "@/components/MessagesPlanPanel";
 import { isImageAttachment } from "@/lib/media";
-import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { getPlanDashboardSummary } from "@/lib/plan-limits";
 import { resolveMessageRecipient } from "@/lib/message-recipient";
 import { MessagesAccountBanner } from "@/components/MessagesAccountBanner";
@@ -145,7 +145,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
                   ? "Search tutors and send a message — your plan includes unlimited tutor contacts this month."
                   : studentPlanSummary && contactsRemaining != null && contactsLimit != null
                     ? `Search tutors and send a message. You have ${contactsRemaining} of ${contactsLimit} free tutor contacts left this month.`
-                    : "Search tutors and send a message. Free accounts get 3 new tutor contacts per month."}
+                    : `Search tutors and send a message. ${STUDENT_FREE_CONTACTS_LINE}`}
             </p>
             <p>
               {session.user.role === "TUTOR" ? (

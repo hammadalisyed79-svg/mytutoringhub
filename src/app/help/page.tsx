@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
+import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE, studentFreeContactsShort } from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
   title: "Help & FAQ – Contacting Tutors, Plans & Payments",
@@ -16,11 +17,11 @@ const FAQS = [
   },
   {
     q: "What is free vs paid on My Tutoring Hub?",
-    a: "Search and join are free. Students get 3 new tutor contacts per month on a free account; Student Pass unlocks unlimited messaging. Tutors list in search for free with a complete profile; Tutor Basic adds priority and ads. We never take a lesson commission. See the full Free vs paid guide for tables and FAQs.",
+    a: `Search and join are free. ${STUDENT_FREE_CONTACTS_LINE} ${TUTOR_FREE_LISTING_LINE} We never take a lesson commission. See the full Free vs paid guide for tables and FAQs.`,
   },
   {
     q: "How do I contact a tutor?",
-    a: "Browse Find tutors, open a profile, and send a message. Free student accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited messaging and request ads.",
+    a: `Browse Find tutors, open a profile, and send a message. ${STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks unlimited messaging and request ads.`,
   },
   {
     q: "Which email can I use to sign up?",
@@ -60,7 +61,7 @@ const FAQS = [
   },
   {
     q: "Is there live chat support?",
-    a: "Yes — log in and tap Support (bottom-right) or open /support for instant AI help with plans, verification, messaging, and payments. For complex issues, email admin@mytutoringhub.com.",
+    a: "Log in and tap Support (bottom-right) or open /support for AI help with plans, verification, messaging, and payments. For complex issues, email admin@mytutoringhub.com.",
   },
   {
     q: "How do I report a problem?",

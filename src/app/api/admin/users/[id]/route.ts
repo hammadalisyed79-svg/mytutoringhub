@@ -22,7 +22,8 @@ export async function GET(_req: Request, { params }: Params) {
     },
   });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(user);
+  const { passwordHash, ...safeUser } = user;
+  return NextResponse.json({ ...safeUser, hasPassword: Boolean(passwordHash) });
 }
 
 export async function POST(req: Request, { params }: Params) {

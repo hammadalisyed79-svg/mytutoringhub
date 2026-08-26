@@ -1,15 +1,33 @@
 import { NextResponse } from "next/server";
-import { seedCompanyData, COMPANY_ACCOUNTS } from "@/lib/seed-company";
+import { seedCompanyData } from "@/lib/seed-company";
 
 export const runtime = "nodejs";
 
+function isProductionEnv() {
+  return (
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production"
+  );
+}
+
 export async function POST(req: Request) {
-  const secret = process.env.SEED_SECRET || process.env.AUTH_SECRET;
+  if (isProductionEnv()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const seedSecret = process.env.SEED_SECRET?.trim();
+  if (!seedSecret) {
+    return NextResponse.json(
+      { error: "SEED_SECRET is not configured for this environment." },
+      { status: 503 },
+    );
+  }
+
   const header = req.headers.get("x-seed-secret");
   const url = new URL(req.url);
   const querySecret = url.searchParams.get("secret");
 
-  if (!secret || (header !== secret && querySecret !== secret)) {
+  if (header !== seedSecret && querySecret !== seedSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,13 +35,9 @@ export async function POST(req: Request) {
     const accounts = await seedCompanyData();
     return NextResponse.json({
       ok: true,
-      message: "Company accounts ready",
-      accounts: accounts.map((a) => ({
-        role: a.role,
-        email: a.email,
-        password: a.password,
-        name: a.name,
-      })),
+      message: "Company accounts ready (development only)",
+      accountCount: accounts.length,
+      emails: accounts.map((a) => ({ role: a.role, email: a.email, name: a.name })),
     });
   } catch (e) {
     console.error("Seed failed", e);

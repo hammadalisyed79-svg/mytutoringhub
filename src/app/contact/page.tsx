@@ -30,7 +30,7 @@ export default function ContactPage() {
           <h2 style={{ marginTop: 0, fontSize: "1.2rem" }}>Self-serve</h2>
           <ul className="check-list">
             <li>
-              <Link href="/help">Help &amp; FAQ</Link> — plans, email, verification, reviews
+              <Link href="/help">Help &amp; FAQ</Link> — plans, email, verification, refunds
             </li>
             <li>
               <Link href="/pricing">Pricing</Link> — Student Pass, Tutor Basic, and add-ons

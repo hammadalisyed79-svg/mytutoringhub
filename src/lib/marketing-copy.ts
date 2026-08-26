@@ -7,8 +7,17 @@ import {
   studentContactRuleShort,
 } from "@/lib/business-rules";
 
-export const VALUE_PROPOSITION =
-  "Find tutors free. Free accounts include 3 new tutor contacts per month — upgrade for unlimited messaging and study tools. Lesson fees stay between you and the tutor.";
+export const VALUE_PROPOSITION = `Find tutors free. Free accounts include ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month — upgrade for unlimited messaging and study tools. Lesson fees stay between you and the tutor.`;
+
+/** Inline phrase for CTAs, e.g. "3 contacts/month". */
+export function studentFreeContactsShort() {
+  return `${BUSINESS.studentFreeContactsPerMonth} contacts/month`;
+}
+
+/** Sentence fragment: "3 new tutor contacts per month". */
+export function studentFreeContactsPhrase() {
+  return `${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month`;
+}
 
 export const VALUE_PROPOSITION_SHORT = `Search free · ${NO_LESSON_COMMISSION_SHORT} · Student Pass unlocks unlimited contacts`;
 

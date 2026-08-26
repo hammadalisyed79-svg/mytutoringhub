@@ -7,7 +7,7 @@ import { PaymentsComingSoonBanner } from "@/components/PaymentsComingSoonBanner"
 import { PricingPlansClient } from "@/components/PricingPlansClient";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { prisma } from "@/lib/prisma";
-import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE } from "@/lib/marketing-copy";
+import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { pageMetadata } from "@/lib/seo";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
   title: "Plans & Pricing – Student Pass, Student Pro & Tutor Subscriptions",
-  description: `Free students get 3 tutor contacts/month; Student Pass unlocks unlimited messaging. ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Basic adds priority. No lesson commission.`,
+  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Basic adds priority. No lesson commission.`,
   path: "/pricing",
 });
 

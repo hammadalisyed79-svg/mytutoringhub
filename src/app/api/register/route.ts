@@ -8,6 +8,7 @@ import { sendEmail, welcomeEmailHtml } from "@/lib/email";
 import { getSiteSettings } from "@/lib/site-settings";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { normalizeDisplayName } from "@/lib/display-name";
+import { enforceAuthRateLimit } from "@/lib/auth-rate-limit";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -18,6 +19,9 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const limited = enforceAuthRateLimit(req, "register", 10, 60 * 60 * 1000);
+  if (limited) return limited;
+
   try {
     const settings = await getSiteSettings();
     if (settings.disableSignups) {

@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/help": 0.55,
     "/terms": 0.35,
     "/privacy": 0.35,
+    "/refund": 0.35,
   };
   const changeFreqMap: Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]> = {
     "/": "daily",
@@ -48,6 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/help",
     "/terms",
     "/privacy",
+    "/refund",
     "/how-it-works",
     "/become-a-tutor",
     "/about",

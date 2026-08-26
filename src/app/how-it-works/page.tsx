@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { VALUE_PROPOSITION, studentFreeContactsShort } from "@/lib/marketing-copy";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -41,7 +41,7 @@ export default async function HowItWorksPage() {
             <span>2</span>
             <h3>Contact tutors</h3>
             <p className="muted">
-              Free accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited
+              Free accounts get {studentFreeContactsShort()}; Student Pass unlocks unlimited
               messaging, request ads, and included past paper downloads. Student Pro adds unlimited
               papers and the AI study assistant.
             </p>
@@ -61,7 +61,7 @@ export default async function HowItWorksPage() {
             <h2>For students & parents</h2>
             <ul className="check-list">
               <li>Browse verified, highlighted, and boosted tutors</li>
-              <li>Message tutors free (3 contacts/month) or unlimited with Student Pass</li>
+              <li>Message tutors free ({studentFreeContactsShort()}) or unlimited with Student Pass</li>
               <li>Student Pro unlocks the AI study assistant</li>
               <li>Download past papers by subject</li>
               <li>Manage your name and password in Settings</li>

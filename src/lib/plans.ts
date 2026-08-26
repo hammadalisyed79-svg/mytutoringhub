@@ -1,4 +1,5 @@
 import type { SubscriptionPlan } from "@/lib/types";
+import { BUSINESS } from "@/lib/business-rules";
 
 export type PlanDefinition = {
   id: SubscriptionPlan;
@@ -54,7 +55,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   {
     id: "STUDENT_PASS",
     name: "Student Pass",
-    description: "Unlimited tutor contacts and student request ads. Free accounts get 3 contacts/month.",
+    description: `Unlimited tutor contacts and student request ads. Free accounts get ${BUSINESS.studentFreeContactsPerMonth} contacts/month.`,
     audience: "student",
     pricePkr: 1999,
     annualPricePkr: defaultAnnualPricePkr(1999),

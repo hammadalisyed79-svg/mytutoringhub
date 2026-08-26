@@ -22,6 +22,7 @@ import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import { canViewTutorProfilePublicly } from "@/lib/tutor-public-eligibility";
+import { studentFreeContactsShort } from "@/lib/marketing-copy";
 import {
   formatAvailabilityLines,
   formatExperienceYears,
@@ -728,11 +729,11 @@ export default async function TutorProfilePage({ params }: Params) {
                   viewerEmail={viewer?.email ?? session?.user?.email}
                 />
               ) : isOwner ? (
-                <p className="muted">Students can message you from this page (3 free contacts/month, or unlimited with Student Pass).</p>
+                <p className="muted">Students can message you from this page ({studentFreeContactsShort()} free, or unlimited with Student Pass).</p>
               ) : !session ? (
                 <div className="profile-book-cta">
                   <p className="muted">
-                    Create a free student account to message this tutor (3 contacts/month included).
+                    Create a free student account to message this tutor ({studentFreeContactsShort()} included).
                   </p>
                   <Link href="/register?role=student" className="btn btn-block">
                     Join as student
@@ -743,7 +744,7 @@ export default async function TutorProfilePage({ params }: Params) {
                 </div>
               ) : (
                 <p className="muted">
-                  Switch to a student account to send a message. Free accounts get 3 contacts/month;
+                  Switch to a student account to send a message. Free accounts get {studentFreeContactsShort()};
                   Student Pass unlocks unlimited messaging.
                 </p>
               )}

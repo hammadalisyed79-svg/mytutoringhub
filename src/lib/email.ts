@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { BUSINESS } from "@/lib/business-rules";
 import { getPublicAppUrl } from "@/lib/payments-status";
 
 const MAIL_FROM = "My Tutoring Hub <admin@mytutoringhub.com>";
@@ -357,7 +358,7 @@ export function postVerifyStudentEmailHtml(opts: {
     title: "Email confirmed",
     body: `<p>Hi ${opts.name},</p>
 <p>Your email is confirmed. You can now message tutors, post student requests, and use the study tools on ${brand}.</p>
-<p>Your free account includes <strong>3 new tutor contacts per month</strong>. Lesson fees always stay between you and the tutor — we never take a cut.</p>`,
+<p>Your free account includes <strong>${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month</strong>. Lesson fees always stay between you and the tutor — we never take a cut.</p>`,
     cta: { label: "Find tutors", href: opts.searchUrl },
   });
 }
@@ -628,7 +629,7 @@ export function studentBrowseNudgeEmailHtml(opts: {
 <p>You verified your email but haven't messaged a tutor yet. Browse profiles, compare subjects and rates, and send your first message free.</p>`
       : `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Still looking for the right tutor? Try filtering by subject and city — most tutors reply within a day.</p>
-<p>Your free account includes <strong>3 new tutor contacts per month</strong>.</p>`;
+<p>Your free account includes <strong>${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month</strong>.</p>`;
   return emailLayout({
     preheader: "Find and message tutors on My Tutoring Hub.",
     title: opts.step === 1 ? "Ready to find your tutor?" : "Tutors are waiting to hear from you",

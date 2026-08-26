@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BUSINESS } from "@/lib/business-rules";
 
 /** Display name used in titles and structured data. */
 export const SITE_NAME = "My Tutoring Hub";
@@ -198,7 +199,7 @@ export function subjectLandingJsonLd(opts: {
   return {
     "@type": "CollectionPage",
     name: opts.city ? `${opts.subject} tutors in ${opts.city}` : `${opts.subject} tutors`,
-    description: `${opts.tutorCount} ${opts.subject} tutors on ${SITE_NAME}. Browse free — 3 new tutor contacts/month included; Student Pass unlocks unlimited messaging.`,
+    description: `${opts.tutorCount} ${opts.subject} tutors on ${SITE_NAME}. Browse free — ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month included; Student Pass unlocks unlimited messaging.`,
     url: absoluteUrl(opts.path),
     about: { "@type": "Thing", name: opts.subject },
   };

@@ -84,7 +84,7 @@ function authProviders(): NextAuthConfig["providers"] {
       Google({
         clientId: googleClientId(),
         clientSecret: googleClientSecret(),
-        allowDangerousEmailAccountLinking: true,
+        allowDangerousEmailAccountLinking: false,
         authorization: { params: { scope: "openid email profile" } },
         profile(profile) {
           return {
@@ -107,7 +107,7 @@ function authProviders(): NextAuthConfig["providers"] {
         clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
         issuer: process.env.MICROSOFT_ISSUER || "https://login.microsoftonline.com/common/v2.0",
         authorization: { params: { scope: "openid profile email" } },
-        allowDangerousEmailAccountLinking: true,
+        allowDangerousEmailAccountLinking: false,
         profile(profile) {
           return {
             id: profile.sub,

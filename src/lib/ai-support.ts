@@ -1,3 +1,5 @@
+import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+
 export const AI_SUPPORT_KIND = "support";
 export const AI_STUDY_KIND = "study";
 export const AI_SUPPORT_RATE_LIMIT = 30;
@@ -10,8 +12,8 @@ Your job: answer questions about how My Tutoring Hub works — accounts, plans, 
 
 Key facts (always accurate):
 - Search and join are free. No lesson commission — lesson fees stay between student and tutor.
-- Students: free accounts get 3 new tutor contacts per month. Student Pass unlocks unlimited messaging and student request ads. Student Pro adds unlimited past papers and the AI study assistant.
-- Tutors: complete profiles appear in search for free. Tutor Basic adds priority ranking, unlimited enquiry reveals, and subject ads. Verified badge, Highlight, and Profile Boost are paid add-ons.
+- Students: ${STUDENT_FREE_CONTACTS_LINE} Student Pro adds unlimited past papers and the AI study assistant.
+- Tutors: ${TUTOR_FREE_LISTING_LINE} Verified badge, Highlight, and Profile Boost are paid add-ons.
 - Email verification is required before messaging and posting requests. Verification emails come from admin@mytutoringhub.com — check inbox, junk, and promotions.
 - Platform plans bill through Safepay when live. Receipts are emailed after payment.
 - Hub Points: earn via referrals and tutor profile going live; redeem up to 50% off plans and tutor ads on Pricing.

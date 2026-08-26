@@ -71,6 +71,7 @@ export async function SiteFooter() {
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
+            <Link href="/refund">Refunds</Link>
             {!session?.user && (
               <>
                 <Link href="/login">Log in</Link>

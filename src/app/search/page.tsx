@@ -60,7 +60,7 @@ export async function generateMetadata({
 
   const description = truncateDescription(
     parts.length > 0
-      ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates and reviews. Free accounts include 3 new tutor contacts per month; Student Pass unlocks unlimited messaging. ${VALUE_PROPOSITION}`
+      ? `Search ${parts.join(" ")} on My Tutoring Hub. Compare rates and reviews. ${STUDENT_FREE_CONTACTS_LINE} ${VALUE_PROPOSITION}`
       : `Search private tutors by subject, city, country, or online. Filter by GCSE, A-Level, IGCSE, IB and more. Rates in your local currency. ${STUDENT_FREE_CONTACTS_LINE}`,
   );
 

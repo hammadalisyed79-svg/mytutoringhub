@@ -58,6 +58,12 @@ export default function PrivacyPage() {
             Privacy requests:{" "}
             <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>
           </p>
+          <p>
+            See also our{" "}
+            <a href="/terms">Terms of Service</a>,{" "}
+            <a href="/refund">Refund &amp; cancellation policy</a>, and{" "}
+            <a href="/contact">Contact</a>.
+          </p>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { googleConfigured } from "@/lib/oauth";
+import { enforceAuthRateLimit } from "@/lib/auth-rate-limit";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,9 @@ export type LoginHint = {
 
 /** Tell the login UI whether to use Google, email/password, or sign up. */
 export async function POST(req: Request) {
+  const limited = enforceAuthRateLimit(req, "login-hint", 30, 15 * 60 * 1000);
+  if (limited) return limited;
+
   let emailRaw = "";
   try {
     const body = schema.parse(await req.json());

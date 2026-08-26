@@ -25,6 +25,7 @@ import {
   STUDENT_REQUESTS_LINE,
   VALUE_PROPOSITION,
   GEO_CURRENCY_LINE,
+  studentFreeContactsShort,
 } from "@/lib/marketing-copy";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { FreeVsPaidHighlights } from "@/components/FreeVsPaidComparison";
@@ -210,7 +211,7 @@ export default async function HomePage() {
               <span>2</span>
               <h3>Contact</h3>
               <p className="muted">
-                Message tutors free (3 contacts/month) or unlimited with Student Pass. Compare
+                Message tutors free ({studentFreeContactsShort()}) or unlimited with Student Pass. Compare
                 replies and pick the best fit.
               </p>
             </div>

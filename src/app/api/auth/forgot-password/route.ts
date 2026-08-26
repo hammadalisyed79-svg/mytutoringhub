@@ -9,6 +9,7 @@ import {
   passwordResetUrl,
   verifyPasswordResetToken,
 } from "@/lib/password-reset-token";
+import { enforceAuthRateLimit } from "@/lib/auth-rate-limit";
 
 export const runtime = "nodejs";
 
@@ -39,6 +40,11 @@ const GENERIC_OK =
 export async function POST(req: Request) {
   const url = new URL(req.url);
   const action = url.searchParams.get("action");
+
+  if (action !== "reset") {
+    const limited = enforceAuthRateLimit(req, "forgot-password", 8, 60 * 60 * 1000);
+    if (limited) return limited;
+  }
 
   if (action === "reset") {
     let data: z.infer<typeof resetSchema>;

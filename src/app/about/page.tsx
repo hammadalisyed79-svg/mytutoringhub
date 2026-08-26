@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
+import { NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
+import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
   title: "About My Tutoring Hub – Private Tutors Marketplace",
@@ -19,20 +21,22 @@ export default function AboutPage() {
         <div className="legal-body">
           <p>
             My Tutoring Hub connects students and families with independent tutors. We do not run a
-            tuition centre and we do not take a commission on lesson fees. You arrange schedule and
-            payment directly with the other person.
+            tuition centre and we do not take a commission on lesson fees. {NO_LESSON_COMMISSION_LINE}{" "}
+            You arrange schedule and payment directly with the other person.
           </p>
           <h2>How the platform is funded</h2>
           <p>
-            Students need a Student Pass to message tutors and post “need a tutor” ads. Tutors need
-            Tutor Basic to appear in search. Optional add-ons (Verified badge, highlight, ad boost,
-            extra ads) improve visibility. Platform subscriptions are billed through Safepay.
+            Search and registration are free. {STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks
+            unlimited messaging and student request ads; Student Pro adds unlimited past papers and the
+            AI study assistant. {TUTOR_FREE_LISTING_LINE} Optional add-ons (Verified badge, highlight,
+            profile boost, unlimited ads) improve visibility. Platform subscriptions are billed through
+            Safepay.
           </p>
           <h2>Launch offer</h2>
           <p>
-            Tutor Basic listing is complimentary until 30 September 2026. Verified, Highlight, Ad
-            Boost, and Unlimited Ads stay paid. After that date the standard Tutor Basic price
-            applies.
+            Tutor Basic (priority ranking and ads) is complimentary until 30 September 2026. Verified,
+            Highlight, Profile Boost, and Unlimited Ads stay paid. After that date the standard Tutor
+            Basic price applies.
           </p>
           <h2>Trust &amp; safety</h2>
           <p>
@@ -46,6 +50,12 @@ export default function AboutPage() {
             <Link href="/help">Help</Link>
             {" · "}
             <Link href="/contact">Contact</Link>
+            {" · "}
+            <Link href="/terms">Terms</Link>
+            {" · "}
+            <Link href="/privacy">Privacy</Link>
+            {" · "}
+            <Link href="/refund">Refunds</Link>
           </p>
         </div>
       </div>
