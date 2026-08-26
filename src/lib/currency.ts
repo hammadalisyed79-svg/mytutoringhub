@@ -245,6 +245,12 @@ export function formatPlanPrice(
   return `${formatMoney(local, currency)}${suffix}`;
 }
 
+/** One-off past paper download price (not a subscription). */
+export function formatPaperDownloadFee(amountPkr: number, currency: CurrencyCode) {
+  const local = pkrToCurrency(amountPkr, currency);
+  return formatMoney(local, currency);
+}
+
 /** Minor units for Safepay (cents/paisa). */
 export function toSafepayMinorUnits(amountMajor: number, currency: CurrencyCode) {
   if (ZERO_DECIMAL.has(currency)) return Math.round(amountMajor);

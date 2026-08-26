@@ -43,7 +43,9 @@ export function AdminPastPaperFeeForm({ feePkr }: { feePkr: number }) {
         />
       </label>
       <p className="muted">
-        Charged once per paper. Set 0 to make downloads free for signed-in users. Default is Rs. 100.
+        Charged once per paper in PKR (stored as the master price). Set 0 for free downloads for
+        signed-in users. Students see the converted price in their currency at checkout. Default
+        when unset: Rs 100.
       </p>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={busy}>

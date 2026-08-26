@@ -11,6 +11,13 @@ import { classifyR2PaperObject, r2PaperListPrefixes } from "./past-paper-sync";
 import { groupPapersByYearSessionComponent } from "./group-papers";
 import { isR2Configured } from "./r2";
 import { downloadableFileWhere } from "./availability";
+import {
+  hasPublicPaperSearchFilters,
+  mergePublicPaperFilters,
+  normalizeSyllabusCode,
+  parsePastPaperQuery,
+  publicPaperWhere,
+} from "./public-search";
 
 function expectParsed(
   filename: string,
@@ -222,5 +229,27 @@ const unknownSyllabus = classifyR2PaperObject("9999_s24_qp_11.pdf", 20);
 assert.equal(unknownSyllabus.ok, false);
 
 assert.equal(r2PaperListPrefixes()[0], "cambridge/");
+
+assert.equal(normalizeSyllabusCode("620"), "0620");
+assert.equal(normalizeSyllabusCode("0620"), "0620");
+assert.deepEqual(parsePastPaperQuery("0620"), { code: "0620" });
+assert.deepEqual(parsePastPaperQuery("9701 qp 42"), { code: "9701", paper: "42" });
+assert.deepEqual(parsePastPaperQuery("chem"), { q: "chem" });
+assert.deepEqual(
+  mergePublicPaperFilters({ q: "0620", code: "", paper: "" }, parsePastPaperQuery("0620")),
+  { q: undefined, code: "0620", paper: undefined },
+);
+assert.equal(
+  hasPublicPaperSearchFilters({ code: "0620" }),
+  true,
+  "code-only search should show results",
+);
+assert.equal(
+  hasPublicPaperSearchFilters({ documentType: "QUESTION_PAPER" }),
+  true,
+  "document type filter should show results",
+);
+const codeWhere = publicPaperWhere({ code: "620" });
+assert.ok(Array.isArray(codeWhere.AND), "code filter builds where clause");
 
 console.log("past-papers tests passed");

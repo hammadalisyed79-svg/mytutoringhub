@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
-import { formatPlanPrice } from "@/lib/currency";
+import { formatPaperDownloadFee } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
@@ -71,7 +71,7 @@ export default async function PastPaperSeoPage({
   const session = await auth();
   const currency = await getVisitorCurrency();
   const feePkr = await getPastPaperFeePkr();
-  const feeLabel = feePkr === 0 ? "Free" : formatPlanPrice(feePkr, currency);
+  const feeLabel = feePkr === 0 ? "Free" : formatPaperDownloadFee(feePkr, currency);
   const code = resolved.syllabusCode || "";
   let papers = await listPublicPastPapers({
     subject: entry?.subject,

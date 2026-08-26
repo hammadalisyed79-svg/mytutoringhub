@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { JsonLd } from "@/components/JsonLd";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatPlanPrice } from "@/lib/currency";
+import { formatPaperDownloadFee } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
@@ -31,7 +31,12 @@ import {
   uniqueCurriculumLevels,
   uniqueCurriculumSubjects,
 } from "@/lib/past-papers/browse";
-import { searchPublicPastPapers } from "@/lib/past-papers/public-search";
+import {
+  hasPublicPaperSearchFilters,
+  mergePublicPaperFilters,
+  parsePastPaperQuery,
+  searchPublicPastPapers,
+} from "@/lib/past-papers/public-search";
 import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
 import { paperHasFile, publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
@@ -86,7 +91,7 @@ export default async function PastPapersPage({
   const currency = await getVisitorCurrency();
   const pinnedCountry = getUserCountry(await headers());
   const feePkr = await getPastPaperFeePkr();
-  const feeLabel = feePkr === 0 ? "Free" : formatPlanPrice(feePkr, currency);
+  const feeLabel = feePkr === 0 ? "Free" : formatPaperDownloadFee(feePkr, currency);
   const subjects = pastPaperSubjects();
   const countries = curriculumCountries(pinnedCountry);
   const country = countries.find((name) => name === sp.country) || "";
@@ -106,7 +111,23 @@ export default async function PastPapersPage({
       ? Number(sp.year)
       : 0;
   const page = Math.max(1, Number(sp.page) || 1);
-  const searching = Boolean(sp.q || sp.code || sp.paper || sp.documentType || (sp.board && !country));
+  const parsedQuery = sp.q ? parsePastPaperQuery(sp.q) : {};
+  const paperFilters = mergePublicPaperFilters(
+    {
+      q: sp.q,
+      code: sp.code,
+      paper: sp.paper,
+      subject: subject || undefined,
+      board: board || sp.board,
+      qualification: level || undefined,
+      country: country || undefined,
+      year: year || undefined,
+      session: sp.session,
+      documentType: sp.documentType,
+    },
+    parsedQuery,
+  );
+  const searching = hasPublicPaperSearchFilters(paperFilters);
 
   const listings = subject && year ? papersForSubjectYear(subject, year) : [];
   const keys = listings.map((row) => row.key);
@@ -123,21 +144,7 @@ export default async function PastPapersPage({
         })
       : Promise.resolve([]),
     searching || (country && board && level && subject)
-      ? searchPublicPastPapers(
-          {
-            q: sp.q,
-            code: sp.code,
-            paper: sp.paper,
-            subject: subject || undefined,
-            board: board || sp.board,
-            qualification: level || undefined,
-            country: country || undefined,
-            year: year || undefined,
-            session: sp.session,
-            documentType: sp.documentType,
-          },
-          page,
-        )
+      ? searchPublicPastPapers(paperFilters, page)
       : Promise.resolve(null),
     subject
       ? prisma.pastPaper.findMany({
@@ -181,9 +188,18 @@ export default async function PastPapersPage({
       <div className="container">
         <h1 className="page-title">Past papers</h1>
         <p className="section-lead">
-          Browse by country, board, qualification, subject, year and session. Each download is{" "}
-          <strong>{feeLabel}</strong>
-          {feePkr === 0 ? " for signed-in users" : " — or included with Student Pass (10/month)"}.
+          Browse by country, board, qualification, subject, year and session.{" "}
+          {feePkr === 0 ? (
+            <>
+              Downloads are <strong>free</strong> for signed-in users.
+            </>
+          ) : (
+            <>
+              Each download is <strong>{feeLabel}</strong>
+              {session?.user ? "" : " (sign in required)"} — or use included Student Pass downloads
+              (10/month).
+            </>
+          )}
         </p>
         <ValuePropStrip />
         {(subject || sp.q) && <PastPaperTutorCta subject={subject || sp.q || ""} />}
@@ -223,7 +239,7 @@ export default async function PastPapersPage({
           </label>
           <label>
             Code
-            <input name="code" defaultValue={sp.code || ""} placeholder="0620" />
+            <input name="code" defaultValue={sp.code || ""} placeholder="0620 (4-digit syllabus code)" />
           </label>
           <label>
             Board
@@ -324,7 +340,7 @@ export default async function PastPapersPage({
           {sp.session ? <>{" → "}{sp.session}</> : null}
         </p>
 
-        {searchResult && (sp.q || sp.code || sp.paper) ? (
+        {searchResult && searching ? (
           <section className="panel">
             <h2>Search results</h2>
             <p className="muted paper-results-meta">
