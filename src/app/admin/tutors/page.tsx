@@ -19,7 +19,6 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
   const sp = await searchParams;
   const q = (sp.q || "").trim();
   const supply = sp.supply || "";
-  const overview = await getTutorSupplyOverview();
 
   const where: Prisma.TutorProfileWhereInput = {};
   if (sp.active === "1") where.active = true;
@@ -43,14 +42,38 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
     ];
   }
 
-  const tutors = await prisma.tutorProfile.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: 80,
-    include: {
-      user: { select: { id: true, name: true, email: true, suspended: true, emailVerified: true } },
-    },
-  });
+  const [overview, staleAdRates, tutors] = await Promise.all([
+    getTutorSupplyOverview(),
+    prisma.tutorAd.findMany({
+      where: { status: "ACTIVE" },
+      select: {
+        id: true,
+        title: true,
+        subject: true,
+        rate: true,
+        tutorProfile: {
+          select: {
+            id: true,
+            hourlyRate: true,
+            user: { select: { name: true } },
+          },
+        },
+      },
+      take: 100,
+    }),
+    prisma.tutorProfile.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 80,
+      include: {
+        user: { select: { id: true, name: true, email: true, suspended: true, emailVerified: true } },
+      },
+    }),
+  ]);
+
+  const staleAds = staleAdRates.filter(
+    (ad) => ad.tutorProfile && ad.rate !== ad.tutorProfile.hourlyRate,
+  );
 
   const rows = tutors.map((t) => {
     const completion = getTutorProfileCompletion({
@@ -119,6 +142,44 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
         · Recovery dry-run:{" "}
         <code>npx tsx scripts/tutor-recovery-dry-run.ts</code>
       </p>
+
+      {staleAds.length > 0 && (
+        <section className="panel">
+          <h2>Stale tutor ad rates (review only)</h2>
+          <p className="muted">
+            Active ads whose rate differs from the tutor profile hourly rate. Not auto-corrected —
+            ask the tutor to update or edit in admin.
+          </p>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Tutor</th>
+                  <th>Ad</th>
+                  <th>Ad rate (PKR)</th>
+                  <th>Profile rate (PKR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staleAds.map((ad) => (
+                  <tr key={ad.id}>
+                    <td>
+                      <Link href={`/admin/tutors/${ad.tutorProfile!.id}`}>
+                        {ad.tutorProfile!.user.name}
+                      </Link>
+                    </td>
+                    <td>
+                      {ad.title} ({ad.subject})
+                    </td>
+                    <td>{ad.rate.toLocaleString()}</td>
+                    <td>{ad.tutorProfile!.hourlyRate.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <form className="filters filters-wide" method="get">
         <label>

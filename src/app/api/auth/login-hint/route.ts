@@ -12,10 +12,8 @@ const schema = z.object({
 });
 
 export type LoginHint = {
-  exists: boolean;
+  exists?: boolean;
   suspended?: boolean;
-  hasPassword: boolean;
-  oauthProviders: string[];
   googleEnabled: boolean;
   loginMethod: "none" | "password" | "google" | "microsoft" | "oauth_only";
   message?: string;
@@ -43,25 +41,30 @@ export async function POST(req: Request) {
     where: { email },
     select: {
       suspended: true,
+      emailVerified: true,
       passwordHash: true,
       accounts: { select: { provider: true } },
     },
   });
 
   const googleEnabled = googleConfigured();
-  const hint: LoginHint = {
-    exists: Boolean(user),
-    hasPassword: Boolean(user?.passwordHash),
-    oauthProviders: user?.accounts.map((a) => a.provider) ?? [],
+  const genericUnknown = {
+    exists: false as const,
     googleEnabled,
-    loginMethod: "none",
+    loginMethod: "none" as const,
+    message:
+      "If you have an account, enter your password below or use Google sign-in. Otherwise sign up first.",
   };
 
   if (!user) {
-    hint.loginMethod = "none";
-    hint.message = "No account with this email. Sign up first, or use Google if you joined that way.";
-    return NextResponse.json(hint);
+    return NextResponse.json(genericUnknown);
   }
+
+  const hint: LoginHint = {
+    exists: true,
+    googleEnabled,
+    loginMethod: "none",
+  };
 
   if (user.suspended) {
     hint.suspended = true;
@@ -69,10 +72,19 @@ export async function POST(req: Request) {
     return NextResponse.json(hint);
   }
 
-  const hasGoogle = hint.oauthProviders.includes("google");
-  const hasMicrosoft = hint.oauthProviders.includes("microsoft-entra-id");
+  if (!user.emailVerified) {
+    hint.message =
+      "Verify your email before signing in. Check your inbox for the verification link, or use Forgot password if needed.";
+    hint.loginMethod = "none";
+    return NextResponse.json(hint);
+  }
 
-  if (!hint.hasPassword && (hasGoogle || hasMicrosoft)) {
+  const oauthProviders = user.accounts.map((a) => a.provider);
+  const hasGoogle = oauthProviders.includes("google");
+  const hasMicrosoft = oauthProviders.includes("microsoft-entra-id");
+  const hasPassword = Boolean(user.passwordHash);
+
+  if (!hasPassword && (hasGoogle || hasMicrosoft)) {
     hint.loginMethod = "oauth_only";
     if (hasGoogle && googleEnabled) {
       hint.message =
@@ -86,13 +98,12 @@ export async function POST(req: Request) {
     return NextResponse.json(hint);
   }
 
-  if (hint.hasPassword) {
+  if (hasPassword) {
     hint.loginMethod = "password";
-    hint.message = "Enter the password you chose at sign-up. Forgot it? Use Forgot password.";
+    hint.message = "Enter your password. Forgot it? Use Forgot password below.";
     return NextResponse.json(hint);
   }
 
-  hint.loginMethod = "none";
-  hint.message = "No password on this account yet. Sign up again or contact admin@mytutoringhub.com.";
+  hint.message = "Use Google sign-in or contact admin@mytutoringhub.com if you need help.";
   return NextResponse.json(hint);
 }

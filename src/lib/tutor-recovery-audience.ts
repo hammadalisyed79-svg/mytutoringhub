@@ -31,6 +31,7 @@ export type RecoveryAudienceResult = {
     alreadyLive: number;
     completeButHidden: number;
     unverifiedEmail: number;
+    neverStarted: number;
   };
   rows: RecoveryAudienceRow[];
 };
@@ -81,6 +82,7 @@ export async function selectTutorRecoveryAudience(opts?: {
     alreadyLive: 0,
     completeButHidden: 0,
     unverifiedEmail: 0,
+    neverStarted: 0,
   };
 
   const rows: RecoveryAudienceRow[] = [];
@@ -101,6 +103,11 @@ export async function selectTutorRecoveryAudience(opts?: {
     const emailVerified = isEmailVerifiedFlag(profile.user.emailVerified);
     if (requireEmailVerified && !emailVerified) {
       excluded.unverifiedEmail += 1;
+      continue;
+    }
+
+    if (!isTutorProfileStarted(profile)) {
+      excluded.neverStarted += 1;
       continue;
     }
 
@@ -134,7 +141,7 @@ export async function selectTutorRecoveryAudience(opts?: {
       requiredDone: completion.requiredDone,
       requiredTotal: completion.requiredTotal,
       missingRequired: completion.missingRequired,
-      profileStarted: isTutorProfileStarted(profile),
+      profileStarted: true,
       emailVerified,
       createdAt: profile.user.createdAt,
     });

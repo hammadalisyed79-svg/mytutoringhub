@@ -53,10 +53,11 @@ export default function PrivacyPage() {
             We use essential cookies for authentication and session security. We also use Vercel
             Analytics for anonymized page-view counts (no advertising cookies).
           </p>
-          <h2>8. Contact</h2>
+          <h2>8. Contact &amp; data controller</h2>
           <p>
-            Privacy requests:{" "}
-            <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>
+            My Tutoring Hub operates at{" "}
+            <a href="https://www.mytutoringhub.com">www.mytutoringhub.com</a>. Privacy requests:{" "}
+            <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.
           </p>
           <p>
             See also our{" "}

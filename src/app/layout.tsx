@@ -94,11 +94,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
+        <a href="#main-content" className="skip-to-main">
+          Skip to main content
+        </a>
         <Providers>
           <SiteHeader />
           <TrustRibbon />
           <SiteAnnouncement />
-          <main className="flex-1 site-main">
+          <main id="main-content" className="flex-1 site-main">
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
           <SiteFooter />

@@ -13,7 +13,7 @@ import { enforceAuthRateLimit } from "@/lib/auth-rate-limit";
 const schema = z.object({
   name: z.string().min(2),
   email: z.string().min(5).max(254),
-  password: z.string().min(6),
+  password: z.string().min(8),
   role: z.enum(["STUDENT", "TUTOR"]),
   ref: z.string().optional(),
 });

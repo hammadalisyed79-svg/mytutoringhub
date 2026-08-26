@@ -64,11 +64,10 @@ export function isSafepayTrackerPaid(state: string | undefined, report?: unknown
     if (
       s === "TRACKER_ENDED" ||
       s === "TRACKER_SUCCEEDED" ||
-      s.includes("ENDED") ||
-      s.includes("SUCCESS") ||
-      s.includes("CAPTURE") ||
-      s.includes("PAID") ||
-      s.includes("COMPLETE")
+      s === "SUCCESS" ||
+      s === "CAPTURED" ||
+      s === "PAID" ||
+      s === "COMPLETED"
     ) {
       return true;
     }
@@ -77,8 +76,19 @@ export function isSafepayTrackerPaid(state: string | undefined, report?: unknown
     tracker?: { end_time?: string; state?: string };
     end_time?: string;
     captured?: boolean;
+    payment?: { captured?: boolean; state?: string };
   } | null;
-  if (data?.tracker?.end_time || data?.end_time || data?.captured) return true;
+  const trackerState = data?.tracker?.state?.toUpperCase();
+  if (
+    trackerState === "TRACKER_ENDED" ||
+    trackerState === "TRACKER_SUCCEEDED" ||
+    trackerState === "SUCCESS" ||
+    trackerState === "CAPTURED" ||
+    trackerState === "PAID"
+  ) {
+    return true;
+  }
+  if (data?.captured === true || data?.payment?.captured === true) return true;
   return false;
 }
 
@@ -236,4 +246,34 @@ export async function reconcileUserSafepayPayments(userId: string) {
     }
   }
   return activated;
+}
+
+/** Mark subscriptions past currentPeriodEnd as canceled and refresh tutor visibility. */
+export async function expireStaleSubscriptions(now = new Date()) {
+  const stale = await prisma.subscription.findMany({
+    where: {
+      status: { in: ["ACTIVE", "TRIALING"] },
+      currentPeriodEnd: { lt: now },
+    },
+    select: { id: true, userId: true },
+  });
+  if (stale.length === 0) return 0;
+
+  await prisma.subscription.updateMany({
+    where: { id: { in: stale.map((row) => row.id) } },
+    data: { status: "CANCELED" },
+  });
+
+  const tutorUserIds = new Set<string>();
+  for (const row of stale) {
+    const user = await prisma.user.findUnique({
+      where: { id: row.userId },
+      select: { role: true },
+    });
+    if (user?.role === "TUTOR") tutorUserIds.add(row.userId);
+  }
+  for (const userId of tutorUserIds) {
+    await syncTutorBadges(userId).catch(() => undefined);
+  }
+  return stale.length;
 }

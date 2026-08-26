@@ -64,12 +64,19 @@ export async function POST(req: Request) {
     where: { stripeSubscriptionId: token },
   });
   if (!existing) {
-    const plan =
-      body.plan || (session.user.role === "STUDENT" ? "STUDENT_PASS" : "TUTOR_BASIC");
+    if (!body.plan) {
+      return NextResponse.json(
+        {
+          error:
+            "No checkout record for this tracker. Start checkout from Plans & pricing, or contact admin@mytutoringhub.com with your Safepay receipt.",
+        },
+        { status: 404 },
+      );
+    }
     existing = await prisma.subscription.create({
       data: {
         userId: session.user.id,
-        plan,
+        plan: body.plan,
         status: "INCOMPLETE",
         stripeSubscriptionId: token,
       },

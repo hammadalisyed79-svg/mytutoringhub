@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 import { siteUrl } from "@/lib/seo";
-import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
+import { publicListedTutorWhere, filterCanonicallyPublicTutors, isIndexableSubjectHubSlug } from "@/lib/tutor-public-eligibility";
 
 /**
  * Public sitemap only — no auth/utility routes, no thin city mass-generation.
@@ -76,21 +76,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.tutorProfile.findMany({
         where: publicListedTutorWhere(),
-        select: { id: true, updatedAt: true },
+        select: {
+          id: true,
+          updatedAt: true,
+          active: true,
+          forceActive: true,
+          photoUrl: true,
+          headline: true,
+          bio: true,
+          country: true,
+          location: true,
+          subjects: true,
+          hourlyRate: true,
+          online: true,
+          inPerson: true,
+          qualifications: true,
+          user: { select: { name: true, emailVerified: true, suspended: true } },
+        },
         orderBy: { updatedAt: "desc" },
       }),
     ]);
 
     // Subject hubs only (no automatic city fan-out — prevents thin SEO URLs at scale)
-    const subjectRoutes = subjects.map((s) => {
-      const slug = s.slug || slugify(s.name);
-      return {
-        url: `${base}/s/${slug}`,
+    const subjectRoutes = subjects
+      .map((s) => {
+        const slug = s.slug || slugify(s.name);
+        return { slug, name: s.name };
+      })
+      .filter((s) => isIndexableSubjectHubSlug(s.slug))
+      .map((s) => ({
+        url: `${base}/s/${s.slug}`,
         lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.7,
-      };
-    });
+      }));
+
+    const publicTutors = filterCanonicallyPublicTutors(tutors);
 
     const seenPapers = new Set<string>();
     const paperRoutes = papers
@@ -113,7 +134,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return true;
       });
 
-    const tutorRoutes = tutors.map((t) => ({
+
+    const tutorRoutes = publicTutors.map((t) => ({
       url: `${base}/tutors/${t.id}`,
       lastModified: t.updatedAt,
       changeFrequency: "weekly" as const,

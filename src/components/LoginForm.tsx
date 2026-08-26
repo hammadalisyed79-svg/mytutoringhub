@@ -69,7 +69,7 @@ export function LoginForm({
 
     if (res?.error) {
       setLoading(false);
-      if (loginHint?.hasPassword) {
+      if (loginHint?.loginMethod === "password") {
         setError("Incorrect password. Try again or use Forgot password.");
       } else {
         setError(

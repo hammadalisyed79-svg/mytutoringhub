@@ -58,7 +58,13 @@ export default function TermsPage() {
             “as is” without warranties of uninterrupted service. Our liability is limited to fees
             you paid us for platform subscriptions in the prior 30 days.
           </p>
-          <h2>7. Contact</h2>
+          <h2>7. Governing law</h2>
+          <p>
+            These terms are governed by the laws of Pakistan. Disputes should first be raised with{" "}
+            <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>. Where required by
+            local consumer law, mandatory protections in your country of residence still apply.
+          </p>
+          <h2>8. Contact</h2>
           <p>
             Questions:{" "}
             <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>

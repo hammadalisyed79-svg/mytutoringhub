@@ -176,11 +176,12 @@ function tutorPublicVisibilityInput(
 
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
+  const session = await auth();
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
-    include: { user: { select: { name: true, emailVerified: true, suspended: true } } },
+    include: { user: { select: { id: true, name: true, emailVerified: true, suspended: true } } },
   });
-  if (!tutor || !canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor))) {
+  if (!tutor) {
     return pageMetadata({
       title: "Tutor not found",
       description: "This tutor listing is not available on My Tutoring Hub.",
@@ -188,6 +189,29 @@ export async function generateMetadata({ params }: Params) {
       noIndex: true,
     });
   }
+
+  const isOwner = session?.user?.id === tutor.userId;
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isPublic = canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor));
+
+  if (!isPublic && !isOwner && !isAdmin) {
+    return pageMetadata({
+      title: "Tutor not found",
+      description: "This tutor listing is not available on My Tutoring Hub.",
+      path: `/tutors/${id}`,
+      noIndex: true,
+    });
+  }
+
+  if (isOwner && !isPublic) {
+    return pageMetadata({
+      title: `${tutor.user.name} – profile preview`,
+      description: "Your tutor listing preview on My Tutoring Hub. Complete your profile to go live in search.",
+      path: `/tutors/${id}`,
+      noIndex: true,
+    });
+  }
+
   const place = formatTutorPlace(tutor.location, tutor.country);
   const primarySubject = splitList(tutor.subjects)[0] || "Private";
   const description =

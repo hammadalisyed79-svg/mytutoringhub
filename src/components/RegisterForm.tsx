@@ -119,7 +119,7 @@ function RegisterFormInner({
         </label>
         <label>
           Password
-          <PasswordField autoComplete="new-password" minLength={6} placeholder="At least 6 characters" />
+          <PasswordField autoComplete="new-password" minLength={8} placeholder="At least 8 characters" />
         </label>
         {error && (
           <p className="form-error" role="alert">

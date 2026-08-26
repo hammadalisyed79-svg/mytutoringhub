@@ -7,6 +7,16 @@ import {
   idNeedsBack,
   parseVerificationDocs,
 } from "@/lib/verification-docs";
+import { isAllowedBlobUrl } from "@/lib/blob-url";
+
+function assertAllowedDocUrls(docUrls: string) {
+  for (const doc of parseVerificationDocs(docUrls)) {
+    if (!isAllowedBlobUrl(doc.url)) {
+      return "Verification files must be uploaded through the site file picker.";
+    }
+  }
+  return "";
+}
 
 const schema = z.object({
   docUrls: z.string().min(5),
@@ -50,6 +60,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const data = schema.parse(await req.json());
+  const urlError = assertAllowedDocUrls(data.docUrls);
+  if (urlError) return NextResponse.json({ error: urlError }, { status: 400 });
   const sideError = missingSidesError(data.docUrls);
   if (sideError) return NextResponse.json({ error: sideError }, { status: 400 });
 

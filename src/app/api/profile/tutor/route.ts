@@ -19,6 +19,7 @@ import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
 import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
+import { isAllowedBlobUrl } from "@/lib/blob-url";
 import { tryAwardProfileCompleteBonus } from "@/lib/hub-points";
 import { sendTutorProfileLiveEmail } from "@/lib/email-nurture";
 
@@ -107,6 +108,12 @@ export async function PUT(req: Request) {
     }
     if (!rawPhoto) {
       return NextResponse.json({ error: "A profile photo is required" }, { status: 400 });
+    }
+    if (!isAllowedBlobUrl(rawPhoto)) {
+      return NextResponse.json(
+        { error: "Upload your photo via the file picker on this page." },
+        { status: 400 },
+      );
     }
     const photoUrl = rawPhoto;
 

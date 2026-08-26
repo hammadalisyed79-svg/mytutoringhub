@@ -4,22 +4,28 @@ import { sendEmail, studentAdDigestHtml } from "@/lib/email";
 
 export const runtime = "nodejs";
 
+const ADS_DIGEST_SEQUENCE = "ads_digest_weekly";
+
+function weekKey(date = new Date()) {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.floor((date.getTime() - start.getTime()) / (7 * 86400000));
+  return `${date.getUTCFullYear()}-w${week}`;
+}
+
 /**
  * Lightweight tutor digest of new student requests (StudentAd).
- * Protect with CRON_SECRET (Authorization: Bearer …) or DIGEST_SECRET query param.
- * Feature-flags off when RESEND_API_KEY is missing (emails are logged only).
+ * Protect with CRON_SECRET (Authorization: Bearer …) only.
  */
 export async function GET(req: Request) {
-  const url = new URL(req.url);
   const secret = process.env.CRON_SECRET || process.env.DIGEST_SECRET;
   const authHeader = req.headers.get("authorization");
   const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-  const querySecret = url.searchParams.get("secret");
 
-  if (!secret || (bearer !== secret && querySecret !== secret)) {
+  if (!secret || bearer !== secret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const digestSequence = `${ADS_DIGEST_SEQUENCE}_${weekKey()}`;
   const since = new Date(Date.now() - 7 * 86400000);
   const ads = await prisma.studentAd.findMany({
     where: { status: "OPEN", createdAt: { gte: since } },
@@ -43,6 +49,7 @@ export async function GET(req: Request) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
   let sent = 0;
+  let skipped = 0;
 
   for (const tutor of tutors) {
     const subjects = (tutor.tutorProfile?.subjects || "")
@@ -54,6 +61,14 @@ export async function GET(req: Request) {
       subjects.some((s) => ad.subject.toLowerCase().includes(s) || s.includes(ad.subject.toLowerCase())),
     );
     if (matches.length === 0) continue;
+
+    const alreadySent = await prisma.emailSequenceEvent.findUnique({
+      where: { userId_sequence: { userId: tutor.id, sequence: digestSequence } },
+    });
+    if (alreadySent) {
+      skipped += 1;
+      continue;
+    }
 
     const list = matches
       .slice(0, 8)
@@ -73,11 +88,14 @@ export async function GET(req: Request) {
           adsUrl: `${appUrl}/ads`,
         }),
       });
+      await prisma.emailSequenceEvent.create({
+        data: { userId: tutor.id, sequence: digestSequence },
+      });
       sent += 1;
     } catch (err) {
-      console.error("[digest] failed", tutor.email, err);
+      console.error("[digest] failed", tutor.id, err);
     }
   }
 
-  return NextResponse.json({ ok: true, sent, ads: ads.length, tutors: tutors.length });
+  return NextResponse.json({ ok: true, sent, skipped, ads: ads.length, tutors: tutors.length });
 }

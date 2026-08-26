@@ -18,7 +18,7 @@ import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
-import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
+import { publicListedTutorWhere, filterCanonicallyPublicTutors } from "@/lib/tutor-public-eligibility";
 import {
   HOMEPAGE_PRODUCT_TRIO,
   HOMEPAGE_PRODUCT_TRIO_LEAD,
@@ -48,15 +48,38 @@ export default async function HomePage() {
   const pinnedCountry = getUserCountry(headersList);
   const region = getVisitorRegion(headersList);
   const curriculumCodeCount = CURRICULUM.length;
-  const [tutorCount, studentCount, openAds, pastPaperCount, featured, reviews] =
+  const [listedProfiles, studentCount, openAds, pastPaperCount, featuredRaw, reviews] =
     await Promise.all([
-      prisma.tutorProfile.count({ where: publicListedTutorWhere() }),
+      prisma.tutorProfile.findMany({
+        where: publicListedTutorWhere(),
+        select: {
+          id: true,
+          hourlyRate: true,
+          headline: true,
+          subjects: true,
+          verified: true,
+          highlighted: true,
+          photoUrl: true,
+          photoCropX: true,
+          photoCropY: true,
+          photoCropZoom: true,
+          active: true,
+          forceActive: true,
+          bio: true,
+          country: true,
+          location: true,
+          online: true,
+          inPerson: true,
+          qualifications: true,
+          user: { select: { name: true, emailVerified: true, suspended: true } },
+          reviews: { select: { rating: true } },
+        },
+      }),
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.studentAd.count({ where: { status: "OPEN" } }),
       prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
       prisma.tutorProfile.findMany({
         where: publicListedTutorWhere(),
-        take: 3,
         orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
         select: {
           id: true,
@@ -69,7 +92,15 @@ export default async function HomePage() {
           photoCropX: true,
           photoCropY: true,
           photoCropZoom: true,
-          user: { select: { name: true } },
+          active: true,
+          forceActive: true,
+          bio: true,
+          country: true,
+          location: true,
+          online: true,
+          inPerson: true,
+          qualifications: true,
+          user: { select: { name: true, emailVerified: true, suspended: true } },
           reviews: { select: { rating: true } },
         },
       }),
@@ -94,6 +125,10 @@ export default async function HomePage() {
         },
       }),
     ]);
+
+  const publicProfiles = filterCanonicallyPublicTutors(listedProfiles);
+  const tutorCount = publicProfiles.length;
+  const featured = filterCanonicallyPublicTutors(featuredRaw).slice(0, 3);
 
   const stats = [
     tutorCount > 0 && {

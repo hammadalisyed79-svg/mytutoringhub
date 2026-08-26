@@ -66,8 +66,8 @@ export async function SiteFooter() {
           <h4>Company</h4>
           <div className="footer-col">
             <Link href="/about">About</Link>
-            <Link href="/help">Help & FAQ</Link>
-            <Link href="/support">AI support</Link>
+            <Link href="/help">Help &amp; support</Link>
+            {session?.user ? <Link href="/support">AI support</Link> : null}
             <Link href="/contact">Contact</Link>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>

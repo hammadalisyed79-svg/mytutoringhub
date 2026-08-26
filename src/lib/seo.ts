@@ -61,10 +61,10 @@ export function pageMetadata(opts: PageMetaInput): Metadata {
   const ogDescription = opts.ogDescription || description;
 
   return {
-    title: opts.title,
+    title: pageTitle(opts.title),
     description,
     alternates: { canonical },
-    ...(opts.noIndex ? { robots: { index: false, follow: false } } : {}),
+    ...(opts.noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: opts.ogType || "website",
       locale: "en_GB",
@@ -90,6 +90,14 @@ export function privateMetadata(title: string, description?: string): Metadata {
     ...(description ? { description: truncateDescription(description) } : {}),
     robots: { index: false, follow: false },
   };
+}
+
+/** Strip redundant site suffix — root layout title template adds `| MyTutoringHub`. */
+export function pageTitle(label: string) {
+  return label
+    .replace(/\s*[–—-]\s*My Tutoring Hub\s*$/i, "")
+    .replace(/\s*[–—-]\s*MyTutoringHub\s*$/i, "")
+    .trim();
 }
 
 export function organizationJsonLd() {

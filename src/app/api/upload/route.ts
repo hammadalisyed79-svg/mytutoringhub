@@ -1,6 +1,7 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { validateUploadMagicBytes } from "@/lib/upload-magic";
 
 export const runtime = "nodejs";
 
@@ -63,13 +64,21 @@ export async function POST(req: Request) {
     );
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!validateUploadMagicBytes(buffer, contentType)) {
+    return NextResponse.json(
+      { error: "File content does not match its type. Upload a valid image or PDF." },
+      { status: 400 },
+    );
+  }
+
   const ext =
     contentType === "application/pdf"
       ? "pdf"
       : contentType.split("/")[1]?.replace("jpeg", "jpg") || extFromName(file.name) || "bin";
   const pathname = `uploads/${session.user.id}/${Date.now()}.${ext}`;
 
-  const blob = await put(pathname, file, {
+  const blob = await put(pathname, buffer, {
     access: "public",
     contentType,
     token: process.env.BLOB_READ_WRITE_TOKEN,

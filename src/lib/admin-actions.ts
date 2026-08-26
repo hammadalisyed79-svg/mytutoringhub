@@ -38,6 +38,7 @@ const payloadSchema = z.object({
   verified: z.boolean().optional(),
   role: z.enum(ROLES).optional(),
   confirmAdmin: z.boolean().optional(),
+  confirmBypass: z.boolean().optional(),
   confirmEmail: z.string().email().optional(),
   confirmSend: z.boolean().optional(),
   plan: z.string().optional(),
@@ -451,6 +452,14 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           where: { userId: id },
           data: { active: false, forceActive: false },
         });
+      } else {
+        const tutorUser = await prisma.user.findUnique({
+          where: { id },
+          select: { role: true },
+        });
+        if (tutorUser?.role === "TUTOR") {
+          await syncTutorBadges(id);
+        }
       }
       break;
     }
@@ -463,6 +472,13 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         where: { id },
         data: { emailVerified: verified ? new Date() : null },
       });
+      const tutorUser = await prisma.user.findUnique({
+        where: { id },
+        select: { role: true },
+      });
+      if (tutorUser?.role === "TUTOR") {
+        await syncTutorBadges(id);
+      }
       break;
     }
     case "set_role": {
@@ -544,6 +560,13 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const id = needId(payload.id);
       targetType = "Subscription";
       targetId = id;
+      const existing = await prisma.subscription.findUnique({ where: { id } });
+      if (!existing) throw new AdminActionError("Subscription not found", 404);
+      if (!["INCOMPLETE", "PAST_DUE"].includes(existing.status) && !payload.confirmBypass) {
+        throw new AdminActionError(
+          "Subscription is not awaiting payment. Pass confirmBypass for manual bank-transfer grants.",
+        );
+      }
       const sub = await prisma.subscription.update({
         where: { id },
         data: {

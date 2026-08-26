@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashEmailToken } from "@/lib/email-verification";
 import { runPostVerifySequence } from "@/lib/email-sequences";
+import { syncTutorBadges } from "@/lib/subscription";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,16 @@ export async function GET(req: Request) {
     data: { emailVerified: new Date() },
   });
   await prisma.emailVerificationToken.deleteMany({ where: { userId: record.userId } });
+
+  const verifiedUser = await prisma.user.findUnique({
+    where: { id: record.userId },
+    select: { role: true },
+  });
+  if (verifiedUser?.role === "TUTOR") {
+    await syncTutorBadges(record.userId).catch((err) => {
+      console.error("[verify-email] syncTutorBadges failed", record.userId, err);
+    });
+  }
 
   void runPostVerifySequence(record.userId).catch((err) => {
     console.error("[verify-email] onboarding sequence failed", record.userId, err);

@@ -110,6 +110,7 @@ export default async function AdminTutorSupplyPage() {
         <ul className="muted">
           <li>Excluded suspicious names: {recovery.excluded.suspiciousName}</li>
           <li>Excluded unverified email: {recovery.excluded.unverifiedEmail}</li>
+          <li>Excluded never-started profiles: {recovery.excluded.neverStarted}</li>
           <li>Excluded complete-but-hidden: {recovery.excluded.completeButHidden}</li>
         </ul>
       </section>

@@ -82,3 +82,64 @@ export function canViewTutorProfilePublicly(
   if (!input.active || input.suspended) return false;
   return computeDesiredTutorPublicActive(input).desiredActive;
 }
+
+type ProfileWithUser = TutorVisibilityInput & {
+  active: boolean;
+  user?: {
+    name?: string | null;
+    emailVerified?: Date | string | boolean | null;
+    suspended?: boolean;
+  } | null;
+};
+
+/** Normalize Prisma tutor rows for visibility checks. */
+export function tutorPublicVisibilityInput(profile: ProfileWithUser): TutorVisibilityInput & {
+  active: boolean;
+  suspended?: boolean;
+} {
+  return {
+    ...profile,
+    name: profile.name ?? profile.user?.name ?? undefined,
+    emailVerified: profile.emailVerified ?? profile.user?.emailVerified,
+    suspended: profile.suspended ?? profile.user?.suspended,
+  };
+}
+
+export function isCanonicallyPublicTutor(profile: ProfileWithUser): boolean {
+  return canViewTutorProfilePublicly(tutorPublicVisibilityInput(profile));
+}
+
+export function filterCanonicallyPublicTutors<T extends ProfileWithUser>(profiles: T[]): T[] {
+  return profiles.filter(isCanonicallyPublicTutor);
+}
+
+/** Subject hub slugs that are metadata segments, not tutoring subjects. */
+const SUBJECT_SITEMAP_SKIP = new Set([
+  "mark-scheme",
+  "mark-schemes",
+  "question-paper",
+  "question-papers",
+  "specimen",
+  "feb-march",
+  "feb-march-series",
+  "may-june",
+  "oct-nov",
+  "past-papers",
+  "pastpapers",
+  "papers",
+  "uploads",
+  "manifest",
+  "manifests",
+  "json",
+  "catalog",
+]);
+
+export function isIndexableSubjectHubSlug(slug: string): boolean {
+  const normalized = slug.trim().toLowerCase();
+  if (!normalized || normalized.length < 2) return false;
+  if (SUBJECT_SITEMAP_SKIP.has(normalized)) return false;
+  if (/^(mark-scheme|question-paper|specimen|feb-march|may-june|oct-nov)/.test(normalized)) {
+    return false;
+  }
+  return true;
+}

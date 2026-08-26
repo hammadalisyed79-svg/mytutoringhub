@@ -48,7 +48,7 @@ declare module "@auth/core/jwt" {
 
 const credentialsSchema = z.object({
   email: z.string().min(5).max(254),
-  password: z.string().min(6),
+  password: z.string().min(8),
 });
 
 const credentialsProvider = Credentials({
@@ -65,6 +65,7 @@ const credentialsProvider = Credentials({
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) return null;
     if (user.suspended) return null;
+    if (!user.emailVerified) return null;
     const ok = await compare(parsed.data.password, user.passwordHash);
     if (!ok) return null;
     return {

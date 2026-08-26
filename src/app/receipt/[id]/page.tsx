@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getPlan } from "@/lib/plans";
+import { getPlan, getLivePlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import { Logo } from "@/components/Logo";
 import { PrintButton } from "@/components/PrintButton";
@@ -22,7 +22,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   if (sub.userId !== session.user.id && session.user.role !== "ADMIN") notFound();
   if (!["ACTIVE", "TRIALING"].includes(sub.status)) notFound();
 
-  const planName = getPlan(sub.plan as never)?.name || sub.plan;
+  const livePlan = await getLivePlan(sub.plan);
+  const planName = livePlan?.name || getPlan(sub.plan as never)?.name || sub.plan;
   const amount = formatSafepayPriceId(sub.stripePriceId) || "Paid via Safepay";
   const paidAt = sub.updatedAt;
   const orderRef = sub.stripeSubscriptionId?.startsWith("track_")

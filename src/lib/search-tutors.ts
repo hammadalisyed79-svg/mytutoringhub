@@ -11,7 +11,7 @@ import {
 import { isBoostActive } from "@/lib/subscription";
 import { getTrustBadgesForProfiles, trustBadgeSearchScore } from "@/lib/tutor-badges";
 import { citiesForSearchCountry } from "@/lib/tutor-catalog";
-import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
+import { publicListedTutorWhere, filterCanonicallyPublicTutors } from "@/lib/tutor-public-eligibility";
 
 export type TutorSearchFilters = {
   q?: string;
@@ -169,7 +169,10 @@ export async function searchTutors(
         highlightedUntil: true,
         boostUntil: true,
         offersFreeTrial: true,
-        user: { select: { id: true, name: true } },
+        active: true,
+        forceActive: true,
+        qualifications: true,
+        user: { select: { id: true, name: true, emailVerified: true, suspended: true } },
         reviews: {
           where: { status: "PUBLISHED" },
           select: { rating: true, comment: true },
@@ -178,21 +181,21 @@ export async function searchTutors(
       },
     });
 
-  let profiles = await query(true, Boolean(country));
+  let profiles = filterCanonicallyPublicTutors(await query(true, Boolean(country)));
   let locationRelaxed = false;
   let keptCountry = Boolean(country);
   if (profiles.length === 0 && location && location !== "Online" && (subject || keyword)) {
     if (country) {
-      profiles = await query(false, true);
+      profiles = filterCanonicallyPublicTutors(await query(false, true));
       if (profiles.length > 0) {
         locationRelaxed = true;
       } else {
-        profiles = await query(false, false);
+        profiles = filterCanonicallyPublicTutors(await query(false, false));
         locationRelaxed = profiles.length > 0;
         keptCountry = false;
       }
     } else {
-      profiles = await query(false, false);
+      profiles = filterCanonicallyPublicTutors(await query(false, false));
       locationRelaxed = profiles.length > 0;
     }
   }
@@ -258,13 +261,29 @@ export async function searchTutors(
 }
 
 export async function averageRateForSubject(subject: string) {
-  const profiles = await prisma.tutorProfile.findMany({
-    where: {
-      ...publicListedTutorWhere(),
-      subjects: { contains: subject, mode: "insensitive" },
-    },
-    select: { hourlyRate: true },
-  });
+  const profiles = filterCanonicallyPublicTutors(
+    await prisma.tutorProfile.findMany({
+      where: {
+        ...publicListedTutorWhere(),
+        subjects: { contains: subject, mode: "insensitive" },
+      },
+      select: {
+        hourlyRate: true,
+        active: true,
+        forceActive: true,
+        photoUrl: true,
+        headline: true,
+        bio: true,
+        country: true,
+        location: true,
+        subjects: true,
+        online: true,
+        inPerson: true,
+        qualifications: true,
+        user: { select: { name: true, emailVerified: true, suspended: true } },
+      },
+    }),
+  );
   if (profiles.length === 0) return null;
   return profiles.reduce((s, p) => s + p.hourlyRate, 0) / profiles.length;
 }
@@ -302,31 +321,39 @@ export async function similarTutors(opts: {
   const where = similarTutorsWhereClause(opts);
   if (!where) return [];
 
-  return prisma.tutorProfile.findMany({
-    where,
-    select: {
-      id: true,
-      photoUrl: true,
-      photoCropX: true,
-      photoCropY: true,
-      photoCropZoom: true,
-      verified: true,
-      planTier: true,
-      headline: true,
-      subjects: true,
-      hourlyRate: true,
-      location: true,
-      country: true,
-      user: { select: { name: true } },
-      reviews: {
-        where: { status: "PUBLISHED" },
-        select: { rating: true, comment: true },
-        orderBy: { createdAt: "desc" },
+  return filterCanonicallyPublicTutors(
+    await prisma.tutorProfile.findMany({
+      where,
+      select: {
+        id: true,
+        active: true,
+        forceActive: true,
+        photoUrl: true,
+        photoCropX: true,
+        photoCropY: true,
+        photoCropZoom: true,
+        headline: true,
+        bio: true,
+        country: true,
+        location: true,
+        subjects: true,
+        hourlyRate: true,
+        online: true,
+        inPerson: true,
+        qualifications: true,
+        verified: true,
+        planTier: true,
+        user: { select: { name: true, emailVerified: true, suspended: true } },
+        reviews: {
+          where: { status: "PUBLISHED" },
+          select: { rating: true, comment: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
-    },
-    take: opts.take ?? 4,
-    orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],
-  });
+      take: opts.take ?? 4,
+      orderBy: [{ verified: "desc" }, { hourlyRate: "asc" }],
+    }),
+  );
 }
 
 export function slugify(input: string) {

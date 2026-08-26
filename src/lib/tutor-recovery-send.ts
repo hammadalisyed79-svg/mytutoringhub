@@ -49,6 +49,7 @@ export type RecoveryEmail1Preview = {
     suspended: number;
     alreadyLive: number;
     completeButHidden: number;
+    neverStarted: number;
   };
   email: ReturnType<typeof recoveryEmailStageCopy>;
 };
