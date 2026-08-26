@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPastPaperFeePkr, parsePastPaperKey } from "@/lib/past-papers";
-import { paperHasFile, isR2Paper } from "@/lib/past-papers/availability";
+import { paperHasFile } from "@/lib/past-papers/availability";
 import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
-import { SIGNED_GET_TTL_SECONDS } from "@/lib/past-papers/constants";
-import { getSignedGetUrl, isR2Configured, r2NotConfiguredMessage } from "@/lib/past-papers/r2";
+import { fetchPastPaperPdfBytes } from "@/lib/past-papers/fetch-paper-bytes";
+import { watermarkPastPaperPdf } from "@/lib/past-papers/pdf-watermark";
+import { siteUrl } from "@/lib/seo";
 
 export const runtime = "nodejs";
+
+function attachmentFilename(name: string) {
+  const safe = name.replace(/["\r\n]/g, "").trim() || "past-paper.pdf";
+  return safe.toLowerCase().endsWith(".pdf") ? safe : `${safe}.pdf`;
+}
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -45,24 +51,22 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Purchase this paper to download it" }, { status: 402 });
   }
 
-  let redirectUrl: string | null = null;
-  if (isR2Paper(paper) && paper.storageKey) {
-    if (!isR2Configured()) {
-      return NextResponse.json({ error: r2NotConfiguredMessage() }, { status: 503 });
-    }
-    try {
-      redirectUrl = await getSignedGetUrl(paper.storageKey, SIGNED_GET_TTL_SECONDS);
-    } catch (err) {
-      console.error("R2 signed URL failed");
-      const message = err instanceof Error ? err.message : "Could not sign R2 download";
-      return NextResponse.json({ error: message }, { status: 502 });
-    }
-  } else if (paper.fileUrl) {
-    redirectUrl = paper.fileUrl;
+  let fetched;
+  try {
+    fetched = await fetchPastPaperPdfBytes(paper);
+  } catch (err) {
+    console.error("Past paper fetch failed", catalogKey, err);
+    const message = err instanceof Error ? err.message : "Could not load past paper";
+    const status = message.includes("not configured") ? 503 : 502;
+    return NextResponse.json({ error: message }, { status });
   }
 
-  if (!redirectUrl) {
-    return NextResponse.json({ error: "This paper is not available yet" }, { status: 404 });
+  let watermarked: Uint8Array;
+  try {
+    watermarked = await watermarkPastPaperPdf(fetched.buffer, { siteUrl: siteUrl() });
+  } catch (err) {
+    console.error("Past paper watermark failed", catalogKey, err);
+    return NextResponse.json({ error: "Could not prepare download" }, { status: 502 });
   }
 
   await prisma.pastPaper.update({
@@ -70,5 +74,15 @@ export async function GET(req: Request) {
     data: { downloadCount: { increment: 1 } },
   });
 
-  return NextResponse.redirect(redirectUrl);
+  const filename = attachmentFilename(fetched.filename);
+  const body = Buffer.from(watermarked);
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "private, no-store",
+      "Content-Length": String(body.byteLength),
+    },
+  });
 }

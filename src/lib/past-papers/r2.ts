@@ -5,7 +5,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { SIGNED_GET_TTL_SECONDS } from "./constants";
+import { MAX_PAST_PAPER_BYTES, SIGNED_GET_TTL_SECONDS } from "./constants";
 
 function envFirst(...names: string[]) {
   for (const name of names) {
@@ -79,6 +79,16 @@ export async function getSignedGetUrl(key: string, ttlSeconds = SIGNED_GET_TTL_S
 
 export async function streamGet(key: string) {
   return r2Client().send(new GetObjectCommand({ Bucket: r2Bucket(), Key: key }));
+}
+
+export async function getObjectBytes(key: string, maxBytes = MAX_PAST_PAPER_BYTES) {
+  const res = await streamGet(key);
+  const bytes = await res.Body?.transformToByteArray();
+  if (!bytes) throw new Error(`Empty R2 object: ${key}`);
+  if (bytes.byteLength > maxBytes) {
+    throw new Error(`PDF exceeds maximum download size (${maxBytes} bytes)`);
+  }
+  return Buffer.from(bytes);
 }
 
 export async function getObjectUtf8(key: string, maxBytes = 8_000_000) {
