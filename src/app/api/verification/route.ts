@@ -91,6 +91,22 @@ export async function POST(req: Request) {
     return NextResponse.json(item);
   }
 
+  const alreadyVerified = approved.some((row) =>
+    parseVerificationDocs(row.docUrls).some((doc) => doc.slot === "id"),
+  );
+  if (
+    alreadyVerified &&
+    parseVerificationDocs(data.docUrls).some((doc) => doc.slot === "id")
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Your photo ID is already verified. Email admin@mytutoringhub.com if you need to replace documents.",
+      },
+      { status: 409 },
+    );
+  }
+
   const item = await prisma.verificationRequest.create({
     data: {
       userId: session.user.id,
