@@ -10,13 +10,19 @@
   "theme_color": "#08463c",
   "icons": [
     {
-      "src": "/apple-icon",
+      "src": "/apple-icon.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon",
+      "src": "/logo-mark-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.png",
       "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
