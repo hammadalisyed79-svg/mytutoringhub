@@ -39,7 +39,8 @@ export default function TermsPage() {
             according to the plan you purchase unless cancelled. Limited-time offers (for example
             complimentary Tutor Basic until a stated date) end automatically; paid add-ons such as
             Verified, Highlight, and Profile Boost are never included unless purchased. Platform
-            subscriptions are processed by Safepay (Stripe is a fallback only). Lesson fees stay
+            subscriptions are processed by Safepay when card checkout is live; until then paid
+            plans are activated manually after payment confirmation. Lesson fees stay
             off-platform and are never collected by My Tutoring Hub.
           </p>
           <h2>4. Conduct</h2>

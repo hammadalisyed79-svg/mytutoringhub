@@ -1,5 +1,32 @@
 import { prisma } from "@/lib/prisma";
-import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
+import {
+  filterCanonicallyPublicTutors,
+  publicListedTutorWhere,
+} from "@/lib/tutor-public-eligibility";
+
+async function countCanonicalPublicTutors(
+  where: NonNullable<Parameters<typeof prisma.tutorProfile.findMany>[0]>["where"],
+) {
+  const rows = await prisma.tutorProfile.findMany({
+    where,
+    select: {
+      active: true,
+      forceActive: true,
+      photoUrl: true,
+      headline: true,
+      bio: true,
+      country: true,
+      location: true,
+      subjects: true,
+      hourlyRate: true,
+      online: true,
+      inPerson: true,
+      qualifications: true,
+      user: { select: { name: true, emailVerified: true, suspended: true } },
+    },
+  });
+  return filterCanonicallyPublicTutors(rows).length;
+}
 
 export type StudentWelcomeMatch =
   | { kind: "subjects"; count: number; subjects: string[] }
@@ -55,19 +82,15 @@ export async function getStudentWelcomeMatch(userId: string): Promise<StudentWel
   const subjects = [...subjectSet].slice(0, 5);
 
   if (subjects.length === 0) {
-    const count = await prisma.tutorProfile.count({
-      where: publicListedTutorWhere(),
-    });
+    const count = await countCanonicalPublicTutors(publicListedTutorWhere());
     return { kind: "browse", count };
   }
 
-  const count = await prisma.tutorProfile.count({
-    where: {
-      ...publicListedTutorWhere(),
-      OR: subjects.map((subject) => ({
-        subjects: { contains: subject, mode: "insensitive" as const },
-      })),
-    },
+  const count = await countCanonicalPublicTutors({
+    ...publicListedTutorWhere(),
+    OR: subjects.map((subject) => ({
+      subjects: { contains: subject, mode: "insensitive" as const },
+    })),
   });
 
   return { kind: "subjects", count, subjects };

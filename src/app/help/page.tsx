@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "How do I contact a tutor?",
-    a: `Browse Find tutors, open a profile, and send a message. ${STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks unlimited messaging and request ads.`,
+    a: `Browse Find tutors, open a profile, and send a message. ${STUDENT_FREE_CONTACTS_LINE} Student Pass also unlocks request ads.`,
   },
   {
     q: "Which email can I use to sign up?",

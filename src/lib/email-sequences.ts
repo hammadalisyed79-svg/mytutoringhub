@@ -13,7 +13,7 @@ import { createEmailVerificationLink } from "@/lib/email-verification";
 import { STUDENT_FREE_CONTACT_LIMIT, canPerformAction } from "@/lib/plan-limits";
 import { hasStudentMessagingPass } from "@/lib/subscription";
 import { formatHourly } from "@/lib/currency";
-import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
+import { publicListedTutorWhere, filterCanonicallyPublicTutors } from "@/lib/tutor-public-eligibility";
 
 export const EMAIL_SEQUENCES = {
   POST_VERIFY: "post_verify",
@@ -42,20 +42,29 @@ async function releaseSequence(userId: string, sequence: SequenceKey) {
 }
 
 async function fetchSuggestedTutors(limit = 3) {
-  return prisma.tutorProfile.findMany({
+  const rows = await prisma.tutorProfile.findMany({
     where: publicListedTutorWhere(),
     orderBy: [{ planTier: "desc" }, { verified: "desc" }, { highlighted: "desc" }],
-    take: limit,
+    take: Math.max(limit * 3, limit),
     select: {
       id: true,
       headline: true,
       subjects: true,
       location: true,
+      country: true,
       hourlyRate: true,
       verified: true,
-      user: { select: { name: true } },
+      photoUrl: true,
+      bio: true,
+      online: true,
+      inPerson: true,
+      qualifications: true,
+      active: true,
+      forceActive: true,
+      user: { select: { name: true, emailVerified: true, suspended: true } },
     },
   });
+  return filterCanonicallyPublicTutors(rows).slice(0, limit);
 }
 
 function tutorPickListHtml(
