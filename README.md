@@ -47,7 +47,28 @@ Recovery: paste a tracker on the dashboard or call `POST /api/safepay/recover`.
 
 **Schema note:** Subscription rows still use `stripeSubscriptionId` / `stripePriceId`, and users keep `stripeCustomerId`. Live Safepay checkouts store Safepay **tracker** IDs (`track_…`) and encoded amounts (`safepay_CURRENCY_minor`) in those fields. Do not assume a Stripe object id unless the value looks like one. (Renaming these columns is deferred — too risky for this pass.)
 
-Stripe env vars (`STRIPE_*`) and `POST /api/stripe/*` are optional fallbacks when Safepay keys are absent.
+Stripe env vars (`STRIPE_*`) and `POST /api/stripe/*` are optional fallbacks when Safepay keys are absent. Prefer Safepay for all new checkouts.
+
+## Payments ops (Safepay)
+
+Production checklist (also on **Admin → Payments**):
+
+1. `SAFEPAY_ENV=production`, `SAFEPAY_API_KEY`, `SAFEPAY_SECRET_KEY`, `NEXT_PUBLIC_APP_URL=https://www.mytutoringhub.com`
+2. `CRON_SECRET` — Vercel crons send `Authorization: Bearer <CRON_SECRET>` (digests, hourly reconcile)
+3. `SAFEPAY_WEBHOOK_SECRET` (or reuse `CRON_SECRET`) — Safepay POSTs to `/api/safepay/webhook` with `{ "tracker": "track_…" }`
+4. Hourly backup: `/api/safepay/reconcile` polls recent `INCOMPLETE` tracker rows
+
+Manual bank transfers: **Admin → Payments → Force complete** (requires an audit `adminNote`).
+
+## SEO ops
+
+After tutor supply grows, ping search engines:
+
+```bash
+node scripts/ping-sitemap.mjs
+```
+
+Optional env `SITE_SOCIAL_URLS` (comma-separated `https://…`) populates Organization `sameAs` in JSON-LD.
 
 ## Student requests
 

@@ -248,6 +248,59 @@ export async function reconcileUserSafepayPayments(userId: string) {
   return activated;
 }
 
+/** Poll Safepay for all recent INCOMPLETE tracker checkouts (cron / webhook backup). */
+export async function reconcileAllPendingSafepayPayments(opts?: { limit?: number }) {
+  if (!safepayConfigured()) {
+    return { scanned: 0, activated: [] as string[], skipped: 0 };
+  }
+
+  const limit = Math.min(Math.max(opts?.limit ?? 40, 1), 80);
+  const pending = await prisma.subscription.findMany({
+    where: {
+      status: { in: ["INCOMPLETE", "CANCELED"] },
+      stripeSubscriptionId: { startsWith: "track_" },
+      createdAt: { gte: new Date(Date.now() - 30 * 86400000) },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      userId: true,
+      plan: true,
+      stripeSubscriptionId: true,
+    },
+  });
+
+  const activated: string[] = [];
+  let skipped = 0;
+
+  for (const row of pending) {
+    const tracker = row.stripeSubscriptionId;
+    if (!tracker) {
+      skipped += 1;
+      continue;
+    }
+    try {
+      const { state, report, tracker: token } = await fetchSafepayTrackerState(tracker);
+      if (!isSafepayTrackerPaid(state, report)) {
+        skipped += 1;
+        continue;
+      }
+      const result = await activatePaidSafepaySubscription({
+        tracker: token,
+        planHint: row.plan as SubscriptionPlan,
+      });
+      if (result.ok) activated.push(result.subscription.id);
+      else skipped += 1;
+    } catch (err) {
+      skipped += 1;
+      console.error("Safepay global reconcile failed", tracker, err);
+    }
+  }
+
+  return { scanned: pending.length, activated, skipped };
+}
+
 /** Mark subscriptions past currentPeriodEnd as canceled and refresh tutor visibility. */
 export async function expireStaleSubscriptions(now = new Date()) {
   const stale = await prisma.subscription.findMany({

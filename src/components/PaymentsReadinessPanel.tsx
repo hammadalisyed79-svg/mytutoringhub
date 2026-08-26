@@ -59,6 +59,15 @@ export function PaymentsReadinessPanel() {
             <li>
               Confirm <code>NEXT_PUBLIC_APP_URL=https://www.mytutoringhub.com</code>
             </li>
+            <li>
+              Set <code>CRON_SECRET</code> and add Vercel cron auth header (see{" "}
+              <code>vercel.json</code>)
+            </li>
+            <li>
+              Set <code>SAFEPAY_WEBHOOK_SECRET</code> (or reuse <code>CRON_SECRET</code>) and
+              configure Safepay to POST paid events to{" "}
+              <code>/api/safepay/webhook</code> with <code>Authorization: Bearer …</code>
+            </li>
             <li>Redeploy Production, then run <strong>Test Safepay connection</strong> below</li>
             <li>
               Make a small real payment yourself (Student Pass or Profile Boost) and confirm receipt

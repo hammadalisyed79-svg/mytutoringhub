@@ -100,6 +100,8 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
                           id={s.id}
                           label="Force complete"
                           confirm="Mark this checkout paid and activate the plan without checking Safepay?"
+                          promptKey="adminNote"
+                          promptLabel="Bank transfer reference or reason (required)"
                         />
                         {s.stripeSubscriptionId?.startsWith("track_") && (
                           <AdminActionButton

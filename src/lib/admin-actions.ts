@@ -567,6 +567,21 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           "Subscription is not awaiting payment. Pass confirmBypass for manual bank-transfer grants.",
         );
       }
+      const note = (payload.adminNote || "").trim();
+      if (payload.confirmBypass && note.length < 8) {
+        throw new AdminActionError(
+          "adminNote (min 8 characters) is required when confirmBypass is set",
+        );
+      }
+      if (
+        !payload.confirmBypass &&
+        ["INCOMPLETE", "PAST_DUE"].includes(existing.status) &&
+        note.length < 4
+      ) {
+        throw new AdminActionError(
+          "Add adminNote with bank-transfer reference or reason (min 4 characters)",
+        );
+      }
       const sub = await prisma.subscription.update({
         where: { id },
         data: {
@@ -584,6 +599,15 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         data: { status: "CANCELED" },
       });
       await syncTutorBadges(sub.userId);
+      extra = {
+        paymentBypass: true,
+        priorStatus: existing.status,
+        plan: sub.plan,
+        userId: sub.userId,
+        days: payload.days || 30,
+        adminNote: note || undefined,
+        confirmBypass: Boolean(payload.confirmBypass),
+      };
       break;
     }
     case "recover_payment": {

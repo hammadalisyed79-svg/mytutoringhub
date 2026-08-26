@@ -7,6 +7,7 @@ import { formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
+import { SubjectStudyHubLinks } from "@/components/SubjectStudyHubLinks";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { PastPaperResultList } from "@/components/PastPaperResultList";
@@ -186,6 +187,7 @@ export default async function PastPapersPage({
         </p>
         <ValuePropStrip />
         {(subject || sp.q) && <PastPaperTutorCta subject={subject || sp.q || ""} />}
+        {subject ? <SubjectStudyHubLinks subject={subject} compact /> : null}
         <SubjectHubTabs active="papers" />
 
         {sp.checkout === "success" && (
@@ -486,11 +488,14 @@ export default async function PastPapersPage({
           </>
         )}
 
-        <p className="muted" style={{ marginTop: "2rem" }}>
-          Files are provided by My Tutoring Hub for revision. Exam boards own the original papers.
-          Find a tutor for {subject || "this subject"} on{" "}
-          <Link href={subject ? `/s/${slugify(subject)}` : "/search"}>tutor search</Link>.
-        </p>
+        {subject ? (
+          <SubjectStudyHubLinks subject={subject} compact />
+        ) : (
+          <p className="muted" style={{ marginTop: "2rem" }}>
+            Files are provided by My Tutoring Hub for revision. Exam boards own the original papers.{" "}
+            <Link href="/search">Find a tutor</Link> or browse <Link href="/subjects">subjects</Link>.
+          </p>
+        )}
       </div>
     </div>
   );

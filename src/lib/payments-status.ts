@@ -95,10 +95,18 @@ export function getPaymentsReadiness(): {
       hint: "Use https://www.mytutoringhub.com on Vercel Production",
     },
     {
-      id: "resend",
-      label: "Resend is configured (message alerts + receipts)",
-      ok: resendReady,
-      hint: "Add RESEND_API_KEY in Vercel → Environment Variables, verify mytutoringhub.com in Resend, then redeploy",
+      id: "cron_secret",
+      label: "CRON_SECRET set for digest + Safepay reconcile crons",
+      ok: Boolean(process.env.CRON_SECRET?.trim()),
+      hint: "Generate a long random string in Vercel Production env",
+    },
+    {
+      id: "webhook_secret",
+      label: "SAFEPAY_WEBHOOK_SECRET (or shared CRON_SECRET) for payment callbacks",
+      ok: Boolean(
+        process.env.SAFEPAY_WEBHOOK_SECRET?.trim() || process.env.CRON_SECRET?.trim(),
+      ),
+      hint: "POST /api/safepay/webhook with Authorization: Bearer …",
     },
   ];
 

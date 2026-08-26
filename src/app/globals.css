@@ -52,6 +52,15 @@
   gap: 0.65rem;
 }
 
+.subject-study-hub-links {
+  margin: 1rem 0;
+}
+
+.subject-study-hub-links.compact {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+}
+
 .skip-to-main {
   position: absolute;
   left: -9999px;

@@ -4,7 +4,9 @@ import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/c
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
 import { formatTutorPlace, inferTutorCountry } from "@/lib/tutor-catalog";
+import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { JsonLd } from "@/components/JsonLd";
+import { SubjectStudyHubLinks } from "@/components/SubjectStudyHubLinks";
 import { findTutorCtaMeta } from "@/lib/business-rules";
 import {
   breadcrumbJsonLd,
@@ -89,6 +91,12 @@ export default async function SeoTutorsPage({ params }: Params) {
     page: "1",
   });
   const avg = await averageRateForSubject(label);
+  const pastPaperCount = await prisma.pastPaper.count({
+    where: {
+      ...publicAvailabilityWhere(),
+      subject: { contains: label, mode: "insensitive" },
+    },
+  });
   const countryName = cityName ? inferTutorCountry(cityName) : "";
   const searchHref = `/search?subject=${encodeURIComponent(label)}${
     cityName ? `&location=${encodeURIComponent(cityName)}` : ""
@@ -135,14 +143,10 @@ export default async function SeoTutorsPage({ params }: Params) {
         <p>
           <Link href={searchHref} className="btn btn-secondary btn-sm">
             Open full search filters
-          </Link>{" "}
-          <Link
-            href={`/past-papers?subject=${encodeURIComponent(label)}`}
-            className="btn btn-secondary btn-sm"
-          >
-            Past papers 2016–2025
           </Link>
         </p>
+
+        <SubjectStudyHubLinks subject={label} pastPaperCount={pastPaperCount} />
         <div className="tutor-grid" style={{ marginTop: "1.25rem" }}>
           {tutors.map((t) => (
             <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
@@ -174,7 +178,23 @@ export default async function SeoTutorsPage({ params }: Params) {
             </div>
           </section>
         )}
-        {tutors.length === 0 && <p className="muted">No tutors yet for this search.</p>}
+        {tutors.length === 0 && (
+          <div className="panel" style={{ marginTop: "1.25rem" }}>
+            <p className="muted">
+              No {label} tutors are listed yet{cityName ? ` in ${cityName}` : ""}. Browse past papers,
+              post a student request, or search with broader filters — this page stays useful while we
+              grow tutor supply.
+            </p>
+            <p>
+              <Link href="/ads/new" className="btn btn-sm">
+                Post a student request
+              </Link>{" "}
+              <Link href="/become-a-tutor" className="btn btn-secondary btn-sm">
+                Become a tutor
+              </Link>
+            </p>
+          </div>
+        )}
       </div>
     </div>
     </>

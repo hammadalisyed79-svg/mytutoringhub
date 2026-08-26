@@ -8,6 +8,10 @@
     {
       "path": "/api/digests/onboarding",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/safepay/reconcile",
+      "schedule": "0 * * * *"
     }
   ]
 }

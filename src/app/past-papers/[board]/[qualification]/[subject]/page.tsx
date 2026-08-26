@@ -158,7 +158,9 @@ export default async function PastPaperSeoPage({
             </>
           ) : null}
           {" · "}
-          <Link href={`/search?subject=${encodeURIComponent(titleSubject)}`}>Find tutors</Link>
+          <Link href={`/s/${slugify(titleSubject)}`}>{titleSubject} tutors</Link>
+          {" · "}
+          <Link href={`/search?subject=${encodeURIComponent(titleSubject)}`}>Search</Link>
         </p>
 
         <form className="panel filters filters-wide" method="get">
@@ -251,8 +253,10 @@ export default async function PastPaperSeoPage({
           ))
         )}
         <p className="muted" style={{ marginTop: "2rem" }}>
-          Exam boards own the original papers. Find a {titleSubject} tutor on{" "}
-          <Link href={`/s/${slugify(titleSubject)}`}>tutor search</Link>.
+          Exam boards own the original papers. Need teaching support? Browse{" "}
+          <Link href={`/s/${slugify(titleSubject)}`}>{titleSubject} tutors</Link>,{" "}
+          <Link href={`/past-papers?subject=${encodeURIComponent(titleSubject)}`}>more past papers</Link>
+          , or <Link href="/ads/new">post a student request</Link>.
         </p>
       </div>
     </div>

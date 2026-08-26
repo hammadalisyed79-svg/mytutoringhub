@@ -100,6 +100,19 @@ export function pageTitle(label: string) {
     .trim();
 }
 
+export function organizationSameAsLinks(): string[] {
+  const url = siteUrl();
+  const raw =
+    process.env.SITE_SOCIAL_URLS ||
+    process.env.NEXT_PUBLIC_SITE_SOCIAL_URLS ||
+    "";
+  const external = raw
+    .split(/[,;\n]+/)
+    .map((entry) => entry.trim())
+    .filter((entry) => /^https:\/\//i.test(entry));
+  return [...new Set([url, ...external])];
+}
+
 export function organizationJsonLd() {
   const url = siteUrl();
   return {
@@ -109,7 +122,7 @@ export function organizationJsonLd() {
     url,
     logo: `${url}/logo.svg`,
     email: "admin@mytutoringhub.com",
-    sameAs: [url],
+    sameAs: organizationSameAsLinks(),
   };
 }
 
