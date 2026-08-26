@@ -2,11 +2,14 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { auth } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
+import { SocialLinks } from "@/components/SocialLinks";
+import { getSiteSocialLinks } from "@/lib/site-social";
 
 export async function SiteFooter() {
   await connection();
   const session = await auth();
   const role = session?.user?.role;
+  const socialLinks = getSiteSocialLinks();
 
   return (
     <footer className="site-footer">
@@ -24,6 +27,7 @@ export async function SiteFooter() {
             <span>Local currency</span>
             <span>No commission on lessons</span>
           </div>
+          <SocialLinks links={socialLinks} className="footer-social-links" />
         </div>
         <div>
           <h4>Students</h4>

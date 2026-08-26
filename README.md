@@ -70,6 +70,15 @@ node scripts/ping-sitemap.mjs
 
 Optional env `SITE_SOCIAL_URLS` (comma-separated `https://…`) populates Organization `sameAs` in JSON-LD.
 
+Public footer + share icons use **Production** env vars (redeploy after setting):
+
+- `NEXT_PUBLIC_SOCIAL_LINKEDIN` — e.g. `https://www.linkedin.com/company/mytutoringhub`
+- `NEXT_PUBLIC_SOCIAL_FACEBOOK`
+- `NEXT_PUBLIC_SOCIAL_INSTAGRAM`
+- `NEXT_PUBLIC_SOCIAL_X`
+- `NEXT_PUBLIC_SOCIAL_YOUTUBE`
+- `NEXT_PUBLIC_SOCIAL_TIKTOK`
+
 ## Student requests
 
 Canonical board and API: `/ads` and `/api/ads` (Prisma `StudentAd`).

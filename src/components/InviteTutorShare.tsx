@@ -8,6 +8,7 @@ import {
   tutorInviteWhatsAppHref,
 } from "@/lib/referral-links";
 import { TUTOR_INVITE_LINE } from "@/lib/marketing-copy";
+import { linkedInShareHref } from "@/lib/site-social";
 
 type Props = {
   referrerId?: string | null;
@@ -33,6 +34,7 @@ export function InviteTutorShare({
     [link, referrerName],
   );
   const whatsAppHref = tutorInviteWhatsAppHref(link, referrerName);
+  const linkedInHref = linkedInShareHref(link);
 
   async function copyLink() {
     try {
@@ -96,6 +98,14 @@ export function InviteTutorShare({
           rel="noopener noreferrer"
         >
           Share on WhatsApp
+        </a>
+        <a
+          className="btn btn-secondary btn-sm"
+          href={linkedInHref}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Share on LinkedIn
         </a>
         <button type="button" className="btn btn-secondary btn-sm" onClick={nativeShare}>
           Share…

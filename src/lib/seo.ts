@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business-rules";
+import { getOrganizationSameAsUrls } from "@/lib/site-social";
 
 /** Display name used in titles and structured data. */
 export const SITE_NAME = "My Tutoring Hub";
@@ -101,16 +102,7 @@ export function pageTitle(label: string) {
 }
 
 export function organizationSameAsLinks(): string[] {
-  const url = siteUrl();
-  const raw =
-    process.env.SITE_SOCIAL_URLS ||
-    process.env.NEXT_PUBLIC_SITE_SOCIAL_URLS ||
-    "";
-  const external = raw
-    .split(/[,;\n]+/)
-    .map((entry) => entry.trim())
-    .filter((entry) => /^https:\/\//i.test(entry));
-  return [...new Set([url, ...external])];
+  return getOrganizationSameAsUrls(siteUrl());
 }
 
 export function organizationJsonLd() {
