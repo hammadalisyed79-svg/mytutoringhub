@@ -51,9 +51,12 @@ export async function GET(req: Request) {
     if (isSafepayTrackerPaid(state, report)) {
       const paper = await activatePaidPastPaperPurchase(token);
       if (paper.ok) {
-        return NextResponse.redirect(
-          `${appUrl}/past-papers?checkout=success&key=${encodeURIComponent(paper.catalogKey)}`,
-        );
+        const params = new URLSearchParams({
+          checkout: "success",
+          key: paper.catalogKey,
+        });
+        if (paper.downloadToken) params.set("token", paper.downloadToken);
+        return NextResponse.redirect(`${appUrl}/past-papers?${params.toString()}`);
       }
     }
 

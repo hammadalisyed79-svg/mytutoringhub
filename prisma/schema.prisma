@@ -491,18 +491,22 @@ model ImportJobItem {
 }
 
 model PastPaperPurchase {
-  id         String     @id @default(cuid())
-  userId     String
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paperId    String?
-  paper      PastPaper? @relation(fields: [paperId], references: [id], onDelete: SetNull)
-  catalogKey String
-  tracker    String?    @unique
-  amountPkr  Float
-  status     String     @default("PENDING")
-  createdAt  DateTime   @default(now())
+  id             String     @id @default(cuid())
+  userId         String?
+  user           User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestEmail     String?
+  downloadToken  String?    @unique
+  tokenExpiresAt DateTime?
+  paperId        String?
+  paper          PastPaper? @relation(fields: [paperId], references: [id], onDelete: SetNull)
+  catalogKey     String
+  tracker        String?    @unique
+  amountPkr      Float
+  status         String     @default("PENDING")
+  createdAt      DateTime   @default(now())
 
   @@index([userId, catalogKey])
+  @@index([guestEmail])
 }
 
 model UsageEvent {

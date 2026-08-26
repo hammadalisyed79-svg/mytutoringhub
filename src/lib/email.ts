@@ -323,6 +323,22 @@ ${amountLine}${periodLine}
   });
 }
 
+export function guestPaperDownloadHtml(opts: {
+  email: string;
+  paperTitle: string;
+  downloadUrl: string;
+}) {
+  return emailLayout({
+    preheader: "Your past paper is ready to download.",
+    title: "Past paper download",
+    body: `<p>Thank you for your purchase on ${brand}.</p>
+<p><strong>${escapeHtml(opts.paperTitle)}</strong></p>
+<p>Use the button below to download your watermarked PDF. The link works for 90 days — save a copy for offline study.</p>
+<p class="muted" style="color:#52606d;font-size:14px">Sent to ${escapeHtml(opts.email)}. Create a free account anytime to unlock Student Pass paper bundles.</p>`,
+    cta: { label: "Download past paper", href: opts.downloadUrl },
+  });
+}
+
 export function studentAdDigestHtml(opts: {
   name: string;
   listHtml: string;

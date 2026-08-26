@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getSafepayClient, safepayConfigured } from "@/lib/safepay";
 import { syncTutorBadges } from "@/lib/subscription";
-import { sendEmail, paymentReceiptHtml } from "@/lib/email";
+import { sendEmail, guestPaperDownloadHtml, paymentReceiptHtml } from "@/lib/email";
+import { guestDownloadAbsoluteUrl } from "@/lib/past-papers/guest-checkout";
 import { deductHubPointsForRedemption } from "@/lib/hub-points";
 import { getPlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
@@ -175,13 +176,52 @@ export async function activatePaidSafepaySubscription(opts: {
 export async function activatePaidPastPaperPurchase(tracker: string) {
   const existing = await prisma.pastPaperPurchase.findUnique({ where: { tracker } });
   if (!existing) return { ok: false as const };
-  if (existing.status !== "PAID") {
+  const wasPaid = existing.status === "PAID";
+  if (!wasPaid) {
     await prisma.pastPaperPurchase.update({
       where: { id: existing.id },
-      data: { status: "PAID" },
+      data: {
+        status: "PAID",
+        tokenExpiresAt:
+          existing.tokenExpiresAt ?? new Date(Date.now() + 90 * 86400000),
+      },
     });
   }
-  return { ok: true as const, catalogKey: existing.catalogKey };
+
+  const row = await prisma.pastPaperPurchase.findUnique({
+    where: { tracker },
+    include: { paper: { select: { subject: true, year: true, session: true, syllabusCode: true } } },
+  });
+  if (!wasPaid && row?.guestEmail && row.downloadToken) {
+    const paperTitle = [
+      row.paper?.subject,
+      row.paper?.syllabusCode,
+      row.paper?.year,
+      row.paper?.session,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    try {
+      await sendEmail({
+        to: row.guestEmail,
+        subject: `Your past paper download — My Tutoring Hub`,
+        html: guestPaperDownloadHtml({
+          email: row.guestEmail,
+          paperTitle: paperTitle || row.catalogKey,
+          downloadUrl: guestDownloadAbsoluteUrl(row.catalogKey, row.downloadToken),
+        }),
+      });
+    } catch (emailErr) {
+      console.error("Guest paper download email failed", emailErr);
+    }
+  }
+
+  return {
+    ok: true as const,
+    catalogKey: existing.catalogKey,
+    downloadToken: row?.downloadToken ?? null,
+    guest: Boolean(row?.guestEmail),
+  };
 }
 
 export async function reconcileUserSafepayPaperPurchases(userId: string) {

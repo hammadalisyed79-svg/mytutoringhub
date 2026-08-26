@@ -62,7 +62,17 @@ export async function generateMetadata({
 export default async function PastPaperSeoPage({
   params,
   searchParams,
-}: Params & { searchParams: Promise<{ year?: string; session?: string; paper?: string; documentType?: string }> }) {
+}: Params & {
+  searchParams: Promise<{
+    year?: string;
+    session?: string;
+    paper?: string;
+    documentType?: string;
+    checkout?: string;
+    key?: string;
+    token?: string;
+  }>;
+}) {
   const { board, qualification, subject } = await params;
   const sp = await searchParams;
   const resolved = resolveSeoCurriculum(board, qualification, subject);
@@ -240,7 +250,9 @@ export default async function PastPaperSeoPage({
                               available
                               owned={owned.has(paper.catalogKey) || session?.user?.role === "ADMIN"}
                               feeLabel={feeLabel}
+                              feePkr={feePkr}
                               signedIn={Boolean(session?.user)}
+                              guestToken={sp.token}
                             />
                           </article>
                         ))}

@@ -5,6 +5,7 @@ import { getPastPaperFeePkr, parsePastPaperKey } from "@/lib/past-papers";
 import { paperHasFile } from "@/lib/past-papers/availability";
 import { isSafeCatalogKey } from "@/lib/past-papers/catalog-key";
 import { fetchPastPaperPdfBytes } from "@/lib/past-papers/fetch-paper-bytes";
+import { findGuestPaperPurchase } from "@/lib/past-papers/guest-checkout";
 import { watermarkPastPaperPdf } from "@/lib/past-papers/pdf-watermark";
 import { siteUrl } from "@/lib/seo";
 
@@ -16,12 +17,9 @@ function attachmentFilename(name: string) {
 }
 
 export async function GET(req: Request) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
   const key = new URL(req.url).searchParams.get("key") || "";
+  const token = new URL(req.url).searchParams.get("token") || "";
+
   if (!isSafeCatalogKey(key)) {
     return NextResponse.json({ error: "Unknown past paper" }, { status: 404 });
   }
@@ -33,19 +31,25 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "This paper is not available yet" }, { status: 404 });
   }
 
-  // TODO: gate premium papers — when a isPremium flag is added to PastPaper,
-  // check it here and call getUserPlan to enforce student plan limits.
-  // For now all papers are treated as free-tier accessible.
+  const session = await auth();
+  let allowed = false;
 
-  const fee = await getPastPaperFeePkr();
-  const allowed =
-    session.user.role === "ADMIN" ||
-    fee === 0 ||
-    Boolean(
-      await prisma.pastPaperPurchase.findFirst({
-        where: { userId: session.user.id, catalogKey, status: "PAID" },
-      }),
-    );
+  if (token) {
+    const guestPurchase = await findGuestPaperPurchase(catalogKey, token);
+    allowed = Boolean(guestPurchase);
+  } else if (session?.user) {
+    const fee = await getPastPaperFeePkr();
+    allowed =
+      session.user.role === "ADMIN" ||
+      fee === 0 ||
+      Boolean(
+        await prisma.pastPaperPurchase.findFirst({
+          where: { userId: session.user.id, catalogKey, status: "PAID" },
+        }),
+      );
+  } else {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
   if (!allowed) {
     return NextResponse.json({ error: "Purchase this paper to download it" }, { status: 402 });

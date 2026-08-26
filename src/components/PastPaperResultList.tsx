@@ -17,13 +17,17 @@ export function PastPaperResultList({
   papers,
   ownedKeys,
   feeLabel,
+  feePkr,
   signedIn,
+  guestToken,
   isAdmin,
 }: {
   papers: PaperRow[];
   ownedKeys: Set<string>;
   feeLabel: string;
+  feePkr: number;
   signedIn: boolean;
+  guestToken?: string | null;
   isAdmin?: boolean;
 }) {
   if (papers.length === 0) {
@@ -74,7 +78,9 @@ export function PastPaperResultList({
                             available
                             owned={ownedKeys.has(row.catalogKey) || Boolean(isAdmin)}
                             feeLabel={feeLabel}
+                            feePkr={feePkr}
                             signedIn={signedIn}
+                            guestToken={guestToken}
                           />
                         </article>
                       );

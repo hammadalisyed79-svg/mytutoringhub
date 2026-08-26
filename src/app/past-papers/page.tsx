@@ -81,6 +81,7 @@ export default async function PastPapersPage({
     page?: string;
     checkout?: string;
     key?: string;
+    token?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -196,8 +197,7 @@ export default async function PastPapersPage({
           ) : (
             <>
               Each download is <strong>{feeLabel}</strong>
-              {session?.user ? "" : " (sign in required)"} — or use included Student Pass downloads
-              (10/month).
+              {session?.user ? "" : " — pay without an account, or sign in for Student Pass bundles"}.
             </>
           )}
         </p>
@@ -210,10 +210,22 @@ export default async function PastPapersPage({
           <p className="success panel">
             Payment received.{" "}
             {sp.key ? (
-              <a href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}`}>Download your paper</a>
+              <a
+                href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
+                  sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
+                }`}
+              >
+                Download your paper
+              </a>
             ) : (
               "Your paper is unlocked."
             )}
+            {sp.token && !session?.user ? (
+              <>
+                {" "}
+                <span className="muted">We also emailed your download link.</span>
+              </>
+            ) : null}
           </p>
         )}
         {sp.checkout === "cancel" && <p className="panel">Checkout cancelled. No charge was made.</p>}
@@ -357,7 +369,9 @@ export default async function PastPapersPage({
               papers={searchResult.papers}
               ownedKeys={owned}
               feeLabel={feeLabel}
+              feePkr={feePkr}
               signedIn={Boolean(session?.user)}
+              guestToken={sp.token}
               isAdmin={session?.user?.role === "ADMIN"}
             />
             <PaginationNav
@@ -459,7 +473,9 @@ export default async function PastPapersPage({
                         available
                         owned={owned.has(paper.catalogKey) || session?.user?.role === "ADMIN"}
                         feeLabel={feeLabel}
+                        feePkr={feePkr}
                         signedIn={Boolean(session?.user)}
+                        guestToken={sp.token}
                       />
                     </article>
                   ))}
@@ -491,7 +507,9 @@ export default async function PastPapersPage({
                                 available={available}
                                 owned={owned.has(row.key) || session?.user?.role === "ADMIN"}
                                 feeLabel={feeLabel}
+                                feePkr={feePkr}
                                 signedIn={Boolean(session?.user)}
+                                guestToken={sp.token}
                               />
                             </article>
                           );

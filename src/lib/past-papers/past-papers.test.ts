@@ -18,6 +18,12 @@ import {
   parsePastPaperQuery,
   publicPaperWhere,
 } from "./public-search";
+import {
+  createGuestDownloadToken,
+  guestDownloadUrl,
+  isValidGuestEmail,
+  normalizeGuestEmail,
+} from "./guest-checkout";
 
 function expectParsed(
   filename: string,
@@ -251,5 +257,11 @@ assert.equal(
 );
 const codeWhere = publicPaperWhere({ code: "620" });
 assert.ok(Array.isArray(codeWhere.AND), "code filter builds where clause");
+
+assert.equal(createGuestDownloadToken().length, 64);
+assert.match(guestDownloadUrl("cambridge-0620", "abc123"), /token=abc123/);
+assert.equal(isValidGuestEmail("bad"), false);
+assert.equal(isValidGuestEmail("user@example.com"), true);
+assert.equal(normalizeGuestEmail("  User@Example.COM "), "user@example.com");
 
 console.log("past-papers tests passed");
