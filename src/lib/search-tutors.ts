@@ -260,6 +260,22 @@ export async function searchTutors(
   };
 }
 
+const AVERAGE_RATE_SELECT = {
+  hourlyRate: true,
+  active: true,
+  forceActive: true,
+  photoUrl: true,
+  headline: true,
+  bio: true,
+  country: true,
+  location: true,
+  subjects: true,
+  online: true,
+  inPerson: true,
+  qualifications: true,
+  user: { select: { name: true, emailVerified: true, suspended: true } },
+} as const;
+
 export async function averageRateForSubject(subject: string) {
   const profiles = filterCanonicallyPublicTutors(
     await prisma.tutorProfile.findMany({
@@ -267,25 +283,49 @@ export async function averageRateForSubject(subject: string) {
         ...publicListedTutorWhere(),
         subjects: { contains: subject, mode: "insensitive" },
       },
-      select: {
-        hourlyRate: true,
-        active: true,
-        forceActive: true,
-        photoUrl: true,
-        headline: true,
-        bio: true,
-        country: true,
-        location: true,
-        subjects: true,
-        online: true,
-        inPerson: true,
-        qualifications: true,
-        user: { select: { name: true, emailVerified: true, suspended: true } },
-      },
+      select: AVERAGE_RATE_SELECT,
     }),
   );
   if (profiles.length === 0) return null;
   return profiles.reduce((s, p) => s + p.hourlyRate, 0) / profiles.length;
+}
+
+/**
+ * One DB round-trip for all subject averages — avoids N parallel queries on /subjects.
+ */
+export async function averageRatesBySubject(subjectNames: string[]) {
+  const names = [...new Set(subjectNames.map((name) => name.trim()).filter(Boolean))];
+  const empty = new Map<string, number | null>();
+  for (const name of names) empty.set(name, null);
+  if (names.length === 0) return empty;
+
+  const profiles = filterCanonicallyPublicTutors(
+    await prisma.tutorProfile.findMany({
+      where: publicListedTutorWhere(),
+      select: AVERAGE_RATE_SELECT,
+    }),
+  );
+
+  const totals = new Map<string, { sum: number; count: number }>();
+  for (const name of names) totals.set(name, { sum: 0, count: 0 });
+
+  for (const profile of profiles) {
+    const haystack = (profile.subjects || "").toLowerCase();
+    if (!haystack) continue;
+    for (const name of names) {
+      if (!haystack.includes(name.toLowerCase())) continue;
+      const row = totals.get(name)!;
+      row.sum += profile.hourlyRate;
+      row.count += 1;
+    }
+  }
+
+  const out = new Map<string, number | null>();
+  for (const name of names) {
+    const row = totals.get(name)!;
+    out.set(name, row.count > 0 ? row.sum / row.count : null);
+  }
+  return out;
 }
 
 /** Where clause for similar-tutor recommendations (public catalogue only). */

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { SUBJECT_CATEGORIES } from "@/lib/marketing";
 import { CurriculumBrowser } from "@/components/CurriculumBrowser";
 import { CountryMarkets } from "@/components/CountryMarkets";
-import { averageRateForSubject, slugify } from "@/lib/search-tutors";
+import { averageRatesBySubject, slugify } from "@/lib/search-tutors";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { subjectCode } from "@/lib/markets";
@@ -46,14 +46,13 @@ export default async function SubjectsPage({
   const { country, q, tab } = await searchParams;
   const showCodes = tab === "codes";
   const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
-  const averages = await Promise.all(
-    dbSubjects.map(async (s) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug || slugify(s.name),
-      avg: await averageRateForSubject(s.name),
-    })),
-  );
+  const rateMap = await averageRatesBySubject(dbSubjects.map((s) => s.name));
+  const averages = dbSubjects.map((s) => ({
+    id: s.id,
+    name: s.name,
+    slug: s.slug || slugify(s.name),
+    avg: rateMap.get(s.name) ?? null,
+  }));
 
   return (
     <div className="page">
