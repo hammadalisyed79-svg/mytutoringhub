@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { type MarketCountry, selectFeaturedMarketCountries, subjectCode } from "@/lib/markets";
 import { uniqueSubjectsForCountry } from "@/lib/curriculum";
