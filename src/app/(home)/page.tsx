@@ -18,7 +18,9 @@ import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
-import { publicListedTutorWhere, filterCanonicallyPublicTutors } from "@/lib/tutor-public-eligibility";
+import { publicListedTutorWhere, filterCanonicallyPublicTutors, canViewTutorProfilePublicly, tutorPublicVisibilityInput } from "@/lib/tutor-public-eligibility";
+import { listingPath } from "@/lib/subject-profile";
+import { isHighlightActive } from "@/lib/subscription";
 import {
   HOMEPAGE_PRODUCT_TRIO,
   HOMEPAGE_PRODUCT_TRIO_LEAD,
@@ -78,30 +80,42 @@ export default async function HomePage() {
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.studentAd.count({ where: { status: "OPEN" } }),
       prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
-      prisma.tutorProfile.findMany({
-        where: publicListedTutorWhere(),
-        orderBy: [{ highlighted: "desc" }, { verified: "desc" }],
+      prisma.subjectProfile.findMany({
+        where: {
+          status: "ACTIVE",
+          tutorProfile: publicListedTutorWhere(),
+        },
+        orderBy: [{ highlightedUntil: "desc" }, { boostUntil: "desc" }, { updatedAt: "desc" }],
+        take: 24,
         select: {
           id: true,
-          hourlyRate: true,
+          subject: true,
+          title: true,
           headline: true,
-          subjects: true,
-          verified: true,
-          highlighted: true,
-          photoUrl: true,
-          photoCropX: true,
-          photoCropY: true,
-          photoCropZoom: true,
-          active: true,
-          forceActive: true,
-          bio: true,
-          country: true,
-          location: true,
-          online: true,
-          inPerson: true,
-          qualifications: true,
-          user: { select: { name: true, emailVerified: true, suspended: true } },
-          reviews: { select: { rating: true } },
+          rate: true,
+          highlightedUntil: true,
+          tutorProfile: {
+            select: {
+              verified: true,
+              highlighted: true,
+              highlightedUntil: true,
+              photoUrl: true,
+              photoCropX: true,
+              photoCropY: true,
+              photoCropZoom: true,
+              active: true,
+              forceActive: true,
+              bio: true,
+              country: true,
+              location: true,
+              subjects: true,
+              online: true,
+              inPerson: true,
+              qualifications: true,
+              user: { select: { name: true, emailVerified: true, suspended: true } },
+              reviews: { select: { rating: true } },
+            },
+          },
         },
       }),
       prisma.review.findMany({
@@ -128,7 +142,27 @@ export default async function HomePage() {
 
   const publicProfiles = filterCanonicallyPublicTutors(listedProfiles);
   const tutorCount = publicProfiles.length;
-  const featured = filterCanonicallyPublicTutors(featuredRaw).slice(0, 3);
+  const now = new Date();
+  const featured = featuredRaw
+    .filter((row) => canViewTutorProfilePublicly(tutorPublicVisibilityInput(row.tutorProfile)))
+    .map((row) => {
+      const p = row.tutorProfile;
+      return {
+        id: row.id,
+        subject: row.subject,
+        headline: row.headline || row.title || p.user.name,
+        hourlyRate: row.rate,
+        verified: p.verified,
+        highlighted: isHighlightActive(row.highlightedUntil || p.highlightedUntil, p.highlighted, now),
+        photoUrl: p.photoUrl,
+        photoCropX: p.photoCropX,
+        photoCropY: p.photoCropY,
+        photoCropZoom: p.photoCropZoom,
+        user: p.user,
+        reviews: p.reviews,
+      };
+    })
+    .slice(0, 3);
 
   const stats = [
     tutorCount > 0 && {
@@ -285,7 +319,7 @@ export default async function HomePage() {
             <div className="section-head">
               <div>
                 <h2>Featured tutors</h2>
-                <p className="section-lead">Highlighted and verified profiles students love.</p>
+                <p className="section-lead">Highlighted subject listings students love.</p>
               </div>
               <Link href="/search" className="btn btn-secondary">
                 See all tutors
@@ -299,7 +333,7 @@ export default async function HomePage() {
                     : null;
                 const tutorName = t.user.name?.trim() || "Tutor";
                 return (
-                  <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
+                  <Link key={t.id} href={listingPath(t.id)} className="tutor-card">
                     <TutorAvatar
                       className="tutor-avatar"
                       photoUrl={t.photoUrl}
@@ -314,7 +348,7 @@ export default async function HomePage() {
                         {t.highlighted && <span className="badge accent">Highlighted</span>}
                       </div>
                       <h3>{tutorName}</h3>
-                      <p>{t.headline || t.subjects}</p>
+                      <p>{t.headline || t.subject}</p>
                       <div className="meta">
                         <span>{formatHourly(t.hourlyRate, currency)}</span>
                         {avg !== null && <span>{avg.toFixed(1)} ★</span>}

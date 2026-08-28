@@ -6,15 +6,25 @@ const publicWhere = publicListedTutorWhere();
 
 {
   const where = similarTutorsWhereClause({
-    id: "tutor-a",
+    id: "listing-a",
     subjects: "Mathematics, Physics",
     location: "Lahore, Pakistan",
   });
   assert.ok(where);
-  assert.equal(where!.active, publicWhere.active);
-  assert.deepEqual(where!.user, publicWhere.user);
-  assert.deepEqual(where!.id, { not: "tutor-a" });
+  assert.deepEqual(where!.tutorProfile, publicWhere);
+  assert.deepEqual(where!.id, { not: "listing-a" });
+  assert.equal(where!.status, "ACTIVE");
   assert.equal(where!.OR.length, 2);
+}
+
+{
+  const where = similarTutorsWhereClause({
+    excludeTutorProfileId: "tutor-a",
+    subjects: "Mathematics",
+    location: "Lahore",
+  });
+  assert.ok(where);
+  assert.deepEqual(where!.tutorProfileId, { not: "tutor-a" });
 }
 
 {

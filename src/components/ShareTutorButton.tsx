@@ -5,14 +5,17 @@ import { useState } from "react";
 export function ShareTutorButton({
   tutorId,
   tutorName,
+  path,
 }: {
   tutorId: string;
   tutorName: string;
+  /** Override share path (e.g. `/listings/[id]`). Defaults to `/tutors/[id]`. */
+  path?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
   async function share() {
-    const shareUrl = `${window.location.origin}/tutors/${tutorId}`;
+    const shareUrl = `${window.location.origin}${path || `/tutors/${tutorId}`}`;
     const title = `${tutorName} on My Tutoring Hub`;
     const text = `Check out ${tutorName} for private tutoring on My Tutoring Hub.`;
 

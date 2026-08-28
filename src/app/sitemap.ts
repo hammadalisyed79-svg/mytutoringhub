@@ -62,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   try {
-    const [subjects, papers, tutors] = await Promise.all([
+    const [subjects, papers, tutors, listings] = await Promise.all([
       prisma.subject.findMany({ select: { slug: true, name: true } }),
       prisma.pastPaper.findMany({
         where: publicAvailabilityWhere(),
@@ -95,6 +95,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         orderBy: { updatedAt: "desc" },
       }),
+      prisma.subjectProfile.findMany({
+        where: {
+          status: "ACTIVE",
+          tutorProfile: publicListedTutorWhere(),
+        },
+        select: {
+          id: true,
+          updatedAt: true,
+          tutorProfile: {
+            select: {
+              active: true,
+              forceActive: true,
+              photoUrl: true,
+              headline: true,
+              bio: true,
+              country: true,
+              location: true,
+              subjects: true,
+              online: true,
+              inPerson: true,
+              qualifications: true,
+              user: { select: { name: true, emailVerified: true, suspended: true } },
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+      }),
     ]);
 
     // Subject hubs only (no automatic city fan-out — prevents thin SEO URLs at scale)
@@ -112,6 +139,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
 
     const publicTutors = filterCanonicallyPublicTutors(tutors);
+    const publicListings = listings.filter((row) =>
+      filterCanonicallyPublicTutors([row.tutorProfile]).length > 0,
+    );
 
     const seenPapers = new Set<string>();
     const paperRoutes = papers
@@ -139,10 +169,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${base}/tutors/${t.id}`,
       lastModified: t.updatedAt,
       changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+
+    const listingRoutes = publicListings.map((l) => ({
+      url: `${base}/listings/${l.id}`,
+      lastModified: l.updatedAt,
+      changeFrequency: "weekly" as const,
       priority: 0.75,
     }));
 
-    return [...staticRoutes, ...subjectRoutes, ...paperRoutes, ...tutorRoutes];
+    return [...staticRoutes, ...subjectRoutes, ...paperRoutes, ...tutorRoutes, ...listingRoutes];
   } catch {
     return staticRoutes;
   }

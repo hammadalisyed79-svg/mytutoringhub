@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { averageRateForSubject, searchTutors, slugify } from "@/lib/search-tutors";
+import { averageRateForSubject, listingPath, searchTutors, slugify } from "@/lib/search-tutors";
 import { formatTutorPlace, inferTutorCountry } from "@/lib/tutor-catalog";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { JsonLd } from "@/components/JsonLd";
@@ -149,13 +149,13 @@ export default async function SeoTutorsPage({ params }: Params) {
         <SubjectStudyHubLinks subject={label} pastPaperCount={pastPaperCount} />
         <div className="tutor-grid" style={{ marginTop: "1.25rem" }}>
           {tutors.map((t) => (
-            <Link key={t.id} href={`/tutors/${t.id}`} className="tutor-card">
+            <Link key={t.id} href={listingPath(t.id)} className="tutor-card">
               <div className="tutor-avatar" aria-hidden>
-                {t.user.name.slice(0, 1)}
+                {(t.user.name || "T").slice(0, 1)}
               </div>
               <div>
                 <h3>{t.user.name}</h3>
-                <p className="muted">{t.headline || t.subjects}</p>
+                <p className="muted">{t.headline || t.subject || t.subjects}</p>
                 <div className="meta">
                   <span className="price-tag">{formatHourly(t.hourlyRate, currency)}</span>
                   <span>{formatTutorPlace(t.location, t.country)}</span>

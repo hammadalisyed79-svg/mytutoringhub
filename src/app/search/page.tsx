@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { searchTutors } from "@/lib/search-tutors";
+import { searchTutors, listingPath } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
 import { SearchFiltersForm } from "@/components/SearchFiltersForm";
 import { GuidedTutorSearch } from "@/components/GuidedTutorSearch";
@@ -318,7 +318,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 <div className="tc-card-main">
                   <div className="tc-card-title-row">
                     <h2 className="tc-name">
-                      <Link href={`/tutors/${t.id}`}>{tutorName}</Link>
+                      <Link href={listingPath(t.id)}>{tutorName}</Link>
                     </h2>
                     {avg !== null && (
                       <span className="tc-rating" aria-label={`${avg.toFixed(1)} out of 5`}>
@@ -385,8 +385,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">
                     Message
                   </Link>
-                  <Link href={`/tutors/${t.id}`} className="btn btn-sm">
-                    View profile
+                  <Link href={listingPath(t.id)} className="btn btn-sm">
+                    View listing
                   </Link>
                 </div>
               </article>

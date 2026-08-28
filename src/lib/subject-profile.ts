@@ -24,3 +24,8 @@ export function defaultSubjectProfileTitle(subject: string, tutorName?: string |
   if (name) return `${name} · ${subject}`;
   return `${subject} tutor`;
 }
+
+/** Public URL for a subject listing card. */
+export function listingPath(listingId: string) {
+  return `/listings/${listingId}`;
+}

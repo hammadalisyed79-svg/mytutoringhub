@@ -203,6 +203,66 @@ export function tutorProfileJsonLd(opts: {
   return data;
 }
 
+/** Subject listing (one subject profile card) for search discovery. */
+export function subjectListingJsonLd(opts: {
+  listingId: string;
+  tutorProfileId: string;
+  name: string;
+  title: string;
+  description: string;
+  subject: string;
+  location: string;
+  hourlyRatePkr: number;
+  currency: string;
+  hourlyLabel: string;
+  photoUrl?: string | null;
+  rating?: number | null;
+  reviewCount?: number;
+  verified?: boolean;
+}) {
+  const url = absoluteUrl(`/listings/${opts.listingId}`);
+  const tutorUrl = absoluteUrl(`/tutors/${opts.tutorProfileId}`);
+  const data: Record<string, unknown> = {
+    "@type": "Service",
+    "@id": `${url}#listing`,
+    name: opts.title,
+    description: truncateDescription(opts.description, 300),
+    url,
+    provider: {
+      "@type": "Person",
+      name: opts.name,
+      url: tutorUrl,
+    },
+    serviceType: `${opts.subject} tutoring`,
+    areaServed: opts.location,
+    offers: {
+      "@type": "Offer",
+      price: opts.hourlyLabel.replace(/[^\d.,]/g, "") || String(opts.hourlyRatePkr),
+      priceCurrency: opts.currency,
+      url,
+    },
+  };
+  if (opts.photoUrl?.startsWith("http")) {
+    data.image = opts.photoUrl;
+  }
+  if (opts.rating != null && opts.reviewCount && opts.reviewCount > 0) {
+    data.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: opts.rating.toFixed(1),
+      reviewCount: opts.reviewCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+  if (opts.verified) {
+    data.hasCredential = {
+      "@type": "EducationalOccupationalCredential",
+      credentialCategory: "Verified tutor",
+    };
+  }
+  return data;
+}
+
 export function subjectLandingJsonLd(opts: {
   subject: string;
   city?: string;

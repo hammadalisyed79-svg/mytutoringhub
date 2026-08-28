@@ -18,7 +18,7 @@ import {
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { similarTutors, slugify } from "@/lib/search-tutors";
+import { listingPath, similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import { canViewTutorProfilePublicly } from "@/lib/tutor-public-eligibility";
@@ -296,12 +296,12 @@ export default async function TutorProfilePage({ params }: Params) {
   const experienceLabel = formatExperienceYears(tutor.experienceYears);
   const videoSrc = embedVideoSrc(tutor.introVideoUrl || tutor.videoUrl);
   const similar = await similarTutors({
-    id: tutor.id,
+    excludeTutorProfileId: tutor.id,
     subjects: tutor.subjects,
     location: tutor.location,
     take: 4,
   });
-  const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.id));
+  const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
   let hasConversation = false;
   if (viewerId && !isOwner && !isAdmin) {
     const talked = await prisma.conversation.findFirst({
@@ -802,13 +802,16 @@ export default async function TutorProfilePage({ params }: Params) {
                         cropZoom={t.photoCropZoom}
                         initial={t.user.name.slice(0, 1).toUpperCase()}
                       />
-                      <TutorTrustBadgePill badge={similarBadges.get(t.id) ?? "NEW"} size="sm" />
+                      <TutorTrustBadgePill
+                        badge={similarBadges.get(t.tutorProfileId) ?? "NEW"}
+                        size="sm"
+                      />
                     </div>
                     <div className="tc-body">
                       <div className="tc-top-row">
                         <div className="tc-name-area">
                           <h3 className="tc-name">
-                            <Link href={`/tutors/${t.id}`}>{t.user.name}</Link>
+                            <Link href={listingPath(t.id)}>{t.user.name}</Link>
                           </h3>
                           <p className="tc-headline">{t.headline || t.subjects}</p>
                         </div>
@@ -840,8 +843,8 @@ export default async function TutorProfilePage({ params }: Params) {
                           {formatTutorPlace(t.location, t.country) || "Online"}
                         </span>
                         <div className="tc-actions">
-                          <Link href={`/tutors/${t.id}`} className="btn btn-sm">
-                            View profile
+                          <Link href={listingPath(t.id)} className="btn btn-sm">
+                            View listing
                           </Link>
                         </div>
                       </div>
