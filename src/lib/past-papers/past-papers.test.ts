@@ -7,7 +7,9 @@ import { validatePdfBuffer, sha256 } from "./file-validate";
 import { duplicateComboWhere } from "./catalog-key";
 import { guessSyllabusCode } from "./browse";
 import { parseManifestPayload } from "./manifest-import";
-import { classifyR2PaperObject, r2PaperListPrefixes } from "./past-paper-sync";
+import { classifyR2PaperObject, FBISE_R2_PAPERS_PREFIX, r2PaperListPrefixes } from "./past-paper-sync";
+import { parseFbiseStoragePath } from "./fbise-path-parser";
+import { pastPaperBoardLabel, pastPaperBoardOptions, resolvePastPaperBoard } from "./browse";
 import { groupPapersByYearSessionComponent } from "./group-papers";
 import { isR2Configured } from "./r2";
 import { downloadableFileWhere } from "./availability";
@@ -235,6 +237,33 @@ const unknownSyllabus = classifyR2PaperObject("9999_s24_qp_11.pdf", 20);
 assert.equal(unknownSyllabus.ok, false);
 
 assert.equal(r2PaperListPrefixes()[0], "cambridge/");
+assert.ok(r2PaperListPrefixes().includes(`${FBISE_R2_PAPERS_PREFIX}`));
+
+const fbisePath =
+  "fbise/hssc/chemistry/chemistry/2024/unknown-session/other/Model_Question_Paper_Chemistry_SSC_II_2024.pdf";
+const fbiseParsed = parseFbiseStoragePath(fbisePath, 1000);
+assert.equal(fbiseParsed.ok, true);
+if (fbiseParsed.ok) {
+  assert.equal(fbiseParsed.paper.subject, "Chemistry");
+  assert.equal(fbiseParsed.paper.board, "FBISE");
+  assert.equal(fbiseParsed.paper.qualification, "HSSC");
+  assert.equal(fbiseParsed.paper.year, 2024);
+  assert.equal(fbiseParsed.paper.country, "Pakistan");
+}
+
+const fbiseR2 = classifyR2PaperObject(fbisePath, 1000);
+assert.equal(fbiseR2.ok, true, "FBISE R2 object should classify");
+if (fbiseR2.ok) {
+  assert.equal(fbiseR2.paper.board, "FBISE");
+  assert.equal(fbiseR2.paper.subject, "Chemistry");
+}
+
+assert.equal(pastPaperBoardLabel("Pakistani"), "Pakistani curriculum (UAE schools)");
+assert.equal(resolvePastPaperBoard("", "FBISE"), "FBISE");
+assert.equal(resolvePastPaperBoard("Pakistan", "FBISE"), "FBISE");
+const pkBoards = pastPaperBoardOptions({ country: "Pakistan", boardCounts: new Map([["FBISE", 93]]) });
+assert.ok(pkBoards.some((row) => row.value === "FBISE"));
+assert.ok(!pkBoards.some((row) => row.value === "Pakistani"), "Pakistani hidden outside UAE context");
 
 assert.equal(normalizeSyllabusCode("620"), "0620");
 assert.equal(normalizeSyllabusCode("0620"), "0620");

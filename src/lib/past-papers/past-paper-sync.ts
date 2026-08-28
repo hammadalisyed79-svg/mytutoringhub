@@ -14,8 +14,10 @@ import {
 } from "./r2";
 import { buildStoredFilename, documentTypeLabel } from "./stored-filename";
 import { matchCurriculumEntry } from "./subject-matcher";
+import { parseFbiseStoragePath } from "./fbise-path-parser";
 
 export const DEFAULT_R2_PAPERS_PREFIX = "cambridge/";
+export const FBISE_R2_PAPERS_PREFIX = "fbise/";
 export const MAX_R2_PAPER_KEYS = 20_000;
 const CREATE_CHUNK = 75;
 const UPDATE_CHUNK = 20;
@@ -79,6 +81,7 @@ export function r2PaperListPrefixes() {
     prefixes.push(key);
   };
   push(DEFAULT_R2_PAPERS_PREFIX);
+  push(FBISE_R2_PAPERS_PREFIX);
   push(process.env.R2_PREFIX || "");
   return prefixes;
 }
@@ -93,6 +96,57 @@ export function classifyR2PaperObject(
   }
   if (!storageKey.toLowerCase().endsWith(".pdf")) {
     return { ok: false, skip: { storageKey, reason: "Not a PDF" } };
+  }
+
+  if (storageKey.toLowerCase().startsWith(FBISE_R2_PAPERS_PREFIX)) {
+    const fbise = parseFbiseStoragePath(storageKey, size);
+    if (!fbise.ok) {
+      return { ok: false, skip: { storageKey, reason: fbise.error } };
+    }
+    const paper = fbise.paper;
+    const catalogKey = importedCatalogKey({
+      board: paper.board,
+      subject: paper.subject,
+      year: paper.year,
+      documentType: paper.documentType,
+      paperType: paper.paperType,
+      session: paper.session,
+      componentCode: paper.componentCode || null,
+    });
+    const storedFilename = buildStoredFilename({
+      board: paper.board,
+      qualification: paper.qualification,
+      subject: paper.subject,
+      syllabusCode: paper.curriculumCode,
+      year: paper.year,
+      session: paper.session,
+      componentCode: paper.componentCode || null,
+      documentType: paper.documentType,
+    });
+    return {
+      ok: true,
+      paper: {
+        storageKey: paper.storageKey,
+        fileSize: paper.fileSize,
+        originalFilename: paper.originalFilename,
+        syllabusCode: paper.syllabusCode || "",
+        year: paper.year,
+        session: paper.session || "",
+        documentType: paper.documentType,
+        componentCode: paper.componentCode,
+        paperNumber: paper.paperNumber,
+        variant: paper.variant,
+        subject: paper.subject,
+        board: paper.board,
+        qualification: paper.qualification,
+        country: paper.country,
+        curriculumCode: paper.curriculumCode,
+        catalogKey,
+        paperType: paper.paperType,
+        title: paper.title,
+        storedFilename,
+      },
+    };
   }
 
   const originalFilename = basenameSafe(storageKey);
@@ -447,7 +501,9 @@ export async function syncPastPapersFromR2(): Promise<PastPaperSyncResult> {
       `No objects were found in R2. Check R2_BUCKET and that PDFs live under ${prefixes.join(" or ") || DEFAULT_R2_PAPERS_PREFIX}.`,
     );
   } else if (classified.length === 0) {
-    warnings.push("R2 listed files, but none matched a Cambridge past-paper filename (e.g. 0620_s24_qp_42.pdf).");
+    warnings.push(
+      "R2 listed files, but none matched a Cambridge filename (e.g. 0620_s24_qp_42.pdf) or FBISE path (fbise/hssc/chemistry/...).",
+    );
   }
   if (truncated) {
     warnings.push(`Stopped after ${MAX_R2_PAPER_KEYS.toLocaleString()} R2 objects. Run again after moving extra files, or raise the listing cap.`);

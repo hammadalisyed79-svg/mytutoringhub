@@ -26,6 +26,87 @@ export function uniqueCurriculumBoards() {
   return [...new Set(CURRICULUM.map((row) => row.board))].sort((a, b) => a.localeCompare(b));
 }
 
+/** Pakistan boards shown first in past-paper filters (FBISE has downloadable papers). */
+export const PAKISTAN_PAST_PAPER_BOARDS = [
+  "FBISE",
+  "Punjab Board",
+  "Sindh Board",
+  "KPK Board",
+  "Balochistan Board",
+  "AJK Board",
+  "Aga Khan Examination Board",
+] as const;
+
+export function pastPaperBoardLabel(board: string) {
+  if (board === "Pakistani") return "Pakistani curriculum (UAE schools)";
+  return board;
+}
+
+export function resolvePastPaperBoard(country: string, boardParam?: string) {
+  if (!boardParam) return "";
+  if (country) {
+    const local = curriculumBoardsForCountry(country).find((name) => name === boardParam);
+    if (local) return local;
+  }
+  if (boardParam === "FBISE") return "FBISE";
+  return uniqueCurriculumBoards().includes(boardParam) ? boardParam : "";
+}
+
+export type PastPaperBoardOption = {
+  value: string;
+  label: string;
+  count?: number;
+};
+
+export function pastPaperBoardOptions(opts: {
+  country?: string;
+  pinnedCountry?: string | null;
+  boardCounts?: Map<string, number>;
+}) {
+  const { country, pinnedCountry, boardCounts } = opts;
+  const seen = new Set<string>();
+  const options: PastPaperBoardOption[] = [];
+
+  const add = (value: string, label?: string) => {
+    if (seen.has(value)) return;
+    seen.add(value);
+    const count = boardCounts?.get(value);
+    const base = label || pastPaperBoardLabel(value);
+    options.push({
+      value,
+      label: count ? `${base} (${count.toLocaleString()} papers)` : base,
+      count,
+    });
+  };
+
+  const pakistanContext = country === "Pakistan" || (!country && pinnedCountry === "PK");
+  if (pakistanContext) {
+    for (const board of PAKISTAN_PAST_PAPER_BOARDS) add(board);
+    add("Cambridge IGCSE");
+    add("Cambridge O Level");
+    add("Cambridge AS/A Level");
+  }
+
+  if (country === "United Arab Emirates") {
+    for (const board of curriculumBoardsForCountry("United Arab Emirates")) {
+      add(board, pastPaperBoardLabel(board));
+    }
+  }
+
+  if (boardCounts) {
+    for (const [board, count] of [...boardCounts.entries()].sort((a, b) => b[1] - a[1])) {
+      if (count > 0) add(board);
+    }
+  }
+
+  for (const board of uniqueCurriculumBoards()) {
+    if (board === "Pakistani" && country !== "United Arab Emirates") continue;
+    add(board);
+  }
+
+  return options;
+}
+
 export function uniqueCurriculumLevels(board?: string) {
   const rows = board ? CURRICULUM.filter((row) => row.board === board) : CURRICULUM;
   return [...new Set(rows.map((row) => row.level))].sort((a, b) => a.localeCompare(b));

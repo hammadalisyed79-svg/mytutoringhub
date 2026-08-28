@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
 import {
@@ -21,6 +22,7 @@ export function PastPaperResultList({
   signedIn,
   guestToken,
   isAdmin,
+  emptyMessage,
 }: {
   papers: PaperRow[];
   ownedKeys: Set<string>;
@@ -29,10 +31,14 @@ export function PastPaperResultList({
   signedIn: boolean;
   guestToken?: string | null;
   isAdmin?: boolean;
+  emptyMessage?: ReactNode;
 }) {
   if (papers.length === 0) {
     return (
-      <p className="muted">No uploaded papers matched. Catalog listings without files stay “Coming soon”.</p>
+      <p className="muted">
+        {emptyMessage ||
+          "No uploaded papers matched. Catalog listings without files stay “Coming soon”."}
+      </p>
     );
   }
 

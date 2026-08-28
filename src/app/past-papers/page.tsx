@@ -25,9 +25,10 @@ import {
   curriculumLevelsForBoard,
   curriculumSubjectsFor,
   PAST_PAPER_PAGE_SIZE,
+  pastPaperBoardOptions,
+  resolvePastPaperBoard,
   seoBoardSlug,
   subjectSeoSlug,
-  uniqueCurriculumBoards,
   uniqueCurriculumLevels,
   uniqueCurriculumSubjects,
 } from "@/lib/past-papers/browse";
@@ -97,7 +98,7 @@ export default async function PastPapersPage({
   const countries = curriculumCountries(pinnedCountry);
   const country = countries.find((name) => name === sp.country) || "";
   const boardsForCountry = country ? curriculumBoardsForCountry(country) : [];
-  const board = boardsForCountry.find((name) => name === sp.board) || "";
+  const board = resolvePastPaperBoard(country, sp.board);
   const levels = country && board ? curriculumLevelsForBoard(country, board) : [];
   const level = levels.find((name) => name === sp.level) || "";
   const curriculumSubjects =
@@ -132,7 +133,7 @@ export default async function PastPapersPage({
 
   const listings = subject && year ? papersForSubjectYear(subject, year) : [];
   const keys = listings.map((row) => row.key);
-  const [files, purchases, searchResult, importedForSubject] = await Promise.all([
+  const [files, purchases, searchResult, importedForSubject, boardCountRows] = await Promise.all([
     keys.length
       ? prisma.pastPaper.findMany({
           where: { catalogKey: { in: keys }, published: true, isActive: true },
@@ -161,11 +162,42 @@ export default async function PastPapersPage({
           take: 80,
         })
       : Promise.resolve([]),
+    prisma.pastPaper.groupBy({
+      by: ["board"],
+      where: publicAvailabilityWhere(),
+      _count: { _all: true },
+    }),
   ]);
+  const boardCounts = new Map(boardCountRows.map((row) => [row.board, row._count._all]));
+  const boardOptions = pastPaperBoardOptions({ country, pinnedCountry, boardCounts });
   const fileMap = new Map(files.map((row) => [row.catalogKey, row]));
   const owned = new Set(purchases.map((row) => row.catalogKey));
   const boards = subject ? pastPaperBoards(subject) : [];
   const pages = searchResult ? Math.max(1, Math.ceil(searchResult.total / PAST_PAPER_PAGE_SIZE)) : 1;
+  const selectedBoard = board || sp.board || "";
+  const emptySearchHint =
+    selectedBoard === "Pakistani" ? (
+      <>
+        The &quot;Pakistani&quot; board is for UAE schools only — there are no downloadable papers for it yet. For
+        Pakistan Matric and FSc, use{" "}
+        <Link href={hrefWith({ board: "FBISE", q: sp.q, subject: sp.subject, code: "", paper: sp.paper })}>
+          FBISE
+        </Link>{" "}
+        (93 federal board papers). Cambridge codes such as 0620 belong under Cambridge IGCSE, not Pakistani.
+      </>
+    ) : ["Punjab Board", "Sindh Board", "KPK Board", "Balochistan Board", "AJK Board"].includes(selectedBoard) ? (
+      <>
+        Provincial board papers are not uploaded yet. Try{" "}
+        <Link href={hrefWith({ board: "FBISE", q: sp.q, subject: sp.subject })}>FBISE</Link> for federal Matric/FSc
+        model papers, or browse{" "}
+        <Link href={hrefWith({ country: "Pakistan", board: "FBISE" })}>Pakistan → FBISE</Link>.
+      </>
+    ) : selectedBoard === "FBISE" && sp.code ? (
+      <>
+        FBISE papers do not use Cambridge syllabus codes. Clear the code field or search by subject only — e.g.{" "}
+        <Link href={hrefWith({ board: "FBISE", subject: "Chemistry" })}>FBISE Chemistry</Link>.
+      </>
+    ) : undefined;
 
   const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
@@ -257,9 +289,9 @@ export default async function PastPapersPage({
             Board
             <select name="board" defaultValue={board || sp.board || ""}>
               <option value="">Any</option>
-              {uniqueCurriculumBoards().map((name) => (
-                <option key={name} value={name}>
-                  {name}
+              {boardOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -373,6 +405,7 @@ export default async function PastPapersPage({
               signedIn={Boolean(session?.user)}
               guestToken={sp.token}
               isAdmin={session?.user?.role === "ADMIN"}
+              emptyMessage={emptySearchHint}
             />
             <PaginationNav
               page={page}
@@ -382,14 +415,37 @@ export default async function PastPapersPage({
             />
           </section>
         ) : !country && !subject ? (
-          <div className="subject-directory" style={{ marginTop: "1rem" }}>
+          <>
+            {(pinnedCountry === "PK" || pinnedCountry === "AE") && (
+              <section className="panel" style={{ marginTop: "1rem" }}>
+                <h2 style={{ marginTop: 0 }}>Popular in your region</h2>
+                <div className="hero-ctas">
+                  {pinnedCountry === "PK" ? (
+                    <>
+                      <Link href={hrefWith({ country: "Pakistan", board: "FBISE" })} className="btn btn-secondary">
+                        Pakistan · FBISE
+                      </Link>
+                      <Link href={hrefWith({ board: "Cambridge IGCSE" })} className="btn btn-secondary">
+                        Cambridge IGCSE
+                      </Link>
+                    </>
+                  ) : (
+                    <Link href={hrefWith({ country: "United Arab Emirates" })} className="btn btn-secondary">
+                      Browse UAE boards
+                    </Link>
+                  )}
+                </div>
+              </section>
+            )}
+            <div className="subject-directory" style={{ marginTop: "1rem" }}>
             {countries.map((name) => (
               <Link key={name} href={hrefWith({ country: name })} className="subject-tile">
                 <span className="subject-tile-name">{name}</span>
                 <span className="subject-tile-rate">Country</span>
               </Link>
             ))}
-          </div>
+            </div>
+          </>
         ) : country && !board ? (
           <div className="subject-directory" style={{ marginTop: "1rem" }}>
             {boardsForCountry.map((name) => (
