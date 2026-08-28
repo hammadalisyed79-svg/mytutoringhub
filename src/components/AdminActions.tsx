@@ -326,7 +326,7 @@ export function AdminBoostForm({
   label,
 }: {
   id: string;
-  action: "set_highlight" | "set_boost";
+  action: "set_highlight" | "set_boost" | "set_listing_highlight" | "set_listing_boost";
   label: string;
 }) {
   const [busy, setBusy] = useState(false);

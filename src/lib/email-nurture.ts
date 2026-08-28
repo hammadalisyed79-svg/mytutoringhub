@@ -13,6 +13,8 @@ import {
   tutorProfileIncompleteEmailHtml,
   tutorProfileLiveEmailHtml,
   tutorProfileNeverStartedEmailHtml,
+  tutorSecondProfileEmailHtml,
+  tutorBoostNudgeEmailHtml,
   tutorVerificationApprovedEmailHtml,
   tutorVerifyNudgeEmailHtml,
   verificationReminderEmailHtml,
@@ -35,6 +37,8 @@ export const NURTURE_SEQUENCES = {
   TUTOR_PROFILE_LIVE: "tutor_profile_live",
   TUTOR_PLAN_NUDGE: "tutor_plan_nudge",
   TUTOR_VERIFY_NUDGE: "tutor_verify_nudge",
+  TUTOR_SECOND_PROFILE: "tutor_second_profile",
+  TUTOR_BOOST_NUDGE: "tutor_boost_nudge",
   STUDENT_BROWSE_R1: "student_browse_r1",
   STUDENT_BROWSE_R2: "student_browse_r2",
   STUDENT_POST_AD_R1: "student_post_ad_r1",
@@ -268,6 +272,115 @@ export async function sendTutorVerifyNudgeEmail(userId: string) {
     return { sent: true as const };
   } catch (err) {
     await releaseEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_VERIFY_NUDGE);
+    throw err;
+  }
+}
+
+/** Tutors with exactly one active subject profile — nudge to add another. */
+export async function sendTutorSecondProfileEmail(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      suspended: true,
+      emailVerified: true,
+      tutorProfile: {
+        select: {
+          id: true,
+          active: true,
+          subjectProfiles: {
+            where: { status: "ACTIVE" },
+            select: { id: true, subject: true },
+            take: 3,
+          },
+        },
+      },
+    },
+  });
+  if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended) {
+    return { sent: false, reason: "ineligible" as const };
+  }
+  if (!user.tutorProfile?.active) return { sent: false, reason: "not_live" as const };
+  const active = user.tutorProfile.subjectProfiles;
+  if (active.length !== 1) return { sent: false, reason: "not_single_profile" as const };
+
+  const claimed = await claimEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE);
+  if (!claimed) return { sent: false, reason: "already_sent" as const };
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Add a second subject profile · My Tutoring Hub",
+      html: tutorSecondProfileEmailHtml({
+        name: user.name,
+        dashboardUrl: `${appUrl()}/dashboard/tutor`,
+        existingSubject: active[0]?.subject,
+      }),
+    });
+    return { sent: true as const };
+  } catch (err) {
+    await releaseEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE);
+    throw err;
+  }
+}
+
+/** Live tutors with an unboosted active listing — nudge per-listing boost. */
+export async function sendTutorBoostNudgeEmail(userId: string) {
+  const now = new Date();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      suspended: true,
+      emailVerified: true,
+      tutorProfile: {
+        select: {
+          id: true,
+          active: true,
+          subjectProfiles: {
+            where: { status: "ACTIVE" },
+            select: { id: true, title: true, boostUntil: true },
+            orderBy: { updatedAt: "desc" },
+            take: 8,
+          },
+        },
+      },
+    },
+  });
+  if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended) {
+    return { sent: false, reason: "ineligible" as const };
+  }
+  if (!user.tutorProfile?.active) return { sent: false, reason: "not_live" as const };
+  const unboosted = user.tutorProfile.subjectProfiles.filter(
+    (row) => !row.boostUntil || row.boostUntil <= now,
+  );
+  if (unboosted.length === 0) return { sent: false, reason: "already_boosted" as const };
+  if (await hasAnyActivePlan(userId, ["AD_BOOST"])) {
+    return { sent: false, reason: "has_boost_plan" as const };
+  }
+
+  const claimed = await claimEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE);
+  if (!claimed) return { sent: false, reason: "already_sent" as const };
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Boost a subject profile · My Tutoring Hub",
+      html: tutorBoostNudgeEmailHtml({
+        name: user.name,
+        dashboardUrl: `${appUrl()}/dashboard/tutor`,
+        listingTitle: unboosted[0]?.title,
+      }),
+    });
+    return { sent: true as const };
+  } catch (err) {
+    await releaseEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE);
     throw err;
   }
 }
@@ -785,6 +898,60 @@ export async function runNurtureDigest() {
           return await sendTutorVerifyNudgeEmail(row.userId);
         } catch (err) {
           console.error("[nurture] tutor_verify_nudge", row.userId, err);
+          return { sent: false };
+        }
+      }),
+    ),
+  );
+
+  // Second subject profile (3 days after live, exactly one active listing)
+  const secondProfile = await prisma.emailSequenceEvent.findMany({
+    where: {
+      sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_LIVE,
+      sentAt: { lte: threeDaysAgo },
+      user: {
+        role: "TUTOR",
+        suspended: false,
+        emailSequenceEvents: { none: { sequence: NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE } },
+      },
+    },
+    select: { userId: true },
+    take: 40,
+  });
+  sent.tutorSecondProfile = await countSent(
+    await Promise.all(
+      secondProfile.map(async (row) => {
+        try {
+          return await sendTutorSecondProfileEmail(row.userId);
+        } catch (err) {
+          console.error("[nurture] tutor_second_profile", row.userId, err);
+          return { sent: false };
+        }
+      }),
+    ),
+  );
+
+  // Boost nudge (7 days after live, has unboosted listing)
+  const boostNudge = await prisma.emailSequenceEvent.findMany({
+    where: {
+      sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_LIVE,
+      sentAt: { lte: sevenDaysAgo },
+      user: {
+        role: "TUTOR",
+        suspended: false,
+        emailSequenceEvents: { none: { sequence: NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE } },
+      },
+    },
+    select: { userId: true },
+    take: 40,
+  });
+  sent.tutorBoostNudge = await countSent(
+    await Promise.all(
+      boostNudge.map(async (row) => {
+        try {
+          return await sendTutorBoostNudgeEmail(row.userId);
+        } catch (err) {
+          console.error("[nurture] tutor_boost_nudge", row.userId, err);
           return { sent: false };
         }
       }),

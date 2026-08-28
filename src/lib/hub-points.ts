@@ -116,23 +116,23 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
     return [
       {
         title: "Tutor Basic",
-        description: "Priority ranking & subject ads",
+        description: "Priority ranking & subject profiles",
         href: "/pricing?plan=TUTOR_BASIC",
         badge: "Popular",
       },
       {
         title: "Profile Boost",
-        description: "30 days extra search visibility",
-        href: "/pricing",
+        description: "Boost one subject listing for 30 days",
+        href: "/dashboard/tutor?tab=profile#subject-profiles",
       },
       {
-        title: "Highlighted listing",
-        description: "Stand out in search results",
-        href: "/pricing",
+        title: "Highlighted profile",
+        description: "Highlight one subject listing",
+        href: "/dashboard/tutor?tab=profile#subject-profiles",
       },
       {
-        title: "Unlimited Ads",
-        description: "Post beyond the 3-ad cap",
+        title: "Unlimited Profiles",
+        description: "No cap on active subject profiles",
         href: "/pricing",
       },
     ];
@@ -169,7 +169,7 @@ function hubPointsEarnHints(role: string) {
 
 function hubPointsRedeemHints(role: string) {
   return role === "TUTOR"
-    ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted listing", "Unlimited Ads"]
+    ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted profile", "Unlimited Profiles"]
     : ["Student Pass", "Student Pro"];
 }
 

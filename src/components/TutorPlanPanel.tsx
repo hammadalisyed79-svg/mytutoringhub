@@ -110,7 +110,7 @@ export function TutorPlanPanel({
           <div className="tutor-plan-empty">
             <p>
               Complete your profile to appear in search for free. Tutor Basic unlocks priority
-              ranking, unlimited enquiry reveals, and subject ads.
+              ranking, unlimited enquiry reveals, and up to 3 subject profiles.
             </p>
           </div>
         )}

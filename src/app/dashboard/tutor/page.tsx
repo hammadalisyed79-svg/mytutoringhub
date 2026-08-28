@@ -181,7 +181,20 @@ export default async function TutorDashboardPage({
             />
 
             {user.tutorProfile ? (
-              <ProfileBoostPanel boostUntil={user.tutorProfile.boostUntil} currency={currency} />
+              <ProfileBoostPanel currency={currency} />
+            ) : null}
+
+            {user.tutorProfile ? (
+              <section className="panel" id="add-subject-cta">
+                <h2>Reach more students</h2>
+                <p className="muted">
+                  Each subject profile is a separate search card. Add Maths and Physics as two
+                  listings, then boost the one you want students to see first.
+                </p>
+                <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#subject-profiles">
+                  Manage subject profiles
+                </Link>
+              </section>
             ) : null}
 
             {user.tutorProfile && badgeProgress ? (

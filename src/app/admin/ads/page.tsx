@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { AdminActionButton, AdminHideAdButton } from "@/components/AdminActions";
+import { AdminActionButton, AdminHideAdButton, AdminBoostForm } from "@/components/AdminActions";
+import { listingPath } from "@/lib/subject-profile";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
         }
       : {}),
   };
-  const tutorWhere = {
+  const listingWhere = {
     ...(sp.status ? { status: sp.status } : {}),
     ...(q
       ? {
@@ -36,7 +37,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
       : {}),
   };
 
-  const [studentAds, tutorAds] = await Promise.all([
+  const [studentAds, listings] = await Promise.all([
     kind === "tutor"
       ? Promise.resolve([])
       : prisma.studentAd.findMany({
@@ -47,19 +48,24 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
         }),
     kind === "student"
       ? Promise.resolve([])
-      : prisma.tutorAd.findMany({
-          where: tutorWhere,
+      : prisma.subjectProfile.findMany({
+          where: listingWhere,
           orderBy: { createdAt: "desc" },
           take: 60,
-          include: { tutorProfile: { include: { user: { select: { id: true, name: true, email: true } } } } },
+          include: {
+            tutorProfile: { include: { user: { select: { id: true, name: true, email: true } } } },
+          },
         }),
   ]);
 
   return (
     <>
       <div>
-        <h1 className="page-title">Ads</h1>
-        <p className="muted">Moderate student requests and tutor subject ads. Hide or delete inappropriate posts.</p>
+        <h1 className="page-title">Ads &amp; listings</h1>
+        <p className="muted">
+          Moderate student requests and tutor subject profiles. Hide, pause, or delete inappropriate
+          listings.
+        </p>
       </div>
 
       <form className="filters filters-wide" method="get">
@@ -72,7 +78,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
           <select name="kind" defaultValue={kind}>
             <option value="all">All</option>
             <option value="student">Student requests</option>
-            <option value="tutor">Tutor ads</option>
+            <option value="tutor">Subject profiles</option>
           </select>
         </label>
         <label>
@@ -129,32 +135,59 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
 
       {kind !== "student" && (
         <section className="panel">
-          <h2>Tutor ads</h2>
-          {tutorAds.length === 0 && <p className="muted">No tutor ads match.</p>}
+          <h2>Subject profiles</h2>
+          {listings.length === 0 && <p className="muted">No subject profiles match.</p>}
           <div className="results">
-            {tutorAds.map((ad) => (
-              <article key={ad.id} className="ad-row">
+            {listings.map((listing) => (
+              <article key={listing.id} className="ad-row">
                 <strong>
-                  {ad.title} ({ad.status})
+                  {listing.title} ({listing.status})
                 </strong>
                 <span className="muted">
-                  {ad.subject} · {ad.location} ·{" "}
-                  <Link href={`/admin/tutors/${ad.tutorProfile.id}`}>{ad.tutorProfile.user.name}</Link>
+                  {listing.subject} · {listing.location} ·{" "}
+                  <Link href={`/admin/tutors/${listing.tutorProfile.id}`}>
+                    {listing.tutorProfile.user.name}
+                  </Link>
+                  {" · "}
+                  <Link href={listingPath(listing.id)}>Public</Link>
                 </span>
                 <div className="admin-actions">
-                  {ad.status !== "HIDDEN" && (
-                    <AdminActionButton action="hide_tutor_ad" id={ad.id} label="Hide" />
+                  {listing.status !== "HIDDEN" && (
+                    <AdminActionButton
+                      action="hide_subject_profile"
+                      id={listing.id}
+                      label="Hide"
+                    />
                   )}
-                  {ad.status === "HIDDEN" && (
-                    <AdminActionButton action="restore_tutor_ad" id={ad.id} label="Restore" />
+                  {listing.status === "HIDDEN" && (
+                    <AdminActionButton
+                      action="restore_subject_profile"
+                      id={listing.id}
+                      label="Restore"
+                    />
+                  )}
+                  {listing.status === "ACTIVE" && (
+                    <AdminActionButton
+                      action="pause_subject_profile"
+                      id={listing.id}
+                      label="Pause"
+                    />
                   )}
                   <AdminActionButton
-                    action="delete_tutor_ad"
-                    id={ad.id}
+                    action="delete_subject_profile"
+                    id={listing.id}
                     label="Delete"
-                    confirm="Delete this tutor ad?"
+                    confirm="Delete this subject profile?"
                     danger
                   />
+                </div>
+                <div className="admin-actions" style={{ marginTop: "0.5rem" }}>
+                  <AdminBoostForm
+                    id={listing.id}
+                    action="set_listing_highlight"
+                    label="Highlight days"
+                  />
+                  <AdminBoostForm id={listing.id} action="set_listing_boost" label="Boost days" />
                 </div>
               </article>
             ))}

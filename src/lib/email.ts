@@ -388,7 +388,7 @@ export function postVerifyTutorEmailHtml(opts: {
     title: "Email confirmed",
     body: `<p>Hi ${opts.name},</p>
 <p>Your email is confirmed. Complete your tutor profile (subjects, headline, and photo) to appear in search for free.</p>
-<p>When you're ready to grow, Tutor Basic adds priority placement, unlimited enquiry reveals, and subject ads. Profile Boost puts you at the top of search for 30 days.</p>`,
+<p>When you're ready to grow, Tutor Basic adds priority placement and unlimited enquiry reveals. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
     cta: { label: "Complete tutor profile", href: opts.dashboardUrl },
   });
 }
@@ -522,10 +522,11 @@ export function tutorProfileLiveEmailHtml(opts: {
     title: "You're live in search",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Congratulations — your tutor profile is complete and now visible to students browsing ${brand}.</p>
-<p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward subscriptions and tutor ads.</p>
+<p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward Tutor Basic, Extra Profile Ads, or a Profile Boost.</p>
+<p>Tip: add a <strong>subject profile</strong> for each subject you teach so Maths and Physics show as separate search cards. Boost any listing individually from your dashboard.</p>
 <p>Share your public profile link with students and start replying to requests.</p>`,
-    cta: { label: "View public profile", href: opts.profileUrl },
-    footer: `<a href="${opts.dashboardUrl}">Open dashboard</a> · Questions? Contact admin@mytutoringhub.com`,
+    cta: { label: "Manage subject profiles", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
+    footer: `<a href="${opts.profileUrl}">View public profile</a> · <a href="${opts.dashboardUrl}">Open dashboard</a> · Questions? Contact admin@mytutoringhub.com`,
   });
 }
 
@@ -534,9 +535,46 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     preheader: "Unlock priority placement and unlimited enquiry reveals.",
     title: "Grow with Tutor Basic",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search, unlimited enquiry reveals, and subject ads.</p>
-<p>Complimentary access may be available — check Pricing for current offers.</p>`,
+<p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
+<p>Subject profiles stay free during the launch promo. After 30 September 2026, Extra Profile Ads or Basic unlocks up to 3 active listings.</p>
+<p>Complimentary Tutor Basic may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
+  });
+}
+
+export function tutorSecondProfileEmailHtml(opts: {
+  name: string;
+  dashboardUrl: string;
+  existingSubject?: string;
+}) {
+  const subjectHint = opts.existingSubject
+    ? ` You already list <strong>${escapeHtml(opts.existingSubject)}</strong>.`
+    : "";
+  return emailLayout({
+    preheader: "Add another subject so more students can find you.",
+    title: "Add a second subject profile",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
+<p>Create another subject profile from your dashboard — during the launch promo, extra profiles are free.</p>`,
+    cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
+  });
+}
+
+export function tutorBoostNudgeEmailHtml(opts: {
+  name: string;
+  dashboardUrl: string;
+  listingTitle?: string;
+}) {
+  const listingHint = opts.listingTitle
+    ? ` Start with <strong>${escapeHtml(opts.listingTitle)}</strong>.`
+    : "";
+  return emailLayout({
+    preheader: "Boost one subject listing for 30 days of extra visibility.",
+    title: "Boost a subject profile",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Profile Boost lifts a single subject listing higher in search for 30 days — Maths and Physics can be boosted independently.${listingHint}</p>
+<p>Open your subject profiles and choose Boost on the listing you want students to see first.</p>`,
+    cta: { label: "Boost a listing", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });
 }
 

@@ -14,6 +14,8 @@ export const EMAIL_SEQUENCE_LABELS: Record<string, string> = {
   [NURTURE_SEQUENCES.TUTOR_PROFILE_LIVE]: "Profile live congratulations",
   [NURTURE_SEQUENCES.TUTOR_PLAN_NUDGE]: "Tutor Basic nudge",
   [NURTURE_SEQUENCES.TUTOR_VERIFY_NUDGE]: "ID verification nudge",
+  [NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE]: "Add second subject profile",
+  [NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE]: "Boost subject profile nudge",
   [NURTURE_SEQUENCES.STUDENT_BROWSE_R1]: "Student browse nudge 1",
   [NURTURE_SEQUENCES.STUDENT_BROWSE_R2]: "Student browse nudge 2",
   [NURTURE_SEQUENCES.STUDENT_POST_AD_R1]: "Post a request nudge 1",
@@ -31,6 +33,8 @@ export const PROFILE_NURTURE_SEQUENCES = [
   NURTURE_SEQUENCES.TUTOR_PROFILE_LIVE,
   NURTURE_SEQUENCES.TUTOR_PLAN_NUDGE,
   NURTURE_SEQUENCES.TUTOR_VERIFY_NUDGE,
+  NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE,
+  NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE,
 ] as const;
 
 export function emailSequenceLabel(sequence: string) {

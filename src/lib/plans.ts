@@ -88,7 +88,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "TUTOR_BASIC",
     name: "Tutor Basic",
     description:
-      "Get more students: priority in search, unlimited enquiry reveals, and subject ads. Free complete profiles already appear in search.",
+      "Get more students: priority in search, unlimited enquiry reveals, and up to 3 subject profiles. Free complete profiles already appear in search.",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),

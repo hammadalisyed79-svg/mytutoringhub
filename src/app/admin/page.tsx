@@ -24,7 +24,7 @@ export default async function AdminOverviewPage() {
     pendingVerification,
     incompletePayments,
     studentAds,
-    tutorAds,
+    subjectProfiles,
     conversations,
     pastPapers,
     recentUsers,
@@ -41,7 +41,7 @@ export default async function AdminOverviewPage() {
     prisma.verificationRequest.count({ where: { status: "PENDING" } }),
     prisma.subscription.count({ where: { status: "INCOMPLETE" } }),
     prisma.studentAd.count(),
-    prisma.tutorAd.count(),
+    prisma.subjectProfile.count(),
     prisma.conversation.count(),
     prisma.pastPaper.count(),
     prisma.user.findMany({
@@ -79,7 +79,8 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/reports" label="Open reports" value={openReports} />
         <Stat href="/admin/verifications" label="Pending verification" value={pendingVerification} />
         <Stat href="/admin/payments?status=INCOMPLETE" label="Incomplete payments" value={incompletePayments} />
-        <Stat href="/admin/ads" label="Ads" value={studentAds + tutorAds} />
+        <Stat href="/admin/ads" label="Ads & listings" value={studentAds + subjectProfiles} />
+        <Stat href="/admin/ads?kind=tutor" label="Subject profiles" value={subjectProfiles} />
         <Stat href="/admin/messages" label="Conversations" value={conversations} />
         <Stat href="/admin/past-papers" label="Past papers" value={pastPapers} />
       </div>

@@ -216,24 +216,121 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const id = needId(payload.id);
       targetType = "TutorAd";
       targetId = id;
-      await prisma.tutorAd.update({
+      const nextStatus = action === "hide_tutor_ad" ? "HIDDEN" : "ACTIVE";
+      const ad = await prisma.tutorAd.update({
         where: { id },
-        data: { status: action === "hide_tutor_ad" ? "HIDDEN" : "ACTIVE" },
+        data: { status: nextStatus },
       });
+      await prisma.subjectProfile
+        .updateMany({
+          where: { tutorProfileId: ad.tutorProfileId, subject: ad.subject },
+          data: { status: nextStatus },
+        })
+        .catch(() => undefined);
       break;
     }
     case "pause_tutor_ad": {
       const id = needId(payload.id);
       targetType = "TutorAd";
       targetId = id;
-      await prisma.tutorAd.update({ where: { id }, data: { status: "PAUSED" } });
+      const ad = await prisma.tutorAd.update({ where: { id }, data: { status: "PAUSED" } });
+      await prisma.subjectProfile
+        .updateMany({
+          where: { tutorProfileId: ad.tutorProfileId, subject: ad.subject },
+          data: { status: "PAUSED" },
+        })
+        .catch(() => undefined);
       break;
     }
     case "delete_tutor_ad": {
       const id = needId(payload.id);
       targetType = "TutorAd";
       targetId = id;
+      const ad = await prisma.tutorAd.findUnique({ where: { id } });
       await prisma.tutorAd.delete({ where: { id } });
+      if (ad) {
+        await prisma.subjectProfile
+          .deleteMany({
+            where: { tutorProfileId: ad.tutorProfileId, subject: ad.subject },
+          })
+          .catch(() => undefined);
+      }
+      break;
+    }
+    case "hide_subject_profile":
+    case "restore_subject_profile":
+    case "pause_subject_profile": {
+      const id = needId(payload.id);
+      targetType = "SubjectProfile";
+      targetId = id;
+      const nextStatus =
+        action === "hide_subject_profile"
+          ? "HIDDEN"
+          : action === "pause_subject_profile"
+            ? "PAUSED"
+            : "ACTIVE";
+      const listing = await prisma.subjectProfile.update({
+        where: { id },
+        data: { status: nextStatus },
+      });
+      await prisma.tutorAd
+        .updateMany({
+          where: { tutorProfileId: listing.tutorProfileId, subject: listing.subject },
+          data: { status: nextStatus },
+        })
+        .catch(() => undefined);
+      break;
+    }
+    case "delete_subject_profile": {
+      const id = needId(payload.id);
+      targetType = "SubjectProfile";
+      targetId = id;
+      const listing = await prisma.subjectProfile.findUnique({ where: { id } });
+      await prisma.subjectProfile.delete({ where: { id } });
+      if (listing) {
+        await prisma.tutorAd
+          .deleteMany({
+            where: { tutorProfileId: listing.tutorProfileId, subject: listing.subject },
+          })
+          .catch(() => undefined);
+      }
+      break;
+    }
+    case "set_listing_highlight":
+    case "set_listing_boost": {
+      const id = needId(payload.id);
+      targetType = "SubjectProfile";
+      targetId = id;
+      const until = payload.until
+        ? new Date(payload.until)
+        : payload.days
+          ? new Date(Date.now() + payload.days * 86400000)
+          : null;
+      const listing = await prisma.subjectProfile.findUnique({ where: { id } });
+      if (!listing) throw new AdminActionError("Subject profile not found");
+      if (action === "set_listing_boost") {
+        await prisma.subjectProfile.update({
+          where: { id },
+          data: { boostUntil: until },
+        });
+        await prisma.tutorAd
+          .updateMany({
+            where: { tutorProfileId: listing.tutorProfileId, subject: listing.subject },
+            data: { boostUntil: until },
+          })
+          .catch(() => undefined);
+      } else {
+        await prisma.subjectProfile.update({
+          where: { id },
+          data: { highlightedUntil: until },
+        });
+        await prisma.tutorAd
+          .updateMany({
+            where: { tutorProfileId: listing.tutorProfileId, subject: listing.subject },
+            data: { highlightedUntil: until },
+          })
+          .catch(() => undefined);
+      }
       break;
     }
     case "deactivate_tutor":

@@ -34,10 +34,12 @@ export default function TermsPage() {
             each month as shown on Plans &amp; pricing. Student Pass unlocks unlimited tutor
             contacts and student request ads; Student Pro adds unlimited past-paper downloads and
             the AI study assistant where offered. Tutors with a complete profile may appear in
-            search without a paid plan. Tutor Basic and optional upgrades (Verified, Highlighted,
-            Profile Boost, Unlimited Ads) improve ranking and visibility tools. Subscriptions renew
+            search without a paid plan. Tutor Basic and optional upgrades (Verified, Highlight /
+            Boost per subject profile, Extra Profile Ads, Unlimited Profiles) improve ranking and
+            visibility tools. Subscriptions renew
             according to the plan you purchase unless cancelled. Limited-time offers (for example
-            complimentary Tutor Basic until a stated date) end automatically; paid add-ons such as
+            complimentary Tutor Basic and unlimited subject profiles until a stated date) end
+            automatically; paid add-ons such as
             Verified, Highlight, and Profile Boost are never included unless purchased. Platform
             subscriptions are processed by Safepay when card checkout is live; until then paid
             plans are activated manually after payment confirmation. Lesson fees stay

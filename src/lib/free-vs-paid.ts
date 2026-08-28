@@ -87,10 +87,11 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     detail: "Tutors can reply to inbound messages even before email verification.",
   },
   {
-    feature: "Student enquiry reveals per month",
-    free: "limited",
-    paid: "Unlimited",
-    detail: `Free tutors get ${TUTOR_FREE_REVEAL_LIMIT} reveals/month when messaging students first.`,
+    feature: "Subject profiles in search",
+    free: "1 after promo",
+    paid: "Up to 3 / unlimited",
+    detail:
+      "Unlimited free subject profiles until 30 Sep 2026. After that: 1 free; Extra Profile Ads or Tutor Basic unlock up to 3; Unlimited Profiles removes the cap.",
   },
   {
     feature: "Priority search ranking",
@@ -99,10 +100,10 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     detail: "Tutor Basic places you above free listings.",
   },
   {
-    feature: "Subject ads (up to 3 active)",
-    free: "no",
-    paid: "yes",
-    detail: "Tutor Basic is required to publish subject ads.",
+    feature: "Student enquiry reveals per month",
+    free: "limited",
+    paid: "Unlimited",
+    detail: `Free tutors get ${TUTOR_FREE_REVEAL_LIMIT} reveals/month when messaging students first.`,
   },
   {
     feature: "AI study assistant",
@@ -119,8 +120,8 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
   {
     feature: "Highlight & profile boost",
     free: "no",
-    paid: "Add-on",
-    detail: "Optional 30-day visibility upgrades from Pricing.",
+    paid: "Per subject profile",
+    detail: "Optional 30-day visibility upgrades — buy Boost or Highlight on each listing from your dashboard.",
   },
   {
     feature: "Commission on lessons",
@@ -144,8 +145,8 @@ export const STUDENT_PAID_HIGHLIGHTS = [
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  "Tutor Basic — priority ranking, unlimited reveals, up to 3 subject ads (complimentary until 30 Sept 2026)",
-  "Add-ons — Verified queue priority, Highlighted listing, Profile Boost, Unlimited Ads",
+  "Tutor Basic — priority ranking, unlimited reveals, up to 3 subject profiles (complimentary until 30 Sept 2026)",
+  "Add-ons — Verified queue priority, Highlight / Boost per subject profile, Extra Profile Ads, Unlimited Profiles",
 ] as const;
 
 export const FREE_VS_PAID_FAQS = [
@@ -163,7 +164,11 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Basic really free right now?",
-    a: "Yes — Tutor Basic is complimentary until 30 September 2026. It unlocks priority placement, unlimited enquiry reveals, and subject ads. Verified badge, highlight, and profile boost remain paid add-ons.",
+    a: "Yes — Tutor Basic is complimentary until 30 September 2026. Until then, every tutor also gets unlimited free subject profiles. Basic unlocks priority placement and unlimited enquiry reveals. From 1 October 2026, free accounts keep 1 subject profile and 3 contacts/month. Verified badge, highlight, and profile boost remain paid add-ons (bought per subject profile).",
+  },
+  {
+    q: "What is a subject profile?",
+    a: "Each subject you teach (Maths, Physics, …) can be its own search listing with its own rate, city, and boost. Students see separate cards; your photo, verification, and reviews stay shared on your account.",
   },
   {
     q: "Does My Tutoring Hub take a cut of lessons?",
@@ -179,7 +184,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Basic, and pay on Safepay when checkout is live. Until then, complimentary Tutor Basic and manual plan activation by email are available.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Basic, and pay on Safepay when checkout is live. Until then, complimentary Tutor Basic and manual plan activation by email are available. Boost and Highlight are purchased from each subject profile on your tutor dashboard.",
   },
 ] as const;
 

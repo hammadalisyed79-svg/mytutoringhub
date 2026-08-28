@@ -77,17 +77,23 @@ export default async function HowItWorksPage() {
             <h2>For tutors</h2>
             <ul className="check-list">
               <li>
-                Complete your profile (subjects + headline) to appear in search for free
+                Complete your account profile (photo, headline, bio) to appear in search for free
               </li>
               <li>
-                Tutor Basic unlocks priority ranking, unlimited enquiry reveals, and subject ads
-                (complimentary until 30 September 2026)
+                Publish a subject profile for each subject you teach — students see separate search
+                cards
+              </li>
+              <li>
+                Tutor Basic unlocks priority ranking and unlimited enquiry reveals (complimentary
+                until 30 September 2026); subject profiles are unlimited free during the same launch
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is
                 recommended
               </li>
-              <li>Boost or highlight from the same Pricing page — paid on Safepay</li>
+              <li>
+                Boost or highlight each subject profile from your dashboard — paid on Safepay
+              </li>
             </ul>
             <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>
               {tutorCta.label}

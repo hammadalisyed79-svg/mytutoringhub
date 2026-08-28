@@ -310,9 +310,10 @@ export function PricingPlansClient({
         <section className="pricing-addons-section">
           <h2 className="checkout-section-title">Optional tutor boosts</h2>
           <p className="muted pricing-addons-lead">
-            Optional visibility upgrades — verified badge, highlight, boost, and extra ads billed
-            separately{paidCheckoutLive ? " on Safepay" : " after payment"}. These do not replace a
-            complete free listing.
+            Optional visibility upgrades — verified badge, highlight or boost per subject profile,
+            Extra Profile Ads, and Unlimited Profiles billed separately
+            {paidCheckoutLive ? " on Safepay" : " after payment"}. These do not replace a complete
+            free listing.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (
