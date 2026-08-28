@@ -27,14 +27,17 @@ type Props = {
     location?: string;
     country?: string;
     level?: string;
+    board?: string;
     language?: string;
     mode?: string;
     max?: string;
     verified?: string;
     trial?: string;
+    sort?: string;
   };
   subjects: string[];
   levels: string[];
+  boards: string[];
   codes: CurriculumCodeOption[];
   currency: string;
   pinnedCountry?: string | null;
@@ -53,6 +56,7 @@ export function SearchFiltersForm({
   initial,
   subjects,
   levels,
+  boards,
   codes,
   currency,
   pinnedCountry,
@@ -70,6 +74,7 @@ export function SearchFiltersForm({
   const [country, setCountry] = useState(initialCountryValue(initial));
   const [location, setLocation] = useState(initial.location || "");
   const [level, setLevel] = useState(initial.level || "");
+  const [board, setBoard] = useState(initial.board || "");
   const [language, setLanguage] = useState(initial.language || "");
   const [applying, setApplying] = useState(false);
 
@@ -168,21 +173,36 @@ export function SearchFiltersForm({
     country && { key: "country", label: resolveCountry(country).label || country },
     location && { key: "location", label: resolveCity(location, cityPool).label || location },
     level && { key: "level", label: level },
+    board && { key: "board", label: board },
     language && { key: "language", label: language },
     initial.mode === "online" && { key: "mode", label: "Online" },
     initial.mode === "inperson" && { key: "mode", label: "In person" },
     initial.verified === "1" && { key: "verified", label: "Verified" },
     initial.trial === "1" && { key: "trial", label: "Free trial" },
     initial.max && { key: "max", label: `Up to ${initial.max} ${currency}` },
+    initial.sort &&
+      initial.sort !== "relevance" && {
+        key: "sort",
+        label:
+          initial.sort === "price_asc"
+            ? "Price ↑"
+            : initial.sort === "price_desc"
+              ? "Price ↓"
+              : initial.sort === "rating"
+                ? "Top rated"
+                : initial.sort,
+      },
   ].filter(Boolean) as { key: string; label: string }[];
 
   const moreFiltersActive = Boolean(
     level ||
+      board ||
       language ||
       initial.mode ||
       initial.max ||
       initial.verified === "1" ||
-      initial.trial === "1",
+      initial.trial === "1" ||
+      (initial.sort && initial.sort !== "relevance"),
   );
 
   const [moreOpen, setMoreOpen] = useState(moreFiltersActive);
@@ -238,6 +258,15 @@ export function SearchFiltersForm({
         <button className={`btn${applying ? " btn--pulse" : ""}`} type="submit" disabled={applying}>
           {applying ? "Searching…" : "Update results"}
         </button>
+        <label className="search-sort-inline">
+          <span className="muted">Sort</span>
+          <select name="sort" defaultValue={initial.sort || "relevance"} aria-label="Sort results">
+            <option value="relevance">Best match</option>
+            <option value="rating">Top rated</option>
+            <option value="price_asc">Price: low to high</option>
+            <option value="price_desc">Price: high to low</option>
+          </select>
+        </label>
         <Link href="/search?guided=1" className="search-clear">
           Start over
         </Link>
@@ -269,6 +298,17 @@ export function SearchFiltersForm({
             options={levelOptions}
             placeholder={levelPlaceholder}
           />
+          <label>
+            Exam board
+            <select name="board" value={board} onChange={(e) => setBoard(e.target.value)}>
+              <option value="">Any board</option>
+              {boards.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
           <SuggestField
             name="language"
             label="Language"

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { SaveTutorButton } from "@/components/SaveTutorButton";
+import { TrackTutorView } from "@/components/RecentAndSavedTutors";
 import { ContactTutorForm } from "@/components/ContactTutorForm";
 import { ShareTutorButton } from "@/components/ShareTutorButton";
 import { ReviewForm } from "@/components/ReviewForm";
@@ -315,6 +317,15 @@ export default async function TutorProfilePage({ params }: Params) {
 
   return (
     <>
+      <TrackTutorView
+        tutor={{
+          tutorProfileId: tutor.id,
+          name: tutor.user.name,
+          subject: splitList(tutor.subjects)[0],
+          photoUrl: tutor.photoUrl,
+          href: `/tutors/${tutor.id}`,
+        }}
+      />
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -413,6 +424,17 @@ export default async function TutorProfilePage({ params }: Params) {
                 )}
                 {highlighted && <span className="badge accent">Featured</span>}
                 {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
+                {!isOwner && (
+                  <SaveTutorButton
+                    tutor={{
+                      tutorProfileId: tutor.id,
+                      name: tutor.user.name,
+                      subject: splitList(tutor.subjects)[0],
+                      photoUrl: tutor.photoUrl,
+                      href: `/tutors/${tutor.id}`,
+                    }}
+                  />
+                )}
               </div>
 
               {isOwner && !tutor.verified && (
@@ -797,6 +819,13 @@ export default async function TutorProfilePage({ params }: Params) {
                   tutorName={tutor.user.name}
                   emailVerified={viewerEmailVerified}
                   viewerEmail={viewer?.email ?? session?.user?.email}
+                  listings={tutor.subjectProfiles.map((listing) => ({
+                    id: listing.id,
+                    title: listing.title,
+                    subject: listing.subject,
+                    rateLabel: formatHourly(listing.rate, currency),
+                  }))}
+                  subjectProfileId={tutor.subjectProfiles[0]?.id}
                 />
               ) : isOwner ? (
                 <p className="muted">Students can message you from this page ({studentFreeContactsShort()} free, or unlimited with Student Pass).</p>

@@ -15,7 +15,7 @@ export const metadata = pageMetadata({
 
 function subjectTokens(value: string) {
   return value
-    .split(",")
+    .split(/[,;|]/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
 }
@@ -23,6 +23,55 @@ function subjectTokens(value: string) {
 function subjectsMatch(adSubject: string, tutorSubjects: string[]) {
   const ad = adSubject.toLowerCase();
   return tutorSubjects.some((s) => ad.includes(s) || s.includes(ad));
+}
+
+function requestMatchScore(
+  ad: {
+    subject: string;
+    level: string;
+    board: string | null;
+    location: string;
+    online: boolean;
+    inPerson: boolean;
+  },
+  tutor: {
+    subjects: string[];
+    levels: string[];
+    boards: string[];
+    location: string;
+    online: boolean;
+    inPerson: boolean;
+  },
+) {
+  let score = 0;
+  if (subjectsMatch(ad.subject, tutor.subjects)) score += 40;
+  if (
+    ad.level &&
+    tutor.levels.some(
+      (lvl) =>
+        lvl.includes(ad.level.toLowerCase()) || ad.level.toLowerCase().includes(lvl),
+    )
+  ) {
+    score += 20;
+  }
+  if (
+    ad.board &&
+    tutor.boards.some(
+      (b) => b.includes(ad.board!.toLowerCase()) || ad.board!.toLowerCase().includes(b),
+    )
+  ) {
+    score += 15;
+  }
+  if (
+    ad.location &&
+    tutor.location &&
+    (tutor.location.includes(ad.location.toLowerCase()) ||
+      ad.location.toLowerCase().includes(tutor.location))
+  ) {
+    score += 10;
+  }
+  if ((ad.online && tutor.online) || (ad.inPerson && tutor.inPerson)) score += 8;
+  return score;
 }
 
 export default async function AdsPage() {
@@ -34,21 +83,58 @@ export default async function AdsPage() {
     include: { user: { select: { id: true, name: true } } },
   });
 
-  let tutorSubjects: string[] = [];
+  let tutorMatch: {
+    subjects: string[];
+    levels: string[];
+    boards: string[];
+    location: string;
+    online: boolean;
+    inPerson: boolean;
+  } | null = null;
+
   if (session?.user?.role === "TUTOR") {
     const profile = await prisma.tutorProfile.findUnique({
       where: { userId: session.user.id },
-      select: { subjects: true },
+      select: {
+        subjects: true,
+        levels: true,
+        location: true,
+        online: true,
+        inPerson: true,
+        subjectProfiles: {
+          where: { status: "ACTIVE" },
+          select: { subject: true, level: true, board: true, location: true, online: true, inPerson: true },
+        },
+      },
     });
-    tutorSubjects = subjectTokens(profile?.subjects || "");
+    if (profile) {
+      const listingSubjects = profile.subjectProfiles.map((p) => p.subject.toLowerCase());
+      const listingLevels = profile.subjectProfiles.map((p) => p.level.toLowerCase());
+      const listingBoards = profile.subjectProfiles
+        .map((p) => (p.board || "").toLowerCase())
+        .filter(Boolean);
+      tutorMatch = {
+        subjects: [...new Set([...subjectTokens(profile.subjects || ""), ...listingSubjects])],
+        levels: [
+          ...new Set([
+            ...subjectTokens(profile.levels || ""),
+            ...listingLevels,
+          ]),
+        ],
+        boards: [...new Set(listingBoards)],
+        location: (profile.location || "").toLowerCase(),
+        online: profile.online || profile.subjectProfiles.some((p) => p.online),
+        inPerson: profile.inPerson || profile.subjectProfiles.some((p) => p.inPerson),
+      };
+    }
   }
 
   const sortedAds =
-    tutorSubjects.length > 0
+    tutorMatch && tutorMatch.subjects.length > 0
       ? [...ads].sort((a, b) => {
-          const aMatch = subjectsMatch(a.subject, tutorSubjects) ? 0 : 1;
-          const bMatch = subjectsMatch(b.subject, tutorSubjects) ? 0 : 1;
-          return aMatch - bMatch;
+          const aScore = requestMatchScore(a, tutorMatch!);
+          const bScore = requestMatchScore(b, tutorMatch!);
+          return bScore - aScore || b.createdAt.getTime() - a.createdAt.getTime();
         })
       : ads;
 
@@ -69,7 +155,9 @@ export default async function AdsPage() {
 
         <p className="muted ads-board-note">
           {VALUE_PROPOSITION}
-          {tutorSubjects.length > 0 && " Requests matching your subjects appear first."}
+          {tutorMatch && tutorMatch.subjects.length > 0
+            ? " Requests matching your teaching listings appear first."
+            : ""}
         </p>
 
         <div className="results">
@@ -92,32 +180,41 @@ export default async function AdsPage() {
               )}
             </div>
           )}
-          {sortedAds.map((ad) => (
-            <article key={ad.id} className="ad-row">
-              <div className="meta">
-                <span className="badge">{ad.subject}</span>
-                <span>{ad.level}</span>
-                <span>{ad.location}</span>
-                {ad.budget != null && <span>~{formatHourly(ad.budget, currency)}</span>}
-              </div>
-              <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
-              <p style={{ margin: 0 }}>{ad.description}</p>
-              <div className="ad-row-footer">
-                <span className="ad-row-poster">Posted by {ad.user.name}</span>
-                <div className="ad-row-actions">
-                  {session?.user?.role === "TUTOR" && (
-                    <Link
-                      href={`/messages?to=${ad.user.id}&ad=${ad.id}`}
-                      className="btn btn-sm"
-                    >
-                      Message student
-                    </Link>
-                  )}
-                  {session?.user && <ReportButton targetType="STUDENT_AD" targetId={ad.id} />}
+          {sortedAds.map((ad) => {
+            const score = tutorMatch ? requestMatchScore(ad, tutorMatch) : 0;
+            return (
+              <article key={ad.id} className={`ad-row${score >= 40 ? " ad-row--match" : ""}`}>
+                <div className="meta">
+                  <span className="badge">{ad.subject}</span>
+                  {score >= 40 && <span className="badge badge-verified">Matches you</span>}
+                  <span>{ad.level}</span>
+                  {ad.board && <span>{ad.board}</span>}
+                  {ad.syllabusCode && <span>{ad.syllabusCode}</span>}
+                  <span>{ad.location}</span>
+                  {ad.budget != null && <span>Budget {formatHourly(ad.budget, currency)}</span>}
                 </div>
-              </div>
-            </article>
-          ))}
+                <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
+                <p style={{ margin: 0 }}>{ad.description}</p>
+                <div className="ad-row-footer">
+                  <span className="ad-row-poster">
+                    {[ad.online ? "Online" : null, ad.inPerson ? "In person" : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                    {" · "}
+                    Posted by {ad.user.name}
+                  </span>
+                  <div className="ad-row-actions">
+                    {session?.user?.role === "TUTOR" && (
+                      <Link className="btn btn-sm" href={`/messages?to=${ad.user.id}&ad=${ad.id}`}>
+                        Message student
+                      </Link>
+                    )}
+                    {session?.user && <ReportButton targetType="STUDENT_AD" targetId={ad.id} />}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
     </div>

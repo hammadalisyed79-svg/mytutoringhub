@@ -154,7 +154,12 @@ export default async function PastPaperSeoPage({
           {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
         </p>
         <SubjectHubTabs active="papers" />
-        <PastPaperTutorCta subject={titleSubject} />
+        <PastPaperTutorCta
+          subject={titleSubject}
+          board={entry?.board || (/cambridge/i.test(board) ? "Cambridge International" : board)}
+          level={titleLevel}
+          syllabusCode={code || null}
+        />
         <p className="paper-crumb muted">
           <Link href="/subjects">Subjects</Link>
           {" · "}

@@ -253,22 +253,27 @@ model ServiceFeeEvent {
 }
 
 model StudentAd {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  subject     String
-  level       String
-  location    String
-  description String
-  budget      Float?
-  online      Boolean  @default(true)
-  inPerson    Boolean  @default(false)
-  status      String   @default("OPEN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  subject      String
+  level        String
+  /// Optional exam board for Marketplace V2 request matching.
+  board        String?
+  /// Optional syllabus / subject code (e.g. 5070).
+  syllabusCode String?
+  location     String
+  description  String
+  budget       Float?
+  online       Boolean  @default(true)
+  inPerson     Boolean  @default(false)
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([status, createdAt])
+  @@index([subject, status])
 }
 
 model Conversation {

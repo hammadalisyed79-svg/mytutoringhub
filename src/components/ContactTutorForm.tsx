@@ -13,22 +13,33 @@ type ContactError = {
   limit?: number;
 };
 
+type ListingOption = {
+  id: string;
+  title: string;
+  subject: string;
+  rateLabel?: string;
+};
+
 export function ContactTutorForm({
   recipientId,
   tutorName,
   emailVerified = true,
   viewerEmail,
   subjectProfileId,
+  listings,
 }: {
   recipientId: string;
   tutorName: string;
   emailVerified?: boolean;
   viewerEmail?: string | null;
-  /** Subject listing id — stored on conversation as relatedAdId for analytics. */
+  /** Teaching listing id — stored on conversation as relatedAdId for analytics. */
   subjectProfileId?: string;
+  /** When messaging from the tutor hub, let students pick which lesson they mean. */
+  listings?: ListingOption[];
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
+  const [listingId, setListingId] = useState(subjectProfileId || listings?.[0]?.id || "");
   const [error, setError] = useState<ContactError | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -53,13 +64,14 @@ export function ContactTutorForm({
     e.preventDefault();
     setLoading(true);
     setError(null);
+    const related = listingId || subjectProfileId;
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         recipientId,
         body,
-        ...(subjectProfileId ? { relatedAdId: subjectProfileId } : {}),
+        ...(related ? { relatedAdId: related } : {}),
       }),
     });
     const data = (await res.json()) as ContactError & { conversationId?: string };
@@ -117,6 +129,24 @@ export function ContactTutorForm({
       <p className="muted">
         Lesson fees are arranged directly with your tutor in a currency you both agree on.
       </p>
+      {listings && listings.length > 0 && (
+        <label className="contact-listing-pick">
+          <span>Regarding</span>
+          <select
+            value={listingId}
+            onChange={(e) => setListingId(e.target.value)}
+            required
+            aria-label="Which lesson is this about"
+          >
+            {listings.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.title || row.subject}
+                {row.rateLabel ? ` · ${row.rateLabel}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -129,8 +159,7 @@ export function ContactTutorForm({
         <div className="form-error" role="alert" style={{ display: "grid", gap: "0.5rem" }}>
           <p style={{ margin: 0 }}>
             {isLimit
-              ? error.message ||
-                `You've used all ${error.limit ?? 3} tutor contacts this month.`
+              ? error.message || `You've used all ${error.limit ?? 3} tutor contacts this month.`
               : error.message || "Could not send message"}
           </p>
           {isLimit && remaining != null && (

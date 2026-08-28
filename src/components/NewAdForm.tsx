@@ -7,6 +7,8 @@ export type NewAdFormInitial = {
   subject?: string;
   level?: string;
   location?: string;
+  board?: string;
+  syllabusCode?: string;
   online?: boolean;
   inPerson?: boolean;
   q?: string;
@@ -51,6 +53,8 @@ export function NewAdForm({
       title: String(fd.get("title")),
       subject: String(fd.get("subject")),
       level: String(fd.get("level")),
+      board: String(fd.get("board") || "") || null,
+      syllabusCode: String(fd.get("syllabusCode") || "") || null,
       location: String(fd.get("location")),
       description: String(fd.get("description")),
       budget: fd.get("budget") ? Number(fd.get("budget")) : null,
@@ -116,6 +120,20 @@ export function NewAdForm({
           defaultValue={initial?.level || ""}
         />
       </label>
+      <div className="teaching-listing-grid">
+        <label>
+          Exam board <span className="muted">(optional)</span>
+          <input name="board" placeholder="e.g. Cambridge, Edexcel" defaultValue={initial?.board || ""} />
+        </label>
+        <label>
+          Syllabus code <span className="muted">(optional)</span>
+          <input
+            name="syllabusCode"
+            placeholder="e.g. 5070"
+            defaultValue={initial?.syllabusCode || ""}
+          />
+        </label>
+      </div>
       <label>
         <span>
           City <abbr className="req" title="Required">

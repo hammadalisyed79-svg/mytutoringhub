@@ -31,8 +31,10 @@ import {
 } from "@/lib/marketing-copy";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { FreeVsPaidHighlights } from "@/components/FreeVsPaidComparison";
+import { RecentAndSavedTutors } from "@/components/RecentAndSavedTutors";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 import { HeroImagePreload } from "@/components/HeroImagePreload";
+import { catalogSubjectNames } from "@/lib/subject-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -216,8 +218,10 @@ export default async function HomePage() {
             <HeroSearch
               placeholder={region.searchPlaceholder}
               suggestedCountry={region.countryName}
+              subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
             />
           </div>
+          <RecentAndSavedTutors />
           <HeroPathCards />
           <ValuePropStrip className="hero-value-strip" />
         </div>

@@ -13,7 +13,9 @@ import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { isDefaultTutorBio, TUTOR_VERIFY_PROFILE_MESSAGE } from "@/lib/tutor-listing-copy";
-import { curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
+import { curriculumBoards, curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
+import { RecentAndSavedTutors } from "@/components/RecentAndSavedTutors";
+import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { relatedSubjects, resolveCity } from "@/lib/search-smart";
 import { formatTutorAvailability } from "@/lib/tutor-catalog";
@@ -39,6 +41,7 @@ type SearchParams = Promise<{
   trial?: string;
   language?: string;
   page?: string;
+  sort?: string;
   browse?: string;
   guided?: string;
 }>;
@@ -59,6 +62,7 @@ function studentRequestHref(sp: {
   if (sp.mode === "online") params.set("online", "1");
   if (sp.mode === "inperson") params.set("inPerson", "1");
   if (sp.q) params.set("q", sp.q);
+  if ("board" in sp && sp.board) params.set("board", String(sp.board));
   const qs = params.toString();
   return qs ? `/ads/new?${qs}` : "/ads/new";
 }
@@ -131,10 +135,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       sp.country ||
       sp.mode ||
       sp.level ||
+      sp.board ||
       sp.language ||
       sp.max ||
       sp.verified ||
       sp.trial ||
+      sp.sort ||
       sp.browse === "1",
   );
   const showGuided = sp.guided === "1" || !hasSearchIntent;
@@ -210,6 +216,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               initial={sp}
               subjects={subjectNames}
               levels={curriculumLevels()}
+              boards={curriculumBoards()}
               codes={curriculumCodeOptions()}
               currency={currency}
               pinnedCountry={pinnedCountry}
@@ -218,6 +225,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               levelPlaceholder={region.levelPlaceholder}
             />
             <p className="muted search-summary">{summary}</p>
+            <RecentAndSavedTutors />
           </>
         )}
 
@@ -325,15 +333,28 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     cropZoom={t.photoCropZoom}
                     initial={tutorName.slice(0, 1).toUpperCase()}
                   />
-                  {isOwner ? (
-                    !t.verified && (
-                      <span className="badge tutor-owner-verify-badge" title={TUTOR_VERIFY_PROFILE_MESSAGE}>
-                        Not Verified
-                      </span>
-                    )
-                  ) : (
-                    <TutorTrustBadgePill badge={t.trustBadge || "NEW"} size="sm" fullLabel />
-                  )}
+                  <div className="tc-card-head-tools">
+                    <SaveTutorButton
+                      compact
+                      tutor={{
+                        tutorProfileId: t.tutorProfileId,
+                        listingId: t.id,
+                        name: tutorName,
+                        subject: t.subject,
+                        photoUrl: t.photoUrl,
+                        href: listingPath(t.id),
+                      }}
+                    />
+                    {isOwner ? (
+                      !t.verified && (
+                        <span className="badge tutor-owner-verify-badge" title={TUTOR_VERIFY_PROFILE_MESSAGE}>
+                          Not Verified
+                        </span>
+                      )
+                    ) : (
+                      <TutorTrustBadgePill badge={t.trustBadge || "NEW"} size="sm" fullLabel />
+                    )}
+                  </div>
                 </div>
 
                 <div className="tc-card-main">

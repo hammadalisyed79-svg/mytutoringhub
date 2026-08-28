@@ -275,6 +275,18 @@ export function TutorAdsManager({
         </p>
       </div>
 
+      {listings.length > 0 && (
+        <div className="listing-quality-tips">
+          <p className="listing-quality-title">Make listings easier to find</p>
+          <ul>
+            <li>Use a clear title students would search for (e.g. “Cambridge O Level Chemistry 5070”).</li>
+            <li>Add exam board and syllabus code when relevant — Past Paper visitors match on these.</li>
+            <li>Set a listing-specific rate; different levels can charge different prices.</li>
+            <li>Boost only the listings you want at the top of search — payment never overrides subject relevance.</li>
+          </ul>
+        </div>
+      )}
+
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
 

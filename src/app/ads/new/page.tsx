@@ -19,6 +19,8 @@ type SearchParams = Promise<{
   level?: string;
   location?: string;
   country?: string;
+  board?: string;
+  syllabusCode?: string;
   online?: string;
   inPerson?: string;
   q?: string;
@@ -69,6 +71,8 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
               subject: sp.subject,
               level: sp.level,
               location: sp.location,
+              board: sp.board,
+              syllabusCode: sp.syllabusCode,
               online: sp.online === "1" || sp.online === undefined,
               inPerson: sp.inPerson === "1",
               q: sp.q,

@@ -32,6 +32,8 @@ export type TutorSearchFilters = {
   trial?: string;
   language?: string;
   page?: string;
+  sort?: string;
+  syllabusCode?: string;
 };
 
 /** Flattened search card: best matching Teaching Listing + parent tutor identity. */
@@ -234,7 +236,8 @@ export async function searchTutors(
   const location = cityResolved.value;
   const level = (filters.level || parsed.level || (!filters.subject && codeMatch?.level) || "").trim();
   const board = (filters.board || codeMatch?.board || "").trim();
-  const syllabusCode = (codeMatch?.code || "").trim();
+  const syllabusCode = (filters.syllabusCode || codeMatch?.code || "").trim();
+  const sort = (filters.sort || "relevance").trim().toLowerCase();
   const mode = filters.mode || parsed.mode || "";
   let keyword = (filters.q || "").trim();
   if (filters.q && !filters.subject && !filters.location && !filters.country) {
@@ -436,8 +439,28 @@ export async function searchTutors(
     .sort((a, b) => b.score - a.score);
 
   const deduped = dedupeSearchByTutor(scored);
-  const total = deduped.length;
-  const slice = deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => ({
+
+  function avgRating(card: SearchListingCard) {
+    if (!card.reviews.length) return -1;
+    return card.reviews.reduce((s, r) => s + r.rating, 0) / card.reviews.length;
+  }
+
+  const ordered =
+    sort === "price_asc"
+      ? [...deduped].sort((a, b) => a.card.hourlyRate - b.card.hourlyRate || b.score - a.score)
+      : sort === "price_desc"
+        ? [...deduped].sort((a, b) => b.card.hourlyRate - a.card.hourlyRate || b.score - a.score)
+        : sort === "rating"
+          ? [...deduped].sort(
+              (a, b) =>
+                avgRating(b.card) - avgRating(a.card) ||
+                b.card.reviews.length - a.card.reviews.length ||
+                b.score - a.score,
+            )
+          : deduped;
+
+  const total = ordered.length;
+  const slice = ordered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => ({
     ...s.card,
     alsoTeaches: s.alsoTeaches,
   }));
@@ -447,7 +470,7 @@ export async function searchTutors(
     page,
     pageSize: PAGE_SIZE,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    resolved: { subject, location, country, level, board, keyword, mode },
+    resolved: { subject, location, country, level, board, keyword, mode, sort },
     locationRelaxed,
     keptCountry,
   };

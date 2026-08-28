@@ -16,6 +16,7 @@ export function SuggestField({
   options,
   placeholder,
   spellCheck = false,
+  hideLabel = false,
 }: {
   name: string;
   label: string;
@@ -24,6 +25,7 @@ export function SuggestField({
   options: SuggestOption[];
   placeholder?: string;
   spellCheck?: boolean;
+  hideLabel?: boolean;
 }) {
   const id = useId();
   const listId = `${id}-list`;
@@ -46,7 +48,9 @@ export function SuggestField({
 
   return (
     <div className="suggest" ref={wrapRef}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className={hideLabel ? "sr-only" : undefined}>
+        {label}
+      </label>
       <input
         id={id}
         name={name}

@@ -27,6 +27,8 @@ import {
   truncateDescription,
 } from "@/lib/seo";
 import { trackProductEvent } from "@/lib/product-events";
+import { SaveTutorButton } from "@/components/SaveTutorButton";
+import { TrackTutorView } from "@/components/RecentAndSavedTutors";
 
 export const dynamic = "force-dynamic";
 
@@ -216,6 +218,16 @@ export default async function SubjectListingPage({ params }: Params) {
 
   return (
     <>
+      <TrackTutorView
+        tutor={{
+          tutorProfileId: tutor.id,
+          listingId: listing.id,
+          name: tutorName,
+          subject: listing.subject,
+          photoUrl: tutor.photoUrl,
+          href: listingPath(listing.id),
+        }}
+      />
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -290,6 +302,18 @@ export default async function SubjectListingPage({ params }: Params) {
                   {boosted && <span className="badge accent">Boosted</span>}
                   {highlighted && <span className="badge accent">Featured</span>}
                   {tutor.offersFreeTrial && <span className="badge">Free trial</span>}
+                  {!isOwner && (
+                    <SaveTutorButton
+                      tutor={{
+                        tutorProfileId: tutor.id,
+                        listingId: listing.id,
+                        name: tutorName,
+                        subject: listing.subject,
+                        photoUrl: tutor.photoUrl,
+                        href: listingPath(listing.id),
+                      }}
+                    />
+                  )}
                 </div>
 
                 {isOwner && !tutor.verified && (
