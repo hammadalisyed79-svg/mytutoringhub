@@ -2,7 +2,6 @@ import { isTutorProfileComplete } from "@/lib/tutor-profile-completion";
 import { isSuspiciousDisplayName } from "@/lib/display-name";
 import { prisma } from "@/lib/prisma";
 import { syncTutorTrustBadge } from "@/lib/tutor-badges";
-import { FREE_TUTOR_AD_CAP } from "@/lib/types";
 import type { Role, SubscriptionPlan } from "@/lib/types";
 
 const ACTIVE = new Set(["ACTIVE", "TRIALING"]);
@@ -13,6 +12,7 @@ const TUTOR_PAID_PLANS: SubscriptionPlan[] = [
   "VERIFIED_TUTOR",
   "HIGHLIGHTED_AD",
   "AD_BOOST",
+  "EXTRA_PROFILE_ADS",
   "UNLIMITED_ADS",
 ];
 
@@ -126,35 +126,16 @@ export async function canPostAd(userId: string, role: Role) {
 }
 
 export async function tutorAdLimit(userId: string) {
-  if (await hasActivePlan(userId, "UNLIMITED_ADS")) return Number.POSITIVE_INFINITY;
-  return FREE_TUTOR_AD_CAP;
+  const { getSubjectProfileActiveCap } = await import("@/lib/subject-profile-entitlements");
+  return getSubjectProfileActiveCap(userId);
 }
 
 export async function canCreateTutorAd(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { suspended: true, emailVerified: true, role: true },
-  });
-  if (!user) return { ok: false as const, reason: "Create your tutor profile first" };
-  if (user.suspended) return { ok: false as const, reason: "Account suspended" };
-  if (user.role !== "ADMIN" && !user.emailVerified) {
-    return { ok: false as const, reason: "Verify your email to publish ads" };
-  }
+  const { canCreateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
+  const gate = await canCreateSubjectProfile(userId);
+  if (!gate.ok) return { ok: false as const, reason: gate.reason };
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
-  if (!(await hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD"]))) {
-    return { ok: false as const, reason: "Tutor Basic is required to publish ads" };
-  }
-  const limit = await tutorAdLimit(userId);
-  const count = await prisma.tutorAd.count({
-    where: { tutorProfileId: profile.id, status: "ACTIVE" },
-  });
-  if (count >= limit) {
-    return {
-      ok: false as const,
-      reason: `Active ad limit reached (${FREE_TUTOR_AD_CAP}). Upgrade to Unlimited Ads.`,
-    };
-  }
   return { ok: true as const, profile };
 }
 
@@ -165,6 +146,7 @@ export function computeTutorPlanTier(plans: Set<string>): number {
     plans.has("TUTOR_BASIC") ||
     plans.has("HIGHLIGHTED_AD") ||
     plans.has("AD_BOOST") ||
+    plans.has("EXTRA_PROFILE_ADS") ||
     plans.has("UNLIMITED_ADS")
   ) {
     return 1;

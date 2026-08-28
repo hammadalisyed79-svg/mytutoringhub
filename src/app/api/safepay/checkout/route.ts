@@ -32,6 +32,7 @@ const schema = z.object({
     "VERIFIED_TUTOR",
     "HIGHLIGHTED_AD",
     "AD_BOOST",
+    "EXTRA_PROFILE_ADS",
     "UNLIMITED_ADS",
   ]),
   billing: z.enum(["monthly", "annual"]).optional().default("monthly"),

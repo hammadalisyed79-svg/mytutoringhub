@@ -12,7 +12,7 @@ function hasPaidTutorPlan(subscriptions: { plan: string; status: string }[]) {
   return subscriptions.some(
     (s) =>
       ["ACTIVE", "TRIALING"].includes(s.status) &&
-      ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"].includes(
+      ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "EXTRA_PROFILE_ADS", "UNLIMITED_ADS"].includes(
         s.plan,
       ),
   );

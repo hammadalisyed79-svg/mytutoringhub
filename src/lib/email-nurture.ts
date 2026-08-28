@@ -217,7 +217,7 @@ export async function sendTutorPlanNudgeEmail(userId: string) {
   if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended) {
     return { sent: false, reason: "ineligible" as const };
   }
-  if (await hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"])) {
+  if (await hasAnyActivePlan(userId, ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "EXTRA_PROFILE_ADS", "UNLIMITED_ADS"])) {
     return { sent: false, reason: "has_plan" as const };
   }
 

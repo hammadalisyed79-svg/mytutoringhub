@@ -26,7 +26,8 @@ const PLAN_OPTIONS: { value: string; label: string }[] = [
   { value: "VERIFIED_TUTOR", label: "Verified Tutor" },
   { value: "HIGHLIGHTED_AD", label: "Highlighted Listing" },
   { value: "AD_BOOST", label: "Profile Boost" },
-  { value: "UNLIMITED_ADS", label: "Unlimited Ads" },
+  { value: "EXTRA_PROFILE_ADS", label: "Extra Profile Ads" },
+  { value: "UNLIMITED_ADS", label: "Unlimited Profiles" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -114,7 +115,7 @@ export default function SubscriptionsPage() {
   ).length;
   const activeEliteTutors = subs.filter(
     (s) =>
-      ["VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"].includes(s.plan) &&
+      ["VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "EXTRA_PROFILE_ADS", "UNLIMITED_ADS"].includes(s.plan) &&
       s.role === "tutor" &&
       active(s),
   ).length;

@@ -89,8 +89,9 @@ export function TutorAdsManager({
   return (
     <div>
       <p className="muted">
-        Active ads: {activeCount} / {FREE_TUTOR_AD_CAP} included with Tutor Basic. Add Unlimited Ads
-        to post more.
+        Subject profiles (one subject per listing). Launch promo: unlimited free until 30 Sep 2026.
+        After that, 1 free profile — Extra Profile Ads or Tutor Basic unlocks up to {FREE_TUTOR_AD_CAP},
+        Unlimited Profiles removes the cap. Active now: {activeCount}.
       </p>
       <form className="stack-form profile-form" onSubmit={create} style={{ marginTop: "0.75rem" }}>
         <p className="field-hint">Each ad should be one subject so students can find you in search.</p>

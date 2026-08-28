@@ -13,7 +13,8 @@ const PLAN_LABELS: Record<string, string> = {
   VERIFIED_TUTOR: "Verified Tutor",
   HIGHLIGHTED_AD: "Highlighted Listing",
   AD_BOOST: "Profile Boost",
-  UNLIMITED_ADS: "Unlimited Ads",
+  EXTRA_PROFILE_ADS: "Extra Profile Ads",
+  UNLIMITED_ADS: "Unlimited Profiles",
 };
 
 function serializeSub(s: {

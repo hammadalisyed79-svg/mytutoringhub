@@ -7,7 +7,7 @@ import {
 } from "@/lib/subscription";
 import type { Role, SubscriptionPlan } from "@/lib/types";
 
-export const TUTOR_FREE_REVEAL_LIMIT = 5;
+export const TUTOR_FREE_REVEAL_LIMIT = 3;
 export const STUDENT_FREE_CONTACT_LIMIT = 3;
 export const STUDENT_PASS_PAPER_DOWNLOADS = 10;
 export const REFERRAL_CONTACT_BONUS = 1;
@@ -215,17 +215,18 @@ export async function getPlanDashboardSummary(
       "TUTOR_BASIC",
       "HIGHLIGHTED_AD",
       "AD_BOOST",
+      "EXTRA_PROFILE_ADS",
       "UNLIMITED_ADS",
     ] as SubscriptionPlan[]));
   return {
-    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor Basic" : "Free listing",
+    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor plan" : "Free listing",
     planTier: hasElite ? "elite" : hasBasic ? "pro" : "free",
     usageUsed: check.used,
     usageLimit: check.limit,
-    usageLabel: "enquiry reveals this month",
+    usageLabel: "student contacts this month",
     renewsOn: hasBasic ? renewsOn : null,
     upgradeHint: hasBasic
-      ? "Unlimited student contact when you initiate. Complete free profiles stay listed; Basic adds priority and ads."
-      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} enquiry reveals/month. Tutor Basic unlocks priority, unlimited reveals, and subject ads.`,
+      ? "Unlimited student contact when you initiate. Free accounts keep 1 subject profile after the launch promo; paid packs unlock more."
+      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month. Extra Profile Ads or Tutor Basic unlock more subject profiles and unlimited contacts.`,
   };
 }

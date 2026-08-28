@@ -95,7 +95,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     features: [
       "Priority ranking — appear above free listings",
       "Unlimited enquiry reveals when you message students first",
-      "Up to 3 active subject ads",
+      "Up to 3 active subject profiles",
       "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
@@ -104,7 +104,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Basic is complimentary until 30 September 2026. Free tutors with a complete profile already appear in search; Basic unlocks priority, unlimited reveals, and ads. Verified badge, highlight, and ad boost remain paid add-ons.",
+      "Tutor Basic is complimentary until 30 September 2026. Until then, unlimited subject profiles are free for every tutor. From 1 October 2026, free accounts keep 1 subject profile and 3 student contacts/month; Basic unlocks priority, unlimited contacts, and up to 3 subject profiles. Verified badge, highlight, and profile boost remain paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",
@@ -145,12 +145,31 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     isAddOn: true,
   },
   {
+    id: "EXTRA_PROFILE_ADS",
+    name: "Extra Profile Ads",
+    description:
+      "Run up to 3 active subject profiles (Maths, Physics, …). Ideal after the free first profile.",
+    audience: "tutor",
+    pricePkr: 999,
+    features: [
+      "Up to 3 active subject profiles",
+      "Each subject shows as its own listing",
+      "Unlimited enquiry reveals while active",
+    ],
+    envPriceId: "STRIPE_PRICE_EXTRA_PROFILE_ADS",
+    isAddOn: true,
+  },
+  {
     id: "UNLIMITED_ADS",
-    name: "Unlimited Ads",
-    description: "Post more than 3 active subject ads.",
+    name: "Unlimited Profiles",
+    description: "Publish unlimited active subject profiles across subjects and cities.",
     audience: "tutor",
     pricePkr: 1999,
-    features: ["Unlimited active subject ads", "Reach more niches and cities"],
+    features: [
+      "Unlimited active subject profiles",
+      "Reach more niches and cities",
+      "Unlimited enquiry reveals while active",
+    ],
     envPriceId: "STRIPE_PRICE_UNLIMITED_ADS",
     isAddOn: true,
   },

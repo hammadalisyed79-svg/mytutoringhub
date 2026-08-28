@@ -138,7 +138,8 @@ export function AdminGrantPlanForm({ userId }: { userId?: string }) {
         <option value="VERIFIED_TUTOR">Verified Tutor</option>
         <option value="HIGHLIGHTED_AD">Highlighted Listing</option>
         <option value="AD_BOOST">Profile Boost</option>
-        <option value="UNLIMITED_ADS">Unlimited Ads</option>
+        <option value="EXTRA_PROFILE_ADS">Extra Profile Ads</option>
+        <option value="UNLIMITED_ADS">Unlimited Profiles</option>
       </select>
       <input name="days" type="number" min={1} max={730} defaultValue={30} aria-label="Days" />
       <button className="btn btn-sm" type="submit" disabled={busy}>

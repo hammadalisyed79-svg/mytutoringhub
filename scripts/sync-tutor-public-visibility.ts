@@ -97,7 +97,7 @@ async function main() {
     const shouldPublic = assessment.desiredActive;
     const plans = plansByUser.get(p.userId) || [];
     const paid = plans.some((plan) =>
-      ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "UNLIMITED_ADS"].includes(plan),
+      ["TUTOR_BASIC", "VERIFIED_TUTOR", "HIGHLIGHTED_AD", "AD_BOOST", "EXTRA_PROFILE_ADS", "UNLIMITED_ADS"].includes(plan),
     );
 
     let category: Category;

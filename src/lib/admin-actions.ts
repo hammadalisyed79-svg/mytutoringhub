@@ -73,6 +73,7 @@ const payloadSchema = z.object({
           "VERIFIED_TUTOR",
           "HIGHLIGHTED_AD",
           "AD_BOOST",
+          "EXTRA_PROFILE_ADS",
           "UNLIMITED_ADS",
         ]),
         pricePkr: z.coerce.number().min(0).max(10_000_000),
