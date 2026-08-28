@@ -10,6 +10,7 @@ import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { SubjectStudyHubLinks } from "@/components/SubjectStudyHubLinks";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
+import { PastPaperSearchForm } from "@/components/PastPaperSearchForm";
 import { PastPaperResultList } from "@/components/PastPaperResultList";
 import { PaginationNav } from "@/components/PaginationNav";
 import {
@@ -21,16 +22,14 @@ import {
 } from "@/lib/past-papers";
 import { curriculumCountries } from "@/lib/curriculum";
 import {
+  buildPastPaperFilterTree,
   curriculumBoardsForCountry,
   curriculumLevelsForBoard,
   curriculumSubjectsFor,
   PAST_PAPER_PAGE_SIZE,
-  pastPaperBoardOptions,
   resolvePastPaperBoard,
   seoBoardSlug,
   subjectSeoSlug,
-  uniqueCurriculumLevels,
-  uniqueCurriculumSubjects,
 } from "@/lib/past-papers/browse";
 import {
   hasPublicPaperSearchFilters,
@@ -145,7 +144,7 @@ export default async function PastPapersPage({
           select: { catalogKey: true },
         })
       : Promise.resolve([]),
-    searching || (country && board && level && subject)
+    searching || (country && board && subject)
       ? searchPublicPastPapers(paperFilters, page)
       : Promise.resolve(null),
     subject
@@ -163,13 +162,19 @@ export default async function PastPapersPage({
         })
       : Promise.resolve([]),
     prisma.pastPaper.groupBy({
-      by: ["board"],
+      by: ["board", "country"],
       where: publicAvailabilityWhere(),
       _count: { _all: true },
     }),
   ]);
-  const boardCounts = new Map(boardCountRows.map((row) => [row.board, row._count._all]));
-  const boardOptions = pastPaperBoardOptions({ country, pinnedCountry, boardCounts });
+  const boardCountsByCountry = new Map<string, Map<string, number>>();
+  for (const row of boardCountRows) {
+    if (!row.country) continue;
+    const bucket = boardCountsByCountry.get(row.country) || new Map<string, number>();
+    bucket.set(row.board, (bucket.get(row.board) || 0) + row._count._all);
+    boardCountsByCountry.set(row.country, bucket);
+  }
+  const filterTree = buildPastPaperFilterTree(countries, boardCountsByCountry);
   const fileMap = new Map(files.map((row) => [row.catalogKey, row]));
   const owned = new Set(purchases.map((row) => row.catalogKey));
   const boards = subject ? pastPaperBoards(subject) : [];
@@ -265,89 +270,22 @@ export default async function PastPapersPage({
           <p className="panel form-error">Payment could not be confirmed. Try again or contact support.</p>
         )}
 
-        <form className="panel filters filters-wide" method="get">
-          <label>
-            Search
-            <input name="q" defaultValue={sp.q || ""} placeholder="Chemistry, 0620, paper 42" />
-          </label>
-          <label>
-            Subject
-            <select name="subject" defaultValue={subject}>
-              <option value="">Any</option>
-              {uniqueCurriculumSubjects(board || undefined, level || undefined).map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Code
-            <input name="code" defaultValue={sp.code || ""} placeholder="0620 (4-digit syllabus code)" />
-          </label>
-          <label>
-            Board
-            <select name="board" defaultValue={board || sp.board || ""}>
-              <option value="">Any</option>
-              {boardOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Qualification
-            <select name="level" defaultValue={level}>
-              <option value="">Any</option>
-              {uniqueCurriculumLevels(board || undefined).map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Year
-            <select name="year" defaultValue={year ? String(year) : ""}>
-              <option value="">Any</option>
-              {PAST_PAPER_YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Paper code
-            <input name="paper" defaultValue={sp.paper || ""} placeholder="Paper number" aria-label="Paper / component" />
-          </label>
-          <label>
-            Session
-            <select name="session" defaultValue={sp.session || ""}>
-              <option value="">Any</option>
-              {["Feb/Mar", "May/Jun", "Oct/Nov"].map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Document type
-            <select name="documentType" defaultValue={sp.documentType || ""}>
-              <option value="">Any</option>
-              {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="btn" type="submit">
-            Search
-          </button>
-        </form>
+        <PastPaperSearchForm
+          tree={filterTree}
+          pinnedCountry={pinnedCountry}
+          initial={{
+            q: sp.q,
+            country: country || undefined,
+            board: board || sp.board,
+            level: level || undefined,
+            subject: subject || undefined,
+            code: sp.code,
+            year: year ? String(year) : undefined,
+            paper: sp.paper,
+            session: sp.session,
+            documentType: sp.documentType,
+          }}
+        />
 
         <p className="paper-crumb muted">
           <Link href="/past-papers">All countries</Link>

@@ -75,7 +75,8 @@ export function hasPublicPaperSearchFilters(filters: PublicPaperFilters) {
       filters.paper?.trim() ||
       filters.documentType ||
       filters.session ||
-      (filters.board && !filters.country),
+      (filters.board && !filters.country) ||
+      (filters.country && filters.board && filters.subject),
   );
 }
 

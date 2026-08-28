@@ -58,6 +58,47 @@ export type PastPaperBoardOption = {
   count?: number;
 };
 
+export function buildPastPaperFilterTree(
+  countries: string[],
+  boardCountsByCountry?: Map<string, Map<string, number>>,
+) {
+  const boards: Record<string, PastPaperBoardOption[]> = {};
+  const levels: Record<string, string[]> = {};
+  const subjects: Record<string, string[]> = {};
+
+  const key = (...parts: string[]) => parts.join("\u0001");
+
+  for (const country of countries) {
+    const counts = boardCountsByCountry?.get(country);
+    boards[country] = curriculumBoardsForCountry(country)
+      .filter((board) => board !== "Pakistani" || country === "United Arab Emirates")
+      .map((board) => {
+        const count = counts?.get(board);
+        const base = pastPaperBoardLabel(board);
+        return {
+          value: board,
+          label: count ? `${base} (${count.toLocaleString()} papers)` : base,
+          count,
+        };
+      })
+      .sort((a, b) => (b.count || 0) - (a.count || 0) || a.label.localeCompare(b.label));
+
+    for (const board of boards[country]) {
+      const boardLevels = curriculumLevelsForBoard(country, board.value);
+      levels[key(country, board.value)] = boardLevels;
+      for (const level of boardLevels) {
+        subjects[key(country, board.value, level)] = curriculumSubjectsFor(country, board.value, level).map(
+          (row) => row.subject,
+        );
+      }
+    }
+  }
+
+  return { countries, boards, levels, subjects };
+}
+
+export type PastPaperFilterTree = ReturnType<typeof buildPastPaperFilterTree>;
+
 export function pastPaperBoardOptions(opts: {
   country?: string;
   pinnedCountry?: string | null;

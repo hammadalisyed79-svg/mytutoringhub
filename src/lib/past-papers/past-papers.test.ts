@@ -9,7 +9,7 @@ import { guessSyllabusCode } from "./browse";
 import { parseManifestPayload } from "./manifest-import";
 import { classifyR2PaperObject, FBISE_R2_PAPERS_PREFIX, r2PaperListPrefixes } from "./past-paper-sync";
 import { parseFbiseStoragePath } from "./fbise-path-parser";
-import { pastPaperBoardLabel, pastPaperBoardOptions, resolvePastPaperBoard } from "./browse";
+import { pastPaperBoardLabel, pastPaperBoardOptions, resolvePastPaperBoard, buildPastPaperFilterTree } from "./browse";
 import { groupPapersByYearSessionComponent } from "./group-papers";
 import { isR2Configured } from "./r2";
 import { downloadableFileWhere } from "./availability";
@@ -264,6 +264,17 @@ assert.equal(resolvePastPaperBoard("Pakistan", "FBISE"), "FBISE");
 const pkBoards = pastPaperBoardOptions({ country: "Pakistan", boardCounts: new Map([["FBISE", 93]]) });
 assert.ok(pkBoards.some((row) => row.value === "FBISE"));
 assert.ok(!pkBoards.some((row) => row.value === "Pakistani"), "Pakistani hidden outside UAE context");
+
+const tree = buildPastPaperFilterTree(["Pakistan"], new Map([["Pakistan", new Map([["FBISE", 93]])]]));
+assert.ok(tree.boards.Pakistan?.some((row) => row.value === "FBISE"));
+assert.ok(!tree.boards.Pakistan?.some((row) => row.value === "Pakistani"));
+assert.ok((tree.levels["Pakistan\u0001FBISE"] || []).length > 0);
+
+assert.equal(
+  hasPublicPaperSearchFilters({ country: "Pakistan", board: "FBISE", subject: "Chemistry" }),
+  true,
+  "country+board+subject should search",
+);
 
 assert.equal(normalizeSyllabusCode("620"), "0620");
 assert.equal(normalizeSyllabusCode("0620"), "0620");
