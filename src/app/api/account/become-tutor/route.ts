@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { becomeTutor } from "@/lib/oauth";
 
 export const runtime = "nodejs";
 
@@ -11,21 +11,11 @@ export async function POST() {
   }
 
   try {
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-    const alreadyTutor = user.role === "TUTOR";
-    if (!alreadyTutor) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { role: "TUTOR" },
-      });
-    }
-
+    const result = await becomeTutor(session.user.id);
     return NextResponse.json({
       ok: true,
-      alreadyTutor,
-      redirect: "/dashboard",
+      alreadyTutor: result.alreadyTutor,
+      redirect: "/dashboard/tutor?tab=profile",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Could not switch to a tutor account";

@@ -8,6 +8,7 @@ import { syncTutorBadges, uniqueVisibleSubscriptions } from "@/lib/subscription"
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { curriculumLevels } from "@/lib/curriculum";
+import { becomeTutor } from "@/lib/oauth";
 import type { Role } from "@/lib/types";
 
 export type DashboardSearchParams = {
@@ -132,6 +133,14 @@ export async function prepareDashboardHome(userId: string, role: Role, sp: Dashb
   ]);
   if (role === "TUTOR") {
     await syncTutorBadges(userId);
+    // Heal accounts that flipped to TUTOR without a listing row (legacy become-tutor bug).
+    const stub = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { tutorProfile: true },
+    });
+    if (stub?.role === "TUTOR" && !stub.tutorProfile) {
+      await becomeTutor(userId);
+    }
   }
   if (justActivated[0] && !sp.checkout) {
     redirect(`/receipt/${justActivated[0]}`);

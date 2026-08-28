@@ -112,6 +112,17 @@ export default async function StudentDashboardPage({
             </div>
           </section>
 
+          <section className="panel">
+            <h2>Want to teach?</h2>
+            <p className="muted section-lead-tight">
+              Keep this login and create a free tutor listing. Complete the profile wizard, then
+              optionally get verified.
+            </p>
+            <Link href="/become-a-tutor" className="btn btn-secondary btn-sm">
+              Become a tutor
+            </Link>
+          </section>
+
           <InviteTutorShare
             referrerId={session.user.id}
             referrerName={session.user.name}
