@@ -60,7 +60,7 @@ export function subjectProfilePromoLabel(now = new Date()): string {
 }
 
 /**
- * Resolve how many ACTIVE subject profiles (TutorAd rows today) a tutor may run.
+ * Resolve how many ACTIVE subject profiles a tutor may run.
  * Pure helper for tests — pass plan flags explicitly.
  */
 export function resolveSubjectProfileActiveCap(opts: {
@@ -92,7 +92,7 @@ export async function countActiveSubjectProfiles(userId: string): Promise<number
     select: { id: true },
   });
   if (!profile) return 0;
-  return prisma.tutorAd.count({
+  return prisma.subjectProfile.count({
     where: { tutorProfileId: profile.id, status: "ACTIVE" },
   });
 }
@@ -102,7 +102,7 @@ export type SubjectProfileGate =
   | { ok: false; reason: string; activeCount?: number; cap?: number };
 
 /**
- * Phase A gate for creating/reactivating a subject profile (TutorAd).
+ * Gate for creating/reactivating a SubjectProfile.
  * Promo: unlimited free. After promo: 1 free; Extra/Basic/Verified/Highlight → up to 3;
  * Unlimited Profiles → unlimited.
  */
@@ -128,7 +128,7 @@ export async function canCreateSubjectProfile(
 
   const [cap, activeCount] = await Promise.all([
     getSubjectProfileActiveCap(userId, now),
-    prisma.tutorAd.count({
+    prisma.subjectProfile.count({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },
     }),
   ]);

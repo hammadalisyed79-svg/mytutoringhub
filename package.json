@@ -14,6 +14,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",
     "db:sync-tutor-visibility": "tsx scripts/sync-tutor-public-visibility.ts",
+    "db:migrate-subject-profiles": "tsx scripts/migrate-subject-profiles.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

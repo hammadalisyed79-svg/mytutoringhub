@@ -116,9 +116,26 @@ export async function seedCompanyData() {
   });
 
   const tutorProfile = await prisma.tutorProfile.findUniqueOrThrow({ where: { userId: tutor.id } });
-  const existingAds = await prisma.tutorAd.count({ where: { tutorProfileId: tutorProfile.id } });
-  if (existingAds === 0) {
+  const existingSubjects = await prisma.subjectProfile.count({ where: { tutorProfileId: tutorProfile.id } });
+  if (existingSubjects === 0) {
     for (const subject of ["Mathematics", "Physics", "O Level Maths"]) {
+      await prisma.subjectProfile.create({
+        data: {
+          tutorProfileId: tutorProfile.id,
+          subject,
+          title: `${tutor.name} · ${subject}`,
+          level: "Secondary / O Level",
+          location: "Lahore / Online",
+          country: "Pakistan",
+          online: true,
+          inPerson: true,
+          rate: 2000,
+          description: `Board-focused ${subject} tutoring with past papers.`,
+          status: "ACTIVE",
+          highlightedUntil: new Date(Date.now() + 30 * 86400000),
+          headline: tutorProfile.headline,
+        },
+      });
       await prisma.tutorAd.create({
         data: {
           tutorProfileId: tutorProfile.id,
@@ -206,17 +223,36 @@ export async function seedCompanyData() {
     });
   }
 
-  // Migrate legacy profiles: one default TutorAd per subject when none exist.
-  const profilesNeedingAds = await prisma.tutorProfile.findMany({
-    where: { ads: { none: {} } },
+  // Ensure every tutor has at least one SubjectProfile (and legacy TutorAd mirror).
+  const profilesNeedingSubjects = await prisma.tutorProfile.findMany({
+    where: { subjectProfiles: { none: {} } },
+    include: { user: { select: { name: true } } },
   });
-  for (const profile of profilesNeedingAds) {
+  for (const profile of profilesNeedingSubjects) {
     const subjectList = profile.subjects
       .split(/[,;/|]/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const unique = [...new Set(subjectList.length ? subjectList : ["General"])];
+    const unique = [...new Set(subjectList.length ? subjectList : ["General tutoring"])];
     for (const subject of unique.slice(0, 3)) {
+      await prisma.subjectProfile.create({
+        data: {
+          tutorProfileId: profile.id,
+          subject,
+          title: `${profile.user.name} · ${subject}`,
+          level: profile.levels || "All levels",
+          location: profile.location,
+          country: profile.country,
+          online: profile.online,
+          inPerson: profile.inPerson,
+          rate: profile.hourlyRate,
+          description: profile.headline || profile.bio.slice(0, 280),
+          status: "ACTIVE",
+          highlightedUntil: profile.highlightedUntil,
+          boostUntil: profile.boostUntil,
+          headline: profile.headline,
+        },
+      });
       await prisma.tutorAd.create({
         data: {
           tutorProfileId: profile.id,

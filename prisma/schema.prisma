@@ -134,6 +134,7 @@ model TutorProfile {
   reviews Review[]
   recommendations TutorRecommendation[]
   ads     TutorAd[]
+  subjectProfiles SubjectProfile[]
 }
 
 model TutorRecommendation {
@@ -154,6 +155,35 @@ model TutorRecommendation {
   @@index([status, createdAt])
 }
 
+// First-class subject listing (FindTutors-style). One active row per subject per tutor.
+// Phase B: data model + migration. Search will list these in Phase C.
+model SubjectProfile {
+  id               String       @id @default(cuid())
+  tutorProfileId   String
+  tutorProfile     TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  subject          String
+  title            String
+  headline         String?
+  description      String?
+  level            String       @default("All levels")
+  location         String
+  country          String?
+  online           Boolean      @default(true)
+  inPerson         Boolean      @default(false)
+  rate             Float
+  status           String       @default("ACTIVE")
+  highlightedUntil DateTime?
+  boostUntil       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([tutorProfileId, subject])
+  @@index([status, subject])
+  @@index([boostUntil, highlightedUntil])
+  @@index([tutorProfileId, status])
+}
+
+// Deprecated: prefer SubjectProfile. Kept for admin history during transition.
 model TutorAd {
   id               String       @id @default(cuid())
   tutorProfileId   String

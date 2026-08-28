@@ -222,20 +222,27 @@ export async function PUT(req: Request) {
       },
     });
 
-    const adCount = await prisma.tutorAd.count({ where: { tutorProfileId: profile.id } });
-    if (adCount === 0) {
-      const firstSubject = profile.subjects.split(",")[0]?.trim() || "General";
-      await prisma.tutorAd.create({
+    const subjectCount = await prisma.subjectProfile.count({ where: { tutorProfileId: profile.id } });
+    if (subjectCount === 0) {
+      const { defaultSubjectProfileTitle, normalizeSubjectLabel, splitSubjectsCsv } = await import(
+        "@/lib/subject-profile"
+      );
+      const subjects = splitSubjectsCsv(profile.subjects);
+      const firstSubject = subjects[0] || "General tutoring";
+      const subject = normalizeSubjectLabel(firstSubject);
+      await prisma.subjectProfile.create({
         data: {
           tutorProfileId: profile.id,
-          subject: firstSubject,
-          title: profile.headline || `${firstSubject} lessons`,
-          level: profile.levels || "All levels",
+          subject,
+          title: profile.headline || defaultSubjectProfileTitle(subject),
+          headline: profile.headline,
+          description: profile.bio.slice(0, 500),
+          level: profile.levels?.split(",")[0]?.trim() || "All levels",
           location: profile.location,
+          country: profile.country,
           online: profile.online,
           inPerson: profile.inPerson,
           rate: profile.hourlyRate,
-          description: profile.bio.slice(0, 500),
           status: "ACTIVE",
         },
       });

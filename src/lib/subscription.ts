@@ -265,16 +265,28 @@ export async function syncTutorBadges(userId: string) {
   await syncTutorTrustBadge(profile.id);
 
   if (highlightUntil && highlightUntil > now) {
-    await prisma.tutorAd.updateMany({
-      where: { tutorProfileId: profile.id, status: "ACTIVE" },
-      data: { highlightedUntil: highlightUntil },
-    });
+    await Promise.all([
+      prisma.subjectProfile.updateMany({
+        where: { tutorProfileId: profile.id, status: "ACTIVE" },
+        data: { highlightedUntil: highlightUntil },
+      }),
+      prisma.tutorAd.updateMany({
+        where: { tutorProfileId: profile.id, status: "ACTIVE" },
+        data: { highlightedUntil: highlightUntil },
+      }),
+    ]);
   }
   if (boostUntil && boostUntil > now) {
-    await prisma.tutorAd.updateMany({
-      where: { tutorProfileId: profile.id, status: "ACTIVE" },
-      data: { boostUntil },
-    });
+    await Promise.all([
+      prisma.subjectProfile.updateMany({
+        where: { tutorProfileId: profile.id, status: "ACTIVE" },
+        data: { boostUntil },
+      }),
+      prisma.tutorAd.updateMany({
+        where: { tutorProfileId: profile.id, status: "ACTIVE" },
+        data: { boostUntil },
+      }),
+    ]);
   }
 }
 
