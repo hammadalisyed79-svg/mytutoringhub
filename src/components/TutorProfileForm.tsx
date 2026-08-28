@@ -29,6 +29,8 @@ import {
 } from "@/lib/availability";
 import { embedVideoSrc } from "@/lib/media";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
+import type { TutorTrustBadge } from "@/lib/tutor-badges";
 
 type Initial = {
   headline?: string | null;
@@ -61,6 +63,63 @@ const TIMES = availabilityTimeOptions();
 const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+const WIZARD_STEPS = [
+  {
+    id: "photo",
+    title: "Add a profile photo",
+    hint: "A clear headshot helps students trust you. Required to go live.",
+    optional: false,
+  },
+  {
+    id: "basics",
+    title: "Name and about you",
+    hint: "This is what students read first.",
+    optional: false,
+  },
+  {
+    id: "place",
+    title: "Where you teach from",
+    hint: "Country and city power search filters.",
+    optional: false,
+  },
+  {
+    id: "teaching",
+    title: "Subjects, rate, and format",
+    hint: "What you teach and how students book you.",
+    optional: false,
+  },
+  {
+    id: "qualifications",
+    title: "Qualifications",
+    hint: "Your highest qualification is required for search.",
+    optional: false,
+  },
+  {
+    id: "extras",
+    title: "Strengthen your listing",
+    hint: "Optional — levels, languages, and expertise. Skip if you want to finish faster.",
+    optional: true,
+  },
+  {
+    id: "schedule",
+    title: "Weekly availability",
+    hint: "Optional — students see this on your public profile.",
+    optional: true,
+  },
+  {
+    id: "contact",
+    title: "Contact and intro video",
+    hint: "Optional — phone and video links. Skip anytime.",
+    optional: true,
+  },
+  {
+    id: "finish",
+    title: "Save and grow",
+    hint: "Save your listing, then improve trust with verification and star badges.",
+    optional: false,
+  },
+] as const;
 
 function photoExt(name: string): string {
   const dot = name.lastIndexOf(".");
@@ -118,6 +177,9 @@ export function TutorProfileForm({
   extraLevels = [],
   emailVerified = true,
   listingActive = false,
+  verified = false,
+  trustBadge = "NEW",
+  wizard = true,
 }: {
   initial: Initial;
   displayName: string;
@@ -126,6 +188,10 @@ export function TutorProfileForm({
   emailVerified?: boolean;
   /** Whether the listing is currently public (DB active flag). */
   listingActive?: boolean;
+  verified?: boolean;
+  trustBadge?: TutorTrustBadge | string;
+  /** Step-by-step form with Skip on optional fields. */
+  wizard?: boolean;
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -139,6 +205,8 @@ export function TutorProfileForm({
   const [photoError, setPhotoError] = useState("");
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState(0);
+  const [flatMode, setFlatMode] = useState(!wizard);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
   const [photoCropX, setPhotoCropX] = useState(initial.photoCropX ?? 0);
   const [photoCropY, setPhotoCropY] = useState(initial.photoCropY ?? 0);
@@ -223,6 +291,56 @@ export function TutorProfileForm({
   const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
   const requiredTotal = completion.requiredTotal + 1;
   const progress = Math.round((requiredDone / requiredTotal) * 100);
+  const currentStep = WIZARD_STEPS[Math.min(step, WIZARD_STEPS.length - 1)];
+  const wizardProgress = Math.round(((step + 1) / WIZARD_STEPS.length) * 100);
+
+  function validateStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): string | null {
+    switch (stepId) {
+      case "photo":
+        if (!photoUrl.startsWith("https://")) return "Upload a profile photo to continue.";
+        return null;
+      case "basics":
+        if (name.trim().length < 2) return "Enter the name students see (at least 2 characters).";
+        if (headline.trim().length < 8) return "Add a headline of at least 8 characters.";
+        if (bio.trim().length < 40) return "Write at least 40 characters about your teaching.";
+        return null;
+      case "place":
+        if (!country) return "Select the country you teach from.";
+        if (!location.trim()) return "Select a city.";
+        return null;
+      case "teaching":
+        if (!subjectList.length) return "Select at least one subject.";
+        if (Number(hourlyRate) < 500) return "Hourly rate must be at least 500 PKR.";
+        if (!online && !inPerson) return "Choose online, in person, or both.";
+        return null;
+      case "qualifications":
+        if (!qualifications.trim()) return "Add your highest qualification.";
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  function goNext() {
+    setError("");
+    const problem = validateStep(currentStep.id);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1));
+  }
+
+  function goBack() {
+    setError("");
+    setStep((s) => Math.max(0, s - 1));
+  }
+
+  function skipOptional() {
+    if (!currentStep.optional) return;
+    setError("");
+    setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1));
+  }
 
   function setCountryAndCity(nextCountry: string) {
     setCountry(nextCountry);
@@ -289,8 +407,8 @@ export function TutorProfileForm({
     }
   }
 
-  async function save(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function save(e?: React.FormEvent) {
+    e?.preventDefault();
     setMsg("");
     setError("");
     if (!online && !inPerson) {
@@ -311,6 +429,10 @@ export function TutorProfileForm({
     }
     if (!photoUrl.startsWith("https://")) {
       setError("Upload a profile photo before saving.");
+      return;
+    }
+    if (!qualifications.trim()) {
+      setError("Add your highest qualification before saving.");
       return;
     }
     const payload = {
@@ -374,8 +496,86 @@ export function TutorProfileForm({
     }
   }
 
+  const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => flatMode || currentStep.id === id;
+
   return (
-    <form className="stack-form profile-form" onSubmit={save}>
+    <form
+      className={`stack-form profile-form${flatMode ? "" : " profile-form-wizard"}`}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!flatMode && currentStep.id !== "finish") {
+          goNext();
+          return;
+        }
+        void save();
+      }}
+    >
+      {!flatMode ? (
+        <div className="profile-wizard-chrome">
+          <div className="guided-search-progress" aria-hidden="true">
+            <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
+          </div>
+          <p className="guided-search-step muted">
+            Step {step + 1} of {WIZARD_STEPS.length}
+            {currentStep.optional ? " · Optional" : " · Required"}
+          </p>
+          <h3 className="guided-search-title">{currentStep.title}</h3>
+          <p className="muted guided-search-hint">{currentStep.hint}</p>
+          <div className="profile-wizard-toggle">
+            <button type="button" className="linkish" onClick={() => setFlatMode(true)}>
+              Show all fields instead
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="profile-wizard-toggle">
+          <button
+            type="button"
+            className="linkish"
+            onClick={() => {
+              setFlatMode(false);
+              setStep(0);
+            }}
+          >
+            Use step-by-step wizard
+          </button>
+        </div>
+      )}
+
+      <div className="profile-complete">
+        <div className="profile-complete-head">
+          <strong>
+            {requiredDone}/{requiredTotal} listing requirements complete
+          </strong>
+          <span className="muted">{progress}%</span>
+        </div>
+        <div className="profile-progress" aria-hidden>
+          <span style={{ width: `${Math.min(100, progress)}%` }} />
+        </div>
+        <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
+          Required fields use the same rules as public search eligibility. Optional steps can be
+          skipped — you can fill them later.
+        </p>
+        {(flatMode || currentStep.id === "finish") && (
+          <ul className="profile-complete-list">
+            <li className={emailVerified ? "is-done" : "is-needed"}>
+              {emailVerified ? "✓" : "○"} Email verified
+            </li>
+            {completion.checks.map((c) => (
+              <li key={c.key} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
+                {c.ok ? "✓" : "○"} {c.label}
+              </li>
+            ))}
+            {recommendedChecks.map((c) => (
+              <li key={c.label} className={c.ok ? "is-done" : ""}>
+                {c.ok ? "✓" : "○"} {c.label} (recommended)
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {show("photo") && (
       <section className="form-section profile-photo-top profile-photo-required">
         <div className="profile-photo-hero">
           <PhotoFrameAdjust
@@ -459,44 +659,14 @@ export function TutorProfileForm({
                 }}
                 placeholder="https://"
                 inputMode="url"
-                required
               />
             </details>
           </div>
         </div>
       </section>
+      )}
 
-      <div className="profile-complete">
-        <div className="profile-complete-head">
-          <strong>
-            {requiredDone}/{requiredTotal} listing requirements complete
-          </strong>
-          <span className="muted">{progress}%</span>
-        </div>
-        <div className="profile-progress" aria-hidden>
-          <span style={{ width: `${Math.min(100, progress)}%` }} />
-        </div>
-        <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
-          Required fields use the same rules as public search eligibility. Save anytime — you can
-          keep editing after you go live.
-        </p>
-        <ul className="profile-complete-list">
-          <li className={emailVerified ? "is-done" : "is-needed"}>
-            {emailVerified ? "✓" : "○"} Email verified
-          </li>
-          {completion.checks.map((c) => (
-            <li key={c.key} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
-              {c.ok ? "✓" : "○"} {c.label}
-            </li>
-          ))}
-          {recommendedChecks.map((c) => (
-            <li key={c.label} className={c.ok ? "is-done" : ""}>
-              {c.ok ? "✓" : "○"} {c.label} (recommended)
-            </li>
-          ))}
-        </ul>
-      </div>
-
+      {show("basics") && (
       <section className="form-section">
         <h3>Basic information</h3>
         <p className="field-hint">Students use these to decide whether to message you.</p>
@@ -507,7 +677,6 @@ export function TutorProfileForm({
           </span>
           <input
             name="displayName"
-            required
             minLength={2}
             maxLength={80}
             autoComplete="name"
@@ -526,7 +695,6 @@ export function TutorProfileForm({
           </span>
           <input
             name="headline"
-            required
             minLength={8}
             maxLength={120}
             value={headline}
@@ -545,7 +713,6 @@ export function TutorProfileForm({
           </span>
           <textarea
             name="bio"
-            required
             minLength={40}
             maxLength={4000}
             rows={6}
@@ -559,7 +726,9 @@ export function TutorProfileForm({
           </span>
         </label>
       </section>
+      )}
 
+      {show("place") && (
       <section className="form-section">
         <h3>Location</h3>
         <p className="field-hint">Country and city are shown on your public profile and used in search.</p>
@@ -568,11 +737,11 @@ export function TutorProfileForm({
             <span>
               Country <abbr className="req" title="Required">*</abbr>
             </span>
-            <select required value={country} onChange={(e) => setCountryAndCity(e.target.value)}>
+            <select value={country} onChange={(e) => setCountryAndCity(e.target.value)}>
               <option value="">Select country…</option>
-              {countries.map((name) => (
-                <option key={name} value={name}>
-                  {name}
+              {countries.map((cName) => (
+                <option key={cName} value={cName}>
+                  {cName}
                 </option>
               ))}
             </select>
@@ -581,7 +750,7 @@ export function TutorProfileForm({
             <span>
               City <abbr className="req" title="Required">*</abbr>
             </span>
-            <select required value={location} onChange={(e) => setLocation(e.target.value)} disabled={!country}>
+            <select value={location} onChange={(e) => setLocation(e.target.value)} disabled={!country}>
               <option value="">{country ? "Select city…" : "Choose a country first"}</option>
               {cities.map((city) => (
                 <option key={city} value={city}>
@@ -595,9 +764,11 @@ export function TutorProfileForm({
           </label>
         </div>
       </section>
+      )}
 
+      {show("teaching") && (
       <section className="form-section">
-        <h3>Subjects &amp; teaching levels</h3>
+        <h3>Subjects &amp; teaching</h3>
         <CatalogMultiSelect
           label="Subjects you teach"
           required
@@ -611,47 +782,6 @@ export function TutorProfileForm({
           hint="Choose from the catalog (e.g. Mathematics) — avoid free-text duplicates like Math / Maths when the listed subject already exists."
         />
 
-        <CatalogMultiSelect
-          label="Expertise"
-          selected={expertiseList}
-          onChange={setExpertiseList}
-          options={expertiseOptions}
-          extraOptions={GENERIC_EXPERTISE}
-          max={16}
-          addLabel="Add more expertise"
-          emptyHint="Select subjects first — expertise follows those subjects."
-          hint={
-            subjectList.length
-              ? "Skills are matched to the subjects you selected. Add more for exam technique, SEN, or crash courses."
-              : "Select subjects first — expertise options follow those subjects."
-          }
-        />
-
-        <CatalogMultiSelect
-          label="Levels"
-          selected={levelList}
-          onChange={setLevelList}
-          options={levelCatalog.core}
-          extraOptions={levelCatalog.more}
-          max={10}
-          addLabel="Add more levels"
-          hint="Tap every stage you teach. Use Add more for board years and extra curricula."
-        />
-
-        <CatalogMultiSelect
-          label="Languages"
-          selected={languageList}
-          onChange={setLanguageList}
-          options={languageCatalog.core}
-          extraOptions={languageCatalog.more}
-          max={8}
-          addLabel="Add more languages"
-          hint="Languages you can teach in. Core languages are listed; add more from the full list."
-        />
-      </section>
-
-      <section className="form-section">
-        <h3>Online / in-person &amp; rate</h3>
         <label>
           <span>
             Hourly rate (PKR) <abbr className="req" title="Required">*</abbr>
@@ -661,7 +791,6 @@ export function TutorProfileForm({
             type="number"
             min={500}
             step={100}
-            required
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
           />
@@ -679,17 +808,92 @@ export function TutorProfileForm({
             <label className="radio">
               <input type="checkbox" checked={inPerson} onChange={(e) => setInPerson(e.target.checked)} /> In person
             </label>
-            <label className="radio">
-              <input
-                type="checkbox"
-                checked={offersFreeTrial}
-                onChange={(e) => setOffersFreeTrial(e.target.checked)}
-              />{" "}
-              Free first lesson
-            </label>
           </div>
         </fieldset>
+      </section>
+      )}
 
+      {show("qualifications") && (
+      <section className="form-section">
+        <h3>Qualifications</h3>
+        <label>
+          Highest qualification <abbr className="req" title="Required">*</abbr>
+          <textarea
+            name="qualifications"
+            rows={3}
+            value={qualifications}
+            onChange={(e) => setQualifications(e.target.value)}
+            placeholder="MSc Chemistry, examiner experience, teaching licence…"
+          />
+        </label>
+      </section>
+      )}
+
+      {show("extras") && (
+      <section className="form-section">
+        <h3>Strengthen your listing {flatMode ? "(recommended)" : "(optional)"}</h3>
+        <CatalogMultiSelect
+          label="Expertise"
+          selected={expertiseList}
+          onChange={setExpertiseList}
+          options={expertiseOptions}
+          extraOptions={GENERIC_EXPERTISE}
+          max={16}
+          addLabel="Add more expertise"
+          emptyHint="Select subjects first — expertise follows those subjects."
+          hint={
+            subjectList.length
+              ? "Skills are matched to the subjects you selected."
+              : "Select subjects first — expertise options follow those subjects."
+          }
+        />
+        <CatalogMultiSelect
+          label="Levels"
+          selected={levelList}
+          onChange={setLevelList}
+          options={levelCatalog.core}
+          extraOptions={levelCatalog.more}
+          max={10}
+          addLabel="Add more levels"
+          hint="Tap every stage you teach."
+        />
+        <CatalogMultiSelect
+          label="Languages"
+          selected={languageList}
+          onChange={setLanguageList}
+          options={languageCatalog.core}
+          extraOptions={languageCatalog.more}
+          max={8}
+          addLabel="Add more languages"
+          hint="Languages you can teach in."
+        />
+        <label>
+          Experience in years
+          <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
+            <option value="">Select years…</option>
+            {EXPERIENCE_YEAR_OPTIONS.map((row) => (
+              <option key={row.value} value={row.value}>
+                {row.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          How you teach
+          <textarea
+            name="teachingMethod"
+            rows={3}
+            value={teachingMethod}
+            onChange={(e) => setTeachingMethod(e.target.value)}
+            placeholder="Past papers, weekly homework, lesson notes after each session…"
+          />
+        </label>
+      </section>
+      )}
+
+      {show("schedule") && (
+      <section className="form-section">
+        <h3>Weekly availability {flatMode ? "" : "(optional)"}</h3>
         <fieldset className="catalog-pick">
           <legend>Weekly availability</legend>
           <p className="field-hint">
@@ -751,46 +955,19 @@ export function TutorProfileForm({
           </button>
         </fieldset>
       </section>
+      )}
 
+      {show("contact") && (
       <section className="form-section">
-        <h3>Qualifications</h3>
-        <label>
-          Highest qualification <abbr className="req" title="Required">*</abbr>
-          <textarea
-            name="qualifications"
-            rows={3}
-            required
-            value={qualifications}
-            onChange={(e) => setQualifications(e.target.value)}
-            placeholder="MSc Chemistry, examiner experience, teaching licence…"
-          />
+        <h3>Contact and media {flatMode ? "(optional)" : "(optional)"}</h3>
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={offersFreeTrial}
+            onChange={(e) => setOffersFreeTrial(e.target.checked)}
+          />{" "}
+          Free first lesson
         </label>
-        <label>
-          Experience in years
-          <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-            <option value="">Select years…</option>
-            {EXPERIENCE_YEAR_OPTIONS.map((row) => (
-              <option key={row.value} value={row.value}>
-                {row.label}
-              </option>
-            ))}
-          </select>
-          <span className="field-hint">How long you have been teaching or tutoring.</span>
-        </label>
-        <label>
-          How you teach
-          <textarea
-            name="teachingMethod"
-            rows={3}
-            value={teachingMethod}
-            onChange={(e) => setTeachingMethod(e.target.value)}
-            placeholder="Past papers, weekly homework, lesson notes after each session…"
-          />
-        </label>
-      </section>
-
-      <section className="form-section">
-        <h3>Optional</h3>
         <label>
           Intro video link
           <input
@@ -800,7 +977,6 @@ export function TutorProfileForm({
             placeholder="YouTube or Vimeo URL"
             inputMode="url"
           />
-          <span className="field-hint">Paste a YouTube or Vimeo link. A preview appears below.</span>
         </label>
         <label>
           Introduction video URL
@@ -811,9 +987,6 @@ export function TutorProfileForm({
             placeholder="YouTube, Vimeo, or direct video link"
             inputMode="url"
           />
-          <span className="field-hint">
-            Introduction video URL (YouTube, Vimeo, or direct video link). Shown on your public profile.
-          </span>
         </label>
         {videoSrc ? (
           <div className="media-embed-wrap profile-video-preview">
@@ -826,8 +999,6 @@ export function TutorProfileForm({
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
-        ) : videoUrl.trim() ? (
-          <p className="muted">Enter a full YouTube or Vimeo URL to see the video here.</p>
         ) : null}
         <label>
           Phone
@@ -835,16 +1006,54 @@ export function TutorProfileForm({
             value={phone}
             onChange={setPhone}
             defaultCountryCode={defaultPhoneCountry}
-            hint="You can update this anytime. Shown on your public profile only after you are verified."
+            hint="Shown on your public profile only after you are verified."
           />
         </label>
       </section>
+      )}
+
+      {(flatMode || currentStep.id === "finish") && (
+        <ProfileImprovePanel
+          listingLive={listingActive}
+          verified={verified}
+          trustBadge={trustBadge}
+        />
+      )}
 
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
-      <button className="btn" type="submit" disabled={uploading || saving}>
-        {saving ? "Saving…" : "Save profile"}
-      </button>
+
+      {flatMode ? (
+        <button className="btn" type="submit" disabled={uploading || saving}>
+          {saving ? "Saving…" : "Save profile"}
+        </button>
+      ) : (
+        <div className="guided-search-actions profile-wizard-actions">
+          {step > 0 ? (
+            <button type="button" className="btn btn-secondary" onClick={goBack}>
+              Back
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="profile-wizard-actions-right">
+            {currentStep.optional ? (
+              <button type="button" className="btn btn-secondary" onClick={skipOptional}>
+                Skip for now
+              </button>
+            ) : null}
+            {currentStep.id === "finish" ? (
+              <button className="btn" type="button" disabled={uploading || saving} onClick={() => void save()}>
+                {saving ? "Saving…" : "Save profile"}
+              </button>
+            ) : (
+              <button className="btn" type="button" onClick={goNext}>
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </form>
   );
 }

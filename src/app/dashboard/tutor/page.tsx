@@ -198,8 +198,8 @@ export default async function TutorDashboardPage({
                 <div>
                   <h2>Edit your public listing</h2>
                   <p className="muted">
-                    Fields marked with * are required before your profile can appear in student
-                    search. A paid plan does not override incomplete fields.
+                    Complete the short wizard step by step. Optional steps have <strong>Skip for now</strong>.
+                    After saving, improve trust with verification and star badges.
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
@@ -241,6 +241,9 @@ export default async function TutorDashboardPage({
                 extraLevels={extraLevels}
                 emailVerified={Boolean(user.emailVerified)}
                 listingActive={user.tutorProfile.active}
+                verified={user.tutorProfile.verified}
+                trustBadge={badgeProgress?.current || "NEW"}
+                wizard={!user.tutorProfile.active}
               />
             </section>
           ) : null}
