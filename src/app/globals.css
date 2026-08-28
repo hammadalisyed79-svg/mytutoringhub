@@ -1353,6 +1353,32 @@ p.success.panel,
   margin-bottom: 1rem;
 }
 
+.auth-verify-panel {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--brand) 8%, var(--surface, #fff));
+}
+
+.auth-verify-panel strong {
+  font-size: 0.98rem;
+}
+
+.auth-verify-panel .muted {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.resend-verify-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .btn-pill {
   border-radius: 999px;
   padding: 0.88rem 1.25rem;

@@ -14,6 +14,7 @@ const schema = z.object({
 export type LoginHint = {
   exists?: boolean;
   suspended?: boolean;
+  emailVerified?: boolean;
   googleEnabled: boolean;
   loginMethod: "none" | "password" | "google" | "microsoft" | "oauth_only";
   message?: string;
@@ -73,11 +74,14 @@ export async function POST(req: Request) {
   }
 
   if (!user.emailVerified) {
-    hint.message =
-      "Verify your email before signing in. Check your inbox for the verification link, or use Forgot password if needed.";
+    hint.emailVerified = false;
     hint.loginMethod = "none";
+    hint.message =
+      "Verify your email before signing in. Open the confirmation link we sent, then try again.";
     return NextResponse.json(hint);
   }
+
+  hint.emailVerified = true;
 
   const oauthProviders = user.accounts.map((a) => a.provider);
   const hasGoogle = oauthProviders.includes("google");

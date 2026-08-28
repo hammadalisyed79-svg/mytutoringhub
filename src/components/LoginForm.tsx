@@ -5,20 +5,31 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
+import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import type { LoginHint } from "@/app/api/auth/login-hint/route";
+
+const VERIFY_FIRST_MESSAGE =
+  "Verify your email before signing in. Open the confirmation link we sent you, then try again.";
 
 export function LoginForm({
   googleEnabled = true,
   microsoftEnabled = false,
   onSwitchToRegister,
+  initialEmail = "",
+  showVerifyPrompt = false,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
   onSwitchToRegister?: () => void;
+  initialEmail?: string;
+  /** Show the verify-first panel immediately (e.g. after signup). */
+  showVerifyPrompt?: boolean;
 }) {
-  const [error, setError] = useState("");
+  const [error, setError] = useState(showVerifyPrompt ? VERIFY_FIRST_MESSAGE : "");
   const [hint, setHint] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(showVerifyPrompt);
+  const [emailValue, setEmailValue] = useState(initialEmail);
 
   async function fetchLoginHint(email: string): Promise<LoginHint | null> {
     try {
@@ -34,23 +45,46 @@ export function LoginForm({
     }
   }
 
+  function showUnverified(email: string) {
+    setNeedsVerification(true);
+    setEmailValue(email);
+    setError(VERIFY_FIRST_MESSAGE);
+    setHint("");
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setHint("");
+    setNeedsVerification(false);
     setLoading(true);
 
     const fd = new FormData(e.currentTarget);
     const email = String(fd.get("email")).trim().toLowerCase();
     const password = String(fd.get("password"));
+    setEmailValue(email);
 
     const loginHint = await fetchLoginHint(email);
+    if (loginHint?.suspended) {
+      setError(loginHint.message || "This account is suspended.");
+      setLoading(false);
+      return;
+    }
+
+    if (loginHint?.emailVerified === false) {
+      showUnverified(email);
+      setLoading(false);
+      return;
+    }
+
     if (loginHint?.message) {
       setHint(loginHint.message);
     }
 
     if (loginHint?.loginMethod === "oauth_only") {
-      setError("Use Google or Microsoft sign-in for this account, or set a password via Forgot password.");
+      setError(
+        "Use Google or Microsoft sign-in for this account, or set a password via Forgot password.",
+      );
       setLoading(false);
       return;
     }
@@ -69,6 +103,10 @@ export function LoginForm({
 
     if (res?.error) {
       setLoading(false);
+      if (res.code === "email_not_verified") {
+        showUnverified(email);
+        return;
+      }
       if (loginHint?.loginMethod === "password") {
         setError("Incorrect password. Try again or use Forgot password.");
       } else {
@@ -91,7 +129,12 @@ export function LoginForm({
   async function onEmailBlur(e: React.FocusEvent<HTMLInputElement>) {
     const email = e.target.value.trim().toLowerCase();
     if (!email.includes("@")) return;
+    setEmailValue(email);
     const loginHint = await fetchLoginHint(email);
+    if (loginHint?.emailVerified === false) {
+      showUnverified(email);
+      return;
+    }
     if (loginHint?.message) setHint(loginHint.message);
   }
 
@@ -113,7 +156,9 @@ export function LoginForm({
             autoComplete="email"
             inputMode="email"
             placeholder="user@example.com"
+            defaultValue={initialEmail}
             onBlur={onEmailBlur}
+            onChange={(e) => setEmailValue(e.target.value.trim().toLowerCase())}
           />
         </label>
         <label>
@@ -123,16 +168,26 @@ export function LoginForm({
         <p className="auth-forgot">
           <Link href="/forgot-password">Forgot password?</Link>
         </p>
-        {hint && !error && (
+        {hint && !error && !needsVerification && (
           <p className="auth-hint muted" role="status">
             {hint}
           </p>
         )}
-        {error && (
+        {needsVerification ? (
+          <div className="auth-verify-panel" role="alert">
+            <strong>Verify your email to continue</strong>
+            <p className="muted">
+              We sent a confirmation link to{" "}
+              <strong>{emailValue || "your inbox"}</strong>. Open that email, confirm your
+              address, then log in here. Check junk and promotions if you do not see it.
+            </p>
+            <ResendVerificationButton email={emailValue || undefined} />
+          </div>
+        ) : error ? (
           <p className="form-error" role="alert">
             {error}
           </p>
-        )}
+        ) : null}
         <button className="btn btn-block btn-pill" type="submit" disabled={loading}>
           {loading ? "Logging in…" : "Log in"}
         </button>

@@ -14,7 +14,7 @@ export const metadata = privateMetadata(
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ verified?: string; verify?: string }>;
+  searchParams: Promise<{ verified?: string; verify?: string; email?: string }>;
 }) {
   await connection();
   const session = await auth();
@@ -25,6 +25,7 @@ export default async function LoginPage({
   const sp = await searchParams;
   const googleEnabled = true;
   const microsoftEnabled = microsoftConfigured();
+  const pendingEmail = typeof sp.email === "string" ? sp.email.trim().toLowerCase() : "";
 
   return (
     <AuthModalFrame title="Log in to your account" titleId="login-title">
@@ -32,19 +33,27 @@ export default async function LoginPage({
         <p className="success auth-notice">Email verified. You can log in now.</p>
       )}
       {sp.verify === "sent" && (
-        <p className="auth-notice">Check your inbox for a confirmation email, then log in below.</p>
+        <p className="auth-notice muted">
+          Account created. Confirm your email first — then return here to log in.
+        </p>
       )}
       {sp.verify === "expired" && (
         <p className="form-error auth-notice">
-          That verification link expired. Log in and resend from your dashboard.
+          That verification link expired. Enter your email below and resend a new confirmation
+          link.
         </p>
       )}
       {sp.verify === "invalid" && (
         <p className="form-error auth-notice">
-          That verification link is invalid. Log in and request a new one from your dashboard.
+          That verification link is invalid. Enter your email below and request a new one.
         </p>
       )}
-      <LoginForm googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
+      <LoginForm
+        googleEnabled={googleEnabled}
+        microsoftEnabled={microsoftEnabled}
+        initialEmail={pendingEmail}
+        showVerifyPrompt={sp.verify === "sent" || sp.verify === "expired" || sp.verify === "invalid"}
+      />
     </AuthModalFrame>
   );
 }

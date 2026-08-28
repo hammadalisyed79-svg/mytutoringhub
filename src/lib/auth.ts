@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
@@ -21,6 +21,11 @@ import { sendLoginConfirmationEmail } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { resolveOAuthDisplayName } from "@/lib/display-name";
 import type { Role } from "@/lib/types";
+
+/** Thrown when credentials are correct but the email is not verified yet. */
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 declare module "next-auth" {
   interface User {
@@ -65,9 +70,11 @@ const credentialsProvider = Credentials({
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) return null;
     if (user.suspended) return null;
-    if (!user.emailVerified) return null;
     const ok = await compare(parsed.data.password, user.passwordHash);
     if (!ok) return null;
+    if (!user.emailVerified) {
+      throw new EmailNotVerifiedError();
+    }
     return {
       id: user.id,
       email: user.email,

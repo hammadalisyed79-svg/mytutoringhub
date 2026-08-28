@@ -3,7 +3,6 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 import { registerRoleFromParams, type RegisterRole } from "@/lib/register-intent";
@@ -50,17 +49,8 @@ function RegisterFormInner({
       setLoading(false);
       return;
     }
-    const login = await signIn("credentials", {
-      email: payload.email,
-      password: payload.password,
-      redirect: false,
-    });
-    setLoading(false);
-    if (login?.error) {
-      window.location.href = "/login?verify=sent";
-      return;
-    }
-    window.location.href = "/dashboard?verify=sent";
+    // Do not auto-login — email must be verified first.
+    window.location.href = `/login?verify=sent&email=${encodeURIComponent(payload.email)}`;
   }
 
   return (

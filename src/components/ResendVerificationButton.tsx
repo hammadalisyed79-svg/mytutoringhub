@@ -11,7 +11,11 @@ export function ResendVerificationButton({ email }: { email?: string }) {
     setLoading(true);
     setMsg("");
     setError("");
-    const res = await fetch("/api/auth/resend-verification", { method: "POST" });
+    const res = await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(email ? { email } : {}),
+    });
     const data = await res.json().catch(() => ({}));
     setLoading(false);
     if (!res.ok) {
@@ -19,7 +23,11 @@ export function ResendVerificationButton({ email }: { email?: string }) {
       return;
     }
     if (data.alreadyVerified) {
-      setMsg("Your email is already verified.");
+      setMsg("Your email is already verified. You can log in now.");
+      return;
+    }
+    if (data.message && data.sent === false) {
+      setMsg(data.message);
       return;
     }
     const to = (data as { to?: string }).to || email;
@@ -31,8 +39,8 @@ export function ResendVerificationButton({ email }: { email?: string }) {
   }
 
   return (
-    <span style={{ display: "inline-flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
-      <button className="btn btn-sm" type="button" onClick={resend} disabled={loading}>
+    <span className="resend-verify-actions">
+      <button className="btn btn-sm btn-secondary" type="button" onClick={resend} disabled={loading}>
         {loading ? "Sending…" : "Resend verification email"}
       </button>
       {msg && <span className="success">{msg}</span>}
