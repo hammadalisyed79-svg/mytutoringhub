@@ -1,0 +1,64 @@
+{
+  "summary": {
+    "mode": "DRY_RUN",
+    "evaluated": 30,
+    "unchanged": 30,
+    "wouldBecomeHidden": 0,
+    "wouldBecomePublic": 0,
+    "categories": {
+      "A": 9,
+      "B": 18,
+      "C": 0,
+      "D": 0,
+      "E": 3
+    },
+    "manualReviewCount": 3,
+    "forceActiveOverrides": 0
+  },
+  "wouldHide": [],
+  "wouldShow": [],
+  "manualReview": [
+    {
+      "profileId": "cmsx3iyd20002hekfp2q2g9r7",
+      "displayName": "Ali",
+      "forceActive": false,
+      "suspended": false,
+      "currentlyPublic": true,
+      "shouldPublic": true,
+      "paid": true,
+      "plans": [
+        "TUTOR_BASIC"
+      ],
+      "reasons": [
+        "short_bio_manual_review"
+      ]
+    },
+    {
+      "profileId": "cmt5uf01r0002if90npblua8z",
+      "displayName": "Rajni Sairam",
+      "forceActive": false,
+      "suspended": false,
+      "currentlyPublic": true,
+      "shouldPublic": true,
+      "paid": false,
+      "plans": [],
+      "reasons": [
+        "short_bio_manual_review"
+      ]
+    },
+    {
+      "profileId": "cmt76dgwy00028dkr65g4bfz2",
+      "displayName": "Shahroz Sajjad",
+      "forceActive": false,
+      "suspended": false,
+      "currentlyPublic": true,
+      "shouldPublic": true,
+      "paid": false,
+      "plans": [],
+      "reasons": [
+        "short_bio_manual_review"
+      ]
+    }
+  ],
+  "mutations": []
+}

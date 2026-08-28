@@ -1,0 +1,173 @@
+{
+  "fetchedAt": "2026-08-25T12:19:23.353Z",
+  "sitemapTotal": 140,
+  "buckets": {
+    "static": 14,
+    "subjects": 95,
+    "pastPapers": 30,
+    "tutors": 1,
+    "other": 0
+  },
+  "staticRoutes": [
+    "/",
+    "/search",
+    "/subjects",
+    "/past-papers",
+    "/ads",
+    "/pricing",
+    "/free-vs-paid",
+    "/help",
+    "/terms",
+    "/privacy",
+    "/how-it-works",
+    "/become-a-tutor",
+    "/about",
+    "/contact"
+  ],
+  "tutorRoutes": [
+    "/tutors/cmsx3iyd20002hekfp2q2g9r7"
+  ],
+  "supplySubjectsInSitemap": [
+    "/s/mathematics",
+    "/s/accounting",
+    "/s/computer-science",
+    "/s/computer-applications",
+    "/s/igcse-maths",
+    "/s/cbse-maths"
+  ],
+  "suspiciousSubjectSlugs": [
+    "/s/confidential-instructions",
+    "/s/examiner-reports",
+    "/s/feb-march",
+    "/s/grade-thresholds",
+    "/s/inserts",
+    "/s/mark-schemes",
+    "/s/may-june",
+    "/s/oct-nov",
+    "/s/other",
+    "/s/question-papers",
+    "/s/unknown-session"
+  ],
+  "checks": [
+    {
+      "path": "/",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com",
+      "noindex": false
+    },
+    {
+      "path": "/search",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/search",
+      "noindex": false
+    },
+    {
+      "path": "/pricing",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/pricing",
+      "noindex": false
+    },
+    {
+      "path": "/past-papers",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/past-papers",
+      "noindex": false
+    },
+    {
+      "path": "/subjects",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/subjects",
+      "noindex": false
+    },
+    {
+      "path": "/how-it-works",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/how-it-works",
+      "noindex": false
+    },
+    {
+      "path": "/become-a-tutor",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/become-a-tutor",
+      "noindex": false
+    },
+    {
+      "path": "/free-vs-paid",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/free-vs-paid",
+      "noindex": false
+    },
+    {
+      "path": "/help",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/help",
+      "noindex": false
+    },
+    {
+      "path": "/about",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/about",
+      "noindex": false
+    },
+    {
+      "path": "/contact",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/contact",
+      "noindex": false
+    },
+    {
+      "path": "/terms",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/terms",
+      "noindex": false
+    },
+    {
+      "path": "/privacy",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/privacy",
+      "noindex": false
+    },
+    {
+      "path": "/ads",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/ads",
+      "noindex": false
+    },
+    {
+      "path": "/s/mathematics",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/s/mathematics",
+      "noindex": false
+    },
+    {
+      "path": "/s/accounting",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/s/accounting",
+      "noindex": false
+    },
+    {
+      "path": "/s/chemistry",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/s/chemistry",
+      "noindex": false
+    },
+    {
+      "path": "/s/mark-schemes",
+      "robots": "noindex, nofollow",
+      "canonical": "https://www.mytutoringhub.com/s/mark-schemes",
+      "noindex": true
+    },
+    {
+      "path": "/tutors/cmsx3iyd20002hekfp2q2g9r7",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/tutors/cmsx3iyd20002hekfp2q2g9r7",
+      "noindex": false
+    },
+    {
+      "path": "/past-papers/cambridge/igcse/mathematics-0580",
+      "robots": "index, follow",
+      "canonical": "https://www.mytutoringhub.com/past-papers/cambridge/igcse/mathematics-0580",
+      "noindex": false
+    }
+  ]
+}

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
 import openpyxl
 
-SRC = Path(r"C:\Tutor\data\MyTutoringHub_Curriculum_Database.xlsx")
+SRC = Path(os.environ.get("CURRICULUM_XLSX") or r"C:\Users\Tutor\Downloads\mytutoringhub_past_paper_importer\MyTutoringHub_Curriculum_Database.xlsx")
 OUT = Path(r"C:\Tutor\src\data\curriculum.json")
 
 SUBJECT_CODES = {

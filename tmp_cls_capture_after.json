@@ -1,0 +1,65 @@
+﻿{
+  "url": "https://www.mytutoringhub.com/",
+  "clsSum": 0,
+  "shifts": [],
+  "snaps": [
+    {
+      "t": 1629,
+      "h1s": [],
+      "mainFirst": {
+        "cls": "",
+        "tag": "TEMPLATE",
+        "h": 0
+      }
+    },
+    {
+      "t": 1711,
+      "h1s": [
+        {
+          "text": "Private tutoring, elevated.",
+          "h": 0
+        }
+      ],
+      "mainFirst": {
+        "cls": "",
+        "tag": "TEMPLATE",
+        "h": 0
+      }
+    },
+    {
+      "t": 1919,
+      "h1s": [
+        {
+          "text": "Private tutoring, elevated.",
+          "h": 54
+        },
+        {
+          "text": "Private tutoring, elevated.",
+          "h": 0
+        }
+      ],
+      "mainFirst": {
+        "cls": "",
+        "tag": "SCRIPT",
+        "h": 0
+      }
+    },
+    {
+      "t": 1947,
+      "h1s": [
+        {
+          "text": "Private tutoring, elevated.",
+          "h": 54
+        }
+      ],
+      "mainFirst": {
+        "cls": "",
+        "tag": "SCRIPT",
+        "h": 0
+      }
+    }
+  ],
+  "finalH1s": [
+    "Private tutoring, elevated."
+  ]
+}

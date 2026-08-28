@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-08-26T12:35:22.734Z",
+  "supply": {
+    "totalTutorAccounts": 30,
+    "activeTrue": 12,
+    "canonicallyPublic": 12,
+    "incomplete": 17,
+    "suspiciousHidden": 0,
+    "unverifiedEmail": 5,
+    "suspended": 2,
+    "completeButHidden": 1,
+    "activeButIneligible": 0,
+    "eligibleButInactive": 0
+  },
+  "homepageVsSearch": {
+    "homepageStyleCount": 12,
+    "searchTotal": 12,
+    "match": true
+  },
+  "invariantPublicEqualsCanonical": true,
+  "activeViolations": [],
+  "searchFails": [],
+  "publicSuspicious": [],
+  "suspiciousSamples": [
+    {
+      "name": "★★★★ http://spam.com",
+      "suspicious": true
+    },
+    {
+      "name": "Don•𝐬𝐛𝐝𝐫𝐞𝐝𝐜-𝐜𝐟",
+      "suspicious": true
+    },
+    {
+      "name": "!!!@@@###",
+      "suspicious": true
+    },
+    {
+      "name": "x",
+      "suspicious": true
+    },
+    {
+      "name": "محمد أحمد",
+      "suspicious": false
+    },
+    {
+      "name": "Rajni Sairam",
+      "suspicious": false
+    }
+  ],
+  "verifiedChecked": 9,
+  "invalidVerifiedBadges": [
+    {
+      "id": "cmt5v2fa10002x4dhck3tyw2f",
+      "name": "madiha Fazal",
+      "verified": true,
+      "approvedRequest": false
+    },
+    {
+      "id": "cmt5uf01r0002if90npblua8z",
+      "name": "Rajni Sairam",
+      "verified": true,
+      "approvedRequest": false
+    },
+    {
+      "id": "cmt6dsx9s00029rzexss1e38c",
+      "name": "Abdullah Ali Azhar",
+      "verified": true,
+      "approvedRequest": false
+    },
+    {
+      "id": "cmt76dgwy00028dkr65g4bfz2",
+      "name": "Shahroz Sajjad",
+      "verified": true,
+      "approvedRequest": false
+    }
+  ],
+  "rateDupes": [],
+  "locationDupes": [],
+  "featuredCount": 3,
+  "featuredNotPublic": []
+}

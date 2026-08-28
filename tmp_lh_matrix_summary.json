@@ -1,0 +1,153 @@
+[
+  {
+    "name": "home",
+    "path": "/",
+    "url": "https://www.mytutoringhub.com/",
+    "runs": [
+      {
+        "score": 88,
+        "FCP": "1.4 s",
+        "LCP": "3.8 s",
+        "CLS": 0,
+        "TBT": "140 ms",
+        "SI": "1.4 s",
+        "transfer": "Total size was 393 KiB"
+      },
+      {
+        "score": 89,
+        "FCP": "1.4 s",
+        "LCP": "3.7 s",
+        "CLS": 0,
+        "TBT": "30 ms",
+        "SI": "1.4 s",
+        "transfer": "Total size was 394 KiB"
+      },
+      {
+        "score": 87,
+        "FCP": "1.4 s",
+        "LCP": "3.6 s",
+        "CLS": 0,
+        "TBT": "180 ms",
+        "SI": "1.4 s",
+        "transfer": "Total size was 391 KiB"
+      }
+    ]
+  },
+  {
+    "name": "search",
+    "path": "/search",
+    "url": "https://www.mytutoringhub.com/search",
+    "runs": [
+      {
+        "score": 95,
+        "FCP": "1.4 s",
+        "LCP": "2.9 s",
+        "CLS": 0,
+        "TBT": "90 ms",
+        "SI": "1.4 s",
+        "transfer": "Total size was 321 KiB"
+      }
+    ]
+  },
+  {
+    "name": "subjects",
+    "path": "/subjects",
+    "url": "https://www.mytutoringhub.com/subjects",
+    "runs": [
+      {
+        "score": 78,
+        "FCP": "1.2 s",
+        "LCP": "3.0 s",
+        "CLS": 0.295,
+        "TBT": "120 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 323 KiB"
+      }
+    ]
+  },
+  {
+    "name": "past-papers",
+    "path": "/past-papers",
+    "url": "https://www.mytutoringhub.com/past-papers",
+    "runs": [
+      {
+        "score": 94,
+        "FCP": "1.2 s",
+        "LCP": "2.9 s",
+        "CLS": 0,
+        "TBT": "110 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 298 KiB"
+      }
+    ]
+  },
+  {
+    "name": "past-paper-physics",
+    "skipped": true,
+    "reason": "unavailable"
+  },
+  {
+    "name": "pricing",
+    "path": "/pricing",
+    "url": "https://www.mytutoringhub.com/pricing",
+    "runs": [
+      {
+        "score": 85,
+        "FCP": "1.2 s",
+        "LCP": "3.3 s",
+        "CLS": 0,
+        "TBT": "320 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 355 KiB"
+      }
+    ]
+  },
+  {
+    "name": "how-it-works",
+    "path": "/how-it-works",
+    "url": "https://www.mytutoringhub.com/how-it-works",
+    "runs": [
+      {
+        "score": 96,
+        "FCP": "1.2 s",
+        "LCP": "2.7 s",
+        "CLS": 0,
+        "TBT": "50 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 287 KiB"
+      }
+    ]
+  },
+  {
+    "name": "become-a-tutor",
+    "path": "/become-a-tutor",
+    "url": "https://www.mytutoringhub.com/become-a-tutor",
+    "runs": [
+      {
+        "score": 91,
+        "FCP": "1.2 s",
+        "LCP": "3.2 s",
+        "CLS": 0,
+        "TBT": "150 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 355 KiB"
+      }
+    ]
+  },
+  {
+    "name": "tutor-profile",
+    "path": "/tutors/cmsx3iyd20002hekfp2q2g9r7",
+    "url": "https://www.mytutoringhub.com/tutors/cmsx3iyd20002hekfp2q2g9r7",
+    "runs": [
+      {
+        "score": 95,
+        "FCP": "1.2 s",
+        "LCP": "2.9 s",
+        "CLS": 0,
+        "TBT": "70 ms",
+        "SI": "1.2 s",
+        "transfer": "Total size was 296 KiB"
+      }
+    ]
+  }
+]

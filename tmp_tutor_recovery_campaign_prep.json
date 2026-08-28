@@ -1,0 +1,181 @@
+{
+  "refreshedAt": "2026-08-23T09:11:02.715Z",
+  "overviewIncomplete": 14,
+  "eligibleCount": 13,
+  "totalScanned": 15,
+  "excluded": {
+    "suspended": 0,
+    "suspiciousName": 1,
+    "alreadyLive": 0,
+    "completeButHidden": 0,
+    "unverifiedEmail": 1
+  },
+  "bands": {
+    "nearly_complete": 2,
+    "partially_complete": 1,
+    "early_profile": 10
+  },
+  "missingAggregates": {
+    "subjects": 10,
+    "photo": 13,
+    "headline": 10,
+    "bio": 0,
+    "qualifications": 11,
+    "country_city": 12,
+    "rate": 0,
+    "lesson_type": 0,
+    "name": 0,
+    "other": 0
+  },
+  "multipleMissing": 12,
+  "withSubjects": 3,
+  "withoutSubjects": 10,
+  "openDemandBySubject": {
+    "Mathematics": 1,
+    "Chemistry": 1
+  },
+  "priorityGroupCount": 2,
+  "personalFollowUpCount": 3,
+  "prioritySample": [
+    {
+      "firstName": "Madhu",
+      "emailDomain": "gmail.com",
+      "subjects": [
+        "PSLE Maths",
+        "O Level Maths",
+        "NEET Prep",
+        "IGCSE Maths",
+        "Chemistry",
+        "Biology",
+        "Additional Mathematics",
+        "A Level Physics",
+        "A Level Chemistry",
+        "Further Mathematics",
+        "Reading",
+        "Tamil"
+      ],
+      "percent": 90,
+      "missingRequired": [
+        "Profile photo"
+      ],
+      "band": "nearly_complete",
+      "demandMatch": [
+        "Chemistry"
+      ],
+      "priorityReasons": [
+        "Nearly complete (1–2 requirements)",
+        "Open student demand: Chemistry",
+        "Chemistry or Mathematics subject selected",
+        "Profile already started"
+      ]
+    },
+    {
+      "firstName": "Ali",
+      "emailDomain": "mytutoringhub.com",
+      "subjects": [
+        "Mathematics",
+        "Physics",
+        "O Level Maths"
+      ],
+      "percent": 80,
+      "missingRequired": [
+        "Profile photo",
+        "Country"
+      ],
+      "band": "nearly_complete",
+      "demandMatch": [
+        "Mathematics"
+      ],
+      "priorityReasons": [
+        "Nearly complete (1–2 requirements)",
+        "Open student demand: Mathematics",
+        "Chemistry or Mathematics subject selected",
+        "Profile already started"
+      ]
+    }
+  ],
+  "personalFollowUpSample": [
+    {
+      "firstName": "Madhu",
+      "emailDomain": "gmail.com",
+      "subjects": [
+        "PSLE Maths",
+        "O Level Maths",
+        "NEET Prep",
+        "IGCSE Maths",
+        "Chemistry",
+        "Biology",
+        "Additional Mathematics",
+        "A Level Physics",
+        "A Level Chemistry",
+        "Further Mathematics",
+        "Reading",
+        "Tamil"
+      ],
+      "percent": 90,
+      "missingRequired": [
+        "Profile photo"
+      ],
+      "demandMatch": [
+        "Chemistry"
+      ]
+    },
+    {
+      "firstName": "Ali",
+      "emailDomain": "mytutoringhub.com",
+      "subjects": [
+        "Mathematics",
+        "Physics",
+        "O Level Maths"
+      ],
+      "percent": 80,
+      "missingRequired": [
+        "Profile photo",
+        "Country"
+      ],
+      "demandMatch": [
+        "Mathematics"
+      ]
+    },
+    {
+      "firstName": "Jennifer",
+      "emailDomain": "gmail.com",
+      "subjects": [
+        "Biology",
+        "Human Biology",
+        "General Science"
+      ],
+      "percent": 70,
+      "missingRequired": [
+        "Profile photo",
+        "Country",
+        "Highest qualification"
+      ],
+      "demandMatch": []
+    }
+  ],
+  "emailStages": [
+    {
+      "stage": 1,
+      "timing": "Initial outreach (Email 1)",
+      "subject": "Complete your My Tutoring Hub tutor profile",
+      "cta": "Complete my profile",
+      "bodyPreview": "Your tutor account exists, but your profile is not currently visible to students in search. Finish the remaining listing details (for example subjects, photo, or headline where still needed) so your profile can become eligible for tutor search. Completing these steps does not guarantee students immediately — it makes you eligible when all requirements are met."
+    },
+    {
+      "stage": 2,
+      "timing": "Reminder ~2 days after Email 1 if still incomplete",
+      "subject": "Finish your tutor profile on My Tutoring Hub",
+      "cta": "Finish my tutor profile",
+      "bodyPreview": "A short reminder: your tutor profile is still hidden from students. Completing the remaining details can make it eligible to appear in tutor search."
+    },
+    {
+      "stage": 3,
+      "timing": "Final reminder ~5 days after Email 1 if still incomplete",
+      "subject": "Complete your My Tutoring Hub tutor profile",
+      "cta": "Complete my profile",
+      "bodyPreview": "Friendly final note: your listing is still not visible to students. When you are ready, complete your profile from the dashboard — there is no pressure and no threat to your account."
+    }
+  ],
+  "sendStatus": "NOT SENT"
+}

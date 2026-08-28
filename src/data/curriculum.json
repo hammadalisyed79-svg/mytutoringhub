@@ -9686,5 +9686,2413 @@
     "subject": "Reading and Writing",
     "exam": "SAT",
     "code": "SAT-HS-RW"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Mathematics",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-MATH"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Physics",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-PHY"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Chemistry",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-CHEM"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Biology",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-BIO"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "English",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-ENG"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Business",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-BUS"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Economics",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-ECON"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Accounting",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-ACC"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "Geography",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-GEO"
+  },
+  {
+    "country": "Ireland",
+    "board": "Leaving Certificate (SEC)",
+    "level": "Leaving Certificate",
+    "subject": "History",
+    "exam": "Leaving Certificate",
+    "code": "LCS-LC-HIST"
+  },
+  {
+    "country": "Ireland",
+    "board": "Junior Certificate (SEC)",
+    "level": "Junior Certificate",
+    "subject": "Mathematics",
+    "exam": "Junior Certificate",
+    "code": "JCS-JC-MATH"
+  },
+  {
+    "country": "Ireland",
+    "board": "Junior Certificate (SEC)",
+    "level": "Junior Certificate",
+    "subject": "Science",
+    "exam": "Junior Certificate",
+    "code": "JCS-JC-SCI"
+  },
+  {
+    "country": "Ireland",
+    "board": "Junior Certificate (SEC)",
+    "level": "Junior Certificate",
+    "subject": "English",
+    "exam": "Junior Certificate",
+    "code": "JCS-JC-ENG"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Mathematics",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-MATH"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Physics",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-PHY"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Chemistry",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-CHEM"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Biology",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-BIO"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "English",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-ENG"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Economics",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-ECON"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Accounting",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-ACC"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "Geography",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-GEO"
+  },
+  {
+    "country": "Nigeria",
+    "board": "WAEC",
+    "level": "SSCE",
+    "subject": "History",
+    "exam": "West African Senior School Certificate",
+    "code": "WAEC-SSCE-HIST"
+  },
+  {
+    "country": "Nigeria",
+    "board": "NECO",
+    "level": "SSCE",
+    "subject": "Mathematics",
+    "exam": "National Examinations Council",
+    "code": "NECO-SSCE-MATH"
+  },
+  {
+    "country": "Nigeria",
+    "board": "NECO",
+    "level": "SSCE",
+    "subject": "Physics",
+    "exam": "National Examinations Council",
+    "code": "NECO-SSCE-PHY"
+  },
+  {
+    "country": "Nigeria",
+    "board": "NECO",
+    "level": "SSCE",
+    "subject": "Chemistry",
+    "exam": "National Examinations Council",
+    "code": "NECO-SSCE-CHEM"
+  },
+  {
+    "country": "Nigeria",
+    "board": "NECO",
+    "level": "SSCE",
+    "subject": "Biology",
+    "exam": "National Examinations Council",
+    "code": "NECO-SSCE-BIO"
+  },
+  {
+    "country": "Nigeria",
+    "board": "NECO",
+    "level": "SSCE",
+    "subject": "English",
+    "exam": "National Examinations Council",
+    "code": "NECO-SSCE-ENG"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "Mathematics",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-MATH"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "Physics",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-PHY"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "Chemistry",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-CHEM"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "Biology",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-BIO"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "English",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-ENG"
+  },
+  {
+    "country": "Ghana",
+    "board": "WAEC Ghana",
+    "level": "WASSCE",
+    "subject": "Economics",
+    "exam": "West African Senior School Certificate",
+    "code": "WG-WASSC-ECON"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "GCE Advanced Level",
+    "code": "SLD-AL-MATH"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "GCE Advanced Level",
+    "code": "SLD-AL-PHY"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "A Level",
+    "subject": "Chemistry",
+    "exam": "GCE Advanced Level",
+    "code": "SLD-AL-CHEM"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "A Level",
+    "subject": "Biology",
+    "exam": "GCE Advanced Level",
+    "code": "SLD-AL-BIO"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "A Level",
+    "subject": "Economics",
+    "exam": "GCE Advanced Level",
+    "code": "SLD-AL-ECON"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "O Level",
+    "subject": "Mathematics",
+    "exam": "GCE Ordinary Level",
+    "code": "SLD-OL-MATH"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "O Level",
+    "subject": "Science",
+    "exam": "GCE Ordinary Level",
+    "code": "SLD-OL-SCI"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Sri Lanka DOE",
+    "level": "O Level",
+    "subject": "English",
+    "exam": "GCE Ordinary Level",
+    "code": "SLD-OL-ENG"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-PHY"
+  },
+  {
+    "country": "Sri Lanka",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Chemistry",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-CHEM"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "Mathematics",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-MATH"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "Physics",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-PHY"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "Chemistry",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-CHEM"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "Biology",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-BIO"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "English",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-ENG"
+  },
+  {
+    "country": "Nepal",
+    "board": "NEB",
+    "level": "Grade 11-12",
+    "subject": "Economics",
+    "exam": "National Examination Board",
+    "code": "NEB-G11-ECON"
+  },
+  {
+    "country": "Nepal",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Nepal",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-PHY"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "HSC",
+    "subject": "Mathematics",
+    "exam": "Higher Secondary Certificate",
+    "code": "BEB-HSC-MATH"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "HSC",
+    "subject": "Physics",
+    "exam": "Higher Secondary Certificate",
+    "code": "BEB-HSC-PHY"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "HSC",
+    "subject": "Chemistry",
+    "exam": "Higher Secondary Certificate",
+    "code": "BEB-HSC-CHEM"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "HSC",
+    "subject": "Biology",
+    "exam": "Higher Secondary Certificate",
+    "code": "BEB-HSC-BIO"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "HSC",
+    "subject": "English",
+    "exam": "Higher Secondary Certificate",
+    "code": "BEB-HSC-ENG"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "SSC",
+    "subject": "Mathematics",
+    "exam": "Secondary School Certificate",
+    "code": "BEB-SSC-MATH"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Bangladesh Education Board",
+    "level": "SSC",
+    "subject": "Science",
+    "exam": "Secondary School Certificate",
+    "code": "BEB-SSC-SCI"
+  },
+  {
+    "country": "Bangladesh",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "Mathematics",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-MATH"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "Physics",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-PHY"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "Chemistry",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-CHEM"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "Biology",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-BIO"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "English",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-ENG"
+  },
+  {
+    "country": "Kenya",
+    "board": "KNEC",
+    "level": "KCSE",
+    "subject": "Geography",
+    "exam": "Kenya Certificate of Secondary Education",
+    "code": "KNEC-KCSE-GEO"
+  },
+  {
+    "country": "Kenya",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "ACSEE",
+    "subject": "Mathematics",
+    "exam": "Advanced Certificate of Secondary Education",
+    "code": "NECTA-ACSEE-MATH"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "ACSEE",
+    "subject": "Physics",
+    "exam": "Advanced Certificate of Secondary Education",
+    "code": "NECTA-ACSEE-PHY"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "ACSEE",
+    "subject": "Chemistry",
+    "exam": "Advanced Certificate of Secondary Education",
+    "code": "NECTA-ACSEE-CHEM"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "ACSEE",
+    "subject": "Biology",
+    "exam": "Advanced Certificate of Secondary Education",
+    "code": "NECTA-ACSEE-BIO"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "CSEE",
+    "subject": "Mathematics",
+    "exam": "Certificate of Secondary Education",
+    "code": "NECTA-CSEE-MATH"
+  },
+  {
+    "country": "Tanzania",
+    "board": "NECTA",
+    "level": "CSEE",
+    "subject": "English",
+    "exam": "Certificate of Secondary Education",
+    "code": "NECTA-CSEE-ENG"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-AL-MATH"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-AL-PHY"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "A Level",
+    "subject": "Chemistry",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-AL-CHEM"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "A Level",
+    "subject": "Biology",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-AL-BIO"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "O Level",
+    "subject": "Mathematics",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-OL-MATH"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "ZIMSEC",
+    "level": "O Level",
+    "subject": "English",
+    "exam": "Zimbabwe School Examinations Council",
+    "code": "ZIMSEC-OL-ENG"
+  },
+  {
+    "country": "Zimbabwe",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Mathematics",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-MATH"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Physics",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-PHY"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Chemistry",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-CHEM"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Biology",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-BIO"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "Mathematics",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-MATH"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "English",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-ENG"
+  },
+  {
+    "country": "Jamaica",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "Physics",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-PHY"
+  },
+  {
+    "country": "Trinidad and Tobago",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Mathematics",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-MATH"
+  },
+  {
+    "country": "Trinidad and Tobago",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Physics",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-PHY"
+  },
+  {
+    "country": "Trinidad and Tobago",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "Mathematics",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-MATH"
+  },
+  {
+    "country": "Trinidad and Tobago",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "English",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-ENG"
+  },
+  {
+    "country": "Barbados",
+    "board": "CAPE / CSEC",
+    "level": "CAPE",
+    "subject": "Mathematics",
+    "exam": "Caribbean Advanced Proficiency Examination",
+    "code": "CC-CAPE-MATH"
+  },
+  {
+    "country": "Barbados",
+    "board": "CAPE / CSEC",
+    "level": "CSEC",
+    "subject": "Mathematics",
+    "exam": "Caribbean Secondary Education Certificate",
+    "code": "CC-CSEC-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Alberta",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Alberta Diploma Exam",
+    "code": "AB-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Alberta",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Alberta Diploma Exam",
+    "code": "AB-G12-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "Alberta",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Alberta Diploma Exam",
+    "code": "AB-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Alberta",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Alberta Diploma Exam",
+    "code": "AB-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "Alberta",
+    "level": "Grade 12",
+    "subject": "English",
+    "exam": "Alberta Diploma Exam",
+    "code": "AB-G12-ENG"
+  },
+  {
+    "country": "Canada",
+    "board": "British Columbia",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "BC Provincial Exam",
+    "code": "BC-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "British Columbia",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "BC Provincial Exam",
+    "code": "BC-G12-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "British Columbia",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "BC Provincial Exam",
+    "code": "BC-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "British Columbia",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "BC Provincial Exam",
+    "code": "BC-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "British Columbia",
+    "level": "Grade 12",
+    "subject": "English",
+    "exam": "BC Provincial Exam",
+    "code": "BC-G12-ENG"
+  },
+  {
+    "country": "Canada",
+    "board": "Ontario",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Ontario Secondary School",
+    "code": "ON-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Ontario",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Ontario Secondary School",
+    "code": "ON-G12-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "Ontario",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Ontario Secondary School",
+    "code": "ON-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Ontario",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Ontario Secondary School",
+    "code": "ON-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "Ontario",
+    "level": "Grade 12",
+    "subject": "English",
+    "exam": "Ontario Secondary School",
+    "code": "ON-G12-ENG"
+  },
+  {
+    "country": "Canada",
+    "board": "Manitoba",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Manitoba Senior 4",
+    "code": "MB-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Manitoba",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Manitoba Senior 4",
+    "code": "MB-G12-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "Manitoba",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Manitoba Senior 4",
+    "code": "MB-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Manitoba",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Manitoba Senior 4",
+    "code": "MB-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "Saskatchewan",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Saskatchewan Grade 12",
+    "code": "SASKAT-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Saskatchewan",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Saskatchewan Grade 12",
+    "code": "SASKAT-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Saskatchewan",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Saskatchewan Grade 12",
+    "code": "SASKAT-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "Nova Scotia",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Nova Scotia Grade 12",
+    "code": "NS-G12-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Nova Scotia",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Nova Scotia Grade 12",
+    "code": "NS-G12-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Nova Scotia",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Nova Scotia Grade 12",
+    "code": "NS-G12-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "Quebec",
+    "level": "Pre-University",
+    "subject": "Mathematics",
+    "exam": "CEGEP / DEC",
+    "code": "QC-PREU-MATH"
+  },
+  {
+    "country": "Canada",
+    "board": "Quebec",
+    "level": "Pre-University",
+    "subject": "Physics",
+    "exam": "CEGEP / DEC",
+    "code": "QC-PREU-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "Quebec",
+    "level": "Pre-University",
+    "subject": "Chemistry",
+    "exam": "CEGEP / DEC",
+    "code": "QC-PREU-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "Quebec",
+    "level": "Pre-University",
+    "subject": "Biology",
+    "exam": "CEGEP / DEC",
+    "code": "QC-PREU-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "AP",
+    "level": "AP",
+    "subject": "Calculus AB",
+    "exam": "Advanced Placement",
+    "code": "AP-AP-CAB"
+  },
+  {
+    "country": "Canada",
+    "board": "AP",
+    "level": "AP",
+    "subject": "Chemistry",
+    "exam": "Advanced Placement",
+    "code": "AP-AP-CHEM"
+  },
+  {
+    "country": "Canada",
+    "board": "AP",
+    "level": "AP",
+    "subject": "Biology",
+    "exam": "Advanced Placement",
+    "code": "AP-AP-BIO"
+  },
+  {
+    "country": "Canada",
+    "board": "AP",
+    "level": "AP",
+    "subject": "Physics",
+    "exam": "Advanced Placement",
+    "code": "AP-AP-PHY"
+  },
+  {
+    "country": "Canada",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH-2"
+  },
+  {
+    "country": "Canada",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Physics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-PHY-2"
+  },
+  {
+    "country": "Canada",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Chemistry",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-CHEM-2"
+  },
+  {
+    "country": "Canada",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge A Level",
+    "level": "A Level",
+    "subject": "Further Mathematics",
+    "exam": "Singapore-Cambridge GCE A Level",
+    "code": "SGAL-AL-FMTH"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge A Level",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "Singapore-Cambridge GCE A Level",
+    "code": "SGAL-AL-PHY"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge A Level",
+    "level": "A Level",
+    "subject": "Chemistry",
+    "exam": "Singapore-Cambridge GCE A Level",
+    "code": "SGAL-AL-CHEM"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge A Level",
+    "level": "A Level",
+    "subject": "Biology",
+    "exam": "Singapore-Cambridge GCE A Level",
+    "code": "SGAL-AL-BIO"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge A Level",
+    "level": "A Level",
+    "subject": "English",
+    "exam": "Singapore-Cambridge GCE A Level",
+    "code": "SGAL-AL-ENG"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge O Level",
+    "level": "O Level",
+    "subject": "Mathematics",
+    "exam": "Singapore-Cambridge GCE O Level",
+    "code": "SGOL-OL-MATH"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge O Level",
+    "level": "O Level",
+    "subject": "Physics",
+    "exam": "Singapore-Cambridge GCE O Level",
+    "code": "SGOL-OL-PHY"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge O Level",
+    "level": "O Level",
+    "subject": "Chemistry",
+    "exam": "Singapore-Cambridge GCE O Level",
+    "code": "SGOL-OL-CHEM"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge O Level",
+    "level": "O Level",
+    "subject": "Biology",
+    "exam": "Singapore-Cambridge GCE O Level",
+    "code": "SGOL-OL-BIO"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore-Cambridge O Level",
+    "level": "O Level",
+    "subject": "English",
+    "exam": "Singapore-Cambridge GCE O Level",
+    "code": "SGOL-OL-ENG"
+  },
+  {
+    "country": "Singapore",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH-2"
+  },
+  {
+    "country": "Singapore",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Physics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-PHY-2"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "Mathematics",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-MATH"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "Physics",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-PHY"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "Chemistry",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-CHEM"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "Biology",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-BIO"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "Economics",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-ECON"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "English",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-ENG"
+  },
+  {
+    "country": "Germany",
+    "board": "Abitur",
+    "level": "Abitur",
+    "subject": "German",
+    "exam": "Abitur",
+    "code": "ABIT-ABITU-GER"
+  },
+  {
+    "country": "Germany",
+    "board": "Gymnasium",
+    "level": "Abitur",
+    "subject": "Mathematics",
+    "exam": "Gymnasium Abitur",
+    "code": "GYM-ABITU-MATH"
+  },
+  {
+    "country": "Germany",
+    "board": "Gymnasium",
+    "level": "Abitur",
+    "subject": "Physics",
+    "exam": "Gymnasium Abitur",
+    "code": "GYM-ABITU-PHY"
+  },
+  {
+    "country": "Germany",
+    "board": "German National / State Curriculum",
+    "level": "Grade 10-12",
+    "subject": "Computer Science",
+    "exam": "German National Curriculum",
+    "code": "DECUR-G11-CS"
+  },
+  {
+    "country": "Germany",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH-2"
+  },
+  {
+    "country": "Germany",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH-2"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "Mathematics",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-MATH"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "Physics",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-PHY"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "Chemistry",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-CHEM"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "Biology",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-BIO"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "Economics",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-ECON"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "English",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-ENG"
+  },
+  {
+    "country": "France",
+    "board": "French Baccalauréat",
+    "level": "Baccalauréat",
+    "subject": "French",
+    "exam": "Baccalauréat Général",
+    "code": "FBA-BA-FR"
+  },
+  {
+    "country": "France",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "France",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Further Mathematics",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-FMTH"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Physics",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-PHY"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Chemistry",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-CHEM"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Biology",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-BIO"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "English",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-ENG"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Economics",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-ECON"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "HKDSE",
+    "level": "DSE",
+    "subject": "Business",
+    "exam": "HKDSE",
+    "code": "HKDSE-DSE-BUS"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "Hong Kong Curriculum",
+    "level": "Secondary",
+    "subject": "Chinese",
+    "exam": "Hong Kong Secondary",
+    "code": "HK-SEC-CHI-2"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "Hong Kong Curriculum",
+    "level": "Secondary",
+    "subject": "General Studies",
+    "exam": "Hong Kong Secondary",
+    "code": "HK-SEC-GS"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH-2"
+  },
+  {
+    "country": "Japan",
+    "board": "Japanese University Entrance",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Daigaku Nyushi Kyotsu Test",
+    "code": "JUE-G12-MATH"
+  },
+  {
+    "country": "Japan",
+    "board": "Japanese University Entrance",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Daigaku Nyushi Kyotsu Test",
+    "code": "JUE-G12-PHY"
+  },
+  {
+    "country": "Japan",
+    "board": "Japanese University Entrance",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Daigaku Nyushi Kyotsu Test",
+    "code": "JUE-G12-CHEM"
+  },
+  {
+    "country": "Japan",
+    "board": "Japanese University Entrance",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Daigaku Nyushi Kyotsu Test",
+    "code": "JUE-G12-BIO"
+  },
+  {
+    "country": "Japan",
+    "board": "Japanese University Entrance",
+    "level": "Grade 12",
+    "subject": "English",
+    "exam": "Daigaku Nyushi Kyotsu Test",
+    "code": "JUE-G12-ENG"
+  },
+  {
+    "country": "Japan",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Japan",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "South Korea",
+    "board": "CSAT (Suneung)",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "College Scholastic Ability Test",
+    "code": "CS-G12-MATH"
+  },
+  {
+    "country": "South Korea",
+    "board": "CSAT (Suneung)",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "College Scholastic Ability Test",
+    "code": "CS-G12-PHY"
+  },
+  {
+    "country": "South Korea",
+    "board": "CSAT (Suneung)",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "College Scholastic Ability Test",
+    "code": "CS-G12-CHEM"
+  },
+  {
+    "country": "South Korea",
+    "board": "CSAT (Suneung)",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "College Scholastic Ability Test",
+    "code": "CS-G12-BIO"
+  },
+  {
+    "country": "South Korea",
+    "board": "CSAT (Suneung)",
+    "level": "Grade 12",
+    "subject": "English",
+    "exam": "College Scholastic Ability Test",
+    "code": "CS-G12-ENG"
+  },
+  {
+    "country": "South Korea",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Turkey",
+    "board": "YKS (Turkish University Entrance)",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Yükseköğretim Kurumları Sınavı",
+    "code": "YTUE-G12-MATH"
+  },
+  {
+    "country": "Turkey",
+    "board": "YKS (Turkish University Entrance)",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Yükseköğretim Kurumları Sınavı",
+    "code": "YTUE-G12-PHY"
+  },
+  {
+    "country": "Turkey",
+    "board": "YKS (Turkish University Entrance)",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Yükseköğretim Kurumları Sınavı",
+    "code": "YTUE-G12-CHEM"
+  },
+  {
+    "country": "Turkey",
+    "board": "YKS (Turkish University Entrance)",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Yükseköğretim Kurumları Sınavı",
+    "code": "YTUE-G12-BIO"
+  },
+  {
+    "country": "Turkey",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Turkey",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Brazil",
+    "board": "ENEM",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Exame Nacional do Ensino Médio",
+    "code": "ENEM-G12-MATH"
+  },
+  {
+    "country": "Brazil",
+    "board": "ENEM",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Exame Nacional do Ensino Médio",
+    "code": "ENEM-G12-PHY"
+  },
+  {
+    "country": "Brazil",
+    "board": "ENEM",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Exame Nacional do Ensino Médio",
+    "code": "ENEM-G12-CHEM"
+  },
+  {
+    "country": "Brazil",
+    "board": "ENEM",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Exame Nacional do Ensino Médio",
+    "code": "ENEM-G12-BIO"
+  },
+  {
+    "country": "Brazil",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Indonesia",
+    "board": "UN (Indonesian National Exam)",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Ujian Nasional",
+    "code": "UINE-G12-MATH"
+  },
+  {
+    "country": "Indonesia",
+    "board": "UN (Indonesian National Exam)",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Ujian Nasional",
+    "code": "UINE-G12-PHY"
+  },
+  {
+    "country": "Indonesia",
+    "board": "UN (Indonesian National Exam)",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Ujian Nasional",
+    "code": "UINE-G12-CHEM"
+  },
+  {
+    "country": "Indonesia",
+    "board": "UN (Indonesian National Exam)",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Ujian Nasional",
+    "code": "UINE-G12-BIO"
+  },
+  {
+    "country": "Indonesia",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Indonesia",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Thailand",
+    "board": "Thai GAT/PAT",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Thai University Entrance",
+    "code": "TGP-G12-MATH"
+  },
+  {
+    "country": "Thailand",
+    "board": "Thai GAT/PAT",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Thai University Entrance",
+    "code": "TGP-G12-PHY"
+  },
+  {
+    "country": "Thailand",
+    "board": "Thai GAT/PAT",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Thai University Entrance",
+    "code": "TGP-G12-CHEM"
+  },
+  {
+    "country": "Thailand",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Thailand",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Philippines",
+    "board": "DepEd K-12 / PEPT",
+    "level": "Senior High",
+    "subject": "Mathematics",
+    "exam": "Philippine Senior High School",
+    "code": "DK1P-SH-MATH"
+  },
+  {
+    "country": "Philippines",
+    "board": "DepEd K-12 / PEPT",
+    "level": "Senior High",
+    "subject": "Physics",
+    "exam": "Philippine Senior High School",
+    "code": "DK1P-SH-PHY"
+  },
+  {
+    "country": "Philippines",
+    "board": "DepEd K-12 / PEPT",
+    "level": "Senior High",
+    "subject": "Chemistry",
+    "exam": "Philippine Senior High School",
+    "code": "DK1P-SH-CHEM"
+  },
+  {
+    "country": "Philippines",
+    "board": "DepEd K-12 / PEPT",
+    "level": "Senior High",
+    "subject": "Biology",
+    "exam": "Philippine Senior High School",
+    "code": "DK1P-SH-BIO"
+  },
+  {
+    "country": "Philippines",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Myanmar",
+    "board": "Myanmar Basic Education",
+    "level": "Grade 11",
+    "subject": "Mathematics",
+    "exam": "Myanmar Matriculation Exam",
+    "code": "MBE-G1-MATH"
+  },
+  {
+    "country": "Myanmar",
+    "board": "Myanmar Basic Education",
+    "level": "Grade 11",
+    "subject": "Physics",
+    "exam": "Myanmar Matriculation Exam",
+    "code": "MBE-G1-PHY"
+  },
+  {
+    "country": "Myanmar",
+    "board": "Myanmar Basic Education",
+    "level": "Grade 11",
+    "subject": "Chemistry",
+    "exam": "Myanmar Matriculation Exam",
+    "code": "MBE-G1-CHEM"
+  },
+  {
+    "country": "Myanmar",
+    "board": "Myanmar Basic Education",
+    "level": "Grade 11",
+    "subject": "Biology",
+    "exam": "Myanmar Matriculation Exam",
+    "code": "MBE-G1-BIO"
+  },
+  {
+    "country": "Ethiopia",
+    "board": "Ethiopian Education Board",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Ethiopian University Entrance Exam",
+    "code": "EEB-G12-MATH"
+  },
+  {
+    "country": "Ethiopia",
+    "board": "Ethiopian Education Board",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Ethiopian University Entrance Exam",
+    "code": "EEB-G12-PHY"
+  },
+  {
+    "country": "Ethiopia",
+    "board": "Ethiopian Education Board",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Ethiopian University Entrance Exam",
+    "code": "EEB-G12-CHEM"
+  },
+  {
+    "country": "Ethiopia",
+    "board": "Ethiopian Education Board",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Ethiopian University Entrance Exam",
+    "code": "EEB-G12-BIO"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Thanaweya Amma",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Thanaweya Amma",
+    "code": "ETA-G12-MATH"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Thanaweya Amma",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Thanaweya Amma",
+    "code": "ETA-G12-PHY"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Thanaweya Amma",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Thanaweya Amma",
+    "code": "ETA-G12-CHEM"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Thanaweya Amma",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "Thanaweya Amma",
+    "code": "ETA-G12-BIO"
+  },
+  {
+    "country": "Egypt",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Egypt",
+    "board": "IB",
+    "level": "DP",
+    "subject": "Mathematics",
+    "exam": "IB Diploma Programme",
+    "code": "IB-DP-MATH"
+  },
+  {
+    "country": "Jordan",
+    "board": "Jordanian Tawjihi",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "General Secondary Certificate",
+    "code": "JT-G12-MATH"
+  },
+  {
+    "country": "Jordan",
+    "board": "Jordanian Tawjihi",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "General Secondary Certificate",
+    "code": "JT-G12-PHY"
+  },
+  {
+    "country": "Jordan",
+    "board": "Jordanian Tawjihi",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "General Secondary Certificate",
+    "code": "JT-G12-CHEM"
+  },
+  {
+    "country": "Jordan",
+    "board": "Jordanian Tawjihi",
+    "level": "Grade 12",
+    "subject": "Biology",
+    "exam": "General Secondary Certificate",
+    "code": "JT-G12-BIO"
+  },
+  {
+    "country": "Jordan",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Oman",
+    "board": "Oman MoE",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Oman General Secondary",
+    "code": "OM-G12-MATH"
+  },
+  {
+    "country": "Oman",
+    "board": "Oman MoE",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Oman General Secondary",
+    "code": "OM-G12-PHY"
+  },
+  {
+    "country": "Oman",
+    "board": "Oman MoE",
+    "level": "Grade 12",
+    "subject": "Chemistry",
+    "exam": "Oman General Secondary",
+    "code": "OM-G12-CHEM"
+  },
+  {
+    "country": "Oman",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Oman",
+    "board": "Cambridge International",
+    "level": "IGCSE",
+    "subject": "Mathematics",
+    "exam": "Cambridge IGCSE",
+    "code": "CAIE-IGCSE-MATH"
+  },
+  {
+    "country": "Bahrain",
+    "board": "Bahrain MoE",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Bahrain Secondary Certificate",
+    "code": "BM-G12-MATH"
+  },
+  {
+    "country": "Bahrain",
+    "board": "Bahrain MoE",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Bahrain Secondary Certificate",
+    "code": "BM-G12-PHY"
+  },
+  {
+    "country": "Bahrain",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Bahrain",
+    "board": "Cambridge International",
+    "level": "IGCSE",
+    "subject": "Mathematics",
+    "exam": "Cambridge IGCSE",
+    "code": "CAIE-IGCSE-MATH"
+  },
+  {
+    "country": "Kuwait",
+    "board": "Kuwait MoE",
+    "level": "Grade 12",
+    "subject": "Mathematics",
+    "exam": "Kuwait Secondary Certificate",
+    "code": "KM-G12-MATH"
+  },
+  {
+    "country": "Kuwait",
+    "board": "Kuwait MoE",
+    "level": "Grade 12",
+    "subject": "Physics",
+    "exam": "Kuwait Secondary Certificate",
+    "code": "KM-G12-PHY"
+  },
+  {
+    "country": "Kuwait",
+    "board": "Cambridge International",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Cambridge A Level",
+    "code": "CAIE-AL-MATH"
+  },
+  {
+    "country": "Kuwait",
+    "board": "Cambridge International",
+    "level": "IGCSE",
+    "subject": "Mathematics",
+    "exam": "Cambridge IGCSE",
+    "code": "CAIE-IGCSE-MATH"
+  },
+  {
+    "country": "Australia",
+    "board": "South Australia SACE",
+    "level": "Years 11–12",
+    "subject": "Chemistry",
+    "exam": "South Australian Certificate of Education",
+    "code": "SACE-Y1112-CHEM-2"
+  },
+  {
+    "country": "Australia",
+    "board": "South Australia SACE",
+    "level": "Years 11–12",
+    "subject": "Physics",
+    "exam": "South Australian Certificate of Education",
+    "code": "SACE-Y1112-PHY-2"
+  },
+  {
+    "country": "Australia",
+    "board": "South Australia SACE",
+    "level": "Years 11–12",
+    "subject": "English",
+    "exam": "South Australian Certificate of Education",
+    "code": "SACE-Y1112-ENG-2"
+  },
+  {
+    "country": "Australia",
+    "board": "South Australia SACE",
+    "level": "Years 11–12",
+    "subject": "Economics",
+    "exam": "South Australian Certificate of Education",
+    "code": "SACE-Y1112-ECON"
+  },
+  {
+    "country": "Australia",
+    "board": "Western Australia WACE",
+    "level": "Years 11–12",
+    "subject": "Chemistry",
+    "exam": "Western Australian Certificate of Education",
+    "code": "WACE-Y1112-CHEM-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Western Australia WACE",
+    "level": "Years 11–12",
+    "subject": "Physics",
+    "exam": "Western Australian Certificate of Education",
+    "code": "WACE-Y1112-PHY-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Western Australia WACE",
+    "level": "Years 11–12",
+    "subject": "English",
+    "exam": "Western Australian Certificate of Education",
+    "code": "WACE-Y1112-ENG-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Tasmania TCE",
+    "level": "Years 11–12",
+    "subject": "Chemistry",
+    "exam": "Tasmanian Certificate of Education",
+    "code": "TCE-Y1112-CHEM-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Tasmania TCE",
+    "level": "Years 11–12",
+    "subject": "Physics",
+    "exam": "Tasmanian Certificate of Education",
+    "code": "TCE-Y1112-PHY-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Tasmania TCE",
+    "level": "Years 11–12",
+    "subject": "English",
+    "exam": "Tasmanian Certificate of Education",
+    "code": "TCE-Y1112-ENG-2"
+  },
+  {
+    "country": "Australia",
+    "board": "Australian Curriculum",
+    "level": "P–12",
+    "subject": "Mathematics",
+    "exam": "Australian Curriculum",
+    "code": "ACARA-P12-MATH"
+  },
+  {
+    "country": "Australia",
+    "board": "Australian Curriculum",
+    "level": "P–12",
+    "subject": "Science",
+    "exam": "Australian Curriculum",
+    "code": "ACARA-P12-SCI"
+  },
+  {
+    "country": "Australia",
+    "board": "Australian Curriculum",
+    "level": "P–12",
+    "subject": "Physics",
+    "exam": "Australian Curriculum",
+    "code": "ACARA-P12-PHY"
+  },
+  {
+    "country": "Australia",
+    "board": "Australian Curriculum",
+    "level": "P–12",
+    "subject": "Chemistry",
+    "exam": "Australian Curriculum",
+    "code": "ACARA-P12-CHEM"
+  },
+  {
+    "country": "Australia",
+    "board": "Australian Curriculum",
+    "level": "P–12",
+    "subject": "Biology",
+    "exam": "Australian Curriculum",
+    "code": "ACARA-P12-BIO"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "University of London International Programmes",
+    "level": "Undergraduate",
+    "subject": "Mathematics",
+    "exam": "UoL International Examination",
+    "code": "UOLIP-UNDER-MATH"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "University of London International Programmes",
+    "level": "Undergraduate",
+    "subject": "Economics",
+    "exam": "UoL International Examination",
+    "code": "UOLIP-UNDER-ECON"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "University of London International Programmes",
+    "level": "Undergraduate",
+    "subject": "Law",
+    "exam": "UoL International Examination",
+    "code": "UOLIP-UNDER-LAW"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "Open University",
+    "level": "Undergraduate",
+    "subject": "Mathematics",
+    "exam": "Open University",
+    "code": "OU-UNDER-MATH"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "Open University",
+    "level": "Undergraduate",
+    "subject": "Physics",
+    "exam": "Open University",
+    "code": "OU-UNDER-PHY"
+  },
+  {
+    "country": "United Kingdom",
+    "board": "Open University",
+    "level": "Undergraduate",
+    "subject": "Chemistry",
+    "exam": "Open University",
+    "code": "OU-UNDER-CHEM"
+  },
+  {
+    "country": "United States",
+    "board": "College Board",
+    "level": "AP",
+    "subject": "Calculus AB",
+    "exam": "Advanced Placement",
+    "code": "CB-AP-CAB"
+  },
+  {
+    "country": "United States",
+    "board": "College Board",
+    "level": "AP",
+    "subject": "Calculus BC",
+    "exam": "Advanced Placement",
+    "code": "CB-AP-CBC"
+  },
+  {
+    "country": "United States",
+    "board": "College Board",
+    "level": "AP",
+    "subject": "Physics",
+    "exam": "Advanced Placement",
+    "code": "CB-AP-PHY"
+  },
+  {
+    "country": "United States",
+    "board": "College Board",
+    "level": "SAT",
+    "subject": "Mathematics",
+    "exam": "Scholastic Assessment Test",
+    "code": "CB-SAT-MATH"
+  },
+  {
+    "country": "United States",
+    "board": "College Board",
+    "level": "SAT",
+    "subject": "Reading and Writing",
+    "exam": "Scholastic Assessment Test",
+    "code": "CB-SAT-RW"
+  },
+  {
+    "country": "India",
+    "board": "IIT JEE Main",
+    "level": "Entrance",
+    "subject": "Mathematics",
+    "exam": "Joint Entrance Examination Main",
+    "code": "IJM-ENTRA-MATH"
+  },
+  {
+    "country": "India",
+    "board": "IIT JEE Main",
+    "level": "Entrance",
+    "subject": "Physics",
+    "exam": "Joint Entrance Examination Main",
+    "code": "IJM-ENTRA-PHY"
+  },
+  {
+    "country": "India",
+    "board": "IIT JEE Main",
+    "level": "Entrance",
+    "subject": "Chemistry",
+    "exam": "Joint Entrance Examination Main",
+    "code": "IJM-ENTRA-CHEM"
+  },
+  {
+    "country": "India",
+    "board": "NEET UG",
+    "level": "Entrance",
+    "subject": "Biology",
+    "exam": "National Eligibility cum Entrance Test",
+    "code": "NU-ENTRA-BIO"
+  },
+  {
+    "country": "India",
+    "board": "NEET UG",
+    "level": "Entrance",
+    "subject": "Chemistry",
+    "exam": "National Eligibility cum Entrance Test",
+    "code": "NU-ENTRA-CHEM"
+  },
+  {
+    "country": "India",
+    "board": "NEET UG",
+    "level": "Entrance",
+    "subject": "Physics",
+    "exam": "National Eligibility cum Entrance Test",
+    "code": "NU-ENTRA-PHY"
+  },
+  {
+    "country": "Pakistan",
+    "board": "MDCAT",
+    "level": "Entrance",
+    "subject": "Biology",
+    "exam": "Medical College Admission Test",
+    "code": "MDCAT-ENTRA-BIO"
+  },
+  {
+    "country": "Pakistan",
+    "board": "MDCAT",
+    "level": "Entrance",
+    "subject": "Chemistry",
+    "exam": "Medical College Admission Test",
+    "code": "MDCAT-ENTRA-CHEM"
+  },
+  {
+    "country": "Pakistan",
+    "board": "MDCAT",
+    "level": "Entrance",
+    "subject": "Physics",
+    "exam": "Medical College Admission Test",
+    "code": "MDCAT-ENTRA-PHY"
+  },
+  {
+    "country": "Pakistan",
+    "board": "ECAT",
+    "level": "Entrance",
+    "subject": "Mathematics",
+    "exam": "Engineering College Admission Test",
+    "code": "ECAT-ENTRA-MATH"
+  },
+  {
+    "country": "Pakistan",
+    "board": "ECAT",
+    "level": "Entrance",
+    "subject": "Physics",
+    "exam": "Engineering College Admission Test",
+    "code": "ECAT-ENTRA-PHY"
+  },
+  {
+    "country": "Pakistan",
+    "board": "ECAT",
+    "level": "Entrance",
+    "subject": "Chemistry",
+    "exam": "Engineering College Admission Test",
+    "code": "ECAT-ENTRA-CHEM"
+  },
+  {
+    "country": "Australia",
+    "board": "ATAR / Universities",
+    "level": "Year 12",
+    "subject": "Mathematics",
+    "exam": "Australian Tertiary Admission Rank",
+    "code": "AU-Y1-MATH"
+  },
+  {
+    "country": "Australia",
+    "board": "ATAR / Universities",
+    "level": "Year 12",
+    "subject": "Physics",
+    "exam": "Australian Tertiary Admission Rank",
+    "code": "AU-Y1-PHY"
+  },
+  {
+    "country": "Australia",
+    "board": "ATAR / Universities",
+    "level": "Year 12",
+    "subject": "Chemistry",
+    "exam": "Australian Tertiary Admission Rank",
+    "code": "AU-Y1-CHEM"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore Universities",
+    "level": "A Level",
+    "subject": "Mathematics",
+    "exam": "Singapore University Admission",
+    "code": "SU-AL-MATH"
+  },
+  {
+    "country": "Singapore",
+    "board": "Singapore Universities",
+    "level": "A Level",
+    "subject": "Physics",
+    "exam": "Singapore University Admission",
+    "code": "SU-AL-PHY"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "Hong Kong Universities",
+    "level": "DSE",
+    "subject": "Mathematics",
+    "exam": "Hong Kong University Admission",
+    "code": "HKU-DSE-MATH"
+  },
+  {
+    "country": "Hong Kong",
+    "board": "Hong Kong Universities",
+    "level": "DSE",
+    "subject": "Physics",
+    "exam": "Hong Kong University Admission",
+    "code": "HKU-DSE-PHY"
+  },
+  {
+    "country": "South Africa",
+    "board": "South African Universities",
+    "level": "Matric",
+    "subject": "Mathematics",
+    "exam": "NSC Matric University Admission",
+    "code": "SAU-MAT-MATH"
+  },
+  {
+    "country": "South Africa",
+    "board": "South African Universities",
+    "level": "Matric",
+    "subject": "Physical Sciences",
+    "exam": "NSC Matric University Admission",
+    "code": "SAU-MAT-PSCI"
+  },
+  {
+    "country": "Nigeria",
+    "board": "Nigerian Universities",
+    "level": "UTME",
+    "subject": "Mathematics",
+    "exam": "Unified Tertiary Matriculation Examination",
+    "code": "NU-UTME-MATH"
+  },
+  {
+    "country": "Nigeria",
+    "board": "Nigerian Universities",
+    "level": "UTME",
+    "subject": "Physics",
+    "exam": "Unified Tertiary Matriculation Examination",
+    "code": "NU-UTME-PHY"
+  },
+  {
+    "country": "Nigeria",
+    "board": "Nigerian Universities",
+    "level": "UTME",
+    "subject": "Chemistry",
+    "exam": "Unified Tertiary Matriculation Examination",
+    "code": "NU-UTME-CHEM"
+  },
+  {
+    "country": "Kenya",
+    "board": "Kenyan Universities",
+    "level": "KCSE",
+    "subject": "Mathematics",
+    "exam": "Kenya University Admission",
+    "code": "KU-KCSE-MATH"
+  },
+  {
+    "country": "Kenya",
+    "board": "Kenyan Universities",
+    "level": "KCSE",
+    "subject": "Biology",
+    "exam": "Kenya University Admission",
+    "code": "KU-KCSE-BIO"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Universities",
+    "level": "Thanaweya Amma",
+    "subject": "Mathematics",
+    "exam": "Egyptian University Admission",
+    "code": "EU-TA-MATH"
+  },
+  {
+    "country": "Egypt",
+    "board": "Egyptian Universities",
+    "level": "Thanaweya Amma",
+    "subject": "Physics",
+    "exam": "Egyptian University Admission",
+    "code": "EU-TA-PHY"
+  },
+  {
+    "country": "Malaysia",
+    "board": "Malaysian Universities",
+    "level": "STPM",
+    "subject": "Mathematics",
+    "exam": "Malaysian University Admission",
+    "code": "MU-STPM-MATH"
+  },
+  {
+    "country": "Malaysia",
+    "board": "Malaysian Universities",
+    "level": "STPM",
+    "subject": "Chemistry",
+    "exam": "Malaysian University Admission",
+    "code": "MU-STPM-CHEM"
   }
 ]

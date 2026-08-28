@@ -1,0 +1,379 @@
+{
+  "generatedAt": "2026-08-23T10:18:14.977Z",
+  "counts": {
+    "totalTutorAccounts": 16,
+    "livePublic": 1,
+    "incompleteHidden": 13,
+    "suspiciousHidden": 1,
+    "suspended": 0,
+    "emailUnverifiedHidden": 1,
+    "forceActive": 0,
+    "completeButHidden": 0,
+    "incompleteButActive": 0,
+    "profilesWithTutorRole": 16
+  },
+  "publicTutors": [
+    {
+      "displayName": "Ali",
+      "profileId": "cmsx3iyd20002hekfp2q2g9r7",
+      "subjects": [
+        "Accounting",
+        "CBSE Maths",
+        "Computer Applications",
+        "Computer Science",
+        "IGCSE Maths",
+        "Mathematics"
+      ],
+      "city": "Online",
+      "country": "Pakistan",
+      "lessonMode": "Online",
+      "hourlyRatePkr": 5000,
+      "emailVerified": true,
+      "completenessPct": 100,
+      "verifiedBadge": false,
+      "forceActive": false,
+      "eligibility": "A_valid_public",
+      "place": "Online, Pakistan",
+      "availability": "Online, Pakistan · Online",
+      "hourlyUsd": "$17.99/hr",
+      "formattingDefects": []
+    }
+  ],
+  "eligibilityMismatches": {
+    "B": [],
+    "C": [],
+    "D": [],
+    "E": []
+  },
+  "subjectSupply": {
+    "Accounting": 1,
+    "CBSE Maths": 1,
+    "Computer Applications": 1,
+    "Computer Science": 1,
+    "IGCSE Maths": 1,
+    "Mathematics": 1
+  },
+  "searchTests": {
+    "bySubject": [
+      {
+        "subject": "Accounting",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      },
+      {
+        "subject": "CBSE Maths",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      },
+      {
+        "subject": "Computer Applications",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      },
+      {
+        "subject": "Computer Science",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      },
+      {
+        "subject": "IGCSE Maths",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      },
+      {
+        "subject": "Mathematics",
+        "expectedFromDb": 1,
+        "searchTotal": 1,
+        "namesReturned": [
+          "Ali"
+        ],
+        "match": true
+      }
+    ],
+    "noSubject": {
+      "total": 1
+    },
+    "online": {
+      "total": 1
+    },
+    "countryTests": [
+      {
+        "country": "Pakistan",
+        "expectedMin": 1,
+        "searchTotal": 1,
+        "names": [
+          "Ali"
+        ]
+      }
+    ],
+    "cityTests": []
+  },
+  "subjectLandings": [
+    {
+      "subject": "Accounting",
+      "slugGuess": "accounting",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    },
+    {
+      "subject": "CBSE Maths",
+      "slugGuess": "cbse-maths",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    },
+    {
+      "subject": "Computer Applications",
+      "slugGuess": "computer-applications",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    },
+    {
+      "subject": "Computer Science",
+      "slugGuess": "computer-science",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    },
+    {
+      "subject": "IGCSE Maths",
+      "slugGuess": "igcse-maths",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    },
+    {
+      "subject": "Mathematics",
+      "slugGuess": "mathematics",
+      "expectedCount": 1,
+      "searchTotal": 1,
+      "tutorIds": [
+        "cmsx3iyd20002hekfp2q2g9r7"
+      ],
+      "tutorNames": [
+        "Ali"
+      ]
+    }
+  ],
+  "similarChecks": [],
+  "sitemap": {
+    "dbPublicCount": 1,
+    "publicAuditCount": 1,
+    "idsMatch": true,
+    "missingFromSitemap": [],
+    "extraInSitemap": [],
+    "inactiveProfileCount": 15
+  },
+  "recovery": {
+    "r1TotalEvents": 10,
+    "recipients": [
+      {
+        "userId": "cmswio0630000w4tk4m1u8c0k",
+        "displayName": "Jennifer Alex",
+        "r1SentAt": "2026-08-23T09:47:13.704Z",
+        "stillIncomplete": true,
+        "completenessPct": 70,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Country",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt48u7ii0000ep7tgxfcujyu",
+        "displayName": "neelam khatri Bakle",
+        "r1SentAt": "2026-08-23T09:47:13.630Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt499abf000544zzfxhztmgr",
+        "displayName": "wasiq Saleem",
+        "r1SentAt": "2026-08-23T09:47:13.557Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt497qj2000044zznzrgkjbx",
+        "displayName": "Annapurna Tiwari",
+        "r1SentAt": "2026-08-23T09:47:13.472Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt4a17rj00051pm4c0n8c3rc",
+        "displayName": "Mohit kwatra",
+        "r1SentAt": "2026-08-23T09:47:13.391Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt49bmx60002hourdnk9rkix",
+        "displayName": "vikas singh",
+        "r1SentAt": "2026-08-23T09:47:13.303Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt49j3gb000g44zzvbf2d2ug",
+        "displayName": "Thamizharasi Av",
+        "r1SentAt": "2026-08-23T09:47:13.226Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt4bwgrd000011c1aunjw1is",
+        "displayName": "Rachpal Nirmale",
+        "r1SentAt": "2026-08-23T09:47:13.148Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      },
+      {
+        "userId": "cmt49w2g200001pm4u8ni4x4o",
+        "displayName": "Madhu Shakthi",
+        "r1SentAt": "2026-08-23T09:47:13.064Z",
+        "stillIncomplete": true,
+        "completenessPct": 90,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo"
+        ]
+      },
+      {
+        "userId": "cmswk2p0x000074kctrhfrqdh",
+        "displayName": "Hammad Syed",
+        "r1SentAt": "2026-08-23T09:47:12.931Z",
+        "stillIncomplete": true,
+        "completenessPct": 50,
+        "nowLive": false,
+        "editedSinceR1": false,
+        "missingRequired": [
+          "Profile photo",
+          "Headline",
+          "Country",
+          "Subjects",
+          "Highest qualification"
+        ]
+      }
+    ],
+    "stillIncomplete": 10,
+    "editedSinceR1": 0,
+    "nowLive": 0,
+    "nearlyComplete": 2,
+    "earlyProfile": 0
+  },
+  "completeButHidden": []
+}
