@@ -3,8 +3,8 @@ import { getLivePlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 
 /**
- * Growth-tab tip: Boost / Highlight are bought per subject profile (Phase D).
- * Checkout lives on each row in the Subject profiles manager.
+ * Growth-tab tip: Boost / Highlight are bought per teaching listing (Marketplace V2).
+ * Checkout lives on each row in the Teaching listings manager.
  */
 export async function ProfileBoostPanel({
   currency,
@@ -22,16 +22,16 @@ export async function ProfileBoostPanel({
     >
       <div className="profile-boost-head">
         <div>
-          <h2 style={{ marginTop: 0 }}>{plan?.name || "Profile Boost"}</h2>
+          <h2 style={{ marginTop: 0 }}>{plan?.name || "Listing Boost"}</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Boost or highlight each subject profile separately — students see that listing higher in
+            Boost or highlight each teaching listing separately — students see that service higher in
             search for ~30 days.
           </p>
         </div>
       </div>
 
       <p className="profile-boost-status muted">
-        Open your Profile tab, pick a subject profile, then use <strong>Boost</strong> or{" "}
+        Open your Profile tab, pick a teaching listing, then use <strong>Boost</strong> or{" "}
         <strong>Highlight</strong> on that row.
         {priceLabel ? (
           <>
@@ -42,8 +42,8 @@ export async function ProfileBoostPanel({
       </p>
 
       <div className="profile-boost-actions">
-        <Link href="/dashboard/tutor?tab=profile#subject-profiles" className="btn">
-          Manage subject profiles
+        <Link href="/dashboard/tutor?tab=profile#teaching-listings" className="btn">
+          Manage teaching listings
         </Link>
         {!compact && (
           <Link href="/pricing" className="btn btn-secondary">

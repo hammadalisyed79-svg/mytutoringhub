@@ -185,14 +185,14 @@ export default async function TutorDashboardPage({
             ) : null}
 
             {user.tutorProfile ? (
-              <section className="panel" id="add-subject-cta">
+              <section className="panel" id="add-listing-cta">
                 <h2>Reach more students</h2>
                 <p className="muted">
-                  Each subject profile is a separate search card. Add Maths and Physics as two
-                  listings, then boost the one you want students to see first.
+                  Add a teaching listing for each service you offer — then boost the ones that matter
+                  most. Students search by subject, level, and board.
                 </p>
-                <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#subject-profiles">
-                  Manage subject profiles
+                <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#teaching-listings">
+                  Manage teaching listings
                 </Link>
               </section>
             ) : null}
@@ -210,10 +210,10 @@ export default async function TutorDashboardPage({
               <section className="panel tutor-profile-workspace" id="tutor-profile">
               <div className="tutor-profile-workspace-head">
                 <div>
-                  <h2>Edit your public listing</h2>
+                  <h2>My profile</h2>
                   <p className="muted">
-                    Complete the short wizard step by step. Optional steps have <strong>Skip for now</strong>.
-                    After saving, improve trust with verification and star badges.
+                    Your professional identity — photo, bio, verification, and reviews. Teaching
+                    services live in listings below.
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
@@ -269,11 +269,12 @@ export default async function TutorDashboardPage({
           ) : null}
 
             {user.tutorProfile ? (
-              <section className="panel" id="subject-profiles-section">
-                <h2>Subject profiles</h2>
+              <section className="panel" id="teaching-listings-section">
+                <h2>My teaching listings</h2>
                 <p className="muted">
-                  Each subject is its own search listing (rate, city, boost). Shared account photo,
-                  verification, and reviews apply to all of them.
+                  Each listing is one teaching service students can search for — with its own rate,
+                  level, board, and boost. Your photo, verification, and reviews stay on your master
+                  profile.
                 </p>
                 <TutorAdsManager
                   subjects={catalogSubjects}

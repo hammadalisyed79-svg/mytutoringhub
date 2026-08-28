@@ -17,6 +17,7 @@ import {
   canViewTutorProfilePublicly,
 } from "@/lib/tutor-public-eligibility";
 import { listingPath } from "@/lib/subject-profile";
+import { dedupeSearchByTutor, type AlsoTeachesItem } from "@/lib/search-dedupe";
 
 export type TutorSearchFilters = {
   q?: string;
@@ -27,12 +28,13 @@ export type TutorSearchFilters = {
   verified?: string;
   max?: string;
   level?: string;
+  board?: string;
   trial?: string;
   language?: string;
   page?: string;
 };
 
-/** Flattened search card: one SubjectProfile + parent tutor identity. */
+/** Flattened search card: best matching Teaching Listing + parent tutor identity. */
 export type SearchListingCard = {
   id: string;
   listingId: string;
@@ -52,6 +54,9 @@ export type SearchListingCard = {
   photoCropZoom: number | null;
   languages: string | null;
   levels: string | null;
+  board: string | null;
+  qualification: string | null;
+  syllabusCode: string | null;
   country: string | null;
   expertise: string | null;
   verified: boolean;
@@ -66,6 +71,7 @@ export type SearchListingCard = {
   user: { id: string; name: string; emailVerified: Date | null; suspended: boolean };
   reviews: { rating: number; comment: string | null }[];
   trustBadge?: string;
+  alsoTeaches: AlsoTeachesItem[];
 };
 
 export const PAGE_SIZE = 12;
@@ -115,6 +121,9 @@ type ListingRow = {
   headline: string | null;
   description: string | null;
   level: string;
+  board: string | null;
+  qualification: string | null;
+  syllabusCode: string | null;
   location: string;
   country: string | null;
   online: boolean;
@@ -182,6 +191,9 @@ function toSearchCard(row: ListingRow, now = new Date()): SearchListingCard {
     photoCropZoom: p.photoCropZoom,
     languages: p.languages,
     levels: row.level || p.levels,
+    board: row.board,
+    qualification: row.qualification,
+    syllabusCode: row.syllabusCode,
     country: row.country || p.country,
     expertise: p.expertise,
     verified: p.verified,
@@ -195,6 +207,7 @@ function toSearchCard(row: ListingRow, now = new Date()): SearchListingCard {
     qualifications: p.qualifications,
     user: p.user,
     reviews: p.reviews,
+    alsoTeaches: [],
   };
 }
 
@@ -220,6 +233,8 @@ export async function searchTutors(
   const subject = subjectResolved.value;
   const location = cityResolved.value;
   const level = (filters.level || parsed.level || (!filters.subject && codeMatch?.level) || "").trim();
+  const board = (filters.board || codeMatch?.board || "").trim();
+  const syllabusCode = (codeMatch?.code || "").trim();
   const mode = filters.mode || parsed.mode || "";
   let keyword = (filters.q || "").trim();
   if (filters.q && !filters.subject && !filters.location && !filters.country) {
@@ -261,9 +276,15 @@ export async function searchTutors(
         ...(useLocation && location && location !== "Online"
           ? { location: contains(location) }
           : {}),
+        ...(board ? { board: contains(board) } : {}),
+        ...(syllabusCode ? { syllabusCode: contains(syllabusCode) } : {}),
         ...(level
           ? {
-              OR: [{ level: contains(level) }, { tutorProfile: { levels: contains(level) } }],
+              OR: [
+                { level: contains(level) },
+                { qualification: contains(level) },
+                { tutorProfile: { levels: contains(level) } },
+              ],
             }
           : {}),
         ...(subject
@@ -283,6 +304,9 @@ export async function searchTutors(
                 { description: contains(keyword) },
                 { location: contains(keyword) },
                 { headline: contains(keyword) },
+                { board: contains(keyword) },
+                { qualification: contains(keyword) },
+                { syllabusCode: contains(keyword) },
                 {
                   tutorProfile: {
                     OR: [
@@ -312,6 +336,9 @@ export async function searchTutors(
         headline: true,
         description: true,
         level: true,
+        board: true,
+        qualification: true,
+        syllabusCode: true,
         location: true,
         country: true,
         online: true,
@@ -369,12 +396,28 @@ export async function searchTutors(
           : 0
         : 0;
       const levelFieldMatch =
-        level && (card.levels || "").toLowerCase().includes(level.toLowerCase()) ? 30 : 0;
+        level &&
+        ((card.levels || "").toLowerCase().includes(level.toLowerCase()) ||
+          (card.qualification || "").toLowerCase().includes(level.toLowerCase()))
+          ? 30
+          : 0;
+      const boardMatch =
+        board && (card.board || "").toLowerCase().includes(board.toLowerCase()) ? 40 : 0;
+      const codeMatchScore =
+        syllabusCode &&
+        (card.syllabusCode || "").toUpperCase() === syllabusCode.toUpperCase()
+          ? 80
+          : 0;
       return {
         card: {
           ...card,
           trustBadge: badgeMap.get(card.tutorProfileId) ?? "NEW",
         },
+        listingId: card.listingId,
+        tutorProfileId: card.tutorProfileId,
+        subject: card.subject,
+        title: card.title,
+        level: card.levels || "",
         score:
           tierScore * 100 +
           boost * 1000 +
@@ -384,21 +427,27 @@ export async function searchTutors(
           locBoost +
           countryBoost +
           subjectFieldMatch +
-          levelFieldMatch -
+          levelFieldMatch +
+          boardMatch +
+          codeMatchScore -
           card.hourlyRate / 10000,
       };
     })
     .sort((a, b) => b.score - a.score);
 
-  const total = scored.length;
-  const slice = scored.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => s.card);
+  const deduped = dedupeSearchByTutor(scored);
+  const total = deduped.length;
+  const slice = deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => ({
+    ...s.card,
+    alsoTeaches: s.alsoTeaches,
+  }));
   return {
     tutors: slice,
     total,
     page,
     pageSize: PAGE_SIZE,
     pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    resolved: { subject, location, country, level, keyword, mode },
+    resolved: { subject, location, country, level, board, keyword, mode },
     locationRelaxed,
     keptCountry,
   };

@@ -123,12 +123,12 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
       {
         title: "Profile Boost",
         description: "Boost one subject listing for 30 days",
-        href: "/dashboard/tutor?tab=profile#subject-profiles",
+        href: "/dashboard/tutor?tab=profile#teaching-listings",
       },
       {
         title: "Highlighted profile",
         description: "Highlight one subject listing",
-        href: "/dashboard/tutor?tab=profile#subject-profiles",
+        href: "/dashboard/tutor?tab=profile#teaching-listings",
       },
       {
         title: "Unlimited Profiles",

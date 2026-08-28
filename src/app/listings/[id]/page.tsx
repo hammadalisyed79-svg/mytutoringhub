@@ -330,7 +330,15 @@ export default async function SubjectListingPage({ params }: Params) {
             <div className="profile-main">
               <section className="profile-section">
                 <h2 className="profile-section-title">{listing.subject}</h2>
-                <p className="muted">{listing.level}</p>
+                <p className="muted">
+                  {[
+                    listing.board,
+                    listing.qualification || (listing.level !== "All levels" ? listing.level : null),
+                    listing.syllabusCode,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || listing.level}
+                </p>
                 {bio ? <p className="profile-bio">{bio}</p> : null}
                 {place && <p className="muted">{place}</p>}
               </section>

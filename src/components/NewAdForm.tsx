@@ -3,18 +3,44 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+export type NewAdFormInitial = {
+  subject?: string;
+  level?: string;
+  location?: string;
+  online?: boolean;
+  inPerson?: boolean;
+  q?: string;
+};
+
 export function NewAdForm({
   subjects,
   titlePlaceholder,
   levelPlaceholder,
+  initial,
 }: {
   subjects: string[];
   titlePlaceholder: string;
   levelPlaceholder: string;
+  initial?: NewAdFormInitial;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const subjectDefault =
+    (initial?.subject && subjects.find((s) => s.toLowerCase() === initial.subject!.toLowerCase())) ||
+    subjects[0] ||
+    "Mathematics";
+  const titleDefault = initial?.subject
+    ? `${initial.subject}${initial.level ? ` ${initial.level}` : ""} tutor needed`.trim()
+    : "";
+  const descriptionDefault = [
+    initial?.q ? `Search: ${initial.q}` : "",
+    initial?.subject ? `Subject: ${initial.subject}` : "",
+    initial?.level ? `Level: ${initial.level}` : "",
+  ]
+    .filter(Boolean)
+    .join(". ");
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +65,7 @@ export function NewAdForm({
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "Could not create ad");
+      setError(data.error || "Could not create request");
       return;
     }
     router.push("/ads");
@@ -51,15 +77,25 @@ export function NewAdForm({
       <p className="field-hint">Required fields are marked with *</p>
       <label>
         <span>
-          Title <abbr className="req" title="Required">*</abbr>
+          Title <abbr className="req" title="Required">
+            *
+          </abbr>
         </span>
-        <input name="title" required minLength={5} placeholder={titlePlaceholder} />
+        <input
+          name="title"
+          required
+          minLength={5}
+          placeholder={titlePlaceholder}
+          defaultValue={titleDefault}
+        />
       </label>
       <label>
         <span>
-          Subject <abbr className="req" title="Required">*</abbr>
+          Subject <abbr className="req" title="Required">
+            *
+          </abbr>
         </span>
-        <select name="subject" required defaultValue={subjects[0] || "Mathematics"}>
+        <select name="subject" required defaultValue={subjectDefault}>
           {subjects.map((s) => (
             <option key={s} value={s}>
               {s}
@@ -69,15 +105,29 @@ export function NewAdForm({
       </label>
       <label>
         <span>
-          Level <abbr className="req" title="Required">*</abbr>
+          Level <abbr className="req" title="Required">
+            *
+          </abbr>
         </span>
-        <input name="level" required placeholder={levelPlaceholder} />
+        <input
+          name="level"
+          required
+          placeholder={levelPlaceholder}
+          defaultValue={initial?.level || ""}
+        />
       </label>
       <label>
         <span>
-          City <abbr className="req" title="Required">*</abbr>
+          City <abbr className="req" title="Required">
+            *
+          </abbr>
         </span>
-        <input name="location" required placeholder="City or Online…" />
+        <input
+          name="location"
+          required
+          placeholder="City or Online…"
+          defaultValue={initial?.location || ""}
+        />
       </label>
       <label>
         Budget per hour (PKR, optional)
@@ -86,7 +136,9 @@ export function NewAdForm({
       </label>
       <label>
         <span>
-          What you need <abbr className="req" title="Required">*</abbr>
+          What you need <abbr className="req" title="Required">
+            *
+          </abbr>
         </span>
         <textarea
           name="description"
@@ -94,18 +146,31 @@ export function NewAdForm({
           minLength={20}
           rows={5}
           placeholder="Goals, exam board, preferred days, online or in person…"
+          defaultValue={descriptionDefault.length >= 20 ? descriptionDefault : ""}
         />
       </label>
       <fieldset className="form-fieldset">
         <legend>
-          Lesson type <abbr className="req" title="Required">*</abbr>
+          Lesson type <abbr className="req" title="Required">
+            *
+          </abbr>
         </legend>
         <div className="checks">
           <label className="radio">
-            <input name="online" type="checkbox" defaultChecked /> Online
+            <input
+              name="online"
+              type="checkbox"
+              defaultChecked={initial?.online !== false}
+            />{" "}
+            Online
           </label>
           <label className="radio">
-            <input name="inPerson" type="checkbox" /> In person
+            <input
+              name="inPerson"
+              type="checkbox"
+              defaultChecked={Boolean(initial?.inPerson)}
+            />{" "}
+            In person
           </label>
         </div>
       </fieldset>

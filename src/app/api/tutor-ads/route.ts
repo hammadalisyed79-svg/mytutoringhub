@@ -20,6 +20,9 @@ const createSchema = z.object({
   subject: z.string().min(1),
   title: z.string().min(5).max(120),
   level: z.string().min(1),
+  board: z.string().max(120).optional(),
+  qualification: z.string().max(120).optional(),
+  syllabusCode: z.string().max(40).optional(),
   location: z.string().min(1),
   online: z.boolean(),
   inPerson: z.boolean(),
@@ -28,12 +31,20 @@ const createSchema = z.object({
   headline: z.string().max(200).optional(),
 });
 
+function normalizeOptional(value: string | undefined | null) {
+  const trimmed = (value || "").trim();
+  return trimmed || null;
+}
+
 function serializeListing(row: {
   id: string;
   subject: string;
   title: string;
   headline: string | null;
   level: string;
+  board: string | null;
+  qualification: string | null;
+  syllabusCode: string | null;
   location: string;
   country: string | null;
   rate: number;
@@ -50,6 +61,9 @@ function serializeListing(row: {
     title: row.title,
     headline: row.headline,
     level: row.level,
+    board: row.board,
+    qualification: row.qualification,
+    syllabusCode: row.syllabusCode,
     location: row.location,
     country: row.country,
     rate: row.rate,
@@ -62,7 +76,28 @@ function serializeListing(row: {
   };
 }
 
-/** Subject profiles API (Phase B/D). Route kept as /api/tutor-ads for existing UI. */
+async function findDuplicateListing(opts: {
+  tutorProfileId: string;
+  subject: string;
+  level: string;
+  board: string | null;
+  excludeId?: string;
+}) {
+  const board = opts.board;
+  return prisma.subjectProfile.findFirst({
+    where: {
+      tutorProfileId: opts.tutorProfileId,
+      subject: { equals: opts.subject, mode: "insensitive" },
+      level: { equals: opts.level, mode: "insensitive" },
+      ...(board
+        ? { board: { equals: board, mode: "insensitive" } }
+        : { OR: [{ board: null }, { board: "" }] }),
+      ...(opts.excludeId ? { id: { not: opts.excludeId } } : {}),
+    },
+  });
+}
+
+/** Teaching Listings API (Marketplace V2). Route kept as /api/tutor-ads for existing clients. */
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -125,17 +160,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Enter a subject" }, { status: 400 });
   }
 
-  const existing = await prisma.subjectProfile.findUnique({
-    where: {
-      tutorProfileId_subject: {
-        tutorProfileId: gate.profile.id,
-        subject,
-      },
-    },
+  const board = normalizeOptional(data.board);
+  const qualification = normalizeOptional(data.qualification);
+  const syllabusCode = normalizeOptional(data.syllabusCode)?.toUpperCase() || null;
+
+  const duplicate = await findDuplicateListing({
+    tutorProfileId: gate.profile.id,
+    subject,
+    level: data.level,
+    board,
   });
-  if (existing) {
+  if (duplicate) {
     return NextResponse.json(
-      { error: `You already have a subject profile for ${subject}. Edit or reactivate it instead.` },
+      {
+        error: `You already have a teaching listing for ${subject} (${data.level}${board ? ` · ${board}` : ""}). Edit or reactivate it instead.`,
+      },
       { status: 409 },
     );
   }
@@ -152,6 +191,9 @@ export async function POST(req: Request) {
       title: data.title.trim() || defaultSubjectProfileTitle(subject, tutor?.user.name),
       description: data.description || null,
       level: data.level,
+      board,
+      qualification,
+      syllabusCode,
       location: data.location,
       country: tutor?.country || null,
       online: data.online,
@@ -201,18 +243,21 @@ export async function PATCH(req: Request) {
   }
 
   const nextSubject = body.subject ? normalizeSubjectLabel(String(body.subject)) : undefined;
-  if (nextSubject && nextSubject.toLowerCase() !== row.subject.toLowerCase()) {
-    const clash = await prisma.subjectProfile.findUnique({
-      where: {
-        tutorProfileId_subject: {
-          tutorProfileId: profile.id,
-          subject: nextSubject,
-        },
-      },
+  const nextLevel = body.level != null ? String(body.level).slice(0, 80) : row.level;
+  const nextBoard =
+    body.board !== undefined ? normalizeOptional(String(body.board || "")) : row.board;
+
+  if (nextSubject || body.level != null || body.board !== undefined) {
+    const clash = await findDuplicateListing({
+      tutorProfileId: profile.id,
+      subject: nextSubject || row.subject,
+      level: nextLevel,
+      board: nextBoard,
+      excludeId: id,
     });
     if (clash) {
       return NextResponse.json(
-        { error: `You already have a subject profile for ${nextSubject}.` },
+        { error: `You already have a teaching listing for that subject, level, and board.` },
         { status: 409 },
       );
     }
@@ -228,7 +273,16 @@ export async function PATCH(req: Request) {
         : {}),
       ...(nextSubject ? { subject: nextSubject } : {}),
       ...(body.rate != null ? { rate: Number(body.rate) } : {}),
-      ...(body.level != null ? { level: String(body.level).slice(0, 80) } : {}),
+      ...(body.level != null ? { level: nextLevel } : {}),
+      ...(body.board !== undefined ? { board: nextBoard } : {}),
+      ...(body.qualification !== undefined
+        ? { qualification: normalizeOptional(String(body.qualification || "")) }
+        : {}),
+      ...(body.syllabusCode !== undefined
+        ? {
+            syllabusCode: normalizeOptional(String(body.syllabusCode || ""))?.toUpperCase() || null,
+          }
+        : {}),
       ...(body.location != null ? { location: String(body.location).slice(0, 120) } : {}),
       ...(body.description !== undefined
         ? { description: body.description ? String(body.description).slice(0, 4000) : null }
@@ -246,7 +300,7 @@ export async function PATCH(req: Request) {
         ...(body.title != null ? { title: String(body.title).slice(0, 120) } : {}),
         ...(nextSubject ? { subject: nextSubject } : {}),
         ...(body.rate != null ? { rate: Number(body.rate) } : {}),
-        ...(body.level != null ? { level: String(body.level).slice(0, 80) } : {}),
+        ...(body.level != null ? { level: nextLevel } : {}),
         ...(body.location != null ? { location: String(body.location).slice(0, 120) } : {}),
         ...(body.description !== undefined
           ? { description: body.description ? String(body.description).slice(0, 4000) : null }

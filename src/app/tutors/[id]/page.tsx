@@ -308,6 +308,10 @@ export default async function TutorProfilePage({ params }: Params) {
   const firstName = tutor.user.name.split(" ")[0];
   const profileIncomplete = isOwner && isProfileIncomplete(tutor, tutor.user.name);
   const hasStructuredAvailability = availabilitySlots.length > 0;
+  const listingRates = tutor.subjectProfiles.map((l) => l.rate).filter((r) => Number.isFinite(r));
+  const fromRate =
+    listingRates.length > 0 ? Math.min(...listingRates) : tutor.hourlyRate;
+  const showFromRate = listingRates.length > 1;
 
   return (
     <>
@@ -430,7 +434,10 @@ export default async function TutorProfilePage({ params }: Params) {
                 <p className="muted profile-rating-empty">No reviews yet</p>
               )}
 
-              <p className="profile-rate-lg">{formatHourly(tutor.hourlyRate, currency)}</p>
+              <p className="profile-rate-lg">
+                {showFromRate ? "From " : ""}
+                {formatHourly(fromRate, currency)}
+              </p>
 
               <ul className="profile-facts-list">
                 {experienceLabel && <li>{experienceLabel} teaching experience</li>}
@@ -628,45 +635,80 @@ export default async function TutorProfilePage({ params }: Params) {
             </section>
 
             {tutor.subjectProfiles.length > 0 && (
-              <section className="profile-content-card">
-                <h2>Subject listings</h2>
-                <div className="profile-ads">
-                  {tutor.subjectProfiles.map((listing) => (
-                    <article key={listing.id} className="profile-ad">
-                      <h3>
-                        <Link href={listingPath(listing.id)}>{listing.title}</Link>
-                      </h3>
-                      <p className="muted">
-                        {listing.subject} · {listing.level} · {formatHourly(listing.rate, currency)}
-                      </p>
-                      {listing.description && <p>{listing.description}</p>}
-                      <p>
-                        <Link href={listingPath(listing.id)}>View listing</Link>
-                        {" · "}
-                        <Link href={`/s/${slugify(listing.subject)}`} className="muted">
-                          More {listing.subject} tutors
-                        </Link>
-                      </p>
-                    </article>
-                  ))}
+              <section className="profile-content-card" id="lessons-offered">
+                <h2>Lessons offered</h2>
+                <p className="muted" style={{ marginTop: 0 }}>
+                  Teaching listings from this tutor. Rates apply to each service.
+                </p>
+                <div className="lessons-offered">
+                  {tutor.subjectProfiles.map((listing) => {
+                    const modes = [
+                      listing.online ? "Online" : null,
+                      listing.inPerson ? "In person" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+                    const taxonomy = [
+                      listing.board,
+                      listing.qualification || (listing.level !== "All levels" ? listing.level : null),
+                      listing.syllabusCode,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      <article key={listing.id} className="lesson-offer-card">
+                        <div className="lesson-offer-main">
+                          <h3>
+                            <Link href={listingPath(listing.id)}>{listing.title}</Link>
+                          </h3>
+                          <p className="muted lesson-offer-meta">
+                            {listing.subject}
+                            {taxonomy ? ` · ${taxonomy}` : ""}
+                            {modes ? ` · ${modes}` : ""}
+                          </p>
+                          {listing.description && (
+                            <p className="lesson-offer-desc">{listing.description.slice(0, 160)}</p>
+                          )}
+                        </div>
+                        <div className="lesson-offer-aside">
+                          <p className="lesson-offer-rate">{formatHourly(listing.rate, currency)}</p>
+                          <div className="lesson-offer-actions">
+                            <Link className="btn btn-sm" href={listingPath(listing.id)}>
+                              View details
+                            </Link>
+                            {canMessage && (
+                              <a className="btn btn-secondary btn-sm" href="#message-tutor">
+                                Message
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               </section>
             )}
 
             {tutor.subjectProfiles.length === 0 && tutor.ads.length > 0 && (
-              <section className="profile-content-card">
-                <h2>Subject listings</h2>
-                <div className="profile-ads">
+              <section className="profile-content-card" id="lessons-offered">
+                <h2>Lessons offered</h2>
+                <div className="lessons-offered">
                   {tutor.ads.map((ad) => (
-                    <article key={ad.id} className="profile-ad">
-                      <h3>{ad.title}</h3>
-                      <p className="muted">
-                        {ad.subject} · {ad.level} · {formatHourly(tutor.hourlyRate, currency)}
-                      </p>
-                      {ad.description && <p>{ad.description}</p>}
-                      <Link href={`/s/${slugify(ad.subject)}`} className="muted">
-                        More {ad.subject} tutors
-                      </Link>
+                    <article key={ad.id} className="lesson-offer-card">
+                      <div className="lesson-offer-main">
+                        <h3>{ad.title}</h3>
+                        <p className="muted lesson-offer-meta">
+                          {ad.subject} · {ad.level}
+                        </p>
+                        {ad.description && <p className="lesson-offer-desc">{ad.description}</p>}
+                      </div>
+                      <div className="lesson-offer-aside">
+                        <p className="lesson-offer-rate">{formatHourly(tutor.hourlyRate, currency)}</p>
+                        <Link href={`/s/${slugify(ad.subject)}`} className="btn btn-secondary btn-sm">
+                          More {ad.subject} tutors
+                        </Link>
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -736,7 +778,8 @@ export default async function TutorProfilePage({ params }: Params) {
             <section className="profile-content-card profile-contact-card" id="message-tutor">
               <h2>Contact {firstName}</h2>
               <p className="profile-rate-lg profile-rate-inline">
-                {formatHourly(tutor.hourlyRate, currency)}
+                {showFromRate ? "From " : ""}
+                {formatHourly(fromRate, currency)}
               </p>
               <p className="muted">{availability}</p>
               {showPhone ? (

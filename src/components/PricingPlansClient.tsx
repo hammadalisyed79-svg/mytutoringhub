@@ -31,7 +31,7 @@ function PlanActions({
     if (plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD") {
       return (
         <Link
-          href="/dashboard/tutor?tab=profile#subject-profiles"
+          href="/dashboard/tutor?tab=profile#teaching-listings"
           className="btn btn-block btn-secondary"
         >
           Choose a subject profile

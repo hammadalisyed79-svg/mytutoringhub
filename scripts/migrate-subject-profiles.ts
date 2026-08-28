@@ -31,12 +31,10 @@ async function ensureSubjectProfile(opts: {
   const subject = normalizeSubjectLabel(opts.subject);
   if (!subject) return { created: false, skipped: true as const };
 
-  const existing = await prisma.subjectProfile.findUnique({
+  const existing = await prisma.subjectProfile.findFirst({
     where: {
-      tutorProfileId_subject: {
-        tutorProfileId: opts.tutorProfileId,
-        subject,
-      },
+      tutorProfileId: opts.tutorProfileId,
+      subject: { equals: subject, mode: "insensitive" },
     },
   });
   if (existing) return { created: false, id: existing.id };

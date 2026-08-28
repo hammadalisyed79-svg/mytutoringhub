@@ -35,12 +35,33 @@ type SearchParams = Promise<{
   location?: string;
   country?: string;
   level?: string;
+  board?: string;
   trial?: string;
   language?: string;
   page?: string;
   browse?: string;
   guided?: string;
 }>;
+
+function studentRequestHref(sp: {
+  subject?: string;
+  level?: string;
+  location?: string;
+  country?: string;
+  mode?: string;
+  q?: string;
+}) {
+  const params = new URLSearchParams();
+  if (sp.subject) params.set("subject", sp.subject);
+  if (sp.level) params.set("level", sp.level);
+  if (sp.location) params.set("location", sp.location);
+  if (sp.country) params.set("country", sp.country);
+  if (sp.mode === "online") params.set("online", "1");
+  if (sp.mode === "inperson") params.set("inPerson", "1");
+  if (sp.q) params.set("q", sp.q);
+  const qs = params.toString();
+  return qs ? `/ads/new?${qs}` : "/ads/new";
+}
 
 export async function generateMetadata({
   searchParams,
@@ -212,12 +233,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           <div className="panel empty-state">
             <h2>
               {sp.verified === "1"
-                ? "No verified tutors match this search"
-                : "No tutors match this search"}
+                ? "We couldn’t find a verified tutor for this yet"
+                : "We couldn’t find the right tutor yet"}
             </h2>
             <p className="muted">
-              Try a nearby city, browse online tutors, or post a student request so tutors can find
-              you. Complete tutor profiles appear in search for free.
+              Post your requirement with these filters pre-filled — tutors who match can message
+              you. Or broaden city / browse online tutors.
             </p>
             {related.length > 0 && (
               <p className="search-related">
@@ -230,11 +251,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               </p>
             )}
             <p className="hero-ctas" style={{ flexWrap: "wrap" }}>
-              <Link href="/search?mode=online" className="btn">
-                Browse online tutors
+              <Link href={studentRequestHref(sp)} className="btn">
+                Post your requirement
               </Link>
-              <Link href="/ads/new" className="btn btn-secondary">
-                Post a student request
+              <Link href="/search?mode=online" className="btn btn-secondary">
+                Browse online tutors
               </Link>
               <Link href="/search" className="btn btn-secondary">
                 Clear filters
@@ -247,7 +268,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           <p className="search-note muted">
             Few tutors match right now — try{" "}
             <Link href="/search?mode=online">online</Link>, a nearby city, or{" "}
-            <Link href="/ads/new">post a request</Link> so tutors can reach you.
+            <Link href={studentRequestHref(sp)}>post your requirement</Link> so tutors can reach you.
           </p>
         )}
 
@@ -330,8 +351,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
                   {t.headline && <p className="tc-headline">{t.headline}</p>}
 
+                  {(t.board || t.qualification || t.syllabusCode || (t.levels && t.levels !== "All levels")) && (
+                    <p className="tc-listing-taxonomy muted">
+                      {[t.board, t.qualification || (t.levels !== "All levels" ? t.levels : null), t.syllabusCode]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+
                   <div className="tc-rate-row">
                     <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
+                    <span className="muted tc-rate-for">for this listing</span>
                   </div>
 
                   <div className="tc-badges">
@@ -379,6 +409,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                   )}
 
                   <p className="tc-place muted">{availability}</p>
+
+                  {t.alsoTeaches && t.alsoTeaches.length > 0 && (
+                    <p className="tc-also-teaches muted">
+                      Also teaches:{" "}
+                      {t.alsoTeaches.map((item, i) => (
+                        <span key={item.listingId}>
+                          {i > 0 ? " · " : ""}
+                          <Link href={listingPath(item.listingId)}>{item.title || item.subject}</Link>
+                        </span>
+                      ))}
+                    </p>
+                  )}
                 </div>
 
                 <div className="tc-card-actions">

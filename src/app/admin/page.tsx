@@ -80,7 +80,7 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/verifications" label="Pending verification" value={pendingVerification} />
         <Stat href="/admin/payments?status=INCOMPLETE" label="Incomplete payments" value={incompletePayments} />
         <Stat href="/admin/ads" label="Ads & listings" value={studentAds + subjectProfiles} />
-        <Stat href="/admin/ads?kind=tutor" label="Subject profiles" value={subjectProfiles} />
+        <Stat href="/admin/ads?kind=tutor" label="Teaching listings" value={subjectProfiles} />
         <Stat href="/admin/messages" label="Conversations" value={conversations} />
         <Stat href="/admin/past-papers" label="Past papers" value={pastPapers} />
       </div>

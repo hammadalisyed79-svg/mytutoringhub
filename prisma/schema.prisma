@@ -155,8 +155,8 @@ model TutorRecommendation {
   @@index([status, createdAt])
 }
 
-// First-class subject listing (FindTutors-style). One active row per subject per tutor.
-// Phase B: data model + migration. Search will list these in Phase C.
+// Teaching Listing (Marketplace V2). Canonical searchable service under one TutorProfile.
+// Model name kept as SubjectProfile for migration safety; UX calls these Teaching Listings.
 model SubjectProfile {
   id               String       @id @default(cuid())
   tutorProfileId   String
@@ -166,6 +166,12 @@ model SubjectProfile {
   headline         String?
   description      String?
   level            String       @default("All levels")
+  /// Curriculum / exam board (e.g. Cambridge International). Optional.
+  board            String?
+  /// Qualification band when distinct from level (e.g. O Level, GCSE). Optional.
+  qualification    String?
+  /// Syllabus / subject code (e.g. 5070). Optional; aligns with Past Papers.
+  syllabusCode     String?
   location         String
   country          String?
   online           Boolean      @default(true)
@@ -177,10 +183,11 @@ model SubjectProfile {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  @@unique([tutorProfileId, subject])
   @@index([status, subject])
   @@index([boostUntil, highlightedUntil])
   @@index([tutorProfileId, status])
+  @@index([board, subject])
+  @@index([syllabusCode])
 }
 
 // Deprecated: prefer SubjectProfile. Kept for admin history during transition.

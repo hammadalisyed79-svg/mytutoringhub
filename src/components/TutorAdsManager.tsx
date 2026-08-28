@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { listingPath } from "@/lib/subject-profile";
 import { tutorLevelOptions } from "@/lib/tutor-catalog";
+import { curriculumBoards } from "@/lib/curriculum";
 import type { CurrencyCode } from "@/lib/currency";
 
 type Listing = {
@@ -14,6 +15,9 @@ type Listing = {
   title: string;
   headline: string | null;
   level: string;
+  board: string | null;
+  qualification: string | null;
+  syllabusCode: string | null;
   location: string;
   rate: number;
   status: string;
@@ -51,6 +55,67 @@ function listingBoostActive(boostUntil: Date | null, now: Date) {
 
 function listingHighlightActive(until: Date | null, now: Date) {
   return Boolean(until && until > now);
+}
+
+function ListingTaxonomyFields({
+  levels,
+  boards,
+  defaults,
+}: {
+  levels: string[];
+  boards: string[];
+  defaults?: {
+    level?: string;
+    board?: string | null;
+    qualification?: string | null;
+    syllabusCode?: string | null;
+  };
+}) {
+  return (
+    <>
+      <div className="teaching-listing-grid">
+        <label>
+          Level
+          <select name="level" defaultValue={defaults?.level || "All levels"}>
+            {levels.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Exam board <span className="muted">(optional)</span>
+          <select name="board" defaultValue={defaults?.board || ""}>
+            <option value="">Any / not specified</option>
+            {boards.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="teaching-listing-grid">
+        <label>
+          Qualification <span className="muted">(optional)</span>
+          <input
+            name="qualification"
+            placeholder="e.g. O Level, GCSE, AS & A Level"
+            defaultValue={defaults?.qualification || ""}
+          />
+        </label>
+        <label>
+          Syllabus code <span className="muted">(optional)</span>
+          <input
+            name="syllabusCode"
+            placeholder="e.g. 5070"
+            defaultValue={defaults?.syllabusCode || ""}
+          />
+        </label>
+      </div>
+    </>
+  );
 }
 
 export function TutorAdsManager({
@@ -103,6 +168,9 @@ export function TutorAdsManager({
         subject: String(fd.get("subject")),
         title: String(fd.get("title")),
         level: String(fd.get("level") || "All levels"),
+        board: String(fd.get("board") || ""),
+        qualification: String(fd.get("qualification") || ""),
+        syllabusCode: String(fd.get("syllabusCode") || ""),
         location: String(fd.get("location")),
         rate: Number(fd.get("rate")),
         online: fd.get("online") === "on",
@@ -113,10 +181,10 @@ export function TutorAdsManager({
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error || "Could not create subject profile");
+      setError(data.error || "Could not create teaching listing");
       return;
     }
-    setMsg("Subject profile published.");
+    setMsg("Teaching listing published.");
     e.currentTarget.reset();
     setShowCreate(false);
     load();
@@ -137,6 +205,9 @@ export function TutorAdsManager({
         title: String(fd.get("title")),
         headline: String(fd.get("headline") || ""),
         level: String(fd.get("level") || "All levels"),
+        board: String(fd.get("board") || ""),
+        qualification: String(fd.get("qualification") || ""),
+        syllabusCode: String(fd.get("syllabusCode") || ""),
         location: String(fd.get("location")),
         rate: Number(fd.get("rate")),
         online: fd.get("online") === "on",
@@ -150,7 +221,7 @@ export function TutorAdsManager({
       setError(data.error || "Could not save");
       return;
     }
-    setMsg("Subject profile updated.");
+    setMsg("Teaching listing updated.");
     setEditingId(null);
     load();
     router.refresh();
@@ -179,24 +250,26 @@ export function TutorAdsManager({
     return ["All levels", ...catalog.core, ...catalog.more];
   }, [extraLevels]);
 
+  const boards = useMemo(() => curriculumBoards(), []);
+
   const capLabel = entitlement?.unlimited
     ? "Unlimited"
     : entitlement?.cap != null
       ? String(entitlement.cap)
       : "—";
 
-  const usedSubjects = new Set(listings.map((l) => l.subject.toLowerCase()));
-  const availableSubjects = subjects.filter((s) => !usedSubjects.has(s.toLowerCase()));
+  const currencyLabel = currency === "PKR" ? "PKR" : currency;
 
   return (
-    <div className="subject-profiles-manager" id="subject-profiles">
-      <div className="subject-profiles-summary">
+    <div className="teaching-listings-manager" id="teaching-listings">
+      <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
           {entitlement?.promoLabel ||
-            `After the launch promo: ${entitlement?.freeCapAfterPromo ?? 1} free active profile; Extra Profile Ads / Tutor Basic unlock up to ${entitlement?.paidCap ?? 3}; Unlimited Profiles removes the cap.`}
+            `After the launch promo: ${entitlement?.freeCapAfterPromo ?? 1} free active listing; Tutor Basic / Extra Profile Ads unlock up to ${entitlement?.paidCap ?? 3}; Unlimited Profiles removes the cap.`}
         </p>
-        <p className="subject-profiles-meter">
-          Active <strong>{entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length}</strong>
+        <p className="teaching-listings-meter">
+          Active{" "}
+          <strong>{entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length}</strong>
           {" / "}
           <strong>{capLabel}</strong>
         </p>
@@ -205,11 +278,14 @@ export function TutorAdsManager({
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
 
-      <div className="subject-profiles-list">
+      <div className="teaching-listings-list">
         {listings.length === 0 && (
-          <p className="muted">
-            No subject profiles yet. Create one so students can find you in search for that subject.
-          </p>
+          <div className="teaching-listings-empty">
+            <p style={{ margin: 0 }}>
+              No teaching listings yet. Add what you teach — subject, level, and rate — so students
+              searching for that exact need can find you.
+            </p>
+          </div>
         )}
         {listings.map((listing) => {
           const now = new Date();
@@ -220,21 +296,34 @@ export function TutorAdsManager({
           const boosted = listingBoostActive(boostUntil, now);
           const highlighted = listingHighlightActive(highlightUntil, now);
           const editing = editingId === listing.id;
+          const taxonomy = [
+            listing.subject,
+            listing.board,
+            listing.qualification || listing.level,
+            listing.syllabusCode,
+          ]
+            .filter(Boolean)
+            .join(" · ");
           return (
             <article
               key={listing.id}
-              className={`subject-profile-card${listing.status !== "ACTIVE" ? " is-paused" : ""}`}
+              className={`teaching-listing-card${listing.status !== "ACTIVE" ? " is-paused" : ""}`}
             >
-              <div className="subject-profile-card-head">
+              <div className="teaching-listing-card-head">
                 <div>
-                  <strong>{listing.title}</strong>
-                  <div className="muted">
-                    {listing.subject} · {listing.level} · {listing.location} · PKR {listing.rate}/hr
+                  <strong className="teaching-listing-title">{listing.title}</strong>
+                  <div className="muted teaching-listing-meta">
+                    {taxonomy} · {listing.location} · {currencyLabel} {listing.rate}/hr
+                  </div>
+                  <div className="muted" style={{ fontSize: "0.85rem", marginTop: "0.2rem" }}>
+                    {[listing.online ? "Online" : null, listing.inPerson ? "In person" : null]
+                      .filter(Boolean)
+                      .join(" · ") || "Lesson mode not set"}
                   </div>
                 </div>
-                <div className="subject-profile-badges">
+                <div className="teaching-listing-badges">
                   <span className={`badge${listing.status === "ACTIVE" ? " badge-verified" : ""}`}>
-                    {listing.status}
+                    {listing.status === "ACTIVE" ? "Active" : listing.status}
                   </span>
                   {boosted && <span className="badge accent">Boosted</span>}
                   {highlighted && <span className="badge accent">Highlighted</span>}
@@ -248,9 +337,9 @@ export function TutorAdsManager({
                 </p>
               )}
 
-              <div className="subject-profile-actions">
+              <div className="teaching-listing-actions">
                 <Link className="btn btn-secondary btn-sm" href={listingPath(listing.id)} target="_blank">
-                  View listing
+                  View public page
                 </Link>
                 {listing.status === "ACTIVE" ? (
                   <button
@@ -281,12 +370,12 @@ export function TutorAdsManager({
               </div>
 
               {listing.status === "ACTIVE" && (
-                <div className="subject-profile-boost-row">
+                <div className="teaching-listing-boost-row">
                   <SubscribeButton
                     plan="AD_BOOST"
-                    planLabel="Profile Boost"
+                    planLabel="Listing Boost"
                     currency={currency}
-                    label={boosted ? "Extend boost 30 days" : "Boost this profile"}
+                    label={boosted ? "Extend boost 30 days" : "Boost this listing"}
                     featured
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
@@ -294,9 +383,9 @@ export function TutorAdsManager({
                   />
                   <SubscribeButton
                     plan="HIGHLIGHTED_AD"
-                    planLabel="Highlighted Profile"
+                    planLabel="Highlighted Listing"
                     currency={currency}
-                    label={highlighted ? "Extend highlight" : "Highlight this profile"}
+                    label={highlighted ? "Extend highlight" : "Highlight this listing"}
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
                     subjectProfileId={listing.id}
@@ -306,34 +395,34 @@ export function TutorAdsManager({
 
               {editing && (
                 <form
-                  className="stack-form profile-form"
+                  className="stack-form profile-form teaching-listing-form"
                   style={{ marginTop: "0.75rem" }}
                   onSubmit={(e) => saveEdit(e, listing.id)}
                 >
                   <label>
-                    Title
+                    Listing title
                     <input name="title" required minLength={5} defaultValue={listing.title} />
                   </label>
                   <label>
-                    Headline
+                    Short headline
                     <input name="headline" defaultValue={listing.headline || ""} />
                   </label>
+                  <ListingTaxonomyFields
+                    levels={levels}
+                    boards={boards}
+                    defaults={{
+                      level: listing.level,
+                      board: listing.board,
+                      qualification: listing.qualification,
+                      syllabusCode: listing.syllabusCode,
+                    }}
+                  />
                   <label>
-                    Level
-                    <select name="level" defaultValue={listing.level}>
-                      {levels.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    City
+                    City / area
                     <input name="location" required defaultValue={listing.location} />
                   </label>
                   <label>
-                    Hourly rate (PKR)
+                    Hourly rate ({currencyLabel})
                     <input
                       name="rate"
                       type="number"
@@ -344,11 +433,11 @@ export function TutorAdsManager({
                     />
                   </label>
                   <label>
-                    Description
-                    <textarea name="description" rows={2} defaultValue={listing.description || ""} />
+                    About this lesson
+                    <textarea name="description" rows={3} defaultValue={listing.description || ""} />
                   </label>
                   <fieldset className="form-fieldset">
-                    <legend>Lesson type</legend>
+                    <legend>How you teach</legend>
                     <div className="checks">
                       <label className="radio">
                         <input name="online" type="checkbox" defaultChecked={listing.online} /> Online
@@ -370,18 +459,27 @@ export function TutorAdsManager({
       </div>
 
       {showCreate ? (
-        <form className="stack-form profile-form" onSubmit={create} style={{ marginTop: "1rem" }}>
-          <h3 style={{ marginTop: 0 }}>Add subject profile</h3>
-          <p className="field-hint">One subject per profile — students find each listing separately.</p>
+        <form
+          className="stack-form profile-form teaching-listing-form"
+          onSubmit={create}
+          style={{ marginTop: "1rem" }}
+        >
+          <h3 style={{ marginTop: 0 }}>Add teaching listing</h3>
+          <p className="field-hint">
+            One clear service per listing — for example GCSE Maths and A Level Maths as separate
+            listings. Students search by what they need to learn.
+          </p>
           <label>
             <span>
-              Subject <abbr className="req" title="Required">*</abbr>
+              Subject <abbr className="req" title="Required">
+                *
+              </abbr>
             </span>
             <select name="subject" required defaultValue="">
               <option value="" disabled>
-                Select a subject…
+                What do you teach?
               </option>
-              {availableSubjects.map((name) => (
+              {subjects.map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
@@ -390,42 +488,49 @@ export function TutorAdsManager({
           </label>
           <label>
             <span>
-              Title <abbr className="req" title="Required">*</abbr>
+              Listing title <abbr className="req" title="Required">
+                *
+              </abbr>
             </span>
-            <input name="title" required minLength={5} placeholder="A Level Maths · exam prep" />
+            <input
+              name="title"
+              required
+              minLength={5}
+              placeholder="Cambridge O Level Mathematics · exam prep"
+            />
           </label>
           <label>
-            Headline
-            <input name="headline" placeholder="Short line on the search card" />
+            Short headline
+            <input name="headline" placeholder="Shown on search cards" />
           </label>
-          <label>
-            Level
-            <select name="level" defaultValue="All levels">
-              {levels.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ListingTaxonomyFields levels={levels} boards={boards} />
           <label>
             <span>
-              City <abbr className="req" title="Required">*</abbr>
+              City / area <abbr className="req" title="Required">
+                *
+              </abbr>
             </span>
             <input name="location" required placeholder="City or Online" />
           </label>
           <label>
             <span>
-              Hourly rate (PKR) <abbr className="req" title="Required">*</abbr>
+              Hourly rate ({currencyLabel}){" "}
+              <abbr className="req" title="Required">
+                *
+              </abbr>
             </span>
             <input name="rate" type="number" min={500} step={100} required />
           </label>
           <label>
-            Short description
-            <textarea name="description" rows={2} placeholder="What this profile covers…" />
+            Tell students about this lesson
+            <textarea
+              name="description"
+              rows={3}
+              placeholder="What this listing covers, who it is for, and how you teach…"
+            />
           </label>
           <fieldset className="form-fieldset">
-            <legend>Lesson type</legend>
+            <legend>How you teach</legend>
             <div className="checks">
               <label className="radio">
                 <input name="online" type="checkbox" defaultChecked /> Online
@@ -437,9 +542,13 @@ export function TutorAdsManager({
           </fieldset>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <button className="btn btn-sm" type="submit">
-              Publish subject profile
+              Publish listing
             </button>
-            <button className="btn btn-secondary btn-sm" type="button" onClick={() => setShowCreate(false)}>
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => setShowCreate(false)}
+            >
               Cancel
             </button>
           </div>
@@ -447,10 +556,10 @@ export function TutorAdsManager({
       ) : (
         <div style={{ marginTop: "1rem" }}>
           {entitlement && !entitlement.canCreate ? (
-            <div className="panel" style={{ marginTop: 0 }}>
+            <div className="panel teaching-listings-upgrade" style={{ marginTop: 0 }}>
               <p style={{ marginTop: 0 }}>{entitlement.createReason}</p>
               <Link className="btn btn-sm" href="/pricing">
-                View Extra Profile Ads & Unlimited Profiles
+                View plans for more listings
               </Link>
             </div>
           ) : (
@@ -458,15 +567,15 @@ export function TutorAdsManager({
               className="btn btn-sm"
               type="button"
               onClick={() => setShowCreate(true)}
-              disabled={availableSubjects.length === 0}
+              disabled={subjects.length === 0}
             >
-              Add subject profile
+              Add teaching listing
             </button>
           )}
-          {availableSubjects.length === 0 && listings.length > 0 && (
+          {subjects.length === 0 && (
             <p className="muted" style={{ marginTop: "0.5rem" }}>
-              Every catalog subject you selected already has a profile. Add more subjects on your
-              account profile, then create another listing here.
+              Add subjects on your account profile first, then create a teaching listing for each
+              service you offer.
             </p>
           )}
         </div>

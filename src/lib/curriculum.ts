@@ -140,3 +140,32 @@ export function matchCurriculumCode(query: string) {
   const prefix = CURRICULUM.filter((row) => row.code.toUpperCase().startsWith(needle));
   return prefix.length === 1 ? prefix[0] : null;
 }
+
+/** Distinct exam boards for Teaching Listing forms (optional taxonomy). */
+export function curriculumBoards(): string[] {
+  return [...new Set(CURRICULUM.map((row) => row.board))].sort((a, b) => a.localeCompare(b));
+}
+
+/** Levels / qualifications that appear under a board (or all if board empty). */
+export function curriculumLevelsForBoard(board?: string | null): string[] {
+  const rows = board
+    ? CURRICULUM.filter((row) => row.board.toLowerCase() === board.trim().toLowerCase())
+    : CURRICULUM;
+  return [...new Set(rows.map((row) => row.level))].sort((a, b) => a.localeCompare(b));
+}
+
+/** Syllabus codes for subject (+ optional board). */
+export function curriculumCodesForSubject(
+  subject?: string | null,
+  board?: string | null,
+): CurriculumCodeOption[] {
+  const sub = (subject || "").trim().toLowerCase();
+  const brd = (board || "").trim().toLowerCase();
+  return curriculumCodeOptions().filter((row) => {
+    if (sub && !row.subject.toLowerCase().includes(sub) && !sub.includes(row.subject.toLowerCase())) {
+      return false;
+    }
+    if (brd && row.board.toLowerCase() !== brd) return false;
+    return Boolean(row.code);
+  });
+}

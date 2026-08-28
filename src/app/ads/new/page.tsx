@@ -9,9 +9,22 @@ import Link from "next/link";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getVisitorRegion } from "@/lib/visitor-region";
 
-export const metadata = { title: "Post a request", description: "Post a student request for a private tutor. Student Pass required." };
+export const metadata = {
+  title: "Post a request",
+  description: "Post a student request for a private tutor. Student Pass required.",
+};
 
-export default async function NewAdPage() {
+type SearchParams = Promise<{
+  subject?: string;
+  level?: string;
+  location?: string;
+  country?: string;
+  online?: string;
+  inPerson?: string;
+  q?: string;
+}>;
+
+export default async function NewAdPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (session.user.role === "TUTOR") redirect("/ads");
@@ -30,14 +43,15 @@ export default async function NewAdPage() {
     subjects.map((s) => s.name),
     catalogSubjectNames(),
   );
+  const sp = await searchParams;
 
   return (
     <div className="page">
       <div className="narrow">
         <h1 className="page-title">Post a tutor request</h1>
         <p className="muted">
-          Describe the subject, level, and city. Tutors can reply within their enquiry limits.
-          An active Student Pass is required to post.
+          Describe the subject, level, and city. Tutors can reply within their enquiry limits. An
+          active Student Pass is required to post.
         </p>
         {!allowed ? (
           <div className="panel">
@@ -51,6 +65,14 @@ export default async function NewAdPage() {
             subjects={subjectNames}
             titlePlaceholder={region.adTitlePlaceholder}
             levelPlaceholder={region.adLevelPlaceholder}
+            initial={{
+              subject: sp.subject,
+              level: sp.level,
+              location: sp.location,
+              online: sp.online === "1" || sp.online === undefined,
+              inPerson: sp.inPerson === "1",
+              q: sp.q,
+            }}
           />
         )}
       </div>
