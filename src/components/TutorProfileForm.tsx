@@ -30,6 +30,7 @@ import {
 import { embedVideoSrc } from "@/lib/media";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
+import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 
 type Initial = {
@@ -114,9 +115,15 @@ const WIZARD_STEPS = [
     optional: true,
   },
   {
+    id: "verify",
+    title: "Get verified",
+    hint: "Optional — upload a government photo ID for the Verified badge. Skip and do this later if you prefer.",
+    optional: true,
+  },
+  {
     id: "finish",
     title: "Save and grow",
-    hint: "Save your listing, then improve trust with verification and star badges.",
+    hint: "Save your listing, then grow with star badges and optional boosts.",
     optional: false,
   },
 ] as const;
@@ -291,8 +298,12 @@ export function TutorProfileForm({
   const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
   const requiredTotal = completion.requiredTotal + 1;
   const progress = Math.round((requiredDone / requiredTotal) * 100);
-  const currentStep = WIZARD_STEPS[Math.min(step, WIZARD_STEPS.length - 1)];
-  const wizardProgress = Math.round(((step + 1) / WIZARD_STEPS.length) * 100);
+  const steps = useMemo(
+    () => (verified ? WIZARD_STEPS.filter((row) => row.id !== "verify") : WIZARD_STEPS),
+    [verified],
+  );
+  const currentStep = steps[Math.min(step, steps.length - 1)];
+  const wizardProgress = Math.round(((step + 1) / steps.length) * 100);
 
   function validateStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): string | null {
     switch (stepId) {
@@ -328,7 +339,7 @@ export function TutorProfileForm({
       setError(problem);
       return;
     }
-    setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
   function goBack() {
@@ -339,7 +350,7 @@ export function TutorProfileForm({
   function skipOptional() {
     if (!currentStep.optional) return;
     setError("");
-    setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
   function setCountryAndCity(nextCountry: string) {
@@ -498,6 +509,77 @@ export function TutorProfileForm({
 
   const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => flatMode || currentStep.id === id;
 
+  const wizardChrome = !flatMode ? (
+    <div className="profile-wizard-chrome">
+      <div className="guided-search-progress" aria-hidden="true">
+        <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
+      </div>
+      <p className="guided-search-step muted">
+        Step {step + 1} of {steps.length}
+        {currentStep.optional ? " · Optional" : " · Required"}
+      </p>
+      <h3 className="guided-search-title">{currentStep.title}</h3>
+      <p className="muted guided-search-hint">{currentStep.hint}</p>
+      <div className="profile-wizard-toggle">
+        <button type="button" className="linkish" onClick={() => setFlatMode(true)}>
+          Show all fields instead
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="profile-wizard-toggle">
+      <button
+        type="button"
+        className="linkish"
+        onClick={() => {
+          setFlatMode(false);
+          setStep(0);
+        }}
+      >
+        Use step-by-step wizard
+      </button>
+    </div>
+  );
+
+  const wizardActions = flatMode ? null : (
+    <div className="guided-search-actions profile-wizard-actions">
+      {step > 0 ? (
+        <button type="button" className="btn btn-secondary" onClick={goBack}>
+          Back
+        </button>
+      ) : (
+        <span />
+      )}
+      <div className="profile-wizard-actions-right">
+        {currentStep.optional ? (
+          <button type="button" className="btn btn-secondary" onClick={skipOptional}>
+            Skip for now
+          </button>
+        ) : null}
+        {currentStep.id === "finish" ? (
+          <button className="btn" type="button" disabled={uploading || saving} onClick={() => void save()}>
+            {saving ? "Saving…" : "Save profile"}
+          </button>
+        ) : (
+          <button className="btn" type="button" onClick={goNext}>
+            {currentStep.id === "verify" ? "Continue" : "Next"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  // Keep verification outside the profile <form> to avoid nested forms.
+  if (!flatMode && currentStep.id === "verify") {
+    return (
+      <div className="stack-form profile-form profile-form-wizard" id="get-verified">
+        {wizardChrome}
+        <VerificationForm embedded compact />
+        {wizardActions}
+      </div>
+    );
+  }
+
   return (
     <form
       className={`stack-form profile-form${flatMode ? "" : " profile-form-wizard"}`}
@@ -510,38 +592,7 @@ export function TutorProfileForm({
         void save();
       }}
     >
-      {!flatMode ? (
-        <div className="profile-wizard-chrome">
-          <div className="guided-search-progress" aria-hidden="true">
-            <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
-          </div>
-          <p className="guided-search-step muted">
-            Step {step + 1} of {WIZARD_STEPS.length}
-            {currentStep.optional ? " · Optional" : " · Required"}
-          </p>
-          <h3 className="guided-search-title">{currentStep.title}</h3>
-          <p className="muted guided-search-hint">{currentStep.hint}</p>
-          <div className="profile-wizard-toggle">
-            <button type="button" className="linkish" onClick={() => setFlatMode(true)}>
-              Show all fields instead
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="profile-wizard-toggle">
-          <button
-            type="button"
-            className="linkish"
-            onClick={() => {
-              setFlatMode(false);
-              setStep(0);
-            }}
-          >
-            Use step-by-step wizard
-          </button>
-        </div>
-      )}
-
+      {wizardChrome}
       <div className="profile-complete">
         <div className="profile-complete-head">
           <strong>
@@ -1028,31 +1079,7 @@ export function TutorProfileForm({
           {saving ? "Saving…" : "Save profile"}
         </button>
       ) : (
-        <div className="guided-search-actions profile-wizard-actions">
-          {step > 0 ? (
-            <button type="button" className="btn btn-secondary" onClick={goBack}>
-              Back
-            </button>
-          ) : (
-            <span />
-          )}
-          <div className="profile-wizard-actions-right">
-            {currentStep.optional ? (
-              <button type="button" className="btn btn-secondary" onClick={skipOptional}>
-                Skip for now
-              </button>
-            ) : null}
-            {currentStep.id === "finish" ? (
-              <button className="btn" type="button" disabled={uploading || saving} onClick={() => void save()}>
-                {saving ? "Saving…" : "Save profile"}
-              </button>
-            ) : (
-              <button className="btn" type="button" onClick={goNext}>
-                Next
-              </button>
-            )}
-          </div>
-        </div>
+        wizardActions
       )}
     </form>
   );

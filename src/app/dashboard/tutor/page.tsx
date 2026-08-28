@@ -258,15 +258,22 @@ export default async function TutorDashboardPage({
                   <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
                 </section>
 
-                <section className="panel" id="get-verified">
-                  <h2>Get verified</h2>
-                  <p className="muted">
-                    Upload a government photo ID (passport, national ID / CNIC, or driving licence).
-                    Your profile shows <strong>Unverified</strong> until an admin approves your
-                    documents. Documents stay private — admins only.
+                {user.tutorProfile.active || user.tutorProfile.verified ? (
+                  <section className="panel" id="get-verified">
+                    <h2>Get verified</h2>
+                    <p className="muted">
+                      Upload a government photo ID (passport, national ID / CNIC, or driving licence).
+                      Your profile shows <strong>Unverified</strong> until an admin approves your
+                      documents. Documents stay private — admins only.
+                    </p>
+                    <VerificationForm />
+                  </section>
+                ) : (
+                  <p className="muted panel">
+                    Verification is included in the profile wizard (optional step). After you go live,
+                    you can also manage documents here anytime.
                   </p>
-                  <VerificationForm />
-                </section>
+                )}
               </>
             ) : null}
           </div>

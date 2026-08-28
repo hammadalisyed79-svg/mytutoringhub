@@ -48,7 +48,15 @@ function emptySides(): Sides {
   return { front: "", back: "" };
 }
 
-export function VerificationForm() {
+export function VerificationForm({
+  embedded = false,
+  compact = false,
+}: {
+  /** Render without nested <form> so it can sit inside the profile wizard. */
+  embedded?: boolean;
+  /** Shorter copy when the wizard chrome already explains the step. */
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
   const [idType, setIdType] = useState<IdType>("Passport");
@@ -57,6 +65,7 @@ export function VerificationForm() {
     qualification: emptySides(),
     teaching: emptySides(),
   });
+  const [notes, setNotes] = useState("");
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
@@ -113,8 +122,8 @@ export function VerificationForm() {
     }
   }
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function submit(e?: React.FormEvent) {
+    e?.preventDefault();
     setError("");
     setMsg("");
     const payload = {
@@ -134,13 +143,12 @@ export function VerificationForm() {
       setError("Attach at least one new document to submit.");
       return;
     }
-    const fd = new FormData(e.currentTarget);
     const res = await fetch("/api/verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         docUrls,
-        notes: String(fd.get("notes") || ""),
+        notes: notes.trim(),
         idType,
       }),
     });
@@ -156,6 +164,7 @@ export function VerificationForm() {
     );
     if (!pending) {
       setFiles({ id: emptySides(), qualification: emptySides(), teaching: emptySides() });
+      setNotes("");
     }
     router.refresh();
     setItems((prev) => {
@@ -167,133 +176,154 @@ export function VerificationForm() {
   const allLocked = accepted.locked.has("id") && accepted.locked.has("qualification") && accepted.locked.has("teaching");
   const canSubmitMore = !allLocked;
 
-  return (
-    <div>
-      <div className="verify-summary">
-        <p className="muted" style={{ marginTop: 0 }}>
-          Documents are reviewed by an admin and are <strong>not</strong> shown on your public
-          profile. Clear photos or PDFs, max 2MB each. Accepted files cannot be changed.
-        </p>
-        <ul className="check-list">
-          <li>
-            <strong>Required:</strong> government photo ID — passport photo page, or national ID /
-            driving licence <em>front and back</em>
-          </li>
-          <li>
-            <strong>Recommended:</strong> highest qualification certificate
-          </li>
-          <li>
-            <strong>Optional:</strong> teaching or subject certificate
-          </li>
-        </ul>
-      </div>
-
-      {canSubmitMore && (
-        <form className="stack-form profile-form" onSubmit={submit}>
-          {SLOTS.map((slot) => {
-            const locked = accepted.locked.has(slot.key);
-            const acceptedFiles = accepted.files[slot.key];
-            const current = files[slot.key];
-            const showBack = slot.key === "id" ? needsIdBack : true;
-            const backRequired = slot.key === "id" && needsIdBack;
-            return (
-              <div key={slot.key} className={`verify-doc ${locked ? "is-locked" : ""}`}>
-                <div className="verify-doc-head">
-                  <h3>
-                    {slot.title}{" "}
-                    {slot.required && !idLocked && slot.key === "id" ? (
-                      <abbr className="req" title="Required">
-                        *
-                      </abbr>
-                    ) : locked ? (
-                      <span className="badge">Accepted</span>
-                    ) : (
-                      <span className="muted" style={{ fontSize: "0.8rem", fontWeight: 500 }}>
-                        {slot.required ? "Required" : "Recommended"}
-                      </span>
-                    )}
-                  </h3>
-                  <p className="field-hint">{slot.help}</p>
-                </div>
-
-                {locked ? (
-                  <>
-                    <p className="muted">This document was accepted by an admin and cannot be edited.</p>
-                    <ul className="verify-files">
-                      {acceptedFiles?.front && (
-                        <li>
-                          <a href={acceptedFiles.front} target="_blank" rel="noreferrer">
-                            {formatVerifySlotLabel(slot.key, "front", acceptedFiles.idType)}
-                          </a>
-                        </li>
-                      )}
-                      {acceptedFiles?.back && (
-                        <li>
-                          <a href={acceptedFiles.back} target="_blank" rel="noreferrer">
-                            {formatVerifySlotLabel(slot.key, "back", acceptedFiles.idType)}
-                          </a>
-                        </li>
-                      )}
-                    </ul>
-                  </>
+  const fields = canSubmitMore ? (
+    <>
+      {SLOTS.map((slot) => {
+        const locked = accepted.locked.has(slot.key);
+        const acceptedFiles = accepted.files[slot.key];
+        const current = files[slot.key];
+        const showBack = slot.key === "id" ? needsIdBack : true;
+        const backRequired = slot.key === "id" && needsIdBack;
+        return (
+          <div key={slot.key} className={`verify-doc ${locked ? "is-locked" : ""}`}>
+            <div className="verify-doc-head">
+              <h3>
+                {slot.title}{" "}
+                {slot.required && !idLocked && slot.key === "id" ? (
+                  <abbr className="req" title="Required">
+                    *
+                  </abbr>
+                ) : locked ? (
+                  <span className="badge">Accepted</span>
                 ) : (
-                  <>
-                    {slot.key === "id" && (
-                      <label>
-                        ID type
-                        <select value={idType} onChange={(e) => setIdType(e.target.value as IdType)}>
-                          {ID_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    )}
-                    <div className="verify-sides">
-                      <SideUpload
-                        label={
-                          slot.key === "id" && idType === "Passport" ? "Photo page" : "Front"
-                        }
-                        required={slot.key === "id" || Boolean(current.back)}
-                        url={current.front}
-                        busy={busyKey === `${slot.key}-front`}
-                        onChange={(e) => onFile(slot.key, "front", e)}
-                      />
-                      {showBack && (
-                        <SideUpload
-                          label="Back"
-                          required={backRequired}
-                          url={current.back}
-                          busy={busyKey === `${slot.key}-back`}
-                          optionalHint={
-                            slot.key !== "id" ? "Required if this document has two sides" : undefined
-                          }
-                          onChange={(e) => onFile(slot.key, "back", e)}
-                        />
-                      )}
-                    </div>
-                  </>
+                  <span className="muted" style={{ fontSize: "0.8rem", fontWeight: 500 }}>
+                    {slot.required ? "Required" : "Recommended"}
+                  </span>
                 )}
-              </div>
-            );
-          })}
+              </h3>
+              <p className="field-hint">{slot.help}</p>
+            </div>
 
-          <label>
-            Notes for reviewers
-            <textarea
-              name="notes"
-              rows={2}
-              placeholder="Anything that helps match the ID to your account name…"
-            />
-          </label>
-          {error && <p className="form-error">{error}</p>}
-          {msg && <p className="success">{msg}</p>}
-          <button className="btn" type="submit" disabled={busyKey !== null}>
-            {pending ? "Update pending request" : "Submit for review"}
-          </button>
-        </form>
+            {locked ? (
+              <>
+                <p className="muted">This document was accepted by an admin and cannot be edited.</p>
+                <ul className="verify-files">
+                  {acceptedFiles?.front && (
+                    <li>
+                      <a href={acceptedFiles.front} target="_blank" rel="noreferrer">
+                        {formatVerifySlotLabel(slot.key, "front", acceptedFiles.idType)}
+                      </a>
+                    </li>
+                  )}
+                  {acceptedFiles?.back && (
+                    <li>
+                      <a href={acceptedFiles.back} target="_blank" rel="noreferrer">
+                        {formatVerifySlotLabel(slot.key, "back", acceptedFiles.idType)}
+                      </a>
+                    </li>
+                  )}
+                </ul>
+              </>
+            ) : (
+              <>
+                {slot.key === "id" && (
+                  <label>
+                    ID type
+                    <select value={idType} onChange={(e) => setIdType(e.target.value as IdType)}>
+                      {ID_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <div className="verify-sides">
+                  <SideUpload
+                    label={slot.key === "id" && idType === "Passport" ? "Photo page" : "Front"}
+                    required={slot.key === "id" || Boolean(current.back)}
+                    url={current.front}
+                    busy={busyKey === `${slot.key}-front`}
+                    onChange={(e) => onFile(slot.key, "front", e)}
+                  />
+                  {showBack && (
+                    <SideUpload
+                      label="Back"
+                      required={backRequired}
+                      url={current.back}
+                      busy={busyKey === `${slot.key}-back`}
+                      optionalHint={slot.key !== "id" ? "Required if this document has two sides" : undefined}
+                      onChange={(e) => onFile(slot.key, "back", e)}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+
+      <label>
+        Notes for reviewers
+        <textarea
+          name="notes"
+          rows={2}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Anything that helps match the ID to your account name…"
+        />
+      </label>
+      {error && <p className="form-error">{error}</p>}
+      {msg && <p className="success">{msg}</p>}
+      <button
+        className="btn"
+        type={embedded ? "button" : "submit"}
+        disabled={busyKey !== null}
+        onClick={embedded ? () => void submit() : undefined}
+      >
+        {pending ? "Update pending request" : "Submit for review"}
+      </button>
+    </>
+  ) : null;
+
+  return (
+    <div className={compact ? "verify-form-compact" : undefined}>
+      {!compact && (
+        <div className="verify-summary">
+          <p className="muted" style={{ marginTop: 0 }}>
+            Documents are reviewed by an admin and are <strong>not</strong> shown on your public
+            profile. Clear photos or PDFs, max 2MB each. Accepted files cannot be changed.
+          </p>
+          <ul className="check-list">
+            <li>
+              <strong>Required:</strong> government photo ID — passport photo page, or national ID /
+              driving licence <em>front and back</em>
+            </li>
+            <li>
+              <strong>Recommended:</strong> highest qualification certificate
+            </li>
+            <li>
+              <strong>Optional:</strong> teaching or subject certificate
+            </li>
+          </ul>
+        </div>
       )}
+
+      {compact && (
+        <p className="muted" style={{ marginTop: 0 }}>
+          Required for the Verified badge: government photo ID. Qualification and teaching certificates
+          are recommended. Documents stay private (admins only). Skip if you want to verify later.
+        </p>
+      )}
+
+      {canSubmitMore &&
+        (embedded ? (
+          <div className="stack-form profile-form">{fields}</div>
+        ) : (
+          <form className="stack-form profile-form" onSubmit={(e) => void submit(e)}>
+            {fields}
+          </form>
+        ))}
 
       {allLocked && (
         <p className="success">All submitted documents have been accepted. They cannot be changed.</p>
