@@ -6,6 +6,7 @@ import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE } from "@/lib/marketing-copy";
 import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
+import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
   title: "Become a Tutor – Free Listing & Tutor Basic Priority",
@@ -21,12 +22,15 @@ export default async function BecomeATutorPage({
   searchParams: Promise<{ ref?: string }>;
 }) {
   const session = await auth();
-  if (session?.user?.role === "ADMIN") redirect("/admin");
-  if (session?.user?.role === "TUTOR") redirect("/dashboard/tutor?tab=profile");
+  if (session?.user) {
+    const role = (await getDbUserRole(session.user.id)) || session.user.role;
+    if (role === "ADMIN") redirect("/admin");
+    if (role === "TUTOR") redirect("/dashboard/tutor?tab=profile");
+  }
 
   const sp = await searchParams;
   const inviteRef = sp.ref?.trim() || null;
-  const isStudent = session?.user?.role === "STUDENT";
+  const isStudent = Boolean(session?.user);
   const signupHref = tutorRegisterPath(inviteRef);
 
   return (

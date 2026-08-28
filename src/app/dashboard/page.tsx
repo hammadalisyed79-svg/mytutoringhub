@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import {
   type DashboardSearchParams,
+  getDbUserRole,
   roleDashboardPath,
 } from "@/lib/dashboard-home";
 
@@ -16,5 +17,6 @@ export default async function DashboardIndexPage({
   const session = await auth();
   if (!session?.user) redirect("/login");
   const sp = await searchParams;
-  redirect(roleDashboardPath(session.user.role, sp));
+  const role = (await getDbUserRole(session.user.id)) || session.user.role;
+  redirect(roleDashboardPath(role, sp));
 }

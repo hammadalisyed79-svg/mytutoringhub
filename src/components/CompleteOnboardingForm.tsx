@@ -23,8 +23,11 @@ export function CompleteOnboardingForm() {
       if (!res.ok) {
         throw new Error((data as { error?: string }).error || "Could not save your account type");
       }
-      await update({ onboardingComplete: true });
-      window.location.href = (data as { redirect?: string }).redirect || "/dashboard";
+      await update({ role, onboardingComplete: true });
+      window.location.href =
+        role === "TUTOR"
+          ? "/dashboard/tutor?tab=profile"
+          : (data as { redirect?: string }).redirect || "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);

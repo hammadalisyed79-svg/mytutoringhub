@@ -17,6 +17,7 @@ import {
   type DashboardSearchParams,
   prepareDashboardHome,
   roleDashboardPath,
+  getDbUserRole,
 } from "@/lib/dashboard-home";
 
 export const metadata = { title: "Student dashboard" };
@@ -29,8 +30,9 @@ export default async function StudentDashboardPage({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/dashboard/student");
-  if (session.user.role === "ADMIN") redirect("/admin");
-  if (session.user.role === "TUTOR") {
+  const dbRole = (await getDbUserRole(session.user.id)) || session.user.role;
+  if (dbRole === "ADMIN") redirect("/admin");
+  if (dbRole === "TUTOR") {
     redirect(roleDashboardPath("TUTOR", await searchParams));
   }
 

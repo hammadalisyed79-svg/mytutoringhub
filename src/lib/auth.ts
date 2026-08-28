@@ -183,7 +183,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
 
       return true;
     },
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id!;
         token.sub = user.id!;
@@ -197,6 +197,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         return null;
       }
       if (trigger === "update" && token.sub) {
+        // Apply client session patches first, then prefer DB as source of truth for role.
+        if (session && typeof session === "object") {
+          const patch = session as {
+            role?: Role;
+            onboardingComplete?: boolean;
+            name?: string;
+          };
+          if (typeof patch.onboardingComplete === "boolean") {
+            token.onboardingComplete = patch.onboardingComplete;
+          }
+          if (typeof patch.name === "string" && patch.name.trim()) {
+            token.name = patch.name.trim();
+          }
+        }
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub as string },
           select: { role: true, onboardingComplete: true, name: true },

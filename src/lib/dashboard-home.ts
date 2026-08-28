@@ -124,6 +124,16 @@ export function roleDashboardPath(role: Role, sp: DashboardSearchParams = {}) {
   return `${base}${dashboardQueryString(sp)}`;
 }
 
+/** Prefer DB role over JWT — session can lag after student→tutor conversion. */
+export async function getDbUserRole(userId: string): Promise<Role | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (!user) return null;
+  return user.role as Role;
+}
+
 /** Reconcile payments / badges, then load the signed-in user for a role home. */
 export async function prepareDashboardHome(userId: string, role: Role, sp: DashboardSearchParams) {
   const [justActivated, currency] = await Promise.all([

@@ -25,6 +25,7 @@ import {
   resolveTutorDashboardTab,
   roleDashboardPath,
   isTutorDashboardProfileComplete,
+  getDbUserRole,
 } from "@/lib/dashboard-home";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
@@ -42,8 +43,9 @@ export default async function TutorDashboardPage({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login?next=/dashboard/tutor");
-  if (session.user.role === "ADMIN") redirect("/admin");
-  if (session.user.role === "STUDENT") {
+  const dbRole = (await getDbUserRole(session.user.id)) || session.user.role;
+  if (dbRole === "ADMIN") redirect("/admin");
+  if (dbRole === "STUDENT") {
     redirect(roleDashboardPath("STUDENT", await searchParams));
   }
 

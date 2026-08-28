@@ -18,8 +18,11 @@ export function BecomeTutorForm() {
       if (!res.ok) {
         throw new Error((data as { error?: string }).error || "Could not switch to a tutor account");
       }
-      await update();
-      window.location.href = "/dashboard/tutor?tab=profile";
+      // Push role into the JWT immediately so /dashboard/tutor does not bounce back.
+      await update({ role: "TUTOR", onboardingComplete: true });
+      window.location.assign(
+        (data as { redirect?: string }).redirect || "/dashboard/tutor?tab=profile",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
