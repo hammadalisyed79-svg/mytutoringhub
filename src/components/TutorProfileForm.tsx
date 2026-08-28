@@ -350,6 +350,13 @@ export function TutorProfileForm({
     setStep((s) => Math.max(0, s - 1));
   }
 
+  function goToStep(index: number) {
+    if (index < 0 || index >= steps.length || index === step) return;
+    setError("");
+    // Free navigation so tutors can review earlier answers anytime.
+    setStep(index);
+  }
+
   function skipOptional() {
     if (!currentStep.optional) return;
     setError("");
@@ -512,6 +519,32 @@ export function TutorProfileForm({
 
   const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => currentStep.id === id;
 
+  const stepNav = (
+    <nav className="profile-wizard-steps" aria-label="Profile steps">
+      <ol className="profile-wizard-steps-list">
+        {steps.map((row, index) => {
+          const active = index === step;
+          const done = index < step;
+          return (
+            <li key={row.id}>
+              <button
+                type="button"
+                className={`profile-wizard-step${active ? " is-active" : ""}${done ? " is-done" : ""}`}
+                aria-current={active ? "step" : undefined}
+                onClick={() => goToStep(index)}
+              >
+                <span className="profile-wizard-step-num" aria-hidden="true">
+                  {done ? "✓" : index + 1}
+                </span>
+                <span className="profile-wizard-step-label">{row.title}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+
   const wizardChrome = (
     <div className="profile-wizard-chrome">
       <div className="guided-search-progress" aria-hidden="true">
@@ -521,6 +554,7 @@ export function TutorProfileForm({
         Step {step + 1} of {steps.length}
         {currentStep.optional ? " · Optional" : " · Required"}
       </p>
+      {stepNav}
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
     </div>
@@ -528,13 +562,15 @@ export function TutorProfileForm({
 
   const wizardActions = (
     <div className="guided-search-actions profile-wizard-actions">
-      {step > 0 ? (
-        <button type="button" className="btn btn-secondary" onClick={goBack}>
-          Back
-        </button>
-      ) : (
-        <span />
-      )}
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={goBack}
+        disabled={step === 0}
+        aria-disabled={step === 0}
+      >
+        Back
+      </button>
       <div className="profile-wizard-actions-right">
         {currentStep.optional ? (
           <button type="button" className="btn btn-secondary" onClick={skipOptional}>
@@ -561,13 +597,9 @@ export function TutorProfileForm({
         {wizardChrome}
         <VerificationForm embedded compact />
         <div className="guided-search-actions profile-wizard-actions">
-          {step > 0 ? (
-            <button type="button" className="btn btn-secondary" onClick={goBack}>
-              Back
-            </button>
-          ) : (
-            <span />
-          )}
+          <button type="button" className="btn btn-secondary" onClick={goBack}>
+            Back
+          </button>
           <div className="profile-wizard-actions-right">
             <button type="button" className="btn btn-secondary" onClick={skipOptional}>
               Skip verification

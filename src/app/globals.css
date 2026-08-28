@@ -9799,6 +9799,83 @@ img {
   margin-bottom: 1rem;
 }
 
+.profile-wizard-steps {
+  margin: 0.65rem 0 0.85rem;
+}
+
+.profile-wizard-steps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.profile-wizard-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 11rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border, #d7dde5);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: var(--ink-muted, #5b6573);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.profile-wizard-step:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--border, #d7dde5));
+  color: var(--ink, #122);
+}
+
+.profile-wizard-step.is-done {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border, #d7dde5));
+  color: var(--brand-deep, #0b5);
+}
+
+.profile-wizard-step.is-active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, #fff);
+  color: var(--ink, #122);
+  font-weight: 600;
+}
+
+.profile-wizard-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 12%, #fff);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.profile-wizard-step.is-active .profile-wizard-step-num {
+  background: var(--brand);
+  color: #fff;
+}
+
+.profile-wizard-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-wizard-actions .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .profile-wizard-toggle {
   margin: 0.35rem 0 0.85rem;
 }
