@@ -194,24 +194,6 @@ export function SearchFiltersForm({
       action="/search"
       onSubmit={onSubmit}
     >
-      <div className="search-primary">
-        <label className="search-q">
-          <span>Search</span>
-          <input
-            name="q"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={searchQueryPlaceholder}
-            autoComplete="off"
-            spellCheck={false}
-            enterKeyHint="search"
-          />
-        </label>
-        <button className={`btn${applying ? " btn--pulse" : ""}`} type="submit" disabled={applying}>
-          {applying ? "Searching…" : "Find tutors"}
-        </button>
-      </div>
-
       <div className="search-grid search-grid-core">
         <SuggestField
           name="subject"
@@ -252,6 +234,15 @@ export function SearchFiltersForm({
         />
       </div>
 
+      <div className="search-refine-actions">
+        <button className={`btn${applying ? " btn--pulse" : ""}`} type="submit" disabled={applying}>
+          {applying ? "Searching…" : "Update results"}
+        </button>
+        <Link href="/search?guided=1" className="search-clear">
+          Start over
+        </Link>
+      </div>
+
       <details
         className="search-more-filters"
         open={moreOpen}
@@ -259,6 +250,17 @@ export function SearchFiltersForm({
       >
         <summary>More filters</summary>
         <div className="search-grid search-grid-more">
+          <label className="search-q">
+            <span>Keywords</span>
+            <input
+              name="q"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={searchQueryPlaceholder}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
           <SuggestField
             name="level"
             label="Level"

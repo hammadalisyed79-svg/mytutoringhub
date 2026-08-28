@@ -7,6 +7,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { searchTutors } from "@/lib/search-tutors";
 import { isBoostActive } from "@/lib/subscription";
 import { SearchFiltersForm } from "@/components/SearchFiltersForm";
+import { GuidedTutorSearch } from "@/components/GuidedTutorSearch";
 import { SearchStudentBanner } from "@/components/SearchStudentBanner";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
@@ -37,6 +38,8 @@ type SearchParams = Promise<{
   trial?: string;
   language?: string;
   page?: string;
+  browse?: string;
+  guided?: string;
 }>;
 
 export async function generateMetadata({
@@ -100,6 +103,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   });
   const city = resolveCity(sp.location);
   const related = resolved.subject ? relatedSubjects(resolved.subject, subjectNames) : [];
+  const hasSearchIntent = Boolean(
+    sp.subject ||
+      sp.q ||
+      sp.location ||
+      sp.country ||
+      sp.mode ||
+      sp.level ||
+      sp.language ||
+      sp.max ||
+      sp.verified ||
+      sp.trial ||
+      sp.browse === "1",
+  );
+  const showGuided = sp.guided === "1" || !hasSearchIntent;
 
   const placeLabel = [
     resolved.location && resolved.location !== "Online" ? resolved.location : "",
@@ -139,37 +156,58 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           <p className="muted search-guest-hint">{STUDENT_FREE_CONTACTS_LINE}</p>
         )}
 
-        <SearchFiltersForm
-          initial={sp}
-          subjects={subjectNames}
-          levels={curriculumLevels()}
-          codes={curriculumCodeOptions()}
-          currency={currency}
-          pinnedCountry={pinnedCountry}
-          searchQueryPlaceholder={region.searchQueryPlaceholder}
-          defaultCityPlaceholder={region.cityPlaceholder}
-          levelPlaceholder={region.levelPlaceholder}
-        />
+        {showGuided ? (
+          <>
+            <GuidedTutorSearch
+              subjects={subjectNames}
+              codes={curriculumCodeOptions()}
+              pinnedCountry={pinnedCountry}
+              cityPlaceholder={region.cityPlaceholder}
+              initial={{
+                subject: sp.subject,
+                country: sp.country,
+                location: sp.location,
+                mode: sp.mode,
+                level: sp.level,
+              }}
+            />
+            <div className="search-quick" aria-label="Popular subjects">
+              {POPULAR_SUBJECTS.slice(0, 8).map((name) => (
+                <Link
+                  key={name}
+                  href={`/search?subject=${encodeURIComponent(name)}`}
+                  className={`chip-btn ${resolved.subject === name ? "is-on" : ""}`}
+                >
+                  {name}
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <SearchFiltersForm
+              initial={sp}
+              subjects={subjectNames}
+              levels={curriculumLevels()}
+              codes={curriculumCodeOptions()}
+              currency={currency}
+              pinnedCountry={pinnedCountry}
+              searchQueryPlaceholder={region.searchQueryPlaceholder}
+              defaultCityPlaceholder={region.cityPlaceholder}
+              levelPlaceholder={region.levelPlaceholder}
+            />
+            <p className="muted search-summary">{summary}</p>
+          </>
+        )}
 
-        <div className="search-quick" aria-label="Popular subjects">
-          {POPULAR_SUBJECTS.slice(0, 8).map((name) => (
-            <Link
-              key={name}
-              href={`/search?subject=${encodeURIComponent(name)}`}
-              className={`chip-btn ${resolved.subject === name ? "is-on" : ""}`}
-            >
-              {name}
-            </Link>
-          ))}
-        </div>
-
-        <p className="muted search-summary">{summary}</p>
-        {city.matched && sp.location && city.value.toLowerCase() !== sp.location.trim().toLowerCase() && (
+        {!showGuided && city.matched && sp.location && city.value.toLowerCase() !== sp.location.trim().toLowerCase() && (
           <p className="search-didyoumean">
             Showing results for <strong>{city.value}</strong> instead of “{sp.location}”.
           </p>
         )}
 
+        {!showGuided && (
+          <>
         {tutors.length === 0 && (
           <div className="panel empty-state">
             <h2>
@@ -372,6 +410,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               </Link>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
