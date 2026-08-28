@@ -20,6 +20,7 @@ import {
 } from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 import { computeMaxRedeemablePoints, getHubPointsBalanceSafe } from "@/lib/hub-points";
+import { encodeSubjectProfileNote } from "@/lib/listing-checkout";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -39,6 +40,8 @@ const schema = z.object({
   currency: z.string().optional(),
   country: z.string().optional(),
   useHubPoints: z.boolean().optional().default(false),
+  /** Bind Boost / Highlight to one subject listing. */
+  subjectProfileId: z.string().min(1).optional(),
 });
 
 function resolveCountry(req: Request, bodyCountry?: string): string | null {
@@ -78,6 +81,32 @@ export async function POST(req: Request) {
   }
   if (session.user.role === "TUTOR" && def.audience !== "tutor") {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
+  }
+
+  let subjectProfileNote: string | null = null;
+  if (body.subjectProfileId) {
+    if (plan !== "AD_BOOST" && plan !== "HIGHLIGHTED_AD") {
+      return NextResponse.json(
+        { error: "subjectProfileId is only valid for Boost or Highlight" },
+        { status: 400 },
+      );
+    }
+    const listing = await prisma.subjectProfile.findFirst({
+      where: {
+        id: body.subjectProfileId,
+        tutorProfile: { userId: session.user.id },
+      },
+      select: { id: true },
+    });
+    if (!listing) {
+      return NextResponse.json({ error: "Subject profile not found" }, { status: 404 });
+    }
+    subjectProfileNote = encodeSubjectProfileNote(listing.id);
+  } else if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
+    return NextResponse.json(
+      { error: "Choose which subject profile to boost or highlight" },
+      { status: 400 },
+    );
   }
 
   const appUrl = checkoutAppUrl(req);
@@ -123,11 +152,14 @@ export async function POST(req: Request) {
   const orderId = `${billing === "annual" ? "ann" : "mth"}_${plan}_${Date.now()}`;
 
   try {
+    const listingQs = body.subjectProfileId
+      ? `&listing=${encodeURIComponent(body.subjectProfileId)}`
+      : "";
     const { url, tracker } = await createSafepayHostedCheckout({
       amount,
       currency,
       orderId,
-      redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}&billing=${billing}`,
+      redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}&billing=${billing}${listingQs}`,
       cancelUrl: `${appUrl}/pricing?checkout=cancel&plan=${plan}`,
     });
 
@@ -151,6 +183,7 @@ export async function POST(req: Request) {
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod: billing,
         pointsRedeemedPkr,
+        ...(subjectProfileNote ? { notes: subjectProfileNote } : {}),
       },
       create: {
         userId: session.user.id,
@@ -160,6 +193,7 @@ export async function POST(req: Request) {
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod: billing,
         pointsRedeemedPkr,
+        notes: subjectProfileNote,
       },
     });
 

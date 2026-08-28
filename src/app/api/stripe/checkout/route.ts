@@ -6,6 +6,8 @@ import { getPriceId, PLANS } from "@/lib/plans";
 import { syncTutorBadges } from "@/lib/subscription";
 import { safepayConfigured } from "@/lib/safepay";
 import type { SubscriptionPlan } from "@/lib/types";
+import { encodeSubjectProfileNote } from "@/lib/listing-checkout";
+import { applyVisibilityToSubjectProfile } from "@/lib/listing-boost";
 import { z } from "zod";
 
 const schema = z.object({
@@ -19,6 +21,7 @@ const schema = z.object({
     "EXTRA_PROFILE_ADS",
     "UNLIMITED_ADS",
   ]),
+  subjectProfileId: z.string().min(1).optional(),
 });
 
 function stripeConfigured() {
@@ -46,7 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { plan } = schema.parse(await req.json());
+  const { plan, subjectProfileId: rawListingId } = schema.parse(await req.json());
   const def = PLANS.find((p) => p.id === plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
@@ -57,28 +60,66 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
+  let subjectProfileId: string | undefined;
+  let subjectProfileNote: string | null = null;
+  if (rawListingId) {
+    if (plan !== "AD_BOOST" && plan !== "HIGHLIGHTED_AD") {
+      return NextResponse.json(
+        { error: "subjectProfileId is only valid for Boost or Highlight" },
+        { status: 400 },
+      );
+    }
+    const listing = await prisma.subjectProfile.findFirst({
+      where: { id: rawListingId, tutorProfile: { userId: session.user.id } },
+      select: { id: true },
+    });
+    if (!listing) {
+      return NextResponse.json({ error: "Subject profile not found" }, { status: 404 });
+    }
+    subjectProfileId = listing.id;
+    subjectProfileNote = encodeSubjectProfileNote(listing.id);
+  } else if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
+    return NextResponse.json(
+      { error: "Choose which subject profile to boost or highlight" },
+      { status: 400 },
+    );
+  }
+
   const priceId = getPriceId(plan as SubscriptionPlan);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   if (!stripeConfigured() || !priceLooksReal(priceId)) {
+    const until = new Date(Date.now() + 30 * 86400000);
     await prisma.subscription.upsert({
-      where: { stripeSubscriptionId: `dev_${session.user.id}_${plan}` },
+      where: {
+        stripeSubscriptionId: `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`,
+      },
       update: {
         status: "ACTIVE",
-        currentPeriodEnd: new Date(Date.now() + 30 * 86400000),
+        currentPeriodEnd: until,
+        ...(subjectProfileNote ? { notes: subjectProfileNote } : {}),
       },
       create: {
         userId: session.user.id,
         plan,
         status: "ACTIVE",
-        stripeSubscriptionId: `dev_${session.user.id}_${plan}`,
-        currentPeriodEnd: new Date(Date.now() + 30 * 86400000),
+        stripeSubscriptionId: `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`,
+        currentPeriodEnd: until,
+        notes: subjectProfileNote,
       },
     });
     if (session.user.role === "TUTOR") {
       await syncTutorBadges(session.user.id);
+      if (subjectProfileId && (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD")) {
+        await applyVisibilityToSubjectProfile({
+          userId: session.user.id,
+          subjectProfileId,
+          plan,
+          until,
+        });
+      }
     }
-    return NextResponse.json({ url: `${appUrl}/dashboard?subscribed=1` });
+    return NextResponse.json({ url: `${appUrl}/dashboard/tutor?checkout=success&plan=${plan}` });
   }
 
   const user = await prisma.user.findUniqueOrThrow({ where: { id: session.user.id } });
@@ -102,8 +143,18 @@ export async function POST(req: Request) {
     line_items: [{ price: priceId!, quantity: 1 }],
     success_url: `${appUrl}/dashboard?checkout=success`,
     cancel_url: `${appUrl}/pricing?checkout=cancel`,
-    metadata: { userId: user.id, plan },
-    subscription_data: { metadata: { userId: user.id, plan } },
+    metadata: {
+      userId: user.id,
+      plan,
+      ...(subjectProfileId ? { subjectProfileId } : {}),
+    },
+    subscription_data: {
+      metadata: {
+        userId: user.id,
+        plan,
+        ...(subjectProfileId ? { subjectProfileId } : {}),
+      },
+    },
   });
 
   return NextResponse.json({ url: checkout.url });

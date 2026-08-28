@@ -17,6 +17,7 @@ export function SubscribeButton({
   paidCheckoutLive = true,
   hubPointsBalance = 0,
   listPricePkr,
+  subjectProfileId,
 }: {
   plan: SubscriptionPlan;
   planLabel?: string;
@@ -29,6 +30,8 @@ export function SubscribeButton({
   paidCheckoutLive?: boolean;
   hubPointsBalance?: number;
   listPricePkr?: number;
+  /** Required for AD_BOOST / HIGHLIGHTED_AD — binds purchase to one listing. */
+  subjectProfileId?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,22 +54,25 @@ export function SubscribeButton({
     setLoading(true);
     setError("");
 
+    const payload = {
+      plan,
+      currency,
+      billing: billing ?? "monthly",
+      useHubPoints: useHubPoints && hubPointsBalance > 0,
+      ...(subjectProfileId ? { subjectProfileId } : {}),
+    };
+
     let res = await fetch("/api/safepay/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan,
-        currency,
-        billing: billing ?? "monthly",
-        useHubPoints: useHubPoints && hubPointsBalance > 0,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (res.status === 503) {
       res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, ...(subjectProfileId ? { subjectProfileId } : {}) }),
       });
     }
 

@@ -256,12 +256,18 @@ export default async function TutorDashboardPage({
           ) : null}
 
             {user.tutorProfile ? (
-              <section className="panel">
-                <h2>Optional subject ads</h2>
+              <section className="panel" id="subject-profiles-section">
+                <h2>Subject profiles</h2>
                 <p className="muted">
-                  Extra subject-specific ads on top of your profile. Not required to get found.
+                  Each subject is its own search listing (rate, city, boost). Shared account photo,
+                  verification, and reviews apply to all of them.
                 </p>
-                <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
+                <TutorAdsManager
+                  subjects={catalogSubjects}
+                  extraLevels={extraLevels}
+                  currency={currency}
+                  paidCheckoutLive={paidCheckoutLive}
+                />
               </section>
             ) : null}
           </div>

@@ -28,6 +28,17 @@ function PlanActions({
   hubPointsBalance?: number;
 }) {
   if (signedIn) {
+    if (plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD") {
+      return (
+        <Link
+          href="/dashboard/tutor?tab=profile#subject-profiles"
+          className="btn btn-block btn-secondary"
+        >
+          Choose a subject profile
+        </Link>
+      );
+    }
+
     if (!paidCheckoutLive && !plan.isComplimentary) {
       return (
         <ManualPlanActivationButton

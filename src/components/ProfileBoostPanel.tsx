@@ -1,24 +1,21 @@
 import Link from "next/link";
-import { SubscribeButton } from "@/components/SubscribeButton";
 import { getLivePlan } from "@/lib/plans";
-import { isBoostActive } from "@/lib/subscription";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
-import { isPaidCheckoutLive } from "@/lib/payments-status";
 
+/**
+ * Growth-tab tip: Boost / Highlight are bought per subject profile (Phase D).
+ * Checkout lives on each row in the Subject profiles manager.
+ */
 export async function ProfileBoostPanel({
-  boostUntil,
   currency,
   compact,
 }: {
-  boostUntil: Date | null | undefined;
+  boostUntil?: Date | null;
   currency: CurrencyCode;
   compact?: boolean;
 }) {
-  const now = new Date();
-  const active = isBoostActive(boostUntil, now);
   const plan = await getLivePlan("AD_BOOST");
   const priceLabel = plan ? formatPlanPrice(plan.chargePricePkr, currency) : null;
-  const paidCheckoutLive = isPaidCheckoutLive();
 
   return (
     <section
@@ -28,41 +25,27 @@ export async function ProfileBoostPanel({
         <div>
           <h2 style={{ marginTop: 0 }}>{plan?.name || "Profile Boost"}</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            One-time checkout · 30 days of extra search visibility · periodic top-of-list placement
+            Boost or highlight each subject profile separately — students see that listing higher in
+            search for ~30 days.
           </p>
         </div>
-        {active && boostUntil && (
-          <span className="profile-boost-badge">Boost active</span>
-        )}
       </div>
 
-      {boostUntil && boostUntil > now ? (
-        <p className="profile-boost-status">
-          {active ? "You are boosted in search right now." : "Boost window active — cycles on periodically."}{" "}
-          Until {boostUntil.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.
-        </p>
-      ) : (
-        <p className="profile-boost-status muted">
-          Stand out when students compare tutors. Repurchasing extends your boost window by 30 days.
-        </p>
-      )}
+      <p className="profile-boost-status muted">
+        Open your Profile tab, pick a subject profile, then use <strong>Boost</strong> or{" "}
+        <strong>Highlight</strong> on that row.
+        {priceLabel ? (
+          <>
+            {" "}
+            Boost from <strong>{priceLabel}</strong> one-time.
+          </>
+        ) : null}
+      </p>
 
       <div className="profile-boost-actions">
-        {priceLabel && (
-          <p className="profile-boost-price">
-            <strong>{priceLabel}</strong>
-            <span className="muted"> one-time · 30 days</span>
-          </p>
-        )}
-        <SubscribeButton
-          plan="AD_BOOST"
-          planLabel={plan?.name || "Profile Boost"}
-          currency={currency}
-          label={active ? "Extend boost 30 days" : "Boost my profile"}
-          featured
-          oneTime
-          paidCheckoutLive={paidCheckoutLive}
-        />
+        <Link href="/dashboard/tutor?tab=profile#subject-profiles" className="btn">
+          Manage subject profiles
+        </Link>
         {!compact && (
           <Link href="/pricing" className="btn btn-secondary">
             All tutor add-ons

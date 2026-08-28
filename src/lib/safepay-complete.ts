@@ -7,6 +7,11 @@ import { deductHubPointsForRedemption } from "@/lib/hub-points";
 import { getPlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import type { SubscriptionPlan } from "@/lib/types";
+import { parseSubjectProfileIdFromNotes } from "@/lib/listing-checkout";
+import {
+  applyVisibilityToSubjectProfile,
+  resolveListingAddOnPeriodEnd,
+} from "@/lib/listing-boost";
 
 const ADD_ON_PLANS = new Set<SubscriptionPlan>([
   "VERIFIED_TUTOR",
@@ -16,7 +21,24 @@ const ADD_ON_PLANS = new Set<SubscriptionPlan>([
   "UNLIMITED_ADS",
 ]);
 
-async function resolveAddOnPeriodEnd(userId: string, plan: SubscriptionPlan, excludeSubId: string) {
+async function resolveAddOnPeriodEnd(
+  userId: string,
+  plan: SubscriptionPlan,
+  excludeSubId: string,
+  subjectProfileId?: string | null,
+) {
+  if (
+    (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") &&
+    subjectProfileId
+  ) {
+    return resolveListingAddOnPeriodEnd({
+      userId,
+      plan,
+      subjectProfileId,
+      excludeSubId,
+    });
+  }
+
   const now = new Date();
   const prior = await prisma.subscription.findFirst({
     where: {
@@ -107,15 +129,31 @@ export async function activatePaidSafepaySubscription(opts: {
 
   if (["ACTIVE", "TRIALING"].includes(existing.status)) {
     const user = await prisma.user.findUnique({ where: { id: existing.userId }, select: { role: true } });
-    if (user?.role === "TUTOR") await syncTutorBadges(existing.userId);
+    if (user?.role === "TUTOR") {
+      await syncTutorBadges(existing.userId);
+      const listingId = parseSubjectProfileIdFromNotes(existing.notes);
+      if (
+        listingId &&
+        (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") &&
+        existing.currentPeriodEnd
+      ) {
+        await applyVisibilityToSubjectProfile({
+          userId: existing.userId,
+          subjectProfileId: listingId,
+          plan,
+          until: existing.currentPeriodEnd,
+        });
+      }
+    }
     return { ok: true as const, subscription: existing, alreadyActive: true };
   }
 
   // Use billingPeriod stored on the record, or fall back to the hint, then monthly.
   const billing = (existing.billingPeriod as "monthly" | "annual" | null) ?? opts.billingHint ?? "monthly";
   const periodMs = billing === "annual" ? 365 * 86400000 : 30 * 86400000;
+  const subjectProfileId = parseSubjectProfileIdFromNotes(existing.notes);
   const periodEnd = ADD_ON_PLANS.has(plan)
-    ? await resolveAddOnPeriodEnd(existing.userId, plan, existing.id)
+    ? await resolveAddOnPeriodEnd(existing.userId, plan, existing.id, subjectProfileId)
     : new Date(Date.now() + periodMs);
   const updated = await prisma.subscription.update({
     where: { id: existing.id },
@@ -139,6 +177,18 @@ export async function activatePaidSafepaySubscription(opts: {
   const user = await prisma.user.findUnique({ where: { id: updated.userId } });
   if (user?.role === "TUTOR") {
     await syncTutorBadges(user.id);
+    if (
+      subjectProfileId &&
+      (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") &&
+      periodEnd
+    ) {
+      await applyVisibilityToSubjectProfile({
+        userId: user.id,
+        subjectProfileId,
+        plan,
+        until: periodEnd,
+      });
+    }
   }
 
   if (updated.pointsRedeemedPkr > 0) {

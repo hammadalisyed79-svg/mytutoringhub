@@ -264,30 +264,8 @@ export async function syncTutorBadges(userId: string) {
 
   await syncTutorTrustBadge(profile.id);
 
-  if (highlightUntil && highlightUntil > now) {
-    await Promise.all([
-      prisma.subjectProfile.updateMany({
-        where: { tutorProfileId: profile.id, status: "ACTIVE" },
-        data: { highlightedUntil: highlightUntil },
-      }),
-      prisma.tutorAd.updateMany({
-        where: { tutorProfileId: profile.id, status: "ACTIVE" },
-        data: { highlightedUntil: highlightUntil },
-      }),
-    ]);
-  }
-  if (boostUntil && boostUntil > now) {
-    await Promise.all([
-      prisma.subjectProfile.updateMany({
-        where: { tutorProfileId: profile.id, status: "ACTIVE" },
-        data: { boostUntil },
-      }),
-      prisma.tutorAd.updateMany({
-        where: { tutorProfileId: profile.id, status: "ACTIVE" },
-        data: { boostUntil },
-      }),
-    ]);
-  }
+  // Boost / Highlight are purchased per subject profile (Phase D). Do not cascade
+  // account-level windows onto every ACTIVE listing — checkout applies to one listing.
 }
 
 export function isSubscriptionActive(status: string) {

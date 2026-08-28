@@ -6,9 +6,17 @@ import {
   defaultSubjectProfileTitle,
   normalizeSubjectLabel,
 } from "@/lib/subject-profile";
+import {
+  canCreateSubjectProfile,
+  getSubjectProfileActiveCap,
+  isSubjectProfilePromoActive,
+  subjectProfilePromoLabel,
+  FREE_SUBJECT_PROFILES_AFTER_PROMO,
+  PAID_SUBJECT_PROFILE_CAP,
+} from "@/lib/subject-profile-entitlements";
 import { z } from "zod";
 
-const schema = z.object({
+const createSchema = z.object({
   subject: z.string().min(1),
   title: z.string().min(5).max(120),
   level: z.string().min(1),
@@ -17,34 +25,91 @@ const schema = z.object({
   inPerson: z.boolean(),
   rate: z.number().min(500).max(50000),
   description: z.string().max(4000).optional(),
+  headline: z.string().max(200).optional(),
 });
 
-/** Subject profiles API (Phase B). Route kept as /api/tutor-ads for existing UI. */
+function serializeListing(row: {
+  id: string;
+  subject: string;
+  title: string;
+  headline: string | null;
+  level: string;
+  location: string;
+  country: string | null;
+  rate: number;
+  status: string;
+  online: boolean;
+  inPerson: boolean;
+  description: string | null;
+  boostUntil: Date | null;
+  highlightedUntil: Date | null;
+}) {
+  return {
+    id: row.id,
+    subject: row.subject,
+    title: row.title,
+    headline: row.headline,
+    level: row.level,
+    location: row.location,
+    country: row.country,
+    rate: row.rate,
+    status: row.status,
+    online: row.online,
+    inPerson: row.inPerson,
+    description: row.description,
+    boostUntil: row.boostUntil,
+    highlightedUntil: row.highlightedUntil,
+  };
+}
+
+/** Subject profiles API (Phase B/D). Route kept as /api/tutor-ads for existing UI. */
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const profile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
-  if (!profile) return NextResponse.json([]);
-  const rows = await prisma.subjectProfile.findMany({
-    where: { tutorProfileId: profile.id },
-    orderBy: { createdAt: "desc" },
+  if (!profile) {
+    return NextResponse.json({
+      listings: [],
+      entitlement: {
+        activeCount: 0,
+        cap: null as number | null,
+        unlimited: true,
+        promoActive: isSubjectProfilePromoActive(),
+        promoLabel: subjectProfilePromoLabel(),
+        freeCapAfterPromo: FREE_SUBJECT_PROFILES_AFTER_PROMO,
+        paidCap: PAID_SUBJECT_PROFILE_CAP,
+        canCreate: false,
+        createReason: "Create your tutor profile first",
+      },
+    });
+  }
+
+  const [rows, cap, gate] = await Promise.all([
+    prisma.subjectProfile.findMany({
+      where: { tutorProfileId: profile.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    getSubjectProfileActiveCap(session.user.id),
+    canCreateSubjectProfile(session.user.id),
+  ]);
+
+  const activeCount = rows.filter((r) => r.status === "ACTIVE").length;
+  const unlimited = !Number.isFinite(cap);
+
+  return NextResponse.json({
+    listings: rows.map(serializeListing),
+    entitlement: {
+      activeCount,
+      cap: unlimited ? null : cap,
+      unlimited,
+      promoActive: isSubjectProfilePromoActive(),
+      promoLabel: subjectProfilePromoLabel(),
+      freeCapAfterPromo: FREE_SUBJECT_PROFILES_AFTER_PROMO,
+      paidCap: PAID_SUBJECT_PROFILE_CAP,
+      canCreate: gate.ok,
+      createReason: gate.ok ? null : gate.reason,
+    },
   });
-  return NextResponse.json(
-    rows.map((row) => ({
-      id: row.id,
-      subject: row.subject,
-      title: row.title,
-      level: row.level,
-      location: row.location,
-      rate: row.rate,
-      status: row.status,
-      online: row.online,
-      inPerson: row.inPerson,
-      description: row.description,
-      boostUntil: row.boostUntil,
-      highlightedUntil: row.highlightedUntil,
-    })),
-  );
 }
 
 export async function POST(req: Request) {
@@ -54,7 +119,7 @@ export async function POST(req: Request) {
   }
   const gate = await canCreateTutorAd(session.user.id);
   if (!gate.ok) return NextResponse.json({ error: gate.reason }, { status: 403 });
-  const data = schema.parse(await req.json());
+  const data = createSchema.parse(await req.json());
   const subject = normalizeSubjectLabel(data.subject);
   if (!subject) {
     return NextResponse.json({ error: "Enter a subject" }, { status: 400 });
@@ -93,13 +158,10 @@ export async function POST(req: Request) {
       inPerson: data.inPerson,
       rate: data.rate,
       status: "ACTIVE",
-      highlightedUntil: tutor?.highlightedUntil || null,
-      boostUntil: tutor?.boostUntil || null,
-      headline: tutor?.headline || null,
+      headline: data.headline?.trim() || tutor?.headline || null,
     },
   });
 
-  // Dual-write legacy TutorAd for admin tools during transition.
   await prisma.tutorAd
     .create({
       data: {
@@ -113,23 +175,11 @@ export async function POST(req: Request) {
         rate: row.rate,
         description: row.description,
         status: row.status,
-        highlightedUntil: row.highlightedUntil,
-        boostUntil: row.boostUntil,
       },
     })
     .catch(() => undefined);
 
-  return NextResponse.json({
-    id: row.id,
-    subject: row.subject,
-    title: row.title,
-    level: row.level,
-    location: row.location,
-    rate: row.rate,
-    status: row.status,
-    online: row.online,
-    inPerson: row.inPerson,
-  });
+  return NextResponse.json(serializeListing(row));
 }
 
 export async function PATCH(req: Request) {
@@ -172,9 +222,19 @@ export async function PATCH(req: Request) {
     where: { id },
     data: {
       ...(status ? { status } : {}),
-      ...(body.title ? { title: String(body.title).slice(0, 120) } : {}),
+      ...(body.title != null ? { title: String(body.title).slice(0, 120) } : {}),
+      ...(body.headline !== undefined
+        ? { headline: body.headline ? String(body.headline).slice(0, 200) : null }
+        : {}),
       ...(nextSubject ? { subject: nextSubject } : {}),
       ...(body.rate != null ? { rate: Number(body.rate) } : {}),
+      ...(body.level != null ? { level: String(body.level).slice(0, 80) } : {}),
+      ...(body.location != null ? { location: String(body.location).slice(0, 120) } : {}),
+      ...(body.description !== undefined
+        ? { description: body.description ? String(body.description).slice(0, 4000) : null }
+        : {}),
+      ...(typeof body.online === "boolean" ? { online: body.online } : {}),
+      ...(typeof body.inPerson === "boolean" ? { inPerson: body.inPerson } : {}),
     },
   });
 
@@ -183,22 +243,19 @@ export async function PATCH(req: Request) {
       where: { tutorProfileId: profile.id, subject: row.subject },
       data: {
         ...(status ? { status } : {}),
-        ...(body.title ? { title: String(body.title).slice(0, 120) } : {}),
+        ...(body.title != null ? { title: String(body.title).slice(0, 120) } : {}),
         ...(nextSubject ? { subject: nextSubject } : {}),
         ...(body.rate != null ? { rate: Number(body.rate) } : {}),
+        ...(body.level != null ? { level: String(body.level).slice(0, 80) } : {}),
+        ...(body.location != null ? { location: String(body.location).slice(0, 120) } : {}),
+        ...(body.description !== undefined
+          ? { description: body.description ? String(body.description).slice(0, 4000) : null }
+          : {}),
+        ...(typeof body.online === "boolean" ? { online: body.online } : {}),
+        ...(typeof body.inPerson === "boolean" ? { inPerson: body.inPerson } : {}),
       },
     })
     .catch(() => undefined);
 
-  return NextResponse.json({
-    id: updated.id,
-    subject: updated.subject,
-    title: updated.title,
-    level: updated.level,
-    location: updated.location,
-    rate: updated.rate,
-    status: updated.status,
-    online: updated.online,
-    inPerson: updated.inPerson,
-  });
+  return NextResponse.json(serializeListing(updated));
 }

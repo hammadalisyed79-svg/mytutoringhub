@@ -280,6 +280,10 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           where: { tutorProfileId: id, status: "ACTIVE" },
           data: { highlightedUntil: until },
         }),
+        prisma.subjectProfile.updateMany({
+          where: { tutorProfileId: id, status: "ACTIVE" },
+          data: { highlightedUntil: until },
+        }),
       ]);
       break;
     }
@@ -298,6 +302,10 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           data: { boostUntil: until },
         }),
         prisma.tutorAd.updateMany({
+          where: { tutorProfileId: id, status: "ACTIVE" },
+          data: { boostUntil: until },
+        }),
+        prisma.subjectProfile.updateMany({
           where: { tutorProfileId: id, status: "ACTIVE" },
           data: { boostUntil: until },
         }),
