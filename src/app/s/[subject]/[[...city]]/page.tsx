@@ -1,3 +1,4 @@
+import { TutorAvatar } from "@/components/TutorAvatar";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatHourly, formatMoney, pkrToCurrency, MARKET_CITIES } from "@/lib/currency";
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: Params) {
     title,
     description,
     path,
-    noIndex: subjectLandingShouldNoIndex(total),
+    noIndex: subjectLandingShouldNoIndex(total, { isCity: Boolean(cityName) }),
   });
 }
 
@@ -148,21 +149,30 @@ export default async function SeoTutorsPage({ params }: Params) {
 
         <SubjectStudyHubLinks subject={label} pastPaperCount={pastPaperCount} />
         <div className="tutor-grid" style={{ marginTop: "1.25rem" }}>
-          {tutors.map((t) => (
-            <Link key={t.id} href={listingPath(t.id)} className="tutor-card">
-              <div className="tutor-avatar" aria-hidden>
-                {(t.user.name || "T").slice(0, 1)}
-              </div>
-              <div>
-                <h3>{t.user.name}</h3>
-                <p className="muted">{t.headline || t.subject || t.subjects}</p>
-                <div className="meta">
-                  <span className="price-tag">{formatHourly(t.hourlyRate, currency)}</span>
-                  <span>{formatTutorPlace(t.location, t.country)}</span>
+          {tutors.map((t) => {
+            const tutorName = t.user.name?.trim() || "Tutor";
+            return (
+              <Link key={t.id} href={listingPath(t.id)} className="tutor-card">
+                <TutorAvatar
+                  className="tutor-avatar"
+                  photoUrl={t.photoUrl}
+                  cropX={t.photoCropX}
+                  cropY={t.photoCropY}
+                  cropZoom={t.photoCropZoom}
+                  initial={tutorName.slice(0, 1).toUpperCase()}
+                />
+                <div>
+                  <h3>{tutorName}</h3>
+                  <p className="muted">{t.headline || t.subject || t.subjects}</p>
+                  <div className="meta">
+                    <span className="price-tag">{formatHourly(t.hourlyRate, currency)}</span>
+                    <span>{formatTutorPlace(t.location, t.country)}</span>
+                    {t.verified && <span className="badge">Verified</span>}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
         {!cityName && (
           <section style={{ marginTop: "2rem" }}>

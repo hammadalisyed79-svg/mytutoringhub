@@ -26,6 +26,7 @@ import {
   subjectListingJsonLd,
   truncateDescription,
 } from "@/lib/seo";
+import { trackProductEvent } from "@/lib/product-events";
 
 export const dynamic = "force-dynamic";
 
@@ -206,6 +207,13 @@ export default async function SubjectListingPage({ params }: Params) {
   });
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
 
+  trackProductEvent("listing_viewed", {
+    listingId: listing.id,
+    subject: listing.subject,
+    tutorProfileId: tutor.id,
+    viewerId: viewerId || null,
+  });
+
   return (
     <>
       <JsonLd
@@ -335,6 +343,7 @@ export default async function SubjectListingPage({ params }: Params) {
                     tutorName={tutorName}
                     emailVerified={Boolean(viewer?.emailVerified)}
                     viewerEmail={viewer?.email}
+                    subjectProfileId={listing.id}
                   />
                 ) : !session ? (
                   <p className="muted">

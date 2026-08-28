@@ -361,9 +361,6 @@ export async function sendTutorBoostNudgeEmail(userId: string) {
     (row) => !row.boostUntil || row.boostUntil <= now,
   );
   if (unboosted.length === 0) return { sent: false, reason: "already_boosted" as const };
-  if (await hasAnyActivePlan(userId, ["AD_BOOST"])) {
-    return { sent: false, reason: "has_boost_plan" as const };
-  }
 
   const claimed = await claimEmailEvent(userId, NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE);
   if (!claimed) return { sent: false, reason: "already_sent" as const };

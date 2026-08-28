@@ -15,7 +15,6 @@ export default function robots(): MetadataRoute.Robots {
         "/settings",
         "/assistant",
         "/study/",
-        "/profile/edit",
         "/register/complete",
         "/receipt/",
         "/forgot-password",

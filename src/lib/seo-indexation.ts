@@ -38,7 +38,12 @@ export function pastPaperFiltersShouldNoIndex(sp: {
   );
 }
 
-/** Subject/city landings with no tutors are thin — keep reachable but noindex. */
-export function subjectLandingShouldNoIndex(tutorCount: number): boolean {
-  return tutorCount <= 0;
+/** Subject hubs with no tutors, or thin city pages (< 3 listings), stay reachable but noindex. */
+export function subjectLandingShouldNoIndex(
+  tutorCount: number,
+  opts?: { isCity?: boolean },
+): boolean {
+  if (tutorCount <= 0) return true;
+  if (opts?.isCity && tutorCount < 3) return true;
+  return false;
 }

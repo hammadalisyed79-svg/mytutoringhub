@@ -18,11 +18,14 @@ export function ContactTutorForm({
   tutorName,
   emailVerified = true,
   viewerEmail,
+  subjectProfileId,
 }: {
   recipientId: string;
   tutorName: string;
   emailVerified?: boolean;
   viewerEmail?: string | null;
+  /** Subject listing id — stored on conversation as relatedAdId for analytics. */
+  subjectProfileId?: string;
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -53,7 +56,11 @@ export function ContactTutorForm({
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ recipientId, body }),
+      body: JSON.stringify({
+        recipientId,
+        body,
+        ...(subjectProfileId ? { relatedAdId: subjectProfileId } : {}),
+      }),
     });
     const data = (await res.json()) as ContactError & { conversationId?: string };
     setLoading(false);

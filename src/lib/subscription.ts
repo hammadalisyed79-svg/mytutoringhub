@@ -7,7 +7,16 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 const ACTIVE = new Set(["ACTIVE", "TRIALING"]);
 
 const STUDENT_MESSAGING_PLANS: SubscriptionPlan[] = ["STUDENT_PASS", "STUDENT_PRO"];
-const TUTOR_PAID_PLANS: SubscriptionPlan[] = [
+
+/** Plans that unlock unlimited enquiry reveals (when tutor messages students first). */
+const TUTOR_UNLIMITED_REVEAL_PLANS: SubscriptionPlan[] = [
+  "TUTOR_BASIC",
+  "EXTRA_PROFILE_ADS",
+  "UNLIMITED_ADS",
+];
+
+/** Any paid tutor SKU (for dashboards / “has a paid add-on” checks — not for reveals/tier). */
+const TUTOR_ANY_PAID_PLANS: SubscriptionPlan[] = [
   "TUTOR_BASIC",
   "VERIFIED_TUTOR",
   "HIGHLIGHTED_AD",
@@ -103,8 +112,14 @@ export async function hasStudentMessagingPass(userId: string) {
   return hasAnyActivePlan(userId, STUDENT_MESSAGING_PLANS);
 }
 
+/** Unlimited enquiry reveals — Tutor Basic or profile-pack plans only (not Boost/Highlight). */
 export async function hasPaidTutorPlan(userId: string) {
-  return hasAnyActivePlan(userId, TUTOR_PAID_PLANS);
+  return hasAnyActivePlan(userId, TUTOR_UNLIMITED_REVEAL_PLANS);
+}
+
+/** True if the tutor has any paid add-on (including Boost/Highlight/Verified). */
+export async function hasAnyPaidTutorSku(userId: string) {
+  return hasAnyActivePlan(userId, TUTOR_ANY_PAID_PLANS);
 }
 
 /** Student Pro unlocks AI; tutors/admins keep access with verified email (checked by caller). */
@@ -139,18 +154,13 @@ export async function canCreateTutorAd(userId: string) {
   return { ok: true as const, profile };
 }
 
-/** Map active tutor subscriptions to search priority: Free=0, Basic=1, Verified/Elite=2. */
+/** Map active tutor subscriptions to search priority: Free=0, Basic=1, Verified/Elite=2.
+ * Boost / Highlight / Extra Profiles do not buy ranking tier — only visibility on that listing
+ * or a higher subject-profile cap.
+ */
 export function computeTutorPlanTier(plans: Set<string>): number {
   if (plans.has("VERIFIED_TUTOR")) return 2;
-  if (
-    plans.has("TUTOR_BASIC") ||
-    plans.has("HIGHLIGHTED_AD") ||
-    plans.has("AD_BOOST") ||
-    plans.has("EXTRA_PROFILE_ADS") ||
-    plans.has("UNLIMITED_ADS")
-  ) {
-    return 1;
-  }
+  if (plans.has("TUTOR_BASIC")) return 1;
   return 0;
 }
 
@@ -266,6 +276,11 @@ export async function syncTutorBadges(userId: string) {
 
   // Boost / Highlight are purchased per subject profile (Phase D). Do not cascade
   // account-level windows onto every ACTIVE listing — checkout applies to one listing.
+
+  const { enforceSubjectProfileCap } = await import("@/lib/subject-profile-entitlements");
+  await enforceSubjectProfileCap(userId).catch((err) =>
+    console.error("[subject-profiles] cap enforce failed", userId, err),
+  );
 }
 
 export function isSubscriptionActive(status: string) {

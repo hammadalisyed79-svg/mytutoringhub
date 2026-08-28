@@ -2,10 +2,12 @@ import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { validateUploadMagicBytes } from "@/lib/upload-magic";
+import { checkRateLimit, rateLimitResponse } from "@/lib/auth-rate-limit";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 2 * 1024 * 1024;
+const UPLOADS_PER_HOUR = 20;
 
 const ALLOWED = new Set([
   "image/jpeg",
@@ -40,6 +42,9 @@ export async function POST(req: Request) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rate = checkRateLimit(`upload:${session.user.id}`, UPLOADS_PER_HOUR, 60 * 60 * 1000);
+  if (!rate.ok) return rateLimitResponse(rate.retryAfterSec);
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json(

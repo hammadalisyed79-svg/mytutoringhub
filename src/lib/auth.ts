@@ -20,11 +20,16 @@ import {
 import { sendLoginConfirmationEmail } from "@/lib/email";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { resolveOAuthDisplayName } from "@/lib/display-name";
+import { checkRateLimit } from "@/lib/auth-rate-limit";
 import type { Role } from "@/lib/types";
 
 /** Thrown when credentials are correct but the email is not verified yet. */
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "email_not_verified";
+}
+
+class TooManyLoginAttemptsError extends CredentialsSignin {
+  code = "too_many_attempts";
 }
 
 declare module "next-auth" {
@@ -48,6 +53,7 @@ declare module "@auth/core/jwt" {
     id: string;
     role: Role;
     onboardingComplete?: boolean;
+    roleCheckedAt?: number;
   }
 }
 
@@ -67,6 +73,12 @@ const credentialsProvider = Credentials({
     if (!parsed.success) return null;
     const email = normalizeEmail(parsed.data.email);
     if (!isValidEmail(email)) return null;
+
+    const rate = checkRateLimit(`credentials:${email}`, 8, 15 * 60 * 1000);
+    if (!rate.ok) {
+      throw new TooManyLoginAttemptsError();
+    }
+
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.passwordHash) return null;
     if (user.suspended) return null;
@@ -190,36 +202,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         token.role = user.role as Role;
         token.onboardingComplete = user.onboardingComplete ?? true;
         if (user.name) token.name = user.name;
+        token.roleCheckedAt = Math.floor(Date.now() / 1000);
         return token;
       }
       const issued = Number(token.iat || 0);
       if (issued && Date.now() / 1000 - issued > SESSION_MAX_AGE_SEC) {
         return null;
       }
-      if (trigger === "update" && token.sub) {
-        // Apply client session patches first, then prefer DB as source of truth for role.
-        if (session && typeof session === "object") {
-          const patch = session as {
-            role?: Role;
-            onboardingComplete?: boolean;
-            name?: string;
-          };
-          if (typeof patch.onboardingComplete === "boolean") {
-            token.onboardingComplete = patch.onboardingComplete;
-          }
-          if (typeof patch.name === "string" && patch.name.trim()) {
-            token.name = patch.name.trim();
-          }
+
+      const nowSec = Math.floor(Date.now() / 1000);
+      const ROLE_REFRESH_SEC = 60;
+      const lastCheck = Number(token.roleCheckedAt || 0);
+      const shouldRefreshRole =
+        Boolean(token.sub) &&
+        (trigger === "update" || nowSec - lastCheck >= ROLE_REFRESH_SEC || !lastCheck);
+
+      if (trigger === "update" && session && typeof session === "object") {
+        const patch = session as {
+          role?: Role;
+          onboardingComplete?: boolean;
+          name?: string;
+        };
+        if (typeof patch.onboardingComplete === "boolean") {
+          token.onboardingComplete = patch.onboardingComplete;
         }
+        if (typeof patch.name === "string" && patch.name.trim()) {
+          token.name = patch.name.trim();
+        }
+      }
+
+      if (shouldRefreshRole && token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub as string },
-          select: { role: true, onboardingComplete: true, name: true },
+          select: { role: true, onboardingComplete: true, name: true, suspended: true },
         });
-        if (dbUser) {
-          token.role = dbUser.role as Role;
-          token.onboardingComplete = dbUser.onboardingComplete;
-          token.name = dbUser.name;
+        if (!dbUser || dbUser.suspended) {
+          return null;
         }
+        token.role = dbUser.role as Role;
+        token.onboardingComplete = dbUser.onboardingComplete;
+        token.name = dbUser.name;
+        token.roleCheckedAt = nowSec;
       }
       return token;
     },

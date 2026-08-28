@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { hashEmailToken } from "@/lib/email-verification";
 import { runPostVerifySequence } from "@/lib/email-sequences";
 import { syncTutorBadges } from "@/lib/subscription";
+import { trackProductEvent } from "@/lib/product-events";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,8 @@ export async function GET(req: Request) {
     data: { emailVerified: new Date() },
   });
   await prisma.emailVerificationToken.deleteMany({ where: { userId: record.userId } });
+
+  trackProductEvent("email_verified", { userId: record.userId });
 
   const verifiedUser = await prisma.user.findUnique({
     where: { id: record.userId },

@@ -157,15 +157,15 @@ export default async function TutorAnalyticsPage() {
 
   let subjectCounts: Record<string, number> = {};
   try {
-    const ads = await prisma.tutorAd.findMany({
+    const listings = await prisma.subjectProfile.findMany({
       where: { tutorProfileId: profile.id },
       select: { id: true, subject: true },
     });
-    const adSubjectMap = Object.fromEntries(ads.map((a) => [a.id, a.subject]));
+    const listingSubjectMap = Object.fromEntries(listings.map((a) => [a.id, a.subject]));
 
     for (const conv of recentConversations) {
-      if (conv.relatedAdId && adSubjectMap[conv.relatedAdId]) {
-        const sub = adSubjectMap[conv.relatedAdId];
+      if (conv.relatedAdId && listingSubjectMap[conv.relatedAdId]) {
+        const sub = listingSubjectMap[conv.relatedAdId];
         subjectCounts[sub] = (subjectCounts[sub] || 0) + 1;
       }
     }
@@ -422,19 +422,13 @@ export default async function TutorAnalyticsPage() {
               {listed
                 ? hasPaidPlan
                   ? "Listed with paid priority. Profile Boost puts you at the top of search periodically."
-                  : "Listed in search for free. Tutor Basic adds priority, unlimited reveals, and ads."
+                  : "Listed in search for free. Tutor Basic adds priority ranking and unlimited enquiry reveals."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
           </section>
         </div>
 
-        {profile && (
-          <ProfileBoostPanel
-            boostUntil={profile.boostUntil}
-            currency={currency}
-            compact
-          />
-        )}
+        {profile && <ProfileBoostPanel currency={currency} compact />}
 
         <section className="panel" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0, fontSize: "1rem", fontWeight: 700 }}>Recent activity</h2>
@@ -498,8 +492,8 @@ export default async function TutorAnalyticsPage() {
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
               Add subjects and a headline (or photo) on your dashboard. Tutor Basic is optional for
-              priority ranking, unlimited reveals, and ads — verification, highlight, and boost stay
-              on Pricing.
+              priority ranking and unlimited enquiry reveals — verification, highlight, and boost stay
+              on Pricing (boost each subject profile from your dashboard).
             </p>
             <Link
               href="/dashboard/tutor"

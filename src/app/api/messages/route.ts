@@ -6,6 +6,7 @@ import { canPerformAction, recordUsage } from "@/lib/plan-limits";
 import { resolveMessageRecipient } from "@/lib/message-recipient";
 import { notifyNewMessage } from "@/lib/message-notify";
 import { tryAwardStudentReferralMilestone } from "@/lib/hub-points";
+import { trackProductEvent } from "@/lib/product-events";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
 
@@ -106,6 +107,11 @@ export async function POST(req: Request) {
   if (isNewContact && role === "STUDENT" && recipient.role === "TUTOR") {
     const check = await canPerformAction(session.user.id, "tutor_contact");
     if (!check.allowed) {
+      trackProductEvent("tutor_contact_limit_hit", {
+        userId: session.user.id,
+        used: check.used,
+        limit: check.limit,
+      });
       return NextResponse.json(
         {
           error: "limit_exceeded",
@@ -171,8 +177,17 @@ export async function POST(req: Request) {
     const senderRole = session.user.role as Role;
     if (senderRole === "STUDENT" && recipient.role === "TUTOR") {
       await recordUsage(session.user.id, "tutor_contact");
+      trackProductEvent("tutor_contact_started", {
+        userId: session.user.id,
+        recipientId: recipientUserId,
+        relatedAdId: data.relatedAdId,
+      });
     } else if (senderRole === "TUTOR" && recipient.role === "STUDENT") {
       await recordUsage(session.user.id, "enquiry_reveal");
+      trackProductEvent("enquiry_reveal", {
+        userId: session.user.id,
+        recipientId: recipientUserId,
+      });
     }
   }
 

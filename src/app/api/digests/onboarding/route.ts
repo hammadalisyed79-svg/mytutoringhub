@@ -18,6 +18,8 @@ export async function GET(req: Request) {
   }
 
   await expireStaleSubscriptions();
+  const { enforceAllSubjectProfileCaps } = await import("@/lib/subject-profile-entitlements");
+  const caps = await enforceAllSubjectProfileCaps();
   const result = await runOnboardingDigest();
-  return NextResponse.json(result);
+  return NextResponse.json({ ...result, subjectProfileCaps: caps });
 }

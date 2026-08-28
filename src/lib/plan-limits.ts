@@ -69,20 +69,16 @@ export async function applyReferralSignup(newUserId: string, referrerId: string)
   ]);
 }
 
-/** Returns monthly usage count for a user and event type. */
+/** Returns monthly usage count for a user and event type. Throws if the store is unavailable. */
 export async function getMonthlyUsage(
   userId: string,
   type: "enquiry_reveal" | "tutor_contact" | "paper_download",
 ): Promise<number> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const count = await (prisma as any).usageEvent.count({
-      where: { userId, type, month: currentMonth() },
-    });
-    return count as number;
-  } catch {
-    return 0;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const count = await (prisma as any).usageEvent.count({
+    where: { userId, type, month: currentMonth() },
+  });
+  return count as number;
 }
 
 /** Check if a user can perform an action given their plan limits. */
@@ -91,7 +87,13 @@ export async function canPerformAction(
   action: "enquiry_reveal" | "tutor_contact",
 ): Promise<{ allowed: boolean; limit: number; used: number; plan: string }> {
   const plan = await getUserPlan(userId);
-  const used = await getMonthlyUsage(userId, action);
+  let used: number;
+  try {
+    used = await getMonthlyUsage(userId, action);
+  } catch (err) {
+    console.error("[plan-limits] usage read failed — denying gated action", action, userId, err);
+    return { allowed: false, limit: 0, used: 0, plan };
+  }
 
   if (action === "enquiry_reveal") {
     const isPaid = await hasPaidTutorPlan(userId);
@@ -106,10 +108,14 @@ export async function canPerformAction(
 
   if (action === "tutor_contact") {
     const isPaid = await hasStudentMessagingPass(userId);
-    const limit = isPaid ? Infinity : STUDENT_FREE_CONTACT_LIMIT;
+    if (isPaid) {
+      return { allowed: true, limit: -1, used, plan };
+    }
+    const bonus = await getReferralContactBonus(userId);
+    const limit = STUDENT_FREE_CONTACT_LIMIT + bonus;
     return {
-      allowed: isPaid || used < limit,
-      limit: isPaid ? -1 : limit,
+      allowed: used < limit,
+      limit,
       used,
       plan,
     };
@@ -142,19 +148,15 @@ export async function canDownloadPastPaper(userId: string): Promise<{
   };
 }
 
-/** Record a usage event. Silently no-ops if the UsageEvent table doesn't exist yet. */
+/** Record a usage event. Throws if the UsageEvent store is unavailable (fail closed for callers). */
 export async function recordUsage(
   userId: string,
   type: "enquiry_reveal" | "tutor_contact" | "paper_download",
 ): Promise<void> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (prisma as any).usageEvent.create({
-      data: { userId, type, month: currentMonth() },
-    });
-  } catch {
-    // Table may not be migrated yet — ignore
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (prisma as any).usageEvent.create({
+    data: { userId, type, month: currentMonth() },
+  });
 }
 
 export type PlanDashboardSummary = {

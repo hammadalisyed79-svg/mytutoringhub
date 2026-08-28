@@ -10,7 +10,6 @@ export async function ProfileBoostPanel({
   currency,
   compact,
 }: {
-  boostUntil?: Date | null;
   currency: CurrencyCode;
   compact?: boolean;
 }) {

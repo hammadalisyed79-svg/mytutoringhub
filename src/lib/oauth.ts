@@ -286,10 +286,16 @@ export async function becomeTutor(userId: string) {
     return { alreadyTutor: true as const };
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { role: "TUTOR", onboardingComplete: true },
-  });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { role: "TUTOR", onboardingComplete: true },
+    }),
+    prisma.studentAd.updateMany({
+      where: { userId, status: "OPEN" },
+      data: { status: "CLOSED" },
+    }),
+  ]);
   await createTutorProfile(userId);
   return { alreadyTutor: false as const };
 }

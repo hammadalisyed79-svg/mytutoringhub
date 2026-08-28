@@ -9,6 +9,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { normalizeDisplayName } from "@/lib/display-name";
 import { enforceAuthRateLimit } from "@/lib/auth-rate-limit";
+import { trackProductEvent } from "@/lib/product-events";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -85,6 +86,8 @@ export async function POST(req: Request) {
         // Referral is best-effort — signup still succeeds
       }
     }
+
+    trackProductEvent("signup_complete", { userId: user.id, role: user.role });
 
     return NextResponse.json({ id: user.id, email: user.email, role: user.role });
   } catch (e) {

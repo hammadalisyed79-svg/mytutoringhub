@@ -80,7 +80,8 @@ export default async function BecomeATutorPage({
             <h3>Go live automatically</h3>
             <p className="muted">
               Eligible profiles appear in search with no manual approval queue. Optional: Tutor Basic
-              for priority ranking and ads (complimentary until 30 September 2026).
+              for priority ranking and unlimited enquiry reveals (complimentary until 30 September
+              2026). Subject profiles are unlimited free during the same launch.
             </p>
           </div>
         </div>

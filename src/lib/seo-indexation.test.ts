@@ -19,5 +19,8 @@ assert.equal(pastPaperFiltersShouldNoIndex({ documentType: "qp" }), true);
 
 assert.equal(subjectLandingShouldNoIndex(0), true);
 assert.equal(subjectLandingShouldNoIndex(3), false);
+assert.equal(subjectLandingShouldNoIndex(2, { isCity: true }), true);
+assert.equal(subjectLandingShouldNoIndex(3, { isCity: true }), false);
+assert.equal(subjectLandingShouldNoIndex(2, { isCity: false }), false);
 
 console.log("seo-indexation.test.ts: ok");

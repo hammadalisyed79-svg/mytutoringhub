@@ -21,6 +21,7 @@ import {
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 import { computeMaxRedeemablePoints, getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { encodeSubjectProfileNote } from "@/lib/listing-checkout";
+import { trackProductEvent } from "@/lib/product-events";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -195,6 +196,15 @@ export async function POST(req: Request) {
         pointsRedeemedPkr,
         notes: subjectProfileNote,
       },
+    });
+
+    trackProductEvent("checkout_started", {
+      userId: session.user.id,
+      plan,
+      billing,
+      currency,
+      amount,
+      subjectProfileId: body.subjectProfileId,
     });
 
     return NextResponse.json({

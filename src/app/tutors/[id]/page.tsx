@@ -18,10 +18,11 @@ import {
 import { ReportButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
-import { listingPath, similarTutors, slugify } from "@/lib/search-tutors";
+import { listingPath } from "@/lib/subject-profile";
+import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
-import { canViewTutorProfilePublicly } from "@/lib/tutor-public-eligibility";
+import { canViewTutorProfilePublicly, tutorPublicVisibilityInput } from "@/lib/tutor-public-eligibility";
 import { studentFreeContactsShort } from "@/lib/marketing-copy";
 import {
   formatAvailabilityLines,
@@ -38,6 +39,7 @@ import {
   truncateDescription,
   tutorProfileJsonLd,
 } from "@/lib/seo";
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 
 export const dynamic = "force-dynamic";
 
@@ -54,8 +56,6 @@ function stars(rating: number) {
   const n = Math.max(0, Math.min(5, Math.round(rating)));
   return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(n);
 }
-
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 
 function formatReviewDate(value: Date) {
   return value.toLocaleDateString(undefined, { month: "short", year: "numeric", day: "numeric" });
@@ -138,48 +138,20 @@ function ProfileCtaButtons({
   );
 }
 
-function tutorPublicVisibilityInput(
-  tutor: {
-    active: boolean;
-    forceActive: boolean;
-    photoUrl: string | null;
-    headline: string | null;
-    bio: string;
-    country: string | null;
-    location: string;
-    subjects: string;
-    hourlyRate: number;
-    online: boolean;
-    inPerson: boolean;
-    qualifications: string | null;
-    user: { name: string | null; emailVerified: Date | null; suspended: boolean };
-  },
-) {
-  return {
-    active: tutor.active,
-    forceActive: tutor.forceActive,
-    emailVerified: tutor.user.emailVerified,
-    name: tutor.user.name,
-    photoUrl: tutor.photoUrl,
-    headline: tutor.headline,
-    bio: tutor.bio,
-    country: tutor.country,
-    location: tutor.location,
-    subjects: tutor.subjects,
-    hourlyRate: tutor.hourlyRate,
-    online: tutor.online,
-    inPerson: tutor.inPerson,
-    qualifications: tutor.qualifications,
-    suspended: tutor.user.suspended,
-  };
-}
-
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
   const session = await auth();
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id },
-    include: { user: { select: { id: true, name: true, emailVerified: true, suspended: true } } },
+    include: {
+      user: { select: { id: true, name: true, emailVerified: true, suspended: true } },
+      subjectProfiles: {
+        where: { status: "ACTIVE" },
+        select: { id: true },
+        orderBy: { updatedAt: "desc" },
+        take: 2,
+      },
+    },
   });
   if (!tutor) {
     return pageMetadata({
@@ -217,10 +189,14 @@ export async function generateMetadata({ params }: Params) {
   const description =
     tutor.headline ||
     `${tutor.user.name} teaches ${tutor.subjects} in ${place}. Read reviews, compare rates, and message on My Tutoring Hub.`;
+  // Single-listing tutors: canonicalize to /listings so person hub does not compete for the subject query.
+  const soleListingId =
+    tutor.subjectProfiles.length === 1 ? tutor.subjectProfiles[0]?.id : null;
   return pageMetadata({
     title: `${tutor.user.name} – ${primarySubject} Tutor${place ? ` in ${place}` : ""}`,
     description: truncateDescription(description),
     path: `/tutors/${id}`,
+    canonicalPath: soleListingId ? listingPath(soleListingId) : undefined,
     noIndex: false,
     ogType: "profile",
   });
@@ -240,6 +216,7 @@ export default async function TutorProfilePage({ params }: Params) {
         include: { student: { select: { name: true } } },
       },
       ads: { where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" } },
+      subjectProfiles: { where: { status: "ACTIVE" }, orderBy: { updatedAt: "desc" } },
     },
   });
   if (!tutor) notFound();
@@ -650,7 +627,33 @@ export default async function TutorProfilePage({ params }: Params) {
               )}
             </section>
 
-            {tutor.ads.length > 0 && (
+            {tutor.subjectProfiles.length > 0 && (
+              <section className="profile-content-card">
+                <h2>Subject listings</h2>
+                <div className="profile-ads">
+                  {tutor.subjectProfiles.map((listing) => (
+                    <article key={listing.id} className="profile-ad">
+                      <h3>
+                        <Link href={listingPath(listing.id)}>{listing.title}</Link>
+                      </h3>
+                      <p className="muted">
+                        {listing.subject} · {listing.level} · {formatHourly(listing.rate, currency)}
+                      </p>
+                      {listing.description && <p>{listing.description}</p>}
+                      <p>
+                        <Link href={listingPath(listing.id)}>View listing</Link>
+                        {" · "}
+                        <Link href={`/s/${slugify(listing.subject)}`} className="muted">
+                          More {listing.subject} tutors
+                        </Link>
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {tutor.subjectProfiles.length === 0 && tutor.ads.length > 0 && (
               <section className="profile-content-card">
                 <h2>Subject listings</h2>
                 <div className="profile-ads">

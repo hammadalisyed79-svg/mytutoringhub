@@ -246,6 +246,22 @@ export async function PUT(req: Request) {
           status: "ACTIVE",
         },
       });
+      await prisma.tutorAd
+        .create({
+          data: {
+            tutorProfileId: profile.id,
+            subject,
+            title: profile.headline || defaultSubjectProfileTitle(subject),
+            level: profile.levels?.split(",")[0]?.trim() || "All levels",
+            location: profile.location,
+            online: profile.online,
+            inPerson: profile.inPerson,
+            rate: profile.hourlyRate,
+            description: profile.bio.slice(0, 500),
+            status: "ACTIVE",
+          },
+        })
+        .catch(() => undefined);
     }
 
     await syncTutorBadges(session.user.id);

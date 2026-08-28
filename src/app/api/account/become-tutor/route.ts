@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { becomeTutor } from "@/lib/oauth";
+import { trackProductEvent } from "@/lib/product-events";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,9 @@ export async function POST() {
 
   try {
     const result = await becomeTutor(session.user.id);
+    if (!result.alreadyTutor) {
+      trackProductEvent("become_tutor", { userId: session.user.id });
+    }
     return NextResponse.json({
       ok: true,
       alreadyTutor: result.alreadyTutor,

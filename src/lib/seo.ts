@@ -47,6 +47,8 @@ type PageMetaInput = {
   title: string;
   description?: string;
   path: string;
+  /** When set, overrides `path` for `<link rel="canonical">` / OG url. */
+  canonicalPath?: string;
   noIndex?: boolean;
   ogTitle?: string;
   ogDescription?: string;
@@ -56,7 +58,9 @@ type PageMetaInput = {
 /** Standard metadata for indexable public pages. */
 export function pageMetadata(opts: PageMetaInput): Metadata {
   const description = truncateDescription(opts.description || DEFAULT_DESCRIPTION);
-  const canonical = opts.path.startsWith("/") ? opts.path : `/${opts.path}`;
+  const selfPath = opts.path.startsWith("/") ? opts.path : `/${opts.path}`;
+  const canonicalRaw = opts.canonicalPath || selfPath;
+  const canonical = canonicalRaw.startsWith("/") ? canonicalRaw : `/${canonicalRaw}`;
   const url = absoluteUrl(canonical);
   const ogTitle = opts.ogTitle || opts.title;
   const ogDescription = opts.ogDescription || description;

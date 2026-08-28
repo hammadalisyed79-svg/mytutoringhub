@@ -41,10 +41,28 @@ export async function GET(req: Request) {
     where: {
       role: "TUTOR",
       suspended: false,
-      subscriptions: { some: { plan: "TUTOR_BASIC", status: { in: ["ACTIVE", "TRIALING"] } } },
-      tutorProfile: { isNot: null },
+      emailVerified: { not: null },
+      tutorProfile: {
+        is: {
+          active: true,
+          OR: [
+            { subjectProfiles: { some: { status: "ACTIVE" } } },
+            { subjects: { not: "" } },
+          ],
+        },
+      },
     },
-    include: { tutorProfile: true },
+    include: {
+      tutorProfile: {
+        include: {
+          subjectProfiles: {
+            where: { status: "ACTIVE" },
+            select: { subject: true },
+          },
+        },
+      },
+    },
+    take: 200,
   });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
@@ -52,13 +70,19 @@ export async function GET(req: Request) {
   let skipped = 0;
 
   for (const tutor of tutors) {
-    const subjects = (tutor.tutorProfile?.subjects || "")
+    const fromListings = (tutor.tutorProfile?.subjectProfiles || []).map((p) =>
+      p.subject.toLowerCase().trim(),
+    );
+    const fromCsv = (tutor.tutorProfile?.subjects || "")
       .toLowerCase()
       .split(/[,;/|]/)
       .map((s) => s.trim())
       .filter(Boolean);
+    const subjects = [...new Set([...fromListings, ...fromCsv].filter(Boolean))];
     const matches = ads.filter((ad) =>
-      subjects.some((s) => ad.subject.toLowerCase().includes(s) || s.includes(ad.subject.toLowerCase())),
+      subjects.some(
+        (s) => ad.subject.toLowerCase().includes(s) || s.includes(ad.subject.toLowerCase()),
+      ),
     );
     if (matches.length === 0) continue;
 

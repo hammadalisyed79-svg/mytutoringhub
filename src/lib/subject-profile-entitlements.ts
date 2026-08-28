@@ -9,17 +9,12 @@ export const SUBJECT_PROFILE_PROMO_UNTIL = "2026-09-30";
 export const FREE_SUBJECT_PROFILES_AFTER_PROMO = 1;
 
 /**
- * With Extra Profile Ads (or Tutor Basic / Verified / Highlight), tutors may run
- * this many active subject profiles after the promo.
+ * With Extra Profile Ads or Tutor Basic, tutors may run this many active subject
+ * profiles after the promo. Verified / Boost / Highlight do not unlock extra slots.
  */
 export const PAID_SUBJECT_PROFILE_CAP = 3;
 
-const PROFILE_PACK_PLANS: SubscriptionPlan[] = [
-  "TUTOR_BASIC",
-  "VERIFIED_TUTOR",
-  "HIGHLIGHTED_AD",
-  "EXTRA_PROFILE_ADS",
-];
+const PROFILE_PACK_PLANS: SubscriptionPlan[] = ["TUTOR_BASIC", "EXTRA_PROFILE_ADS"];
 
 async function hasPlan(userId: string, plan: SubscriptionPlan) {
   const now = new Date();
@@ -103,7 +98,7 @@ export type SubjectProfileGate =
 
 /**
  * Gate for creating/reactivating a SubjectProfile.
- * Promo: unlimited free. After promo: 1 free; Extra/Basic/Verified/Highlight → up to 3;
+ * Promo: unlimited free. After promo: 1 free; Extra Profile Ads or Tutor Basic → up to 3;
  * Unlimited Profiles → unlimited.
  */
 export async function canCreateSubjectProfile(
@@ -160,4 +155,72 @@ export async function canCreateSubjectProfile(
   }
 
   return { ok: true, profile: { id: profile.id }, activeCount, cap };
+}
+
+/**
+ * After the promo, pause oldest ACTIVE subject profiles that exceed the tutor's cap.
+ * Keeps the most recently updated listings live. No-op during promo or when under cap.
+ */
+export async function enforceSubjectProfileCap(
+  userId: string,
+  now = new Date(),
+): Promise<{ paused: number; kept: number; cap: number }> {
+  const profile = await prisma.tutorProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!profile) return { paused: 0, kept: 0, cap: 0 };
+
+  const cap = await getSubjectProfileActiveCap(userId, now);
+  if (!Number.isFinite(cap)) return { paused: 0, kept: 0, cap };
+
+  const active = await prisma.subjectProfile.findMany({
+    where: { tutorProfileId: profile.id, status: "ACTIVE" },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    select: { id: true, subject: true },
+  });
+
+  if (active.length <= cap) {
+    return { paused: 0, kept: active.length, cap };
+  }
+
+  const keep = active.slice(0, cap);
+  const pause = active.slice(cap);
+  await prisma.subjectProfile.updateMany({
+    where: { id: { in: pause.map((row) => row.id) } },
+    data: { status: "PAUSED" },
+  });
+  for (const row of pause) {
+    await prisma.tutorAd
+      .updateMany({
+        where: { tutorProfileId: profile.id, subject: row.subject, status: "ACTIVE" },
+        data: { status: "PAUSED" },
+      })
+      .catch(() => undefined);
+  }
+
+  return { paused: pause.length, kept: keep.length, cap };
+}
+
+/** Run cap enforcement for all tutors over their limit (post-promo cron). */
+export async function enforceAllSubjectProfileCaps(now = new Date()): Promise<{
+  tutorsChecked: number;
+  profilesPaused: number;
+}> {
+  if (isSubjectProfilePromoActive(now)) {
+    return { tutorsChecked: 0, profilesPaused: 0 };
+  }
+
+  const tutors = await prisma.tutorProfile.findMany({
+    where: { subjectProfiles: { some: { status: "ACTIVE" } } },
+    select: { userId: true },
+    take: 500,
+  });
+
+  let profilesPaused = 0;
+  for (const tutor of tutors) {
+    const result = await enforceSubjectProfileCap(tutor.userId, now);
+    profilesPaused += result.paused;
+  }
+  return { tutorsChecked: tutors.length, profilesPaused };
 }

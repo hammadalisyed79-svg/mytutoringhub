@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { PlanBanner } from "@/components/PlanBanner";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { getPlanDashboardSummary } from "@/lib/plan-limits";
@@ -19,10 +18,6 @@ export default async function TutorPlanPage() {
 
   const summary = await getPlanDashboardSummary(session.user.id, session.user.role as Role);
   const currency = await getVisitorCurrency();
-  const tutorProfile = await prisma.tutorProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { boostUntil: true },
-  });
 
   return (
     <div className="page">
@@ -38,11 +33,9 @@ export default async function TutorPlanPage() {
           usageLabel={summary.usageLabel}
           renewsOn={summary.renewsOn}
         />
-        {tutorProfile && (
-          <div style={{ marginTop: "1.25rem" }}>
-            <ProfileBoostPanel boostUntil={tutorProfile.boostUntil} currency={currency} compact />
-          </div>
-        )}
+        <div style={{ marginTop: "1.25rem" }}>
+          <ProfileBoostPanel currency={currency} compact />
+        </div>
         <p style={{ marginTop: "1.25rem" }}>
           <Link href="/pricing" className="btn">
             {summary.planTier === "free" ? "Upgrade plan" : "Tutor add-ons"}

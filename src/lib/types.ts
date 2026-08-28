@@ -20,8 +20,5 @@ export type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type ReviewStatus = "PENDING" | "PUBLISHED" | "HIDDEN";
 export type ReportStatus = "OPEN" | "RESOLVED" | "DISMISSED";
 
-/**
- * Active subject profiles allowed with Tutor Basic / Extra Profile Ads / Verified / Highlight
- * (not Unlimited Profiles). Free tier after promo is 1 — see subject-profile-entitlements.
- */
+/** @deprecated Use PAID_SUBJECT_PROFILE_CAP from subject-profile-entitlements. */
 export const FREE_TUTOR_AD_CAP = 3;
