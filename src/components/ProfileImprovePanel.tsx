@@ -43,7 +43,7 @@ export function ProfileImprovePanel({
           {verified ? (
             <span className="badge badge-verified">✓ Verified</span>
           ) : (
-            <Link href="/dashboard/tutor?tab=profile#get-verified" className="btn btn-secondary btn-sm">
+            <Link href="/dashboard/tutor?tab=profile&verify=1" className="btn btn-secondary btn-sm">
               Upload ID to verify
             </Link>
           )}

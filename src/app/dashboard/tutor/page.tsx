@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
-import { VerificationForm } from "@/components/VerificationForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { TutorPlanPanel } from "@/components/TutorPlanPanel";
@@ -228,9 +227,9 @@ export default async function TutorDashboardPage({
 
               {!user.tutorProfile.verified ? (
                 <p className="field-hint">
-                  Optional: upload your government ID in{" "}
-                  <a href="#get-verified">Get verified</a> below for the verified badge. Verification
-                  is not required to go live.
+                  Optional: use the <strong>Get verified</strong> step in the wizard (or{" "}
+                  <a href="/dashboard/tutor?tab=profile&amp;verify=1">jump to verification</a>) for
+                  the verified badge. Verification is not required to go live.
                 </p>
               ) : null}
 
@@ -243,38 +242,25 @@ export default async function TutorDashboardPage({
                 listingActive={user.tutorProfile.active}
                 verified={user.tutorProfile.verified}
                 trustBadge={badgeProgress?.current || "NEW"}
-                wizard={!user.tutorProfile.active}
+                startStep={
+                  sp.verify === "1" && !user.tutorProfile.verified
+                    ? "verify"
+                    : user.tutorProfile.active
+                      ? "finish"
+                      : undefined
+                }
               />
             </section>
           ) : null}
 
             {user.tutorProfile ? (
-              <>
-                <section className="panel">
-                  <h2>Optional subject ads</h2>
-                  <p className="muted">
-                    Extra subject-specific ads on top of your profile. Not required to get found.
-                  </p>
-                  <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
-                </section>
-
-                {user.tutorProfile.active || user.tutorProfile.verified ? (
-                  <section className="panel" id="get-verified">
-                    <h2>Get verified</h2>
-                    <p className="muted">
-                      Upload a government photo ID (passport, national ID / CNIC, or driving licence).
-                      Your profile shows <strong>Unverified</strong> until an admin approves your
-                      documents. Documents stay private — admins only.
-                    </p>
-                    <VerificationForm />
-                  </section>
-                ) : (
-                  <p className="muted panel">
-                    Verification is included in the profile wizard (optional step). After you go live,
-                    you can also manage documents here anytime.
-                  </p>
-                )}
-              </>
+              <section className="panel">
+                <h2>Optional subject ads</h2>
+                <p className="muted">
+                  Extra subject-specific ads on top of your profile. Not required to get found.
+                </p>
+                <TutorAdsManager subjects={catalogSubjects} extraLevels={extraLevels} />
+              </section>
             ) : null}
           </div>
         )}

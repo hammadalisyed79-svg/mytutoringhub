@@ -44,6 +44,8 @@ const SLOTS: {
   },
 ];
 
+const REVIEW_STEP = SLOTS.length;
+
 function emptySides(): Sides {
   return { front: "", back: "" };
 }
@@ -54,7 +56,7 @@ export function VerificationForm({
 }: {
   /** Render without nested <form> so it can sit inside the profile wizard. */
   embedded?: boolean;
-  /** Shorter copy when the wizard chrome already explains the step. */
+  /** Shorter copy when the parent wizard chrome already explains the step. */
   compact?: boolean;
 }) {
   const router = useRouter();
@@ -69,6 +71,7 @@ export function VerificationForm({
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
+  const [docStep, setDocStep] = useState(0);
 
   const accepted = useMemo(() => approvedSlots(items), [items]);
   const pending = items.find((item) => item.status === "PENDING");
@@ -113,7 +116,7 @@ export function VerificationForm({
         return;
       }
       setFiles((prev) => ({ ...prev, [slot]: { ...prev[slot], [side]: data.url } }));
-      setMsg("File attached. Submit when the required sides are ready.");
+      setMsg("File attached.");
     } catch {
       setError("Upload failed");
     } finally {
@@ -173,117 +176,201 @@ export function VerificationForm({
     });
   }
 
-  const allLocked = accepted.locked.has("id") && accepted.locked.has("qualification") && accepted.locked.has("teaching");
+  const allLocked =
+    accepted.locked.has("id") && accepted.locked.has("qualification") && accepted.locked.has("teaching");
   const canSubmitMore = !allLocked;
+  const totalDocSteps = REVIEW_STEP + 1;
+  const onReview = docStep >= REVIEW_STEP;
+  const activeSlot = !onReview ? SLOTS[docStep] : null;
+  const progressPct = Math.round(((docStep + 1) / totalDocSteps) * 100);
 
-  const fields = canSubmitMore ? (
-    <>
-      {SLOTS.map((slot) => {
-        const locked = accepted.locked.has(slot.key);
-        const acceptedFiles = accepted.files[slot.key];
-        const current = files[slot.key];
-        const showBack = slot.key === "id" ? needsIdBack : true;
-        const backRequired = slot.key === "id" && needsIdBack;
-        return (
-          <div key={slot.key} className={`verify-doc ${locked ? "is-locked" : ""}`}>
-            <div className="verify-doc-head">
-              <h3>
-                {slot.title}{" "}
-                {slot.required && !idLocked && slot.key === "id" ? (
-                  <abbr className="req" title="Required">
-                    *
-                  </abbr>
-                ) : locked ? (
-                  <span className="badge">Accepted</span>
-                ) : (
-                  <span className="muted" style={{ fontSize: "0.8rem", fontWeight: 500 }}>
-                    {slot.required ? "Required" : "Recommended"}
-                  </span>
-                )}
-              </h3>
-              <p className="field-hint">{slot.help}</p>
-            </div>
+  function validateCurrentDoc(): string | null {
+    if (!activeSlot || activeSlot.key !== "id" || idLocked) return null;
+    if (!files.id.front) return "Upload your ID photo page / front to continue, or skip verification from the profile wizard.";
+    if (needsIdBack && !files.id.back) return "This ID type needs the back side as well.";
+    return null;
+  }
 
-            {locked ? (
-              <>
-                <p className="muted">This document was accepted by an admin and cannot be edited.</p>
-                <ul className="verify-files">
-                  {acceptedFiles?.front && (
-                    <li>
-                      <a href={acceptedFiles.front} target="_blank" rel="noreferrer">
-                        {formatVerifySlotLabel(slot.key, "front", acceptedFiles.idType)}
-                      </a>
-                    </li>
-                  )}
-                  {acceptedFiles?.back && (
-                    <li>
-                      <a href={acceptedFiles.back} target="_blank" rel="noreferrer">
-                        {formatVerifySlotLabel(slot.key, "back", acceptedFiles.idType)}
-                      </a>
-                    </li>
-                  )}
-                </ul>
-              </>
+  function goNextDoc() {
+    setError("");
+    setMsg("");
+    const problem = validateCurrentDoc();
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setDocStep((s) => Math.min(s + 1, REVIEW_STEP));
+  }
+
+  function skipDoc() {
+    if (!activeSlot || activeSlot.required) return;
+    setError("");
+    setMsg("");
+    setDocStep((s) => Math.min(s + 1, REVIEW_STEP));
+  }
+
+  function renderSlot(slot: (typeof SLOTS)[number]) {
+    const locked = accepted.locked.has(slot.key);
+    const acceptedFiles = accepted.files[slot.key];
+    const current = files[slot.key];
+    const showBack = slot.key === "id" ? needsIdBack : true;
+    const backRequired = slot.key === "id" && needsIdBack;
+    return (
+      <div className={`verify-doc ${locked ? "is-locked" : ""}`}>
+        <div className="verify-doc-head">
+          <h3>
+            {slot.title}{" "}
+            {slot.required && !idLocked && slot.key === "id" ? (
+              <abbr className="req" title="Required">
+                *
+              </abbr>
+            ) : locked ? (
+              <span className="badge">Accepted</span>
             ) : (
-              <>
-                {slot.key === "id" && (
-                  <label>
-                    ID type
-                    <select value={idType} onChange={(e) => setIdType(e.target.value as IdType)}>
-                      {ID_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                <div className="verify-sides">
-                  <SideUpload
-                    label={slot.key === "id" && idType === "Passport" ? "Photo page" : "Front"}
-                    required={slot.key === "id" || Boolean(current.back)}
-                    url={current.front}
-                    busy={busyKey === `${slot.key}-front`}
-                    onChange={(e) => onFile(slot.key, "front", e)}
-                  />
-                  {showBack && (
-                    <SideUpload
-                      label="Back"
-                      required={backRequired}
-                      url={current.back}
-                      busy={busyKey === `${slot.key}-back`}
-                      optionalHint={slot.key !== "id" ? "Required if this document has two sides" : undefined}
-                      onChange={(e) => onFile(slot.key, "back", e)}
-                    />
-                  )}
-                </div>
-              </>
+              <span className="muted" style={{ fontSize: "0.8rem", fontWeight: 500 }}>
+                {slot.required ? "Required for badge" : "Recommended"}
+              </span>
             )}
-          </div>
-        );
-      })}
+          </h3>
+          <p className="field-hint">{slot.help}</p>
+        </div>
 
-      <label>
-        Notes for reviewers
-        <textarea
-          name="notes"
-          rows={2}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Anything that helps match the ID to your account name…"
-        />
-      </label>
+        {locked ? (
+          <>
+            <p className="muted">This document was accepted by an admin and cannot be edited.</p>
+            <ul className="verify-files">
+              {acceptedFiles?.front && (
+                <li>
+                  <a href={acceptedFiles.front} target="_blank" rel="noreferrer">
+                    {formatVerifySlotLabel(slot.key, "front", acceptedFiles.idType)}
+                  </a>
+                </li>
+              )}
+              {acceptedFiles?.back && (
+                <li>
+                  <a href={acceptedFiles.back} target="_blank" rel="noreferrer">
+                    {formatVerifySlotLabel(slot.key, "back", acceptedFiles.idType)}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </>
+        ) : (
+          <>
+            {slot.key === "id" && (
+              <label>
+                ID type
+                <select value={idType} onChange={(e) => setIdType(e.target.value as IdType)}>
+                  {ID_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="verify-sides">
+              <SideUpload
+                label={slot.key === "id" && idType === "Passport" ? "Photo page" : "Front"}
+                required={slot.key === "id" || Boolean(current.back)}
+                url={current.front}
+                busy={busyKey === `${slot.key}-front`}
+                onChange={(e) => onFile(slot.key, "front", e)}
+              />
+              {showBack && (
+                <SideUpload
+                  label="Back"
+                  required={backRequired}
+                  url={current.back}
+                  busy={busyKey === `${slot.key}-back`}
+                  optionalHint={slot.key !== "id" ? "Required if this document has two sides" : undefined}
+                  onChange={(e) => onFile(slot.key, "back", e)}
+                />
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  const body = canSubmitMore ? (
+    <div className="verify-wizard">
+      <div className="guided-search-progress" aria-hidden="true">
+        <div className="guided-search-progress-bar" style={{ width: `${progressPct}%` }} />
+      </div>
+      <p className="guided-search-step muted">
+        Document {Math.min(docStep + 1, totalDocSteps)} of {totalDocSteps}
+        {activeSlot ? (activeSlot.required ? " · Required for badge" : " · Optional") : " · Submit"}
+      </p>
+
+      {!onReview && activeSlot ? renderSlot(activeSlot) : null}
+
+      {onReview ? (
+        <>
+          <p className="muted">
+            Review and submit. You can go back to change uploads. Documents stay private — admins only.
+          </p>
+          <ul className="check-list verify-review-list">
+            {SLOTS.map((slot) => {
+              const current = files[slot.key];
+              const locked = accepted.locked.has(slot.key);
+              const attached = locked || Boolean(current.front);
+              return (
+                <li key={slot.key}>
+                  {attached ? "✓" : "○"} {slot.title}
+                  {!attached && !slot.required ? " (skipped)" : ""}
+                </li>
+              );
+            })}
+          </ul>
+          <label>
+            Notes for reviewers
+            <textarea
+              name="notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Anything that helps match the ID to your account name…"
+            />
+          </label>
+        </>
+      ) : null}
+
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
-      <button
-        className="btn"
-        type={embedded ? "button" : "submit"}
-        disabled={busyKey !== null}
-        onClick={embedded ? () => void submit() : undefined}
-      >
-        {pending ? "Update pending request" : "Submit for review"}
-      </button>
-    </>
+
+      <div className="guided-search-actions profile-wizard-actions">
+        {docStep > 0 ? (
+          <button type="button" className="btn btn-secondary" onClick={() => setDocStep((s) => s - 1)}>
+            Back
+          </button>
+        ) : (
+          <span />
+        )}
+        <div className="profile-wizard-actions-right">
+          {activeSlot && !activeSlot.required ? (
+            <button type="button" className="btn btn-secondary" onClick={skipDoc}>
+              Skip for now
+            </button>
+          ) : null}
+          {onReview ? (
+            <button
+              className="btn"
+              type={embedded ? "button" : "submit"}
+              disabled={busyKey !== null}
+              onClick={embedded ? () => void submit() : undefined}
+            >
+              {pending ? "Update pending request" : "Submit for review"}
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={goNextDoc}>
+              Next
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   ) : null;
 
   return (
@@ -291,37 +378,31 @@ export function VerificationForm({
       {!compact && (
         <div className="verify-summary">
           <p className="muted" style={{ marginTop: 0 }}>
-            Documents are reviewed by an admin and are <strong>not</strong> shown on your public
-            profile. Clear photos or PDFs, max 2MB each. Accepted files cannot be changed.
+            Upload one document at a time. Clear photos or PDFs, max 2MB each. Accepted files cannot
+            be changed.
           </p>
-          <ul className="check-list">
-            <li>
-              <strong>Required:</strong> government photo ID — passport photo page, or national ID /
-              driving licence <em>front and back</em>
-            </li>
-            <li>
-              <strong>Recommended:</strong> highest qualification certificate
-            </li>
-            <li>
-              <strong>Optional:</strong> teaching or subject certificate
-            </li>
-          </ul>
         </div>
       )}
 
       {compact && (
         <p className="muted" style={{ marginTop: 0 }}>
-          Required for the Verified badge: government photo ID. Qualification and teaching certificates
-          are recommended. Documents stay private (admins only). Skip if you want to verify later.
+          One document per screen. Skip optional certificates. You can finish verification later.
         </p>
       )}
 
       {canSubmitMore &&
         (embedded ? (
-          <div className="stack-form profile-form">{fields}</div>
+          <div className="stack-form profile-form">{body}</div>
         ) : (
-          <form className="stack-form profile-form" onSubmit={(e) => void submit(e)}>
-            {fields}
+          <form
+            className="stack-form profile-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (onReview) void submit(e);
+              else goNextDoc();
+            }}
+          >
+            {body}
           </form>
         ))}
 

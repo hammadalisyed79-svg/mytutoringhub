@@ -547,7 +547,7 @@ export function tutorVerifyNudgeEmailHtml(opts: { name: string; dashboardUrl: st
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Verified tutors build more trust with parents and students. Upload your government photo ID from your dashboard — our team reviews it within a few days.</p>
 <p>The verified badge appears on your profile and helps you stand out in search.</p>`,
-    cta: { label: "Upload verification documents", href: `${opts.dashboardUrl}#get-verified` },
+    cta: { label: "Upload verification documents", href: `${opts.dashboardUrl}?tab=profile&verify=1` },
   });
 }
 

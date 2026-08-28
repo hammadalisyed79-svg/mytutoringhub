@@ -186,7 +186,7 @@ export function TutorProfileForm({
   listingActive = false,
   verified = false,
   trustBadge = "NEW",
-  wizard = true,
+  startStep,
 }: {
   initial: Initial;
   displayName: string;
@@ -197,8 +197,8 @@ export function TutorProfileForm({
   listingActive?: boolean;
   verified?: boolean;
   trustBadge?: TutorTrustBadge | string;
-  /** Step-by-step form with Skip on optional fields. */
-  wizard?: boolean;
+  /** Jump straight to a wizard step (e.g. verify). */
+  startStep?: (typeof WIZARD_STEPS)[number]["id"];
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -212,8 +212,15 @@ export function TutorProfileForm({
   const [photoError, setPhotoError] = useState("");
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState(0);
-  const [flatMode, setFlatMode] = useState(!wizard);
+  const steps = useMemo(
+    () => (verified ? WIZARD_STEPS.filter((row) => row.id !== "verify") : [...WIZARD_STEPS]),
+    [verified],
+  );
+  const initialStepIndex = Math.max(
+    0,
+    startStep ? steps.findIndex((row) => row.id === startStep) : 0,
+  );
+  const [step, setStep] = useState(initialStepIndex >= 0 ? initialStepIndex : 0);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
   const [photoCropX, setPhotoCropX] = useState(initial.photoCropX ?? 0);
   const [photoCropY, setPhotoCropY] = useState(initial.photoCropY ?? 0);
@@ -298,10 +305,6 @@ export function TutorProfileForm({
   const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
   const requiredTotal = completion.requiredTotal + 1;
   const progress = Math.round((requiredDone / requiredTotal) * 100);
-  const steps = useMemo(
-    () => (verified ? WIZARD_STEPS.filter((row) => row.id !== "verify") : WIZARD_STEPS),
-    [verified],
-  );
   const currentStep = steps[Math.min(step, steps.length - 1)];
   const wizardProgress = Math.round(((step + 1) / steps.length) * 100);
 
@@ -507,9 +510,9 @@ export function TutorProfileForm({
     }
   }
 
-  const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => flatMode || currentStep.id === id;
+  const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => currentStep.id === id;
 
-  const wizardChrome = !flatMode ? (
+  const wizardChrome = (
     <div className="profile-wizard-chrome">
       <div className="guided-search-progress" aria-hidden="true">
         <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
@@ -520,28 +523,10 @@ export function TutorProfileForm({
       </p>
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
-      <div className="profile-wizard-toggle">
-        <button type="button" className="linkish" onClick={() => setFlatMode(true)}>
-          Show all fields instead
-        </button>
-      </div>
-    </div>
-  ) : (
-    <div className="profile-wizard-toggle">
-      <button
-        type="button"
-        className="linkish"
-        onClick={() => {
-          setFlatMode(false);
-          setStep(0);
-        }}
-      >
-        Use step-by-step wizard
-      </button>
     </div>
   );
 
-  const wizardActions = flatMode ? null : (
+  const wizardActions = (
     <div className="guided-search-actions profile-wizard-actions">
       {step > 0 ? (
         <button type="button" className="btn btn-secondary" onClick={goBack}>
@@ -570,22 +555,38 @@ export function TutorProfileForm({
   );
 
   // Keep verification outside the profile <form> to avoid nested forms.
-  if (!flatMode && currentStep.id === "verify") {
+  if (currentStep.id === "verify") {
     return (
       <div className="stack-form profile-form profile-form-wizard" id="get-verified">
         {wizardChrome}
         <VerificationForm embedded compact />
-        {wizardActions}
+        <div className="guided-search-actions profile-wizard-actions">
+          {step > 0 ? (
+            <button type="button" className="btn btn-secondary" onClick={goBack}>
+              Back
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="profile-wizard-actions-right">
+            <button type="button" className="btn btn-secondary" onClick={skipOptional}>
+              Skip verification
+            </button>
+            <button type="button" className="btn" onClick={goNext}>
+              Continue
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <form
-      className={`stack-form profile-form${flatMode ? "" : " profile-form-wizard"}`}
+      className="stack-form profile-form profile-form-wizard"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!flatMode && currentStep.id !== "finish") {
+        if (currentStep.id !== "finish") {
           goNext();
           return;
         }
@@ -607,7 +608,7 @@ export function TutorProfileForm({
           Required fields use the same rules as public search eligibility. Optional steps can be
           skipped — you can fill them later.
         </p>
-        {(flatMode || currentStep.id === "finish") && (
+        {currentStep.id === "finish" && (
           <ul className="profile-complete-list">
             <li className={emailVerified ? "is-done" : "is-needed"}>
               {emailVerified ? "✓" : "○"} Email verified
@@ -882,7 +883,7 @@ export function TutorProfileForm({
 
       {show("extras") && (
       <section className="form-section">
-        <h3>Strengthen your listing {flatMode ? "(recommended)" : "(optional)"}</h3>
+        <h3>Strengthen your listing (optional)</h3>
         <CatalogMultiSelect
           label="Expertise"
           selected={expertiseList}
@@ -944,7 +945,7 @@ export function TutorProfileForm({
 
       {show("schedule") && (
       <section className="form-section">
-        <h3>Weekly availability {flatMode ? "" : "(optional)"}</h3>
+        <h3>Weekly availability (optional)</h3>
         <fieldset className="catalog-pick">
           <legend>Weekly availability</legend>
           <p className="field-hint">
@@ -1010,7 +1011,7 @@ export function TutorProfileForm({
 
       {show("contact") && (
       <section className="form-section">
-        <h3>Contact and media {flatMode ? "(optional)" : "(optional)"}</h3>
+        <h3>Contact and media (optional)</h3>
         <label className="radio">
           <input
             type="checkbox"
@@ -1063,7 +1064,7 @@ export function TutorProfileForm({
       </section>
       )}
 
-      {(flatMode || currentStep.id === "finish") && (
+      {currentStep.id === "finish" && (
         <ProfileImprovePanel
           listingLive={listingActive}
           verified={verified}
@@ -1074,13 +1075,7 @@ export function TutorProfileForm({
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
 
-      {flatMode ? (
-        <button className="btn" type="submit" disabled={uploading || saving}>
-          {saving ? "Saving…" : "Save profile"}
-        </button>
-      ) : (
-        wizardActions
-      )}
+      {wizardActions}
     </form>
   );
 }
