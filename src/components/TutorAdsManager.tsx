@@ -17,6 +17,7 @@ import {
   formatMoney,
   type CurrencyCode,
 } from "@/lib/currency";
+import { scoreListingQuality } from "@/lib/listing-quality";
 
 type Listing = {
   id: string;
@@ -347,6 +348,7 @@ export function TutorAdsManager({
           const boosted = listingBoostActive(boostUntil, now);
           const highlighted = listingHighlightActive(highlightUntil, now);
           const editing = editingId === listing.id;
+          const quality = scoreListingQuality(listing);
           const taxonomy = [
             listing.subject,
             listing.board,
@@ -371,11 +373,16 @@ export function TutorAdsManager({
                       .filter(Boolean)
                       .join(" · ") || "Lesson mode not set"}
                   </div>
+                  <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
+                    Listing quality: <strong>{quality.band}</strong> ({quality.score}/100)
+                    {quality.tips[0] ? ` — ${quality.tips[0]}` : ""}
+                  </p>
                 </div>
                 <div className="teaching-listing-badges">
                   <span className={`badge${listing.status === "ACTIVE" ? " badge-verified" : ""}`}>
                     {listing.status === "ACTIVE" ? "Active" : listing.status}
                   </span>
+                  <span className="badge">{quality.band}</span>
                   {boosted && <span className="badge accent">Boosted</span>}
                   {highlighted && <span className="badge accent">Highlighted</span>}
                 </div>

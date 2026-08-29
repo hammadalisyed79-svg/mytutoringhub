@@ -179,6 +179,29 @@ export async function POST(req: Request) {
     );
   }
 
+  // Near-duplicate warn→block: same subject with vague level/board and near-identical title.
+  const existingActive = await prisma.subjectProfile.findMany({
+    where: { tutorProfileId: gate.profile.id, status: "ACTIVE" },
+    select: { subject: true, level: true, board: true, title: true },
+  });
+  const { isNearDuplicateListing } = await import("@/lib/listing-quality");
+  for (const other of existingActive) {
+    const near = isNearDuplicateListing(
+      { subject, level: data.level, board, title: data.title },
+      other,
+    );
+    if (near.nearDup && near.confidence === "high") {
+      return NextResponse.json(
+        {
+          error:
+            "This looks like a duplicate of an existing listing for the same subject and level. Edit the existing listing, or use a distinct level/board (e.g. GCSE vs A Level).",
+          code: "near_duplicate_listing",
+        },
+        { status: 409 },
+      );
+    }
+  }
+
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id: gate.profile.id },
     include: { user: { select: { name: true } } },
