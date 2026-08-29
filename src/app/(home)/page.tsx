@@ -167,11 +167,11 @@ export default async function HomePage() {
     .slice(0, 3);
 
   const stats = [
-    tutorCount > 0 && {
+    tutorCount >= 10 && {
       value: tutorCount.toLocaleString(),
       label: tutorCount === 1 ? "Active tutor" : "Active tutors",
     },
-    studentCount > 0 && {
+    studentCount >= 25 && {
       value: studentCount.toLocaleString(),
       label: studentCount === 1 ? "Student joined" : "Students joined",
     },
@@ -190,7 +190,7 @@ export default async function HomePage() {
   ].filter(Boolean) as { value: string; label: string }[];
 
   return (
-    <>
+    <div className="home-page">
       <HeroImagePreload />
       <JsonLd
         data={{
@@ -409,6 +409,29 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section
+        className="section home-tutor-recruit"
+        aria-labelledby="home-tutor-recruit-title"
+      >
+        <div className="container home-tutor-recruit-inner">
+          <div>
+            <h2 id="home-tutor-recruit-title">Teach students worldwide</h2>
+            <p className="section-lead">
+              Create your tutor profile free. Keep 100% of lesson fees — 0% commission on lessons.
+              Up to 3 free teaching listings; Tutor Pro unlocks up to 10.
+            </p>
+          </div>
+          <div className="hero-ctas">
+            <Link href="/become-a-tutor" className="btn">
+              Become a tutor
+            </Link>
+            <Link href="/pricing" className="btn btn-secondary">
+              Tutor plans
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="section section-alt">
         <div className="container">
           <h2>Top subjects by country</h2>
@@ -449,17 +472,18 @@ export default async function HomePage() {
       <section className="section cta-band">
         <div className="container cta-band-inner">
           <div>
-            <h2>Are you a tutor? Start teaching</h2>
+            <h2>Ready to start?</h2>
             <p>
-              Complete your profile to appear in search for free with up to 3 active teaching
-              listings. Tutor Pro unlocks up to 10 listings plus relevance-first ranking and
-              unlimited enquiry reveals — growth tools complimentary until 30 September 2026.
-              Listing Boost is optional; Identity Verified is earned via identity review. You keep
-              100% of lesson fees.
+              Find a tutor for free, or create your tutor profile and keep 100% of lesson fees —
+              0% commission on lessons. Tutors get up to 3 free teaching listings; Tutor Pro unlocks
+              up to 10.
             </p>
           </div>
           <div className="hero-ctas">
-            <Link href="/become-a-tutor" className="btn">
+            <Link href="/search" className="btn">
+              Find a tutor
+            </Link>
+            <Link href="/become-a-tutor" className="btn btn-secondary">
               Become a tutor
             </Link>
           </div>
@@ -470,6 +494,6 @@ export default async function HomePage() {
           compact
         />
       </section>
-    </>
+    </div>
   );
 }

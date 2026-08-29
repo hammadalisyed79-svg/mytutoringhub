@@ -11069,3 +11069,322 @@ img {
   letter-spacing: 0.04em;
   color: var(--muted);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Homepage UX spacing polish — scoped to .home-page only
+   Rhythm: major sections ~40–56px mobile / ~64–80px desktop (max ~88px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.home-page {
+  --home-section-y: clamp(2.5rem, 5vw, 5rem);
+  --home-section-y-compact: clamp(2rem, 3.5vw, 3.25rem);
+  --home-lead-mb: 1.15rem;
+  --home-card-gap: clamp(0.75rem, 1.5vw, 1.1rem);
+  --home-card-pad: clamp(0.95rem, 1.6vw, 1.2rem);
+}
+
+.home-page > .section {
+  padding-block: var(--home-section-y);
+  margin-block: 0;
+}
+
+.home-page > .section.section-stats,
+.home-page > .section.prestige-stats {
+  padding-block: var(--home-section-y-compact);
+}
+
+.home-page .product-trio-section {
+  padding-block: clamp(2rem, 3.8vw, 3rem);
+}
+
+.home-page .section-lead {
+  margin: 0.35rem 0 var(--home-lead-mb);
+}
+
+.home-page .section-head {
+  margin-bottom: 0.85rem;
+  gap: 0.75rem 1rem;
+}
+
+.home-page .section-head .section-lead {
+  margin-bottom: 0;
+}
+
+.home-page h2 + .section-lead {
+  margin-top: 0.35rem;
+}
+
+.home-page .section-actions {
+  margin: 1.1rem 0 0;
+}
+
+/* Hero */
+.home-page .hero-findtutor {
+  min-height: min(36rem, calc(100svh - var(--header-h, 4rem)));
+  align-items: center;
+}
+
+.home-page .hero-content {
+  padding: clamp(1.75rem, 3.5vw, 2.75rem) 0 clamp(2rem, 4vw, 3rem);
+}
+
+.home-page .hero-brand-row {
+  margin-bottom: 0.7rem;
+}
+
+.home-page .hero h1 {
+  margin-bottom: 0.7rem;
+}
+
+.home-page .hero-lead {
+  margin-bottom: 0.5rem;
+}
+
+.home-page .hero-sub {
+  margin-bottom: 1.1rem;
+}
+
+.home-page .hero-search-shell {
+  margin-bottom: 0.75rem;
+}
+
+.home-page .hero-path-cards {
+  margin-top: 0.85rem;
+  gap: 0.65rem;
+}
+
+.home-page .hero-path-card {
+  padding: 0.85rem 0.95rem;
+}
+
+.home-page .hero-value-strip {
+  margin-top: 0.7rem;
+}
+
+.home-page .logged-in-welcome {
+  margin-bottom: 0.9rem;
+  padding: 0.7rem 0.95rem;
+}
+
+/* Product trio / prestige */
+.home-page .product-trio-grid {
+  margin-top: 1rem;
+  gap: var(--home-card-gap);
+}
+
+.home-page .product-trio-card {
+  padding: var(--home-card-pad);
+  gap: 0.3rem;
+}
+
+.home-page .prestige-pillars {
+  margin-top: 1.15rem;
+  gap: var(--home-card-gap);
+}
+
+.home-page .prestige-pillar {
+  padding: var(--home-card-pad);
+}
+
+.home-page .prestige-eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+/* Free vs paid / how-it-works */
+.home-page .free-vs-paid-highlights {
+  margin-top: 1rem;
+  gap: var(--home-card-gap);
+}
+
+.home-page .steps {
+  gap: var(--home-card-gap);
+}
+
+.home-page .step {
+  padding: var(--home-card-pad);
+}
+
+.home-page .step span {
+  margin-bottom: 0.4rem;
+}
+
+/* Subjects / markets / cards */
+.home-page .subject-chips {
+  margin-bottom: 1.1rem;
+  gap: 0.45rem;
+}
+
+.home-page .country-markets {
+  margin-top: 0.85rem;
+  gap: var(--home-card-gap);
+}
+
+.home-page .country-market {
+  padding: var(--home-card-pad);
+}
+
+.home-page .country-more {
+  margin-top: 1.35rem;
+  padding-top: 1.15rem;
+}
+
+.home-page .tutor-grid {
+  gap: var(--home-card-gap);
+}
+
+.home-page .tutor-card {
+  padding: var(--home-card-pad);
+}
+
+.home-page .testimonial-grid {
+  gap: var(--home-card-gap);
+}
+
+.home-page .testimonial {
+  padding: var(--home-card-pad);
+}
+
+.home-page .prestige-stat {
+  padding: 0.7rem 0.45rem;
+}
+
+.home-page .stats-row {
+  gap: 0.75rem 1rem;
+}
+
+/* Mid-page tutor recruitment */
+.home-page .home-tutor-recruit {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--brand-rgb), 0.07) 0%,
+    rgba(var(--brand-rgb), 0.03) 100%
+  );
+  border-top: 1px solid rgba(var(--brand-rgb), 0.12);
+  border-bottom: 1px solid var(--line);
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+.home-page .home-tutor-recruit-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.25rem 1.75rem;
+  flex-wrap: wrap;
+}
+
+.home-page .home-tutor-recruit h2 {
+  margin: 0 0 0.4rem;
+}
+
+.home-page .home-tutor-recruit .section-lead {
+  margin-bottom: 0;
+  max-width: 48ch;
+}
+
+.home-page .home-tutor-recruit .hero-ctas {
+  flex-shrink: 0;
+}
+
+/* Final CTA + invite */
+.home-page .cta-band {
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+.home-page .cta-band-inner {
+  gap: 1.25rem 1.5rem;
+}
+
+.home-page .cta-band .invite-tutor-share,
+.home-page .cta-band .invite-tutor-share-compact {
+  margin-top: 0.85rem;
+}
+
+.home-page > .section:last-child {
+  margin-bottom: 0;
+}
+
+.home-page > .section.section-alt + .section.section-alt {
+  border-top: 1px solid rgba(12, 24, 21, 0.06);
+}
+
+@media (max-width: 430px) {
+  .home-page {
+    --home-section-y: clamp(2.5rem, 8vw, 3.25rem);
+    --home-section-y-compact: 1.75rem;
+    --home-lead-mb: 0.95rem;
+    --home-card-pad: 0.9rem;
+    --home-card-gap: 0.7rem;
+  }
+
+  .home-page .hero-findtutor {
+    min-height: 0;
+  }
+
+  .home-page .hero-content {
+    padding: 1.5rem 0 1.85rem;
+  }
+
+  .home-page .hero h1 {
+    margin-bottom: 0.55rem;
+  }
+
+  .home-page .hero-sub {
+    margin-bottom: 0.9rem;
+  }
+
+  .home-page .product-trio-section {
+    padding-block: 1.75rem 2rem;
+  }
+
+  .home-page .home-tutor-recruit,
+  .home-page .cta-band {
+    padding-block: 2rem;
+  }
+
+  .home-page .home-tutor-recruit-inner,
+  .home-page .cta-band-inner {
+    gap: 1rem;
+  }
+
+  .home-page .home-tutor-recruit .hero-ctas,
+  .home-page .cta-band .hero-ctas {
+    width: 100%;
+  }
+
+  .home-page .home-tutor-recruit .btn,
+  .home-page .cta-band .btn {
+    flex: 1 1 auto;
+  }
+
+  .home-page .country-markets {
+    gap: 0.7rem;
+  }
+
+  .home-page .subject-chips {
+    margin-bottom: 0.9rem;
+  }
+}
+
+@media (min-width: 431px) and (max-width: 720px) {
+  .home-page {
+    --home-section-y: clamp(2.75rem, 5vw, 3.75rem);
+  }
+
+  .home-page .hero-findtutor {
+    min-height: 0;
+  }
+
+  .home-page .hero-content {
+    padding: 2rem 0 2.35rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .home-page {
+    --home-section-y: clamp(3.5rem, 4.5vw, 5rem);
+  }
+
+  .home-page .hero-findtutor {
+    min-height: min(34rem, calc(100svh - var(--header-h, 4rem)));
+  }
+}
