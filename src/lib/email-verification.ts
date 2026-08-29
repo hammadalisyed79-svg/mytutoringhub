@@ -9,8 +9,16 @@ export function hashEmailToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+function sanitizedAppUrl() {
+  return (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+    .trim()
+    .replace(/^["']+|["']+$/g, "")
+    .replace(/[\r\n\0]/g, "")
+    .replace(/\/+$/, "");
+}
+
 export function emailVerificationUrl(token: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = sanitizedAppUrl();
   // Landing page requires a button click — email scanners that prefetch GET
   // links cannot consume the token and falsely expire it.
   return `${appUrl}/verify-email?token=${encodeURIComponent(token)}`;

@@ -8,16 +8,24 @@ import { trackProductEvent } from "@/lib/product-events";
 
 export const runtime = "nodejs";
 
-function appBase() {
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+/** Prefer request origin so redirects never depend on a malformed NEXT_PUBLIC_APP_URL. */
+function redirectTo(req: Request, pathWithQuery: string, status: 303 | 307 = 303) {
+  const path = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
+  return NextResponse.redirect(new URL(path, req.url), status);
 }
 
-function redirectLogin(query: string) {
-  return NextResponse.redirect(`${appBase()}/login?${query}`);
+function wantsJson(req: Request) {
+  const accept = req.headers.get("accept") || "";
+  return accept.includes("application/json");
 }
 
-function redirectDashboard(query: string) {
-  return NextResponse.redirect(`${appBase()}/dashboard?${query}`);
+/** Form POST → 303 + absolute URL from request; JSON clients get a relative path. */
+function finish(req: Request, pathWithQuery: string) {
+  const path = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
+  if (wantsJson(req)) {
+    return NextResponse.json({ ok: true, redirectTo: path });
+  }
+  return redirectTo(req, path, 303);
 }
 
 async function consumeVerificationToken(token: string): Promise<
@@ -85,10 +93,10 @@ async function consumeVerificationToken(token: string): Promise<
 /** Old email links hit GET — send them to the confirm page (avoids scanner auto-consume). */
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token");
-  if (!token) return redirectLogin("verify=invalid");
-  return NextResponse.redirect(
-    `${appBase()}/verify-email?token=${encodeURIComponent(token)}`,
-  );
+  if (!token) return redirectTo(req, "/login?verify=invalid", 307);
+  const dest = new URL("/verify-email", req.url);
+  dest.searchParams.set("token", token);
+  return NextResponse.redirect(dest, 307);
 }
 
 export async function POST(req: Request) {
@@ -103,19 +111,22 @@ export async function POST(req: Request) {
       token = String(fd.get("token") || "");
     }
   } catch {
-    return redirectLogin("verify=invalid");
+    return finish(req, "/login?verify=invalid");
   }
 
-  if (!token) return redirectLogin("verify=invalid");
+  if (!token) return finish(req, "/login?verify=invalid");
 
   const result = await consumeVerificationToken(token);
   if (!result.ok) {
-    return redirectLogin(result.reason === "expired" ? "verify=expired" : "verify=invalid");
+    return finish(
+      req,
+      result.reason === "expired" ? "/login?verify=expired" : "/login?verify=invalid",
+    );
   }
 
   const session = await auth();
   if (session?.user) {
-    return redirectDashboard(result.already ? "verified=1" : "verified=1");
+    return finish(req, "/dashboard?verified=1");
   }
-  return redirectLogin(result.already ? "verified=1" : "verified=1");
+  return finish(req, "/login?verified=1");
 }
