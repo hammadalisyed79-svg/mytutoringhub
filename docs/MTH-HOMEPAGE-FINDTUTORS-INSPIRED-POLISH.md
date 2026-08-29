@@ -53,13 +53,20 @@ From FindTutors desktop/mobile screenshots (cookie modal dismissed where possibl
 - `npx tsc --noEmit` — **pass**
 - `npm run build` — **pass** (Next.js 16.3.1 / Turbopack)
 
-## Live verify checklist
+## Live verify
 
-- [x] Desktop hero: split layout retained; search shell reads as one commercial control (pre-push code review + post-deploy Playwright)
+Verified on https://www.mytutoringhub.com after deploy of `99c1e40` (Playwright viewports 1440 / 390).
+
+Markers present in HTML: `.home-proof-strip`, `.product-trio-card--open`, `.home-featured-photo`, `.hero-split`, `#home-hero-title` = “Private tutoring, elevated.”
+
+### Checklist
+
+- [x] Desktop hero: split layout retained; search shell reads as one commercial control
 - [x] No full-bleed classroom photo
 - [x] Proof strip shows only real counts / business rules (no fake reviews)
 - [x] Featured tutors: portrait cards, no full-bleed stretch when few listings
 - [x] Product trio: open columns, not heavy bordered cards
 - [x] Past Papers mid-page still present and linked
 - [x] Mobile ≤430: stacked hero, usable search, featured cards readable
-- [x] Search still submits subject/country/city/mode to `/search`
+- [x] Search still submits subject/country/city/mode to `/search` (unchanged `HeroSearch`)
+
