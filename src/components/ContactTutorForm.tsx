@@ -154,6 +154,7 @@ export function ContactTutorForm({
         minLength={10}
         rows={5}
         placeholder="Introduce yourself and what you need help with…"
+        aria-label={`Message to ${tutorName}`}
       />
       {error && (
         <div className="form-error" role="alert" style={{ display: "grid", gap: "0.5rem" }}>

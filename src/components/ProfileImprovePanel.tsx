@@ -36,9 +36,21 @@ export function ProfileImprovePanel({
         </article>
 
         <article className="profile-improve-card">
-          <strong>2. Get the Verified badge</strong>
+          <strong>2. Add board &amp; syllabus when relevant</strong>
           <p className="muted">
-            Upload a government photo ID. Admins review privately. Students trust verified tutors more.
+            On each teaching listing, set exam board, qualification, and syllabus code if you teach
+            a specific curriculum (e.g. Cambridge 0580). Skip fields that do not apply.
+          </p>
+          <Link href="/dashboard/tutor?tab=profile#teaching-listings" className="btn btn-sm">
+            Edit teaching listings
+          </Link>
+        </article>
+
+        <article className="profile-improve-card">
+          <strong>3. Get the Identity Verified badge</strong>
+          <p className="muted">
+            Upload a government photo ID. Admins review privately. You cannot buy the badge —
+            Priority Verification Review only jumps the queue.
           </p>
           {verified ? (
             <span className="badge badge-verified">✓ Verified</span>
@@ -50,7 +62,7 @@ export function ProfileImprovePanel({
         </article>
 
         <article className="profile-improve-card">
-          <strong>3. Earn a star tutor badge</strong>
+          <strong>4. Earn a star tutor badge</strong>
           <p className="muted">
             Progress from New Tutor → Recommended → Super → Top with verified recommendations and
             student reviews.
@@ -64,10 +76,10 @@ export function ProfileImprovePanel({
         </article>
 
         <article className="profile-improve-card">
-          <strong>4. Optional paid boosts</strong>
+          <strong>5. Optional Listing Boost</strong>
           <p className="muted">
-            Priority verification, highlighted listing, or a 30-day search boost — only if you want
-            extra visibility.
+            Boost one teaching listing for 30 days among relevant matches — never above strong
+            subject fit. Priority Verification Review is separate from the badge.
           </p>
           <Link href="/dashboard/tutor?tab=growth" className="btn btn-secondary btn-sm">
             View plans &amp; boosts

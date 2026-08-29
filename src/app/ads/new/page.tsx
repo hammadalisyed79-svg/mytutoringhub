@@ -9,11 +9,13 @@ import Link from "next/link";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { loginUrlWithNext } from "@/lib/safe-return-url";
+import { privateMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Post a request",
-  description: "Post a student request for a private tutor. Student Pass required.",
-};
+export const metadata = privateMetadata(
+  "Post a request – My Tutoring Hub",
+  "Post a student request for a private tutor. Student Pass required.",
+);
 
 type SearchParams = Promise<{
   subject?: string;
@@ -28,8 +30,15 @@ type SearchParams = Promise<{
 }>;
 
 export default async function NewAdPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (typeof value === "string" && value.trim()) qs.set(key, value);
+  }
+  const returnPath = qs.toString() ? `/ads/new?${qs.toString()}` : "/ads/new";
+
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(loginUrlWithNext(returnPath));
   if (session.user.role === "TUTOR") redirect("/ads");
   if (session.user.role !== "ADMIN") {
     const me = await prisma.user.findUnique({
@@ -47,7 +56,6 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
     subjects.map((s) => s.name),
     catalogSubjectNames(),
   );
-  const sp = await searchParams;
 
   return (
     <div className="page">

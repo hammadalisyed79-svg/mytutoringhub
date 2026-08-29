@@ -27,6 +27,7 @@ export default async function AdminOverviewPage() {
     subjectProfiles,
     conversations,
     pastPapers,
+    searchZeroResults,
     recentUsers,
     recentPayments,
     recentReports,
@@ -44,6 +45,7 @@ export default async function AdminOverviewPage() {
     prisma.subjectProfile.count(),
     prisma.conversation.count(),
     prisma.pastPaper.count(),
+    prisma.searchAnalyticsEvent.count({ where: { type: "search_zero_results" } }),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 8,
@@ -84,6 +86,7 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/ads?kind=tutor" label="Teaching listings" value={subjectProfiles} />
         <Stat href="/admin/messages" label="Conversations" value={conversations} />
         <Stat href="/admin/past-papers" label="Past papers" value={pastPapers} />
+        <Stat href="/admin/demand" label="Search zero-results" value={searchZeroResults} />
       </div>
 
       <div className="admin-toolbar panel">

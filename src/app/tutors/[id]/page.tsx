@@ -111,7 +111,7 @@ function ProfileCtaButtons({
           Message Tutor
         </a>
         <a className="btn btn-secondary btn-block" href="#message-tutor">
-          Request a Lesson
+          Ask about availability
         </a>
       </div>
     );
@@ -122,8 +122,8 @@ function ProfileCtaButtons({
         <Link className="btn btn-block" href="/register?role=student">
           Join to message
         </Link>
-        <Link className="btn btn-secondary btn-block" href="/register?role=student">
-          Request a Lesson
+        <Link className="btn btn-secondary btn-block" href={`/login?next=${encodeURIComponent(`/tutors/${tutorId}`)}`}>
+          Sign in
         </Link>
       </div>
     );
@@ -942,7 +942,7 @@ export default async function TutorProfilePage({ params }: Params) {
               Message
             </a>
             <a className="btn btn-secondary btn-block" href="#message-tutor">
-              Request
+              Ask availability
             </a>
           </>
         ) : !session ? (
@@ -950,8 +950,11 @@ export default async function TutorProfilePage({ params }: Params) {
             <Link className="btn btn-block" href="/register?role=student">
               Join to message
             </Link>
-            <Link className="btn btn-secondary btn-block" href="/register?role=student">
-              Request
+            <Link
+              className="btn btn-secondary btn-block"
+              href={`/login?next=${encodeURIComponent(`/tutors/${tutor.id}`)}`}
+            >
+              Sign in
             </Link>
           </>
         ) : (

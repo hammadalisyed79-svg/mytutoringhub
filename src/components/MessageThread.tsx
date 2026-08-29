@@ -226,6 +226,7 @@ export function MessageThread({
           onChange={(e) => setBody(e.target.value)}
           rows={3}
           placeholder="Write a reply or attach a document…"
+          aria-label="Message reply"
         />
         {attachmentUrl && (
           <div className="thread-attach-preview">

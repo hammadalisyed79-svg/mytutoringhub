@@ -7,6 +7,7 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import type { LoginHint } from "@/app/api/auth/login-hint/route";
+import { safeReturnPath } from "@/lib/safe-return-url";
 
 const VERIFY_FIRST_MESSAGE =
   "Verify your email before signing in. Open the confirmation link we sent you, then try again.";
@@ -17,6 +18,7 @@ export function LoginForm({
   onSwitchToRegister,
   initialEmail = "",
   showVerifyPrompt = false,
+  nextPath,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
@@ -24,12 +26,15 @@ export function LoginForm({
   initialEmail?: string;
   /** Show the verify-first panel immediately (e.g. after signup). */
   showVerifyPrompt?: boolean;
+  /** Safe relative path after successful login (from ?next= or ?callbackUrl=). */
+  nextPath?: string;
 }) {
   const [error, setError] = useState(showVerifyPrompt ? VERIFY_FIRST_MESSAGE : "");
   const [hint, setHint] = useState("");
   const [loading, setLoading] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(showVerifyPrompt);
   const [emailValue, setEmailValue] = useState(initialEmail);
+  const returnTo = safeReturnPath(nextPath, "/dashboard");
 
   async function fetchLoginHint(email: string): Promise<LoginHint | null> {
     try {
@@ -120,10 +125,14 @@ export function LoginForm({
     const sessionRes = await fetch("/api/auth/session");
     const session = await sessionRes.json().catch(() => null);
     if (session?.user?.onboardingComplete === false) {
-      window.location.href = "/register/complete";
+      window.location.href = `/register/complete?next=${encodeURIComponent(returnTo)}`;
       return;
     }
-    window.location.href = session?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
+    if (session?.user?.role === "ADMIN" && returnTo === "/dashboard") {
+      window.location.href = "/admin";
+      return;
+    }
+    window.location.href = returnTo;
   }
 
   async function onEmailBlur(e: React.FocusEvent<HTMLInputElement>) {
@@ -145,6 +154,7 @@ export function LoginForm({
         disabled={loading}
         googleEnabled={googleEnabled}
         microsoftEnabled={microsoftEnabled}
+        callbackUrl={returnTo}
       />
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
         <label>

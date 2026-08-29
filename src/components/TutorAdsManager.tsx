@@ -172,7 +172,7 @@ function ListingTaxonomyFields({
       <>
         {core}
         <details className="profile-advanced-details">
-          <summary>Optional — board &amp; syllabus</summary>
+          <summary>Improve match — board &amp; syllabus (optional)</summary>
           <div className="teaching-listing-grid profile-advanced-block">{extras}</div>
         </details>
       </>

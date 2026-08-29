@@ -95,11 +95,12 @@ export function BlockUserButton({ userId, userName }: { userId: string; userName
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [blocked, setBlocked] = useState(false);
 
   async function block() {
     if (
       !confirm(
-        `Block ${userName || "this user"}? You won’t be able to message each other. You can unblock later from messages settings.`,
+        `Block ${userName || "this user"}? You won’t be able to message each other. You can unblock later from Settings.`,
       )
     ) {
       return;
@@ -117,14 +118,37 @@ export function BlockUserButton({ userId, userName }: { userId: string; userName
       setError((data as { error?: string }).error || "Could not block user");
       return;
     }
-    setMsg("User blocked.");
+    setBlocked(true);
+    setMsg("User blocked. Manage blocks in Settings.");
+  }
+
+  async function unblock() {
+    setBusy(true);
+    setError("");
+    const res = await fetch(`/api/blocks?blockedUserId=${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (!res.ok) {
+      setError((data as { error?: string }).error || "Could not unblock user");
+      return;
+    }
+    setBlocked(false);
+    setMsg("User unblocked.");
   }
 
   return (
     <div>
-      <button className="link-btn" type="button" onClick={block} disabled={busy}>
-        {busy ? "Blocking…" : "Block user"}
-      </button>
+      {blocked ? (
+        <button className="link-btn" type="button" onClick={unblock} disabled={busy}>
+          {busy ? "Unblocking…" : "Unblock user"}
+        </button>
+      ) : (
+        <button className="link-btn" type="button" onClick={block} disabled={busy}>
+          {busy ? "Blocking…" : "Block user"}
+        </button>
+      )}
       {msg && <p className="success">{msg}</p>}
       {error && <p className="form-error">{error}</p>}
     </div>

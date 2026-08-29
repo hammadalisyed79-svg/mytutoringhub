@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { PhoneInput } from "@/components/PhoneInput";
 import { SwitchProfileButton } from "@/components/SwitchProfileButton";
+import { BlockedUsersPanel } from "@/components/BlockedUsersPanel";
 import { isValidPhone } from "@/lib/phone";
 
 export default function SettingsPage() {
@@ -198,6 +199,7 @@ export default function SettingsPage() {
             Save settings
           </button>
         </form>
+        <BlockedUsersPanel />
         <button
           className="btn btn-secondary"
           type="button"

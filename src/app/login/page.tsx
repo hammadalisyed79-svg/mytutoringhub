@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/LoginForm";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { microsoftConfigured } from "@/lib/oauth";
 import { privateMetadata } from "@/lib/seo";
+import { safeReturnPath } from "@/lib/safe-return-url";
 
 export const metadata = privateMetadata(
   "Log In – My Tutoring Hub",
@@ -14,15 +15,25 @@ export const metadata = privateMetadata(
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ verified?: string; verify?: string; email?: string }>;
+  searchParams: Promise<{
+    verified?: string;
+    verify?: string;
+    email?: string;
+    next?: string;
+    callbackUrl?: string;
+  }>;
 }) {
   await connection();
+  const sp = await searchParams;
+  const returnTo = safeReturnPath(sp.next || sp.callbackUrl, "/dashboard");
   const session = await auth();
   if (session?.user) {
-    if (session.user.onboardingComplete === false) redirect("/register/complete");
-    redirect(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
+    if (session.user.onboardingComplete === false) {
+      redirect(`/register/complete?next=${encodeURIComponent(returnTo)}`);
+    }
+    if (session.user.role === "ADMIN" && returnTo === "/dashboard") redirect("/admin");
+    redirect(returnTo);
   }
-  const sp = await searchParams;
   const googleEnabled = true;
   const microsoftEnabled = microsoftConfigured();
   const pendingEmail = typeof sp.email === "string" ? sp.email.trim().toLowerCase() : "";
@@ -57,6 +68,7 @@ export default async function LoginPage({
         microsoftEnabled={microsoftEnabled}
         initialEmail={pendingEmail}
         showVerifyPrompt={sp.verify === "sent" || sp.verify === "expired" || sp.verify === "invalid"}
+        nextPath={returnTo}
       />
     </AuthModalFrame>
   );

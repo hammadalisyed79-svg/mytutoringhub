@@ -99,6 +99,16 @@ export async function POST(req: Request, { params }: Params) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const otherUserId =
+    conversation.userAId === session.user.id ? conversation.userBId : conversation.userAId;
+  const { isEitherBlocked } = await import("@/lib/user-blocks");
+  if (await isEitherBlocked(session.user.id, otherUserId)) {
+    return NextResponse.json(
+      { error: "blocked", message: "Messaging is unavailable because one of you blocked the other." },
+      { status: 403 },
+    );
+  }
+
   const text = data.body?.trim() || "";
   const message = await prisma.message.create({
     data: {

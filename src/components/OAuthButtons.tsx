@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { safeReturnPath } from "@/lib/safe-return-url";
 
 type ProviderId = "google" | "microsoft-entra-id";
 
@@ -11,6 +12,8 @@ type Props = {
   disabled?: boolean;
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
+  /** Post-login destination for login intent (relative path only). */
+  callbackUrl?: string;
 };
 
 export function OAuthButtons({
@@ -19,11 +22,14 @@ export function OAuthButtons({
   disabled,
   googleEnabled = true,
   microsoftEnabled = false,
+  callbackUrl,
 }: Props) {
   const [loading, setLoading] = useState<ProviderId | null>(null);
   const [error, setError] = useState("");
   const google = googleEnabled !== false;
   const microsoft = Boolean(microsoftEnabled);
+  const oauthReturn =
+    intent === "login" ? safeReturnPath(callbackUrl, "/dashboard") : "/dashboard";
 
   async function startOAuth(provider: ProviderId) {
     setError("");
@@ -42,7 +48,7 @@ export function OAuthButtons({
         throw new Error((data as { error?: string }).error || "Social sign-in unavailable");
       }
       await signIn(provider, {
-        callbackUrl: "/dashboard",
+        callbackUrl: oauthReturn,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Social sign-in failed");

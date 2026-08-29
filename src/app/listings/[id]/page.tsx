@@ -29,6 +29,7 @@ import {
 import { trackProductEvent } from "@/lib/product-events";
 import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { TrackTutorView } from "@/components/RecentAndSavedTutors";
+import { ReportButton, BlockUserButton } from "@/components/ReportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ function ListingCta({
           Message Tutor
         </a>
         <a className="btn btn-secondary btn-block" href="#message-tutor">
-          Request a Lesson
+          Ask about availability
         </a>
       </div>
     );
@@ -398,6 +399,13 @@ export default async function SubjectListingPage({ params }: Params) {
                 )}
 
                 <ListingCta listingId={listing.id} canMessage={canMessage} session={session} />
+
+                {session?.user && session.user.id !== tutor.userId && (
+                  <div className="profile-share-row" style={{ gap: "1rem", flexWrap: "wrap" }}>
+                    <ReportButton targetType="TUTOR" targetId={tutor.id} />
+                    <BlockUserButton userId={tutor.userId} userName={tutorName} />
+                  </div>
+                )}
 
                 <div className="profile-share-row">
                   <ShareTutorButton
