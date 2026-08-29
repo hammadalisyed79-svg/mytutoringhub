@@ -43,6 +43,7 @@ export function resolveTutorWizardResumeStep(
   const subjectsOk = Boolean(profile.subjects?.trim());
   const rateOk = typeof profile.hourlyRate === "number" && profile.hourlyRate >= 500;
   const modeOk = Boolean(profile.online || profile.inPerson);
+  // Seeded rate/online without subjects still means teaching is unfinished.
   if (!subjectsOk || !rateOk || !modeOk) return "teaching";
 
   if (!profile.qualifications?.trim()) return "qualifications";

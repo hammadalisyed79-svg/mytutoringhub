@@ -1,5 +1,8 @@
 export const DEFAULT_TUTOR_BIO = "New tutor — update this profile.";
 
+/** Registration / OAuth seed — not intentional tutor choices. */
+export const TUTOR_PROFILE_SEED_RATE_PKR = 1500;
+
 export type ProfileFieldCheck = {
   key: string;
   label: string;
@@ -21,7 +24,31 @@ export type TutorProfileCompletionInput = {
   qualifications?: string | null;
 };
 
+function hasCountry(input: TutorProfileCompletionInput) {
+  return Boolean(input.country?.trim() && input.country.trim().length >= 2);
+}
+
+/** City only counts when country is set — bare "Online" seed is not a completed place. */
+export function isTutorCityComplete(input: TutorProfileCompletionInput) {
+  const location = input.location?.trim() || "";
+  if (!hasCountry(input) || location.length < 2) return false;
+  return true;
+}
+
+/**
+ * Rate / lesson mode are seeded on signup. Only count them once the tutor has
+ * chosen subjects (teaching step), so defaults never look “done”.
+ */
+export function isTutorTeachingComplete(input: TutorProfileCompletionInput) {
+  const subjectsOk = Boolean(input.subjects?.trim());
+  if (!subjectsOk) return false;
+  const rateOk = Number(input.hourlyRate) >= 500;
+  const modeOk = Boolean(input.online || input.inPerson);
+  return rateOk && modeOk;
+}
+
 export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
+  const teachingStarted = Boolean(input.subjects?.trim());
   const checks: ProfileFieldCheck[] = [
     { key: "name", label: "Name", ok: (input.name?.trim().length ?? 0) >= 2, required: true },
     {
@@ -45,31 +72,31 @@ export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
     {
       key: "country",
       label: "Country",
-      ok: Boolean(input.country?.trim() && input.country.trim().length >= 2),
+      ok: hasCountry(input),
       required: true,
     },
     {
       key: "city",
       label: "City",
-      ok: Boolean(input.location?.trim() && input.location.trim().length >= 2),
+      ok: isTutorCityComplete(input),
       required: true,
     },
     {
       key: "subjects",
       label: "Subjects",
-      ok: Boolean(input.subjects?.trim()),
+      ok: teachingStarted,
       required: true,
     },
     {
       key: "rate",
       label: "Hourly rate",
-      ok: Number(input.hourlyRate) >= 500,
+      ok: teachingStarted && Number(input.hourlyRate) >= 500,
       required: true,
     },
     {
       key: "lessonType",
       label: "Lesson type",
-      ok: Boolean(input.online || input.inPerson),
+      ok: teachingStarted && Boolean(input.online || input.inPerson),
       required: true,
     },
     {
