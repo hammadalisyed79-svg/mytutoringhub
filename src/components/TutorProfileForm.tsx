@@ -27,7 +27,6 @@ import {
   WEEKDAYS,
   type AvailabilitySlot,
 } from "@/lib/availability";
-import { embedVideoSrc } from "@/lib/media";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { VerificationForm } from "@/components/VerificationForm";
@@ -260,7 +259,6 @@ export function TutorProfileForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rateCurrency]);
 
-  const videoSrc = embedVideoSrc(introVideoUrl || videoUrl);
   const cities = useMemo(() => citiesForCountry(country), [country]);
   const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
   const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
