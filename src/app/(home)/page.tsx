@@ -92,8 +92,8 @@ export default async function HomePage() {
             </div>
             <h1 id="home-hero-title">Private tutoring, elevated.</h1>
             <p className="hero-lead">
-              Find the right tutor for your subject, exam or goal — online or near you. Search free
-              and contact tutors directly.
+              Find the right tutor for your subject, exam or goal — online or near you. Search free;
+              sign in to contact a tutor.
             </p>
           </div>
 

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
+  clearAnonymousTutorMemory,
   isDisplayableTutorRef,
   listRecentTutors,
   listSavedTutors,
@@ -12,9 +14,24 @@ import {
 } from "@/lib/saved-tutors";
 
 export function TrackTutorView({ tutor }: { tutor: Omit<SavedTutorRef, "savedAt"> }) {
+  const { status } = useSession();
+
   useEffect(() => {
+    if (status === "loading") return;
+    if (status !== "authenticated") {
+      clearAnonymousTutorMemory();
+      return;
+    }
     trackRecentTutor(tutor);
-  }, [tutor.tutorProfileId, tutor.href, tutor.name, tutor.listingId, tutor.subject, tutor.photoUrl]);
+  }, [
+    status,
+    tutor.tutorProfileId,
+    tutor.href,
+    tutor.name,
+    tutor.listingId,
+    tutor.subject,
+    tutor.photoUrl,
+  ]);
   return null;
 }
 
@@ -28,10 +45,20 @@ export function RecentAndSavedTutors({
   recentHeading?: string;
   className?: string;
 }) {
+  const { status } = useSession();
+  const signedIn = status === "authenticated";
   const [recent, setRecent] = useState<SavedTutorRef[]>([]);
   const [saved, setSaved] = useState<SavedTutorRef[]>([]);
 
   useEffect(() => {
+    if (status === "loading") return;
+    if (!signedIn) {
+      clearAnonymousTutorMemory();
+      setRecent([]);
+      setSaved([]);
+      return;
+    }
+
     let cancelled = false;
 
     function applyLocal() {
@@ -40,7 +67,6 @@ export function RecentAndSavedTutors({
     }
 
     async function boot() {
-      // Hide empty-name chips immediately, then purge IDs that 404 / aren't public.
       applyLocal();
       try {
         const cleaned = await reconcileStoredTutors();
@@ -54,8 +80,6 @@ export function RecentAndSavedTutors({
 
     void boot();
 
-    // Local edits (save/unsave, other tabs) — do not re-hit the resolve API here
-    // (reconcile writes localStorage and would loop).
     window.addEventListener("mth-saved-tutors", applyLocal);
     window.addEventListener("storage", applyLocal);
     return () => {
@@ -63,7 +87,9 @@ export function RecentAndSavedTutors({
       window.removeEventListener("mth-saved-tutors", applyLocal);
       window.removeEventListener("storage", applyLocal);
     };
-  }, []);
+  }, [signedIn, status]);
+
+  if (!signedIn) return null;
 
   const showRecent = mode !== "saved" && recent.length > 0;
   const showSaved = mode !== "recent" && saved.length > 0;

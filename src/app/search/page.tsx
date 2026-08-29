@@ -464,9 +464,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 </div>
 
                 <div className="tc-card-actions">
-                  <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">
-                    Message
-                  </Link>
+                  {session?.user ? (
+                    <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">
+                      Message
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/login?callbackUrl=${encodeURIComponent(`/messages?to=${t.user.id}`)}`}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Sign in to message
+                    </Link>
+                  )}
                   <Link href={listingPath(t.id)} className="btn btn-sm">
                     View listing
                   </Link>

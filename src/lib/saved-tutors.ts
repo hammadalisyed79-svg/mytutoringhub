@@ -1,8 +1,24 @@
-/** Client-side saved tutors + recently viewed (no account required). */
+/**
+ * Client-side saved tutors + recently viewed.
+ * Persist only for signed-in visitors — guests can search, but we do not store recents.
+ */
 
 const FAVORITES_KEY = "mth_saved_tutors_v1";
 const RECENT_KEY = "mth_recent_tutors_v1";
 const MAX_RECENT = 8;
+
+/** Remove leftover guest recents/saves so they never appear without an account. */
+export function clearAnonymousTutorMemory() {
+  if (typeof window === "undefined") return;
+  let changed = false;
+  for (const key of [FAVORITES_KEY, RECENT_KEY]) {
+    if (window.localStorage.getItem(key) != null) {
+      window.localStorage.removeItem(key);
+      changed = true;
+    }
+  }
+  if (changed) window.dispatchEvent(new Event("mth-saved-tutors"));
+}
 
 export type SavedTutorRef = {
   tutorProfileId: string;
@@ -48,6 +64,7 @@ export function isTutorSaved(tutorProfileId: string): boolean {
 }
 
 export function toggleSavedTutor(ref: SavedTutorRef): boolean {
+  if (typeof window === "undefined") return false;
   const rows = listSavedTutors();
   const idx = rows.findIndex((row) => row.tutorProfileId === ref.tutorProfileId);
   if (idx >= 0) {
@@ -65,6 +82,7 @@ export function listRecentTutors(): SavedTutorRef[] {
 }
 
 export function trackRecentTutor(ref: Omit<SavedTutorRef, "savedAt">) {
+  if (typeof window === "undefined") return;
   if (!isDisplayableTutorRef(ref)) return;
   const rows = listRecentTutors().filter((row) => row.tutorProfileId !== ref.tutorProfileId);
   rows.unshift({ ...ref, savedAt: Date.now() });
