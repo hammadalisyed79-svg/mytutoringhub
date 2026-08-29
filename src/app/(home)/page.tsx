@@ -451,10 +451,11 @@ export default async function HomePage() {
           <div>
             <h2>Are you a tutor? Start teaching</h2>
             <p>
-              Complete your profile to appear in search for free. Tutor Basic adds priority
-              ranking, unlimited enquiry reveals, and up to 3 subject profiles — complimentary
+              Complete your profile to appear in search for free. Tutor Pro adds priority
+              ranking, unlimited enquiry reveals, and up to 3 teaching listings — complimentary
               until 30 September 2026 (2 free teaching listings for everyone during the
-              launch; more require a plan). From 1 October 2026 listings are paid. Verified, Highlight, and Profile Boost stay paid per listing. You keep 100%
+              launch; more require a plan). From 1 October 2026 listings are paid. Listing Boost
+              is optional; the Verified badge is earned via identity review. You keep 100%
               of lesson fees.
             </p>
           </div>

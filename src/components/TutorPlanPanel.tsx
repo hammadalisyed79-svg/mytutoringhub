@@ -109,8 +109,8 @@ export function TutorPlanPanel({
         ) : (
           <div className="tutor-plan-empty">
             <p>
-              Complete your profile to appear in search for free. Tutor Basic unlocks priority
-              ranking, unlimited enquiry reveals, and up to 3 subject profiles.
+              Complete your profile to appear in search for free. Tutor Pro unlocks priority
+              ranking, unlimited enquiry reveals, and up to 3 teaching listings.
             </p>
           </div>
         )}
@@ -141,9 +141,9 @@ export function TutorPlanPanel({
           <div className="tutor-plan-cta">
             <SubscribeButton
               plan="TUTOR_BASIC"
-              planLabel="Tutor Basic"
+              planLabel="Tutor Pro"
               currency={currency}
-              label="Activate Tutor Basic free"
+              label="Activate Tutor Pro free"
               complimentary
               paidCheckoutLive={paidCheckoutLive}
             />

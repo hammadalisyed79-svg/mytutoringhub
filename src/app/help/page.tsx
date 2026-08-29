@@ -6,7 +6,7 @@ import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE, studentFreeContact
 export const metadata = pageMetadata({
   title: "Help & FAQ – Contacting Tutors, Plans & Payments",
   description:
-    "Answers about finding tutors, Student Pass, Tutor Basic, Safepay billing, email verification, and safety on My Tutoring Hub.",
+    "Answers about finding tutors, Student Pass, Tutor Pro, Safepay billing, email verification, and safety on My Tutoring Hub.",
   path: "/help",
 });
 
@@ -41,11 +41,11 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Basic, Verified, Highlighted, Profile Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Basic and free listings work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Pro, Priority Verification Review, Listing Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Pro and free listings work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
   },
   {
-    q: "Is Tutor Basic free?",
-    a: "Complete tutor profiles appear in search for free. Until 30 September 2026, every tutor gets 2 free teaching listings (more need a plan), and Tutor Basic (priority ranking + unlimited enquiry reveals) is complimentary. Verified badge, Highlight, and Profile Boost remain paid add-ons — Boost/Highlight are bought per listing. From 1 October 2026, teaching listings require a plan; free students keep 3 new tutor contacts/month.",
+    q: "Is Tutor Pro free?",
+    a: "Complete tutor profiles appear in search for free. Until 30 September 2026, every tutor gets 2 free teaching listings (more need a plan), and Tutor Pro (priority ranking + unlimited enquiry reveals) is complimentary. Listing Boost is optional per listing. The Verified badge is earned after identity review — Priority Verification Review only jumps the queue. From 1 October 2026, teaching listings require a plan; free students keep 3 new tutor contacts/month.",
   },
   {
     q: "Why do I need to verify my email?",
@@ -53,7 +53,7 @@ const FAQS = [
   },
   {
     q: "What is a Verified tutor?",
-    a: "Verified tutors upload a government photo ID (passport, national ID / CNIC, or driving licence). A qualification certificate is recommended. Admins review the files privately and then approve the badge. Purchasing Verified Tutor only prioritises the queue.",
+    a: "Verified tutors upload a government photo ID (passport, national ID / CNIC, or driving licence). A qualification certificate is recommended. Admins review the files privately and then approve the badge. You cannot buy the badge; Priority Verification Review only prioritises the queue.",
   },
   {
     q: "How do reviews work?",

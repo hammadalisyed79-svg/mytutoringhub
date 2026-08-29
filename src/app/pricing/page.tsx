@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
   title: "Plans & Pricing – Student Pass, Student Pro & Tutor Subscriptions",
-  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Basic adds priority. No lesson commission.`,
+  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Pro adds priority. No lesson commission.`,
   path: "/pricing",
 });
 
@@ -96,7 +96,7 @@ export default async function PricingPage({
             <strong>{liveOffer.promoLabel || "Limited offer"}</strong>
             <p>
               {liveOffer.promoNote ||
-                `Tutor Basic is ${liveOffer.isComplimentary ? "complimentary" : "discounted"} until ${formatPromoUntil(liveOffer.promoEndsAt)}. Verified badge, highlight, and ad boost remain paid.`}
+                `Tutor Pro is ${liveOffer.isComplimentary ? "complimentary" : "discounted"} until ${formatPromoUntil(liveOffer.promoEndsAt)}. Listing Boost and Priority Verification Review remain optional paid products.`}
             </p>
           </aside>
         )}
@@ -112,7 +112,7 @@ export default async function PricingPage({
           ) : (
             <>
               <span>Free tutor listings</span>
-              <span>Complimentary Tutor Basic</span>
+              <span>Complimentary Tutor Pro</span>
               <span>Bank transfer accepted</span>
               <span>Plans activated within 24h</span>
             </>
@@ -141,7 +141,7 @@ export default async function PricingPage({
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
             {paidCheckoutLive
               ? "Join free, then pay on Safepay from the plan you pick. Signed-in accounts never go back to register — checkout starts here."
-              : "Join free first. Complimentary Tutor Basic activates without payment; other paid plans — email us until card checkout is live."}
+              : "Join free first. Complimentary Tutor Pro activates without payment; other paid plans — email us until card checkout is live."}
           </p>
         )}
 

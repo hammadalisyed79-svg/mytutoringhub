@@ -30,7 +30,7 @@ export function AuthLayout({
           <ul className="auth-trust-list">
             <li>Gmail, Hotmail, Outlook, Yahoo, or any email</li>
             <li>Confirmations from admin@mytutoringhub.com</li>
-            <li>Student Pass & Tutor Basic plans</li>
+            <li>Student Pass & Tutor Pro plans</li>
             <li>Secure checkout in your local currency</li>
           </ul>
         </aside>

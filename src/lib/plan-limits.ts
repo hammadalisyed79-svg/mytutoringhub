@@ -221,7 +221,7 @@ export async function getPlanDashboardSummary(
       "UNLIMITED_ADS",
     ] as SubscriptionPlan[]));
   return {
-    planName: hasElite ? "Verified Tutor" : hasBasic ? "Tutor plan" : "Free listing",
+    planName: hasElite ? "Priority Verification" : hasBasic ? "Tutor Pro" : "Free listing",
     planTier: hasElite ? "elite" : hasBasic ? "pro" : "free",
     usageUsed: check.used,
     usageLimit: check.limit,
@@ -229,6 +229,6 @@ export async function getPlanDashboardSummary(
     renewsOn: hasBasic ? renewsOn : null,
     upgradeHint: hasBasic
       ? "Unlimited student contact when you initiate. Free accounts get 2 teaching listings until 30 Sep 2026, then paid plans unlock listings."
-      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month. Until 30 Sep 2026 you get 2 free teaching listings; Extra Profile Ads or Tutor Basic unlock more.`,
+      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month. Until 30 Sep 2026 you get 2 free teaching listings; Tutor Pro unlocks more.`,
   };
 }

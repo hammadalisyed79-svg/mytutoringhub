@@ -60,7 +60,7 @@ export function isSubjectProfilePromoActive(now = new Date()): boolean {
 
 export function subjectProfilePromoLabel(now = new Date()): string {
   if (!isSubjectProfilePromoActive(now)) {
-    return "Teaching listings require a plan from 1 October 2026. Extra Profile Ads or Tutor Basic unlock up to 3; Unlimited Profiles removes the cap.";
+    return "Teaching listings require a plan from 1 October 2026. Tutor Pro (or a legacy listing pack) unlocks up to 3; Unlimited Profiles (legacy) removes the cap.";
   }
   return `${FREE_SUBJECT_PROFILES_DURING_PROMO} teaching listings free until ${formatPromoUntil(SUBJECT_PROFILE_PROMO_UNTIL)} — more require a plan`;
 }
@@ -143,7 +143,7 @@ export async function canCreateSubjectProfile(
     if (isSubjectProfilePromoActive(now) && cap <= FREE_SUBJECT_PROFILES_DURING_PROMO) {
       return {
         ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES_DURING_PROMO} teaching listings until 30 September 2026. Upgrade to Extra Profile Ads, Tutor Basic, or Unlimited Profiles to add more.`,
+        reason: `Free plan includes ${FREE_SUBJECT_PROFILES_DURING_PROMO} teaching listings until 30 September 2026. Upgrade to Tutor Pro (or a legacy listing pack) to add more.`,
         activeCount,
         cap,
       };
@@ -152,14 +152,14 @@ export async function canCreateSubjectProfile(
       return {
         ok: false,
         reason:
-          "Teaching listings require a plan from 1 October 2026. Upgrade to Extra Profile Ads, Tutor Basic (up to 3), or Unlimited Profiles.",
+          "Teaching listings require a plan from 1 October 2026. Upgrade to Tutor Pro (up to 3) or Unlimited Profiles (legacy).",
         activeCount,
         cap,
       };
     }
     return {
       ok: false,
-      reason: `Active teaching listing limit reached (${cap}). Upgrade to Unlimited Profiles for more.`,
+      reason: `Active teaching listing limit reached (${cap}). Upgrade to Unlimited Profiles (legacy) for more.`,
       activeCount,
       cap,
     };

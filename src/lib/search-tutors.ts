@@ -422,17 +422,18 @@ export async function searchTutors(
         title: card.title,
         level: card.levels || "",
         score:
-          tierScore * 100 +
-          boost * 1000 +
-          highlight * 100 +
-          verified * 10 +
-          trustScore * 15 +
-          locBoost +
-          countryBoost +
-          subjectFieldMatch +
-          levelFieldMatch +
-          boardMatch +
-          codeMatchScore -
+          // Relevance first (Marketplace V2): boost/tier are tie-breakers, not overrides.
+          subjectFieldMatch * 20 +
+          codeMatchScore * 25 +
+          boardMatch * 18 +
+          levelFieldMatch * 12 +
+          locBoost * 4 +
+          countryBoost * 2 +
+          boost * 8 +
+          highlight * 5 +
+          tierScore * 3 +
+          verified * 4 +
+          trustScore * 3 -
           card.hourlyRate / 10000,
       };
     })

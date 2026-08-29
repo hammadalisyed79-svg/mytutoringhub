@@ -18,7 +18,7 @@ export default function TermsPage() {
           <p>
             My Tutoring Hub is a marketplace that connects students and private tutors. We do not
             provide lessons ourselves. Lesson fees and scheduling are arranged directly between
-            students and tutors. Platform subscriptions (Student Pass, Tutor Basic, and optional
+            students and tutors. Platform subscriptions (Student Pass, Tutor Pro, and optional
             upgrades) are billed separately through our payment partners.
           </p>
           <h2>2. Accounts</h2>
@@ -34,13 +34,14 @@ export default function TermsPage() {
             each month as shown on Plans &amp; pricing. Student Pass unlocks unlimited tutor
             contacts and student request ads; Student Pro adds unlimited past-paper downloads and
             the AI study assistant where offered. Tutors with a complete profile may appear in
-            search without a paid plan. Tutor Basic and optional upgrades (Verified, Highlight /
-            Boost per subject profile, Extra Profile Ads, Unlimited Profiles) improve ranking and
+            search without a paid plan. Tutor Pro and optional upgrades (Priority Verification
+            Review, Listing Boost per teaching listing, legacy listing packs) improve ranking and
             visibility tools. Subscriptions renew
             according to the plan you purchase unless cancelled. Limited-time offers (for example
-            complimentary Tutor Basic and 2 free teaching listings until a stated date) end
+            complimentary Tutor Pro and 2 free teaching listings until a stated date) end
             automatically; paid add-ons such as
-            Verified, Highlight, and Profile Boost are never included unless purchased. Platform
+            Listing Boost are never included unless purchased. The Verified badge is granted only
+            after successful identity review. Platform
             subscriptions are processed by Safepay when card checkout is live; until then paid
             plans are activated manually after payment confirmation. Lesson fees stay
             off-platform and are never collected by My Tutoring Hub.

@@ -19,7 +19,7 @@ export default function RefundPage() {
           <h2>1. What this covers</h2>
           <p>
             This policy applies to <strong>platform subscriptions</strong> (Student Pass, Student Pro,
-            Tutor Basic, and tutor add-ons) and <strong>individual past paper purchases</strong> billed
+            Tutor Pro, and tutor add-ons) and <strong>individual past paper purchases</strong> billed
             through My Tutoring Hub via Safepay. {NO_LESSON_COMMISSION_LINE} Lesson fees arranged with
             tutors are not processed by us and are not covered here.
           </p>
@@ -31,10 +31,11 @@ export default function RefundPage() {
           </p>
           <h2>3. Subscriptions &amp; renewal</h2>
           <p>
-            Monthly and annual plans renew automatically for the period you purchased unless cancelled
-            before the next billing date. Complimentary or promotional plans (for example Tutor Basic
-            during a launch window) end on the stated date; paid add-ons are never included unless
-            purchased separately.
+            Monthly and annual plans are billed for the period you purchase. When automatic card
+            renewal is enabled for your plan, it continues until you cancel; otherwise contact us to
+            stop further charges before the next billing date. Complimentary or promotional plans
+            (for example Tutor Pro during a launch window) end on the stated date; paid add-ons are
+            never included unless purchased separately.
           </p>
           <h2>4. Cancellation</h2>
           <p>
@@ -62,7 +63,7 @@ export default function RefundPage() {
           <ul>
             <li>Lesson fees paid directly to a tutor</li>
             <li>Subscriptions where substantial platform use occurred after purchase</li>
-            <li>Add-on visibility windows (Highlight, Profile Boost) after the boost period has started</li>
+            <li>Add-on visibility windows (Listing Boost / legacy Highlight) after the boost period has started</li>
           </ul>
           <h2>7. Related policies</h2>
           <p>

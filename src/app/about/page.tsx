@@ -28,17 +28,17 @@ export default function AboutPage() {
           <p>
             Search and registration are free. {STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks
             unlimited messaging and student request ads; Student Pro adds unlimited past papers and the
-            AI study assistant.             {TUTOR_FREE_LISTING_LINE} Optional add-ons (Verified badge, Highlight / Boost per
-            subject profile, Extra Profile Ads, Unlimited Profiles) improve visibility. Platform
-            subscriptions are billed through Safepay.
+            AI study assistant. {TUTOR_FREE_LISTING_LINE} Tutor Pro improves growth tools; optional
+            Listing Boost helps visibility. Identity verification is a trust review — the badge is
+            earned after approval. Platform subscriptions are billed through Safepay.
           </p>
           <h2>Launch offer</h2>
           <p>
-            Tutor Basic (priority ranking and unlimited contacts) is complimentary until 30 September
-            2026. Every tutor gets 2 free teaching listings during the same window; more require a
-            plan. Verified, Highlight, Profile Boost, Extra Profile Ads, and Unlimited Profiles stay paid.
-            From 1 October 2026 all teaching listings require a plan; the standard Tutor Basic price
-            applies.
+            Tutor Pro (priority ranking and unlimited enquiry reveals) is complimentary until 30
+            September 2026. Every tutor gets 2 free teaching listings during the same window; more
+            require a plan. Listing Boost and Priority Verification Review stay optional paid
+            products. From 1 October 2026 all teaching listings require a plan; the standard Tutor
+            Pro price applies.
           </p>
           <h2>Trust &amp; safety</h2>
           <p>

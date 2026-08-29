@@ -119,13 +119,13 @@ export function FreeVsPaidComparison({ showFaq = true }: { showFaq?: boolean }) 
       <section className="compare-section">
         <h2>For tutors</h2>
         <p className="muted">
-          List for free with a complete profile. Tutor Basic adds growth tools; visibility add-ons
-          are optional.
+          List for free with a complete profile. Tutor Pro adds growth tools; Listing Boost is
+          optional.
         </p>
         <CompareTable
           caption="Tutor free vs paid features"
           freeLabel="Free listing"
-          paidLabel="Tutor Basic & add-ons"
+          paidLabel="Tutor Pro & add-ons"
           rows={TUTOR_COMPARE_ROWS}
         />
         <p className="section-actions">

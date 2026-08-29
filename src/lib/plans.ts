@@ -86,16 +86,16 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "TUTOR_BASIC",
-    name: "Tutor Basic",
+    name: "Tutor Pro",
     description:
-      "Get more students: priority in search, unlimited enquiry reveals, and up to 3 subject profiles. Free complete profiles already appear in search.",
+      "Paid growth plan: priority in relevant search, unlimited enquiry reveals, and up to 3 teaching listings. Free complete profiles already appear in search. (Internal plan id: Tutor Basic.)",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),
     features: [
-      "Priority ranking — appear above free listings",
+      "Priority ranking in relevant search",
       "Unlimited enquiry reveals when you message students first",
-      "Up to 3 active subject profiles",
+      "Up to 3 active teaching listings",
       "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
@@ -104,26 +104,28 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Basic is complimentary until 30 September 2026. Until then, every tutor gets 2 free teaching listings; Extra Profile Ads, Basic, or Unlimited Profiles unlock more. From 1 October 2026, teaching listings require a plan (0 free); Basic unlocks priority, unlimited contacts, and up to 3 listings. Verified badge, highlight, and profile boost remain paid add-ons.",
+      "Tutor Pro is complimentary until 30 September 2026. Until then, every tutor gets 2 free teaching listings; Tutor Pro or a legacy listing pack unlocks more. From 1 October 2026, teaching listings require a plan (0 free). Identity verification is a trust review (not a purchased badge). Listing Boost remains an optional paid add-on.",
   },
   {
     id: "VERIFIED_TUTOR",
-    name: "Verified Tutor",
-    description: "Priority verification review and trusted badge.",
+    name: "Priority Verification Review",
+    description:
+      "Jump the identity-verification queue. The Verified badge is earned only after a successful admin review — not purchased.",
     audience: "tutor",
     pricePkr: 2999,
     features: [
-      "Verified badge on profile",
-      "Priority verification queue",
-      "Higher trust ranking (Elite tier)",
+      "Priority place in the verification review queue",
+      "Verified badge only if review is approved",
+      "Higher trust ranking after approval (Elite tier)",
     ],
     envPriceId: "STRIPE_PRICE_VERIFIED_TUTOR",
     isAddOn: true,
   },
   {
     id: "HIGHLIGHTED_AD",
-    name: "Highlighted Profile",
-    description: "Highlight badge and top placement for one subject profile for 30 days.",
+    name: "Listing Highlight (legacy)",
+    description:
+      "Legacy 30-day highlight on one teaching listing. Prefer Listing Boost for new purchases.",
     audience: "tutor",
     pricePkr: 1299,
     features: ["Highlighted badge on that listing", "Higher search placement for 30 days"],
@@ -132,14 +134,14 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "AD_BOOST",
-    name: "Profile Boost",
+    name: "Listing Boost",
     description:
-      "One-time checkout — boost one subject profile for 30 days with periodic top placement.",
+      "One-time checkout — boost one teaching listing for 30 days with periodic stronger placement (still ranked below strong subject match).",
     audience: "tutor",
     pricePkr: 999,
     features: [
-      "30-day boost window on one subject profile",
-      "Periodic top-of-list placement in search",
+      "30-day boost window on one teaching listing",
+      "Stronger placement among relevant matches",
       "Repurchase extends that listing’s window",
     ],
     envPriceId: "STRIPE_PRICE_AD_BOOST",
@@ -147,13 +149,13 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "EXTRA_PROFILE_ADS",
-    name: "Extra Profile Ads",
+    name: "Extra Profile Ads (legacy)",
     description:
-      "Run up to 3 active subject profiles (Maths, Physics, …). Ideal after the free first profile.",
+      "Legacy pack: up to 3 active teaching listings. New tutors should use Tutor Pro for the same cap.",
     audience: "tutor",
     pricePkr: 999,
     features: [
-      "Up to 3 active subject profiles",
+      "Up to 3 active teaching listings",
       "Each subject shows as its own listing",
       "Unlimited enquiry reveals while active",
     ],
@@ -162,12 +164,13 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "UNLIMITED_ADS",
-    name: "Unlimited Profiles",
-    description: "Publish unlimited active subject profiles across subjects and cities.",
+    name: "Unlimited Profiles (legacy)",
+    description:
+      "Legacy pack: unlimited active teaching listings. Grandfathered holders keep entitlement; new growth path is Tutor Pro pending final listing-cap policy.",
     audience: "tutor",
     pricePkr: 1999,
     features: [
-      "Unlimited active subject profiles",
+      "Unlimited active teaching listings",
       "Reach more niches and cities",
       "Unlimited enquiry reveals while active",
     ],

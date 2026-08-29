@@ -84,16 +84,16 @@ export default async function HowItWorksPage() {
                 cards
               </li>
               <li>
-                Tutor Basic unlocks priority ranking and unlimited enquiry reveals (complimentary
+                Tutor Pro unlocks priority ranking and unlimited enquiry reveals (complimentary
                 until 30 September 2026); 2 free teaching listings in the same window, then paid
                 from 1 October 2026
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is
-                recommended
+                recommended — the badge is earned after review
               </li>
               <li>
-                Boost or highlight each subject profile from your dashboard — paid on Safepay
+                Optional Listing Boost on each teaching listing from your dashboard — paid on Safepay
               </li>
             </ul>
             <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>

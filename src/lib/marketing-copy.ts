@@ -23,7 +23,7 @@ export const VALUE_PROPOSITION_SHORT = `Search free · ${NO_LESSON_COMMISSION_SH
 
 export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month. Student Pass unlocks unlimited messaging.`;
 
-export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited downloads.`;
+export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited eligible downloads. Anyone can browse the library; individual papers can also be purchased separately when offered.`;
 
 export const TUTOR_FREE_LISTING_LINE =
   "Complete your profile to appear in search. Until 30 September 2026 you get 2 free teaching listings; more require a plan. From 1 October 2026 all teaching listings are paid.";

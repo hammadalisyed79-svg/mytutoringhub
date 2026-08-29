@@ -9,8 +9,8 @@ import { pageMetadata } from "@/lib/seo";
 import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
-  title: "Become a Tutor – Free Listing & Tutor Basic Priority",
-  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Basic complimentary until 30 September 2026.`,
+  title: "Become a Tutor – Free Listing & Tutor Pro Priority",
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Pro complimentary until 30 September 2026.`,
   path: "/become-a-tutor",
 });
 
@@ -79,9 +79,10 @@ export default async function BecomeATutorPage({
             <span>3</span>
             <h3>Go live automatically</h3>
             <p className="muted">
-              Eligible profiles appear in search with no manual approval queue. Optional: Tutor Basic
-              for priority ranking and unlimited enquiry reveals (complimentary until 30 September
-              2026). Subject profiles are unlimited free during the same launch.
+              Eligible profiles appear in search with no manual approval queue. Until 30 September
+              2026 you get 2 free teaching listings; more require Tutor Pro (or a listing pack).
+              Tutor Pro adds priority ranking and unlimited enquiry reveals (complimentary until
+              the same date). From 1 October 2026 all teaching listings require a plan.
             </p>
           </div>
         </div>

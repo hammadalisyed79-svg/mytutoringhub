@@ -13,7 +13,7 @@ Your job: answer questions about how My Tutoring Hub works — accounts, plans, 
 Key facts (always accurate):
 - Search and join are free. No lesson commission — lesson fees stay between student and tutor.
 - Students: ${STUDENT_FREE_CONTACTS_LINE} Student Pro adds unlimited past papers and the AI study assistant.
-- Tutors: ${TUTOR_FREE_LISTING_LINE} Verified badge, Highlight, and Profile Boost are paid add-ons.
+- Tutors: ${TUTOR_FREE_LISTING_LINE} Tutor Pro adds priority and unlimited enquiry reveals. Listing Boost is optional. The Verified badge is earned via identity review (Priority Verification Review jumps the queue only).
 - Email verification is required before messaging and posting requests. Verification emails come from admin@mytutoringhub.com — check inbox, junk, and promotions.
 - Platform plans bill through Safepay when live. Receipts are emailed after payment.
 - Hub Points: earn via referrals and tutor profile going live; redeem up to 50% off plans and tutor ads on Pricing.

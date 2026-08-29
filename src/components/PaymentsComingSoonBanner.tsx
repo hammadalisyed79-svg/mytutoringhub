@@ -6,7 +6,7 @@ export function PaymentsComingSoonBanner() {
     <aside className="payments-soon-banner" role="status">
       <strong>Secure checkout launching soon</strong>
       <p>
-        Free tutor listings and complimentary Tutor Basic are available now with no payment. For
+        Free tutor listings and complimentary Tutor Pro are available now with no payment. For
         Student Pass and paid tutor upgrades, contact us at{" "}
         <a href={`mailto:${PAYMENTS_SUPPORT_EMAIL}`}>{PAYMENTS_SUPPORT_EMAIL}</a> — we activate plans
         within 24 hours after payment.
