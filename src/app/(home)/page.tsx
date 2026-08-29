@@ -11,6 +11,9 @@ import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
+import { buildPastPaperFilterTree } from "@/lib/past-papers/browse";
+import { curriculumCountries } from "@/lib/curriculum";
+import { PastPaperSearchForm } from "@/components/PastPaperSearchForm";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import {
@@ -33,22 +36,29 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
-const PAST_PAPER_FILTER_PREVIEW = [
-  "Board",
-  "Qualification",
-  "Subject",
-  "Year",
-  "Session",
-  "Document type",
-] as const;
-
 export default async function HomePage() {
   const session = await auth();
   const headersList = await headers();
   const pinnedCountry = getUserCountry(headersList);
   const region = getVisitorRegion(headersList);
   const curriculumCodeCount = CURRICULUM.length;
-  const pastPaperCount = await prisma.pastPaper.count({ where: publicAvailabilityWhere() });
+  const countries = curriculumCountries(pinnedCountry);
+  const [pastPaperCount, boardCountRows] = await Promise.all([
+    prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
+    prisma.pastPaper.groupBy({
+      by: ["board", "country"],
+      where: publicAvailabilityWhere(),
+      _count: { _all: true },
+    }),
+  ]);
+  const boardCountsByCountry = new Map<string, Map<string, number>>();
+  for (const row of boardCountRows) {
+    if (!row.country) continue;
+    const bucket = boardCountsByCountry.get(row.country) || new Map<string, number>();
+    bucket.set(row.board, (bucket.get(row.board) || 0) + row._count._all);
+    boardCountsByCountry.set(row.country, bucket);
+  }
+  const pastPaperFilterTree = buildPastPaperFilterTree(countries, boardCountsByCountry);
 
   const stats = [
     curriculumCodeCount > 0 && {
@@ -244,16 +254,17 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="home-past-papers-preview" aria-hidden="true">
-              <p className="home-pp-preview-label">Filter past papers</p>
-              <ul className="home-pp-filters">
-                {PAST_PAPER_FILTER_PREVIEW.map((label) => (
-                  <li key={label}>
-                    <span>{label}</span>
-                    <span className="home-pp-filter-slot" />
-                  </li>
-                ))}
-              </ul>
+            <div className="home-past-papers-preview">
+              <p className="home-pp-preview-label" id="home-pp-filter-title">
+                Filter past papers
+              </p>
+              <PastPaperSearchForm
+                tree={pastPaperFilterTree}
+                pinnedCountry={pinnedCountry}
+                action="/past-papers"
+                compact
+                initial={{}}
+              />
             </div>
           </div>
         </section>

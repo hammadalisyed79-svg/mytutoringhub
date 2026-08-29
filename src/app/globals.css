@@ -11969,6 +11969,43 @@ img {
   background: linear-gradient(90deg, rgba(var(--brand-rgb), 0.06), rgba(255, 255, 255, 0.8));
 }
 
+.home-page .home-past-papers-preview .home-pp-search.filters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  align-items: stretch;
+}
+
+.home-page .home-past-papers-preview .home-pp-search label {
+  display: grid;
+  grid-template-columns: 7.4rem minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.home-page .home-past-papers-preview .home-pp-search select {
+  width: 100%;
+  min-height: 2.4rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.home-page .home-past-papers-preview .home-pp-search .btn {
+  width: 100%;
+  margin-top: 0.2rem;
+}
+
 /* Free summary â€” open layout, not card grid */
 .home-page .home-free-summary-grid {
   display: grid;
@@ -12212,7 +12249,8 @@ img {
     margin-bottom: 0.9rem;
   }
 
-  .home-page .home-pp-filters li {
+  .home-page .home-pp-filters li,
+  .home-page .home-past-papers-preview .home-pp-search label {
     grid-template-columns: 1fr;
     gap: 0.25rem;
   }

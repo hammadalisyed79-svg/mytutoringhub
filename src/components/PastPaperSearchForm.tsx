@@ -36,10 +36,17 @@ export function PastPaperSearchForm({
   tree,
   initial,
   pinnedCountry,
+  action,
+  compact = false,
+  className,
 }: {
   tree: PastPaperFilterTree;
   initial: PastPaperSearchValues;
   pinnedCountry?: string | null;
+  /** Submit to another path (homepage → `/past-papers`) using the same query keys. */
+  action?: string;
+  compact?: boolean;
+  className?: string;
 }) {
   const defaultCountry =
     initial.country ||
@@ -86,11 +93,17 @@ export function PastPaperSearchForm({
   }
 
   return (
-    <form className="panel filters filters-wide" method="get">
+    <form
+      className={`panel filters filters-wide${compact ? " is-compact home-pp-search" : ""}${className ? ` ${className}` : ""}`}
+      method="get"
+      action={action || undefined}
+    >
+      {!compact && (
       <label>
         Search
         <input name="q" defaultValue={initial.q || ""} placeholder="Chemistry, 0620, paper 42" />
       </label>
+      )}
       <label>
         Country
         <select
@@ -158,10 +171,12 @@ export function PastPaperSearchForm({
           ))}
         </select>
       </label>
+      {!compact && (
       <label>
         Code
         <input name="code" defaultValue={initial.code || ""} placeholder="0620 (Cambridge syllabus code)" />
       </label>
+      )}
       <label>
         Year
         <select name="year" defaultValue={initial.year || ""}>
@@ -173,10 +188,12 @@ export function PastPaperSearchForm({
           ))}
         </select>
       </label>
+      {!compact && (
       <label>
         Paper code
         <input name="paper" defaultValue={initial.paper || ""} placeholder="Paper number" aria-label="Paper / component" />
       </label>
+      )}
       <label>
         Session
         <select name="session" defaultValue={initial.session || ""}>
@@ -200,7 +217,7 @@ export function PastPaperSearchForm({
         </select>
       </label>
       <button className="btn" type="submit">
-        Search
+        {compact ? "Show papers" : "Search"}
       </button>
     </form>
   );
