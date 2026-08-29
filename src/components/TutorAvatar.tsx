@@ -56,7 +56,7 @@ export function TutorAvatar({
       : className?.includes("profile-photo")
         ? "(max-width: 520px) 120px, 160px"
         : isCardAvatar
-          ? "(max-width: 600px) 100vw, (max-width: 960px) 50vw, 320px"
+          ? "(max-width: 640px) 100vw, 140px"
           : className?.includes("tc-avatar")
             ? "64px"
             : "54px";

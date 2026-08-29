@@ -11,7 +11,6 @@ import { GuidedTutorSearch } from "@/components/GuidedTutorSearch";
 import { SearchStudentBanner } from "@/components/SearchStudentBanner";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
-import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { isDefaultTutorBio, TUTOR_VERIFY_PROFILE_MESSAGE } from "@/lib/tutor-listing-copy";
 import { curriculumBoards, curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
 import { RecentAndSavedTutors } from "@/components/RecentAndSavedTutors";
@@ -314,18 +313,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                 : null;
             const boosted = isBoostActive(t.boostUntil);
-            const highlighted =
-              t.highlighted || (t.highlightedUntil && t.highlightedUntil > new Date());
             const subjectChips = (t.subjects || "")
               .split(/[,;|]/)
               .map((s) => s.trim())
               .filter(Boolean)
               .slice(0, 3);
-            const levelChips = (t.levels || "")
-              .split(/[,;|]/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .slice(0, 2);
             const snippet = isDefaultTutorBio(t.bio) ? "" : (t.bio || "").slice(0, 90).trim();
             const reviewSnippet = (t.reviews.find((r) => r.comment?.trim())?.comment || "")
               .slice(0, 72)
@@ -338,12 +330,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             });
             const tutorName = t.user.name?.trim() || "Tutor";
             const isOwner = session?.user?.id === t.user.id;
+            const alsoTeaches = (t.alsoTeaches || []).slice(0, 3);
+            const showSnippet = !t.headline && snippet;
             return (
               <article
                 key={t.id}
-                className={`tc-card tc-card-grid${highlighted ? " highlighted" : ""}${boosted ? " boosted" : ""}`}
+                className={`tc-card tc-card-pro${boosted ? " boosted" : ""}`}
               >
-                <div className="tc-card-head">
+                <div className="tc-card-media">
                   <TutorAvatar
                     className="tc-avatar tc-avatar-card"
                     photoUrl={t.photoUrl}
@@ -352,28 +346,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     cropZoom={t.photoCropZoom}
                     initial={tutorName.slice(0, 1).toUpperCase()}
                   />
-                  <div className="tc-card-head-tools">
-                    <SaveTutorButton
-                      compact
-                      tutor={{
-                        tutorProfileId: t.tutorProfileId,
-                        listingId: t.id,
-                        name: tutorName,
-                        subject: t.subject,
-                        photoUrl: t.photoUrl,
-                        href: listingPath(t.id),
-                      }}
-                    />
-                    {isOwner ? (
-                      !t.verified && (
-                        <span className="badge tutor-owner-verify-badge" title={TUTOR_VERIFY_PROFILE_MESSAGE}>
-                          Not Verified
-                        </span>
-                      )
-                    ) : (
-                      <TutorTrustBadgePill badge={t.trustBadge || "NEW"} size="sm" fullLabel />
-                    )}
-                  </div>
+                  <SaveTutorButton
+                    compact
+                    className="tc-card-save"
+                    tutor={{
+                      tutorProfileId: t.tutorProfileId,
+                      listingId: t.id,
+                      name: tutorName,
+                      subject: t.subject,
+                      photoUrl: t.photoUrl,
+                      href: listingPath(t.id),
+                    }}
+                  />
                 </div>
 
                 <div className="tc-card-main">
@@ -381,40 +365,46 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     <h2 className="tc-name">
                       <Link href={listingPath(t.id)}>{tutorName}</Link>
                     </h2>
-                    {avg !== null && (
-                      <span className="tc-rating" aria-label={`${avg.toFixed(1)} out of 5`}>
-                        ★ {avg.toFixed(1)}
-                        <span className="muted"> ({t.reviews.length})</span>
-                      </span>
-                    )}
+                    <div className="tc-card-title-meta">
+                      {avg !== null && (
+                        <span className="tc-rating" aria-label={`${avg.toFixed(1)} out of 5 from ${t.reviews.length} reviews`}>
+                          ★ {avg.toFixed(1)}
+                          <span className="muted"> ({t.reviews.length})</span>
+                        </span>
+                      )}
+                      <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
+                    </div>
                   </div>
 
                   {t.headline && <p className="tc-headline">{t.headline}</p>}
-
-                  {(t.board || t.qualification || t.syllabusCode || (t.levels && t.levels !== "All levels")) && (
-                    <p className="tc-listing-taxonomy muted">
-                      {[t.board, t.qualification || (t.levels !== "All levels" ? t.levels : null), t.syllabusCode]
-                        .filter(Boolean)
-                        .join(" · ")}
+                  {showSnippet && (
+                    <p className="tc-snippet tc-snippet-grid">
+                      {snippet}
+                      {(t.bio || "").length > 90 ? "…" : ""}
                     </p>
                   )}
 
-                  <div className="tc-rate-row">
-                    <span className="tc-rate">{formatHourly(t.hourlyRate, currency)}</span>
-                    <span className="muted tc-rate-for">for this listing</span>
-                  </div>
+                  {(t.board || t.qualification || t.syllabusCode) && (
+                    <p className="tc-listing-taxonomy muted">
+                      {[t.board, t.qualification, t.syllabusCode].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
 
-                  <div className="tc-badges">
-                    {isOwner ? (
-                      !t.verified && (
-                        <span className="badge tutor-owner-verify-badge">Not Verified</span>
-                      )
-                    ) : (
-                      t.verified && <span className="badge badge-verified">Verified</span>
-                    )}
-                    {boosted && <span className="badge accent">Boosted</span>}
-                    {highlighted && <span className="badge accent">Featured</span>}
-                    {t.offersFreeTrial && <span className="badge">Free trial</span>}
+                  <div className="tc-card-meta-row">
+                    <p className="tc-place muted">{availability}</p>
+                    <div className="tc-badges">
+                      {isOwner ? (
+                        !t.verified && (
+                          <span className="badge tutor-owner-verify-badge" title={TUTOR_VERIFY_PROFILE_MESSAGE}>
+                            Not Verified
+                          </span>
+                        )
+                      ) : (
+                        t.verified && <span className="badge badge-verified">Identity Verified</span>
+                      )}
+                      {boosted && <span className="badge accent">Boosted</span>}
+                      {t.offersFreeTrial && <span className="badge">Free trial</span>}
+                    </div>
                   </div>
 
                   {isOwner && !t.verified && (
@@ -423,62 +413,51 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
                   {reviewSnippet && (
                     <p className="tc-review-snippet muted">
-                      “{reviewSnippet}{(t.reviews.find((r) => r.comment?.trim())?.comment || "").length > 72 ? "…" : ""}”
+                      “{reviewSnippet}
+                      {(t.reviews.find((r) => r.comment?.trim())?.comment || "").length > 72 ? "…" : ""}”
                     </p>
                   )}
 
-                  {snippet && (
-                    <p className="tc-snippet tc-snippet-grid">
-                      {snippet}{(t.bio || "").length > 90 ? "…" : ""}
-                    </p>
-                  )}
-
-                  {(subjectChips.length > 0 || levelChips.length > 0) && (
+                  {subjectChips.length > 0 && (
                     <div className="tc-chips">
                       {subjectChips.map((s) => (
                         <span key={s} className="tc-chip">
                           {s}
                         </span>
                       ))}
-                      {levelChips.map((l) => (
-                        <span key={l} className="tc-chip tc-chip-level">
-                          {l}
-                        </span>
-                      ))}
                     </div>
                   )}
 
-                  <p className="tc-place muted">{availability}</p>
-
-                  {t.alsoTeaches && t.alsoTeaches.length > 0 && (
+                  {alsoTeaches.length > 0 && (
                     <p className="tc-also-teaches muted">
                       Also teaches:{" "}
-                      {t.alsoTeaches.map((item, i) => (
+                      {alsoTeaches.map((item, i) => (
                         <span key={item.listingId}>
                           {i > 0 ? " · " : ""}
-                          <Link href={listingPath(item.listingId)}>{item.title || item.subject}</Link>
+                          <Link href={listingPath(item.listingId)}>{item.subject || item.title}</Link>
                         </span>
                       ))}
                     </p>
                   )}
-                </div>
 
-                <div className="tc-card-actions">
-                  {session?.user ? (
-                    <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">
-                      Message
+                  <div className="tc-card-actions">
+                    <Link href={listingPath(t.id)} className="btn btn-sm">
+                      View listing
                     </Link>
-                  ) : (
-                    <Link
-                      href={`/login?callbackUrl=${encodeURIComponent(`/messages?to=${t.user.id}`)}`}
-                      className="btn btn-secondary btn-sm"
-                    >
-                      Sign in to message
-                    </Link>
-                  )}
-                  <Link href={listingPath(t.id)} className="btn btn-sm">
-                    View listing
-                  </Link>
+                    {session?.user ? (
+                      <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">
+                        Message
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/login?callbackUrl=${encodeURIComponent(`/messages?to=${t.user.id}`)}`}
+                        className="btn btn-secondary btn-sm"
+                        aria-label="Sign in to message this tutor"
+                      >
+                        Message
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </article>
             );
