@@ -2,17 +2,15 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { HeroSearch } from "@/components/HeroSearch";
+import { HomePastPapersFallback, HomePastPapersShowcase } from "@/components/HomePastPapersShowcase";
+import { HomeProofStrip } from "@/components/HomeProofStrip";
 import { PrestigePillars } from "@/components/PrestigePillars";
 import { LoggedInWelcome } from "@/components/LoggedInWelcome";
 import { LogoMark } from "@/components/Logo";
 import { JsonLd } from "@/components/JsonLd";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
-import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
-import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
-import { HomePastPapersFallback, HomePastPapersShowcase } from "@/components/HomePastPapersShowcase";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import {
@@ -40,19 +38,6 @@ export default async function HomePage() {
   const headersList = await headers();
   const pinnedCountry = getUserCountry(headersList);
   const region = getVisitorRegion(headersList);
-  const curriculumCodeCount = CURRICULUM.length;
-  const pastPaperCount = await prisma.pastPaper.count({ where: publicAvailabilityWhere() });
-
-  const stats = [
-    curriculumCodeCount > 0 && {
-      value: curriculumCodeCount.toLocaleString(),
-      label: "Curriculum subject codes",
-    },
-    pastPaperCount > 0 && {
-      value: pastPaperCount.toLocaleString(),
-      label: pastPaperCount === 1 ? "Past paper" : "Past papers",
-    },
-  ].filter(Boolean) as { value: string; label: string }[];
 
   return (
     <div className="home-page">
@@ -123,16 +108,9 @@ export default async function HomePage() {
         recentHeading="Continue where you left off"
       />
 
-      <section className="home-proof-strip" aria-label="Platform facts">
-        <div className="container home-proof-strip-inner">
-          {stats.map((stat) => (
-            <p key={stat.label} className="home-proof-item">
-              <strong>{stat.value}</strong>
-              <span>{stat.label}</span>
-            </p>
-          ))}
-        </div>
-      </section>
+      <Suspense fallback={null}>
+        <HomeProofStrip />
+      </Suspense>
 
       <section className="section product-trio-section" aria-labelledby="product-trio-title">
         <div className="container">
