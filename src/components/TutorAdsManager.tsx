@@ -7,7 +7,16 @@ import { SubscribeButton } from "@/components/SubscribeButton";
 import { listingPath } from "@/lib/subject-profile";
 import { tutorLevelOptions } from "@/lib/tutor-catalog";
 import { curriculumBoards } from "@/lib/curriculum";
-import { formatHourly, type CurrencyCode } from "@/lib/currency";
+import {
+  formatHourly,
+  hourlyRateInputStep,
+  hourlyRateInputToPkr,
+  hourlyRateInputValue,
+  MIN_HOURLY_RATE_PKR,
+  minHourlyRateInput,
+  formatMoney,
+  type CurrencyCode,
+} from "@/lib/currency";
 
 type Listing = {
   id: string;
@@ -172,7 +181,7 @@ export function TutorAdsManager({
         qualification: String(fd.get("qualification") || ""),
         syllabusCode: String(fd.get("syllabusCode") || ""),
         location: String(fd.get("location")),
-        rate: Number(fd.get("rate")),
+        rate: rateFromForm(fd),
         online: fd.get("online") === "on",
         inPerson: fd.get("inPerson") === "on",
         description: String(fd.get("description") || ""),
@@ -209,7 +218,7 @@ export function TutorAdsManager({
         qualification: String(fd.get("qualification") || ""),
         syllabusCode: String(fd.get("syllabusCode") || ""),
         location: String(fd.get("location")),
-        rate: Number(fd.get("rate")),
+        rate: rateFromForm(fd),
         online: fd.get("online") === "on",
         inPerson: fd.get("inPerson") === "on",
         description: String(fd.get("description") || ""),
@@ -257,6 +266,12 @@ export function TutorAdsManager({
     : entitlement?.cap != null
       ? String(entitlement.cap)
       : "—";
+  const rateMinLocal = minHourlyRateInput(currency);
+  const rateStep = hourlyRateInputStep(currency);
+
+  function rateFromForm(fd: FormData) {
+    return hourlyRateInputToPkr(Number(fd.get("rate")) || 0, currency);
+  }
 
   return (
     <div className="teaching-listings-manager" id="teaching-listings">
@@ -272,8 +287,8 @@ export function TutorAdsManager({
           <strong>{capLabel}</strong>
         </p>
         <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
-          Rates are saved in PKR (site base). Students and this dashboard show them as{" "}
-          <strong>{currency}</strong> for your location.
+          Enter and review rates in <strong>{currency}</strong>. We store PKR as the site base so
+          students worldwide see their own currency.
         </p>
       </div>
 
@@ -436,18 +451,19 @@ export function TutorAdsManager({
                     <input name="location" required defaultValue={listing.location} />
                   </label>
                   <label>
-                    Hourly rate (PKR)
+                    Hourly rate ({currency})
                     <input
                       name="rate"
                       type="number"
-                      min={500}
-                      step={100}
+                      min={rateMinLocal}
+                      step={rateStep}
+                      inputMode="decimal"
                       required
-                      defaultValue={listing.rate}
+                      defaultValue={hourlyRateInputValue(listing.rate, currency)}
                     />
                     <span className="field-hint">
-                      Stored in PKR · shown as {formatHourly(listing.rate, currency)} for viewers in{" "}
-                      {currency}. Minimum 500 PKR.
+                      Currently {formatHourly(listing.rate, currency)}. Minimum{" "}
+                      {formatMoney(rateMinLocal, currency)} ({MIN_HOURLY_RATE_PKR} PKR base).
                     </span>
                   </label>
                   <label>
@@ -532,15 +548,22 @@ export function TutorAdsManager({
           </label>
           <label>
             <span>
-              Hourly rate (PKR){" "}
+              Hourly rate ({currency}){" "}
               <abbr className="req" title="Required">
                 *
               </abbr>
             </span>
-            <input name="rate" type="number" min={500} step={100} required placeholder="e.g. 1500" />
+            <input
+              name="rate"
+              type="number"
+              min={rateMinLocal}
+              step={rateStep}
+              inputMode="decimal"
+              required
+              placeholder={hourlyRateInputValue(1500, currency)}
+            />
             <span className="field-hint">
-              Enter the amount in PKR. Students see it converted to their local currency (currently{" "}
-              {currency} for you). Minimum 500 PKR.
+              Enter the amount in {currency}. Minimum {formatMoney(rateMinLocal, currency)}.
             </span>
           </label>
           <label>

@@ -32,6 +32,16 @@ import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
+import {
+  DEFAULT_HOURLY_RATE_PKR,
+  formatMoney,
+  hourlyRateInputStep,
+  hourlyRateInputToPkr,
+  hourlyRateInputValue,
+  MIN_HOURLY_RATE_PKR,
+  minHourlyRateInput,
+  type CurrencyCode,
+} from "@/lib/currency";
 
 type Initial = {
   headline?: string | null;
@@ -187,6 +197,7 @@ export function TutorProfileForm({
   verified = false,
   trustBadge = "NEW",
   startStep,
+  currency = "PKR",
 }: {
   initial: Initial;
   displayName: string;
@@ -199,6 +210,8 @@ export function TutorProfileForm({
   trustBadge?: TutorTrustBadge | string;
   /** Jump straight to a wizard step (e.g. verify). */
   startStep?: (typeof WIZARD_STEPS)[number]["id"];
+  /** Visitor/tutor location currency for rate entry (stored as PKR). */
+  currency?: CurrencyCode;
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -206,6 +219,8 @@ export function TutorProfileForm({
   const countries = useMemo(() => tutorCountries(), []);
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
   const languageCatalog = useMemo(() => tutorLanguageOptions(), []);
+  const rateMinLocal = minHourlyRateInput(currency);
+  const rateStep = hourlyRateInputStep(currency);
 
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -235,7 +250,9 @@ export function TutorProfileForm({
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
   const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
   const [location, setLocation] = useState(initial.location || "");
-  const [hourlyRate, setHourlyRate] = useState(String(initial.hourlyRate || 1500));
+  const [hourlyRate, setHourlyRate] = useState(
+    hourlyRateInputValue(initial.hourlyRate || DEFAULT_HOURLY_RATE_PKR, currency),
+  );
   const [online, setOnline] = useState(initial.online);
   const [inPerson, setInPerson] = useState(initial.inPerson);
   const [qualifications, setQualifications] = useState(initial.qualifications || "");
@@ -260,6 +277,8 @@ export function TutorProfileForm({
     return [...catalogSubjects, ...extra];
   }, [catalogSubjects, subjectList]);
 
+  const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, currency);
+
   const completion = useMemo(
     () =>
       getTutorProfileCompletion({
@@ -270,7 +289,7 @@ export function TutorProfileForm({
         country,
         location,
         subjects: joinCsv(subjectList),
-        hourlyRate: Number(hourlyRate) || 0,
+        hourlyRate: ratePkr,
         online,
         inPerson,
         qualifications,
@@ -283,7 +302,7 @@ export function TutorProfileForm({
       country,
       location,
       subjectList,
-      hourlyRate,
+      ratePkr,
       online,
       inPerson,
       qualifications,
@@ -312,7 +331,9 @@ export function TutorProfileForm({
         return null;
       case "teaching":
         if (!subjectList.length) return "Select at least one subject.";
-        if (Number(hourlyRate) < 500) return "Hourly rate must be at least 500 PKR.";
+        if (ratePkr < MIN_HOURLY_RATE_PKR) {
+          return `Hourly rate must be at least ${formatMoney(rateMinLocal, currency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
+        }
         if (!online && !inPerson) return "Choose online, in person, or both.";
         return null;
       case "qualifications":
@@ -440,6 +461,10 @@ export function TutorProfileForm({
       setError("Upload a profile photo before saving.");
       return;
     }
+    if (ratePkr < MIN_HOURLY_RATE_PKR) {
+      setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, currency)}.`);
+      return;
+    }
     if (!qualifications.trim()) {
       setError("Add your highest qualification before saving.");
       return;
@@ -451,7 +476,7 @@ export function TutorProfileForm({
       subjects: joinCsv(subjectList),
       expertise: joinCsv(expertiseList),
       country,
-      hourlyRate: Number(hourlyRate),
+      hourlyRate: ratePkr,
       location: location.trim(),
       online,
       inPerson,
@@ -845,17 +870,22 @@ export function TutorProfileForm({
 
         <label>
           <span>
-            Hourly rate (PKR) <abbr className="req" title="Required">*</abbr>
+            Hourly rate ({currency}) <abbr className="req" title="Required">*</abbr>
           </span>
           <input
             name="hourlyRate"
             type="number"
-            min={500}
-            step={100}
+            min={rateMinLocal}
+            step={rateStep}
+            inputMode="decimal"
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
           />
-          <span className="field-hint">Students see this converted to their local currency. Minimum 500 PKR.</span>
+          <span className="field-hint">
+            Enter your rate in {currency}. We store{" "}
+            {ratePkr > 0 ? `${ratePkr.toLocaleString("en")} PKR` : "PKR"} as the site base so students
+            worldwide see their own currency. Minimum {formatMoney(rateMinLocal, currency)}.
+          </span>
         </label>
 
         <fieldset className="form-fieldset">

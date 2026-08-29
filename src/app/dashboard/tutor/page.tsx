@@ -266,6 +266,7 @@ export default async function TutorDashboardPage({
                 listingActive={user.tutorProfile.active}
                 verified={user.tutorProfile.verified}
                 trustBadge={badgeProgress?.current || "NEW"}
+                currency={currency}
                 startStep={
                   sp.verify === "1" && !user.tutorProfile.verified
                     ? "verify"

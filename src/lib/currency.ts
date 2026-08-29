@@ -234,6 +234,42 @@ export function formatHourly(amountPkr: number | null | undefined, currency: Cur
   return `${formatMoney(local, currency)}/hr`;
 }
 
+/** Minimum listable hourly rate in PKR (server + form validation). */
+export const MIN_HOURLY_RATE_PKR = 500;
+
+/** Default starter rate in PKR when a new tutor profile is created. */
+export const DEFAULT_HOURLY_RATE_PKR = 1500;
+
+/** Convert a stored PKR rate into a form input value in the visitor currency. */
+export function hourlyRateInputValue(amountPkr: number, currency: CurrencyCode): string {
+  if (currency === "PKR") return String(Math.round(amountPkr));
+  const local = pkrToCurrency(amountPkr, currency);
+  if (!Number.isFinite(local)) return "";
+  if (ZERO_DECIMAL.has(currency)) return String(Math.max(1, Math.round(local)));
+  const rounded = Math.round(local * 100) / 100;
+  return String(rounded);
+}
+
+/** Convert a form input (visitor currency) back to whole PKR for storage. */
+export function hourlyRateInputToPkr(amountLocal: number, currency: CurrencyCode): number {
+  if (!Number.isFinite(amountLocal) || amountLocal < 0) return 0;
+  return Math.round(currencyToPkr(amountLocal, currency));
+}
+
+/** Minimum input amount in visitor currency that still meets MIN_HOURLY_RATE_PKR. */
+export function minHourlyRateInput(currency: CurrencyCode): number {
+  if (currency === "PKR") return MIN_HOURLY_RATE_PKR;
+  const local = pkrToCurrency(MIN_HOURLY_RATE_PKR, currency);
+  if (ZERO_DECIMAL.has(currency)) return Math.max(1, Math.ceil(local));
+  return Math.max(0.01, Math.ceil(local * 100) / 100);
+}
+
+export function hourlyRateInputStep(currency: CurrencyCode): number {
+  if (currency === "PKR") return 100;
+  if (ZERO_DECIMAL.has(currency)) return 1;
+  return 0.5;
+}
+
 export function formatPlanPrice(
   amountPkr: number,
   currency: CurrencyCode,
