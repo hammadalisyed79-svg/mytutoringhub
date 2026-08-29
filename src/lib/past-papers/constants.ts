@@ -54,6 +54,7 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   TRANSCRIPT: "Transcript",
   SPECIMEN_PAPER: "Specimen paper",
   SPECIMEN_MARK_SCHEME: "Specimen mark scheme",
+  GRADE_THRESHOLD: "Grade threshold",
   OTHER: "Other",
 };
 

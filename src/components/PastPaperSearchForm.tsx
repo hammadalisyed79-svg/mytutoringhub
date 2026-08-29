@@ -5,7 +5,15 @@ import type { PastPaperFilterTree } from "@/lib/past-papers/browse";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { PAST_PAPER_YEARS } from "@/lib/past-papers";
 
-const SESSIONS = ["Feb/Mar", "May/Jun", "Oct/Nov"] as const;
+const SESSIONS = [
+  "Feb/Mar",
+  "May/Jun",
+  "Oct/Nov",
+  "January",
+  "June",
+  "October",
+  "November",
+] as const;
 
 function treeKey(...parts: string[]) {
   return parts.join("\u0001");

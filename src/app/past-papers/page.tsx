@@ -433,7 +433,7 @@ export default async function PastPapersPage({
             ) : null}
             {year ? (
               <nav className="year-tabs" aria-label="Exam session">
-                {["Feb/Mar", "May/Jun", "Oct/Nov"].map((name) => (
+                {["Feb/Mar", "May/Jun", "Oct/Nov", "January", "June", "October", "November"].map((name) => (
                   <Link
                     key={name}
                     href={hrefWith({ country, board, level, subject, year, session: name })}

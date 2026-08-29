@@ -53,9 +53,11 @@ export default async function AdminPastPapersPage({
       <div>
         <h1 className="page-title">Past papers</h1>
         <p className="muted">
-          Catalog covers 2016–2025 for every subject and board. Upload a PDF to make a paper downloadable. {uploaded}{" "}
-          file{uploaded === 1 ? "" : "s"} in catalog. Press <strong>Update past papers</strong> to refresh metadata from
-          Cloudflare R2.{" "}
+          Catalog covers uploaded R2 papers (not only synthetic year pairs). Upload a PDF or sync from R2 to
+          make a paper downloadable. {uploaded} file{uploaded === 1 ? "" : "s"} in catalog.{" "}
+          <Link href="/admin/past-papers/quality">Quality dashboard</Link>
+          {" · "}
+          Press <strong>Update past papers</strong> to refresh metadata from Cloudflare R2.{" "}
           <Link href="/admin/past-papers/import">Auto import / R2 sync</Link>
           {" · "}
           <Link href="/admin/past-papers/imports">Import history</Link>

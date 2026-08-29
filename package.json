@@ -10,6 +10,8 @@
     "test:past-papers": "tsx src/lib/past-papers/past-papers.test.ts",
     "test:pdf-watermark": "tsx src/lib/past-papers/pdf-watermark.test.ts",
     "test:safepay": "tsx src/lib/safepay.test.ts",
+    "test:quality": "tsx src/lib/past-papers/quality-normalize.test.ts && tsx src/lib/listing-quality.test.ts && tsx src/lib/search-benchmark.test.ts && tsx src/lib/search-smart.test.ts",
+    "db:normalize-pp-sessions": "tsx scripts/normalize-past-paper-sessions.ts",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",

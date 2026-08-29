@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { GuestPaperCheckout } from "@/components/GuestPaperCheckout";
 
+export type PaperAccessStatus =
+  | "included"
+  | "available_with_plan"
+  | "individually_purchasable"
+  | "unavailable"
+  | "owned";
+
 export function PastPaperBuyButton({
   catalogKey,
   available,
@@ -11,6 +18,7 @@ export function PastPaperBuyButton({
   feePkr,
   signedIn,
   guestToken,
+  accessStatus,
 }: {
   catalogKey: string;
   available: boolean;
@@ -19,16 +27,43 @@ export function PastPaperBuyButton({
   feePkr: number;
   signedIn: boolean;
   guestToken?: string | null;
+  /** When set, shows clear entitlement labelling without changing prices. */
+  accessStatus?: PaperAccessStatus;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  if (!available) {
-    return <span className="paper-soon muted">Coming soon</span>;
+  const status: PaperAccessStatus =
+    accessStatus ||
+    (!available ? "unavailable" : owned ? "owned" : feePkr > 0 ? "individually_purchasable" : "available_with_plan");
+
+  if (status === "unavailable" || !available) {
+    return (
+      <div className="paper-access">
+        <span className="paper-soon muted">Unavailable</span>
+        <p className="field-hint" style={{ margin: "0.25rem 0 0" }}>
+          No file for this paper yet.
+        </p>
+      </div>
+    );
   }
 
+  const statusLabel =
+    status === "owned" || owned
+      ? "Included (purchased)"
+      : status === "included"
+        ? "Included with your plan"
+        : status === "available_with_plan"
+          ? "Available with Student Pass / Pro"
+          : "Individually purchasable";
+
   const priceSuffix = feeLabel === "Free" ? "Free" : feeLabel;
-  const actionLabel = `View / Download · ${priceSuffix}`;
+  const actionLabel =
+    status === "owned" || owned
+      ? `Download · Included`
+      : status === "included"
+        ? `Download · Included`
+        : `View / Download · ${priceSuffix}`;
 
   const downloadHref =
     guestToken && !signedIn
@@ -37,20 +72,31 @@ export function PastPaperBuyButton({
 
   if (owned || (guestToken && !signedIn)) {
     return (
-      <a className="btn btn-sm" href={downloadHref}>
-        {actionLabel}
-      </a>
+      <div className="paper-access">
+        <span className="muted paper-access-label">{statusLabel}</span>
+        <a className="btn btn-sm" href={downloadHref}>
+          {actionLabel}
+        </a>
+      </div>
     );
   }
 
   if (!signedIn) {
     if (feePkr > 0) {
-      return <GuestPaperCheckout catalogKey={catalogKey} feeLabel={feeLabel} />;
+      return (
+        <div className="paper-access">
+          <span className="muted paper-access-label">Individually purchasable</span>
+          <GuestPaperCheckout catalogKey={catalogKey} feeLabel={feeLabel} />
+        </div>
+      );
     }
     return (
-      <a className="btn btn-sm" href="/login">
-        Sign in · {actionLabel}
-      </a>
+      <div className="paper-access">
+        <span className="muted paper-access-label">Available with plan</span>
+        <a className="btn btn-sm" href="/login">
+          Sign in · {actionLabel}
+        </a>
+      </div>
     );
   }
 
@@ -73,7 +119,8 @@ export function PastPaperBuyButton({
   }
 
   return (
-    <div className="paper-buy">
+    <div className="paper-buy paper-access">
+      <span className="muted paper-access-label">{statusLabel}</span>
       <button className="btn btn-sm" type="button" onClick={buy} disabled={busy}>
         {busy ? "Opening…" : actionLabel}
       </button>

@@ -22,6 +22,7 @@ const LINKS = [
   { href: "/admin/nurture", label: "Nurture emails" },
   { href: "/admin/subjects", label: "Subjects" },
   { href: "/admin/past-papers", label: "Past papers" },
+  { href: "/admin/past-papers/quality", label: "PP quality" },
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/audit", label: "Audit log" },
 ] as const;

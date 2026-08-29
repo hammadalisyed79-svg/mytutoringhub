@@ -194,7 +194,7 @@ export default async function PastPaperSeoPage({
             Session
             <select name="session" defaultValue={sp.session || ""}>
               <option value="">Any</option>
-              {["Feb/Mar", "May/Jun", "Oct/Nov"].map((name) => (
+              {["Feb/Mar", "May/Jun", "Oct/Nov", "January", "June", "October", "November"].map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
