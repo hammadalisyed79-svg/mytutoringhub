@@ -12,7 +12,8 @@ export type ProductEventName =
   | "listing_viewed"
   | "search_results_shown"
   | "search_zero_results"
-  | "become_tutor";
+  | "become_tutor"
+  | "switch_account_role";
 
 export function trackProductEvent(
   name: ProductEventName,

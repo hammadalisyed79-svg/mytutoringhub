@@ -11,6 +11,7 @@ export async function SiteHeader() {
   const session = await auth();
   let unread = 0;
   let displayName = session?.user?.name ?? "";
+  let hasTutorProfile = false;
   if (session?.user?.id) {
     const [unreadCount, me] = await Promise.all([
       prisma.message.count({
@@ -24,11 +25,12 @@ export async function SiteHeader() {
       }),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true },
+        select: { name: true, tutorProfile: { select: { id: true } } },
       }),
     ]);
     unread = unreadCount;
     if (me?.name) displayName = me.name;
+    hasTutorProfile = Boolean(me?.tutorProfile);
   }
 
   return (
@@ -45,6 +47,7 @@ export async function SiteHeader() {
                   email: session.user.email,
                   role: session.user.role,
                   unreadCount: unread,
+                  hasTutorProfile,
                 }
               : null
           }

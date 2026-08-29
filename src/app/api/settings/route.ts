@@ -32,6 +32,7 @@ export async function GET() {
       emailVerified: true,
       passwordHash: true,
       accounts: { select: { provider: true } },
+      tutorProfile: { select: { id: true } },
     },
   });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -41,6 +42,7 @@ export async function GET() {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    hasTutorProfile: Boolean(user.tutorProfile),
     emailVerified: user.emailVerified,
     hasPassword: Boolean(user.passwordHash),
     oauthProviders: user.accounts.map((a) => a.provider),

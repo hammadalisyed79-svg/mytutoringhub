@@ -13,6 +13,7 @@ import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
 import { StudentDashboardShortcuts } from "@/components/StudentDashboardShortcuts";
+import { SwitchProfileButton } from "@/components/SwitchProfileButton";
 import {
   type DashboardSearchParams,
   prepareDashboardHome,
@@ -115,14 +116,24 @@ export default async function StudentDashboardPage({
           </section>
 
           <section className="panel">
-            <h2>Want to teach?</h2>
+            <h2>{user.tutorProfile ? "Your tutor profile" : "Want to teach?"}</h2>
             <p className="muted section-lead-tight">
-              Keep this login and create a free tutor listing. Complete the profile wizard, then
-              optionally get verified.
+              {user.tutorProfile
+                ? "You already have a tutor profile on this login. Switch to tutor mode anytime — your listing stays saved."
+                : "Keep this login and create a free tutor listing. You can switch back to student mode anytime without losing your tutor profile."}
             </p>
-            <Link href="/become-a-tutor" className="btn btn-secondary btn-sm">
-              Become a tutor
-            </Link>
+            {user.tutorProfile ? (
+              <SwitchProfileButton
+                target="TUTOR"
+                label="Switch to tutor mode"
+                className="btn btn-sm"
+                busyLabel="Opening tutor dashboard…"
+              />
+            ) : (
+              <Link href="/become-a-tutor" className="btn btn-secondary btn-sm">
+                Become a tutor
+              </Link>
+            )}
           </section>
 
           <InviteTutorShare

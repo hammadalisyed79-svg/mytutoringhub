@@ -412,9 +412,47 @@ svg {
 
 .header-actions > a,
 .header-actions > .link-btn,
-.header-actions > .btn {
+.header-actions > .btn,
+.header-actions > .switch-profile-wrap {
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.nav-switch-profile {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: var(--brand-deep);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.nav-switch-profile:hover {
+  color: var(--brand);
+}
+
+.nav-switch-profile:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.switch-profile-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.switch-profile-error {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+  margin: 0;
 }
 
 .header-actions .nav-identity {

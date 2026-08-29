@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { PhoneInput } from "@/components/PhoneInput";
+import { SwitchProfileButton } from "@/components/SwitchProfileButton";
 import { isValidPhone } from "@/lib/phone";
 
 export default function SettingsPage() {
@@ -14,6 +15,8 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"STUDENT" | "TUTOR" | "ADMIN" | "">("");
+  const [hasTutorProfile, setHasTutorProfile] = useState(false);
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [oauthProviders, setOauthProviders] = useState<string[]>([]);
@@ -30,6 +33,8 @@ export default function SettingsPage() {
           setName(u.name);
           setPhone(u.phone || "");
           setEmail(u.email || "");
+          setRole(u.role || "");
+          setHasTutorProfile(Boolean(u.hasTutorProfile));
           setEmailVerified(Boolean(u.emailVerified));
           setHasPassword(Boolean(u.hasPassword));
           setOauthProviders(Array.isArray(u.oauthProviders) ? u.oauthProviders : []);
@@ -91,6 +96,46 @@ export default function SettingsPage() {
           {" · "}
           <Link href="/pricing">Pricing</Link>
         </p>
+
+        {role === "STUDENT" || role === "TUTOR" ? (
+          <section className="panel panel-actions" style={{ marginBottom: "1.25rem" }}>
+            <h2 className="panel-actions-title">Student &amp; tutor on one login</h2>
+            <p className="muted" style={{ margin: 0 }}>
+              Active mode: <strong>{role === "TUTOR" ? "Tutor" : "Student"}</strong>
+              {hasTutorProfile
+                ? ". Your tutor profile stays saved when you switch to student mode."
+                : ". Add a tutor profile anytime — you can switch modes without a second account."}
+            </p>
+            <div className="panel-actions-row">
+              {role === "TUTOR" ? (
+                <SwitchProfileButton
+                  target="STUDENT"
+                  label="Switch to student mode"
+                  className="btn"
+                  busyLabel="Switching…"
+                />
+              ) : hasTutorProfile ? (
+                <SwitchProfileButton
+                  target="TUTOR"
+                  label="Switch to tutor mode"
+                  className="btn"
+                  busyLabel="Switching…"
+                />
+              ) : (
+                <Link href="/become-a-tutor" className="btn">
+                  Add tutor profile
+                </Link>
+              )}
+              <Link
+                href={role === "TUTOR" ? "/dashboard/tutor" : "/dashboard/student"}
+                className="btn btn-secondary"
+              >
+                Open dashboard
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         <form className="stack-form" onSubmit={save}>
           <label>
             Email

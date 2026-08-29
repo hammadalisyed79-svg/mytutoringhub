@@ -8,12 +8,14 @@ import { NavLink } from "@/components/NavLink";
 import { AuthModalFrame } from "@/components/AuthModal";
 import { LoginForm } from "@/components/LoginForm";
 import { RegisterForm } from "@/components/RegisterForm";
+import { SwitchProfileButton } from "@/components/SwitchProfileButton";
 
 type NavUser = {
   name?: string | null;
   email?: string | null;
   role?: string | null;
   unreadCount?: number;
+  hasTutorProfile?: boolean;
 } | null;
 
 function accountLabel(user: NonNullable<NavUser>) {
@@ -156,6 +158,22 @@ function AccountLinks({
           Dashboard
         </Link>
       )}
+      {user.role === "TUTOR" ? (
+        <SwitchProfileButton
+          target="STUDENT"
+          label="Student mode"
+          className="nav-switch-profile"
+          busyLabel="Switching…"
+        />
+      ) : null}
+      {user.role === "STUDENT" && user.hasTutorProfile ? (
+        <SwitchProfileButton
+          target="TUTOR"
+          label="Tutor mode"
+          className="nav-switch-profile"
+          busyLabel="Switching…"
+        />
+      ) : null}
       <Link href="/settings" onClick={onNavigate}>
         Settings
       </Link>

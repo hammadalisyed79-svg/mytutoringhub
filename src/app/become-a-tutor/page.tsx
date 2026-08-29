@@ -44,6 +44,10 @@ export default async function BecomeATutorPage({
 
         <ul className="become-tutor-benefits">
           <li>
+            <strong>Same login</strong> — add a tutor profile without creating a second account. Switch
+            between student and tutor mode anytime; your tutor listing stays saved.
+          </li>
+          <li>
             <strong>Free public listing</strong> when your profile meets the eligibility requirements
             (photo, subjects, bio, rate, and more).
           </li>
@@ -54,19 +58,15 @@ export default async function BecomeATutorPage({
             <strong>No lesson commission</strong> — platform plans are optional upgrades for
             visibility and enquiry tools.
           </li>
-          <li>
-            <strong>Easy to start</strong> — create an account first, then complete your listing on
-            the dashboard. High-quality requirements apply only when going public.
-          </li>
         </ul>
 
         <div className="steps" style={{ marginBottom: "2rem" }}>
           <div className="step">
             <span>1</span>
-            <h3>{isStudent ? "Switch this account" : "Create your account"}</h3>
+            <h3>{isStudent ? "Add tutor mode" : "Create your account"}</h3>
             <p className="muted">
               {isStudent
-                ? "Keep the same login. We turn this account into a tutor listing you can edit anytime."
+                ? "Keep the same login. We add a tutor profile you can edit anytime — and you can switch back to student tools whenever you need them."
                 : "Sign up in minutes — you can finish profile details after email verification."}
             </p>
           </div>

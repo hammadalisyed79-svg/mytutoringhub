@@ -33,7 +33,7 @@ export function BecomeTutorForm() {
     <form onSubmit={submit}>
       {error && <p className="form-error">{error}</p>}
       <button className="btn" type="submit" disabled={loading}>
-        {loading ? "Setting up your tutor profile…" : "Create your tutor profile"}
+        {loading ? "Setting up your tutor profile…" : "Add tutor profile to this account"}
       </button>
     </form>
   );

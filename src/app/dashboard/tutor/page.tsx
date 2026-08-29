@@ -31,6 +31,7 @@ import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
 import { PostVerifyTutorChecklist } from "@/components/PostVerifyChecklist";
+import { SwitchProfileButton } from "@/components/SwitchProfileButton";
 import { buildTutorProfileStatus } from "@/lib/tutor-profile-status";
 
 export const metadata = { title: "Tutor dashboard" };
@@ -106,6 +107,12 @@ export default async function TutorDashboardPage({
             <Link className="btn btn-secondary btn-sm" href="/ads">
               Student requests
             </Link>
+            <SwitchProfileButton
+              target="STUDENT"
+              label="Student mode"
+              className="btn btn-secondary btn-sm"
+              busyLabel="Switching…"
+            />
           </div>
         </header>
 
@@ -143,6 +150,22 @@ export default async function TutorDashboardPage({
                 <Link className="btn btn-secondary" href="/ads">
                   View student requests
                 </Link>
+              </div>
+            </section>
+
+            <section className="panel">
+              <h2>Also learning as a student?</h2>
+              <p className="muted section-lead-tight">
+                Switch to student mode to search tutors, post requests, and use student contacts —
+                your tutor profile and teaching listings stay saved on this account.
+              </p>
+              <div className="panel-actions-row">
+                <SwitchProfileButton
+                  target="STUDENT"
+                  label="Switch to student mode"
+                  className="btn btn-secondary"
+                  busyLabel="Switching…"
+                />
               </div>
             </section>
 

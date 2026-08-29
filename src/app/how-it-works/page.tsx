@@ -103,8 +103,14 @@ export default async function HowItWorksPage() {
 
         {role === "STUDENT" && (
           <p className="muted" style={{ marginTop: "1.5rem" }}>
-            Want to teach as well? <Link href="/become-a-tutor">Become a tutor</Link> on this
-            account.
+            Want to teach as well? <Link href="/become-a-tutor">Add a tutor profile</Link> on this
+            account — you can switch between student and tutor mode anytime.
+          </p>
+        )}
+        {role === "TUTOR" && (
+          <p className="muted" style={{ marginTop: "1.5rem" }}>
+            Also looking for a tutor? Use <strong>Student mode</strong> in the header — your tutor
+            listing stays saved.
           </p>
         )}
       </div>

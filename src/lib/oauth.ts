@@ -286,16 +286,57 @@ export async function becomeTutor(userId: string) {
     return { alreadyTutor: true as const };
   }
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: userId },
-      data: { role: "TUTOR", onboardingComplete: true },
-    }),
-    prisma.studentAd.updateMany({
-      where: { userId, status: "OPEN" },
-      data: { status: "CLOSED" },
-    }),
-  ]);
+  // Keep student requests open — dual-mode users can switch back to student anytime.
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: "TUTOR", onboardingComplete: true },
+  });
   await createTutorProfile(userId);
   return { alreadyTutor: false as const };
+}
+
+/**
+ * Switch the active account mode between student and tutor.
+ * TutorProfile + teaching listings are preserved when moving to student mode.
+ */
+export async function switchAccountRole(userId: string, target: "STUDENT" | "TUTOR") {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { tutorProfile: { select: { id: true } } },
+  });
+  if (!user) throw new Error("User not found");
+  if (user.role === "ADMIN") {
+    throw new Error("Admin accounts cannot switch roles here");
+  }
+
+  if (target === "TUTOR") {
+    const result = await becomeTutor(userId);
+    return {
+      role: "TUTOR" as const,
+      already: result.alreadyTutor,
+      hasTutorProfile: true,
+      redirect: "/dashboard/tutor?tab=profile",
+    };
+  }
+
+  if (user.role === "STUDENT") {
+    return {
+      role: "STUDENT" as const,
+      already: true,
+      hasTutorProfile: Boolean(user.tutorProfile),
+      redirect: "/dashboard/student",
+    };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: "STUDENT" },
+  });
+
+  return {
+    role: "STUDENT" as const,
+    already: false,
+    hasTutorProfile: Boolean(user.tutorProfile),
+    redirect: "/dashboard/student",
+  };
 }
