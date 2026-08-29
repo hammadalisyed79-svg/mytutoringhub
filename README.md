@@ -4,7 +4,7 @@ FindTutor-style marketplace for **mytutoringhub.com**: students and tutors pay p
 
 ## Features
 
-- Student Pass, Student Pro, Tutor Basic, and tutor visibility add-ons (Verified, Highlighted, Ad Boost, Unlimited Ads)
+- Student Pass, Student Pro, Tutor Pro (internal id `TUTOR_BASIC`), Listing Boost, Priority Verification Review; Identity Verified is earned via review
 - **Safepay** hosted checkout (primary); Stripe remains an optional fallback when Safepay is not configured
 - Tutor search with filters, **student requests** board (`/ads`), in-app messaging
 - Reviews (after messaging), admin moderation, Resend email hooks

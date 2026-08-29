@@ -3,7 +3,7 @@ import { getLivePlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 
 /**
- * Growth-tab tip: Boost / Highlight are bought per teaching listing (Marketplace V2).
+ * Growth-tab tip: Listing Boost is bought per teaching listing (Marketplace V2).
  * Checkout lives on each row in the Teaching listings manager.
  */
 export async function ProfileBoostPanel({
@@ -24,19 +24,19 @@ export async function ProfileBoostPanel({
         <div>
           <h2 style={{ marginTop: 0 }}>{plan?.name || "Listing Boost"}</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Boost or highlight each teaching listing separately — students see that service higher in
-            search for ~30 days.
+            Boost each teaching listing separately — stronger placement among relevant matches for
+            ~30 days (never above strong subject fit).
           </p>
         </div>
       </div>
 
       <p className="profile-boost-status muted">
-        Open your Profile tab, pick a teaching listing, then use <strong>Boost</strong> or{" "}
-        <strong>Highlight</strong> on that row.
+        Open your Profile tab, pick a teaching listing, then use <strong>Listing Boost</strong> on
+        that row.
         {priceLabel ? (
           <>
             {" "}
-            Boost from <strong>{priceLabel}</strong> one-time.
+            From <strong>{priceLabel}</strong> one-time.
           </>
         ) : null}
       </p>

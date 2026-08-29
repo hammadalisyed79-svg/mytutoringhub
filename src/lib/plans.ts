@@ -88,7 +88,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "TUTOR_BASIC",
     name: "Tutor Pro",
     description:
-      "Paid growth plan: relevance-first ranking boost, unlimited enquiry reveals, enhanced student-request access, analytics, and up to 10 active teaching listings. Free complete profiles already appear in search with up to 3 listings. (Internal plan id: Tutor Basic.)",
+      "Paid growth plan: relevance-first ranking boost, unlimited enquiry reveals, enhanced student-request access, analytics, and up to 10 active teaching listings. Free complete profiles already appear in search with up to 3 listings.",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),
@@ -224,7 +224,7 @@ export function applyPlanOverrides(
     if (plan.id === "VERIFIED_TUTOR" && /^verified\s*tutor$/i.test(name)) {
       name = "Priority Verification Review";
     }
-    if (plan.id === "AD_BOOST" && /^ad\s*boost$/i.test(name)) {
+    if (plan.id === "AD_BOOST" && /^(ad\s*boost|profile\s*boost)$/i.test(name)) {
       name = "Listing Boost";
     }
     return {

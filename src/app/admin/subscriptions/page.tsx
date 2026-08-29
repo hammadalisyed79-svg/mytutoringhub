@@ -23,11 +23,11 @@ const PLAN_OPTIONS: { value: string; label: string }[] = [
   { value: "STUDENT_PASS", label: "Student Pass" },
   { value: "STUDENT_PRO", label: "Student Pro" },
   { value: "TUTOR_BASIC", label: "Tutor Pro" },
-  { value: "VERIFIED_TUTOR", label: "Verified Tutor" },
-  { value: "HIGHLIGHTED_AD", label: "Highlighted Listing" },
-  { value: "AD_BOOST", label: "Profile Boost" },
-  { value: "EXTRA_PROFILE_ADS", label: "Extra Profile Ads" },
-  { value: "UNLIMITED_ADS", label: "Unlimited Profiles" },
+  { value: "VERIFIED_TUTOR", label: "Priority Verification Review" },
+  { value: "HIGHLIGHTED_AD", label: "Listing Highlight (legacy)" },
+  { value: "AD_BOOST", label: "Listing Boost" },
+  { value: "EXTRA_PROFILE_ADS", label: "Extra Profile Ads (legacy)" },
+  { value: "UNLIMITED_ADS", label: "Unlimited Profiles (legacy)" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {

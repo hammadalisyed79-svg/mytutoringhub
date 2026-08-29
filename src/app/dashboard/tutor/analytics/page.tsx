@@ -421,7 +421,7 @@ export default async function TutorAnalyticsPage() {
             <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--muted)" }}>
               {listed
                 ? hasPaidPlan
-                  ? "Listed with paid priority. Profile Boost puts you at the top of search periodically."
+                  ? "Listed with paid priority. Listing Boost strengthens one teaching listing among relevant matches for 30 days."
                   : "Listed in search for free. Tutor Pro adds priority ranking and unlimited enquiry reveals."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>

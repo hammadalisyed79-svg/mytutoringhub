@@ -512,15 +512,6 @@ export function TutorAdsManager({
                     paidCheckoutLive={paidCheckoutLive}
                     subjectProfileId={listing.id}
                   />
-                  <SubscribeButton
-                    plan="HIGHLIGHTED_AD"
-                    planLabel="Highlighted Listing"
-                    currency={currency}
-                    label={highlighted ? "Extend highlight" : "Highlight this listing"}
-                    oneTime
-                    paidCheckoutLive={paidCheckoutLive}
-                    subjectProfileId={listing.id}
-                  />
                 </div>
               )}
 

@@ -144,7 +144,7 @@ export function hubPointsEarnedEmailHtml(opts: {
 <p><strong>+${opts.points} Hub Points</strong> — ${escapeHtml(opts.reason)}</p>
 <p>Your balance is now <strong>${opts.balance.toLocaleString()} points</strong> (shown in your local currency on the dashboard).</p>
 <p>Redeem on Student Pass, Student Pro, or tutor ads and subscriptions — up to 50% off each purchase.</p>`,
-    cta: { label: "View your wallet", href: opts.dashboardUrl },
+    cta: { label: "View Hub Points", href: opts.dashboardUrl },
   });
 }
 
@@ -389,7 +389,7 @@ export function postVerifyTutorEmailHtml(opts: {
     title: "Welcome to My Tutoring Hub",
     body: `<p>Hi ${opts.name},</p>
 <p>Your email is confirmed — welcome aboard. Complete your tutor profile (photo, about you, location, and subjects) to appear in search.</p>
-<p>When you're ready to grow, Tutor Pro adds priority placement. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
+<p>When you're ready to grow, Tutor Pro adds priority placement. Listing Boost lifts one teaching listing among relevant matches for 30 days.</p>`,
     cta: { label: "Open tutor dashboard", href: opts.dashboardUrl },
   });
 }
@@ -573,7 +573,7 @@ export function tutorBoostNudgeEmailHtml(opts: {
     preheader: "Boost one subject listing for 30 days of extra visibility.",
     title: "Boost a subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Profile Boost lifts a single subject listing higher in search for 30 days — Maths and Physics can be boosted independently.${listingHint}</p>
+<p>Listing Boost lifts a single teaching listing among relevant matches for 30 days — Maths and Physics can be boosted independently.${listingHint}</p>
 <p>Open your subject profiles and choose Boost on the listing you want students to see first.</p>`,
     cta: { label: "Boost a listing", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });

@@ -10,7 +10,7 @@ const PLAN_LABELS: Record<string, string> = Object.fromEntries(
 
 const FEE_LABELS: Record<string, string> = {
   booking_fee: "Booking / First Lesson Fee",
-  profile_boost: "Profile Boost",
+  profile_boost: "Listing Boost",
   paper_bundle: "Past Paper Bundle",
   group_class: "Group Class Listing",
   resource_upload: "Resource Upload",
@@ -246,7 +246,7 @@ export default async function RevenuePage() {
           One-off fees &amp; purchases (MTD)
         </h2>
         <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 12 }}>
-          Profile Boost (AD_BOOST) checkout is live via Safepay — booking fees, group classes,
+          Listing Boost (AD_BOOST) checkout is live via Safepay — booking fees, group classes,
           and resource uploads are not live yet; only recorded ServiceFeeEvent rows and paid past
           paper downloads appear here.
         </p>

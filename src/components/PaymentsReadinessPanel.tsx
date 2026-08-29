@@ -70,7 +70,7 @@ export function PaymentsReadinessPanel() {
             </li>
             <li>Redeploy Production, then run <strong>Test Safepay connection</strong> below</li>
             <li>
-              Make a small real payment yourself (Student Pass or Profile Boost) and confirm receipt
+              Make a small real payment yourself (Student Pass or Listing Boost) and confirm receipt
               email + active plan
             </li>
           </ol>

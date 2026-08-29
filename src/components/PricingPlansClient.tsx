@@ -361,9 +361,9 @@ export function PricingPlansClient({
       <aside className="panel pricing-coming-soon">
         <h2 className="checkout-section-title">Coming soon</h2>
         <p className="muted">
-          One-time booking fees, group class listings, and resource uploads are not sold yet. Profile
-          Boost and Highlight are available now — open your tutor dashboard, pick a subject profile,
-          and boost that listing.
+          One-time booking fees, group class listings, and resource uploads are not sold yet. Listing
+          Boost is available now — open your tutor dashboard, pick a teaching listing, and boost that
+          listing.
         </p>
       </aside>
     </>

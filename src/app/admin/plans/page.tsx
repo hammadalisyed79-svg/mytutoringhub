@@ -21,8 +21,8 @@ export default async function AdminPlansPage() {
         <p className="muted">
           Standard monthly prices power <Link href="/pricing">/pricing</Link> and Safepay checkout.
           Limited-time offers can discount or waive a listing fee until a date you set. Add-ons such
-          as Verified, Highlight, and Ad Boost stay independent — they are not included in a
-          complimentary Tutor Pro period.
+          as Priority Verification Review and Listing Boost stay independent — they are not included
+          in a complimentary Tutor Pro period.
         </p>
       </div>
       <div className="panel">
