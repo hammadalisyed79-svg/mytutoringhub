@@ -18,6 +18,10 @@ export function TutorProfileStatusCard({
   const statusLabel =
     view.status === "LIVE" ? "Live in search" : view.status === "SUSPENDED" ? "Suspended" : "Setup in progress";
 
+  const required = view.checks.filter((c) => c.required);
+  const needed = required.filter((c) => !c.ok);
+  const done = required.filter((c) => c.ok);
+
   return (
     <section
       className={`panel tutor-profile-status-card ${statusClass}`}
@@ -31,22 +35,23 @@ export function TutorProfileStatusCard({
 
       <div className="tutor-profile-status-card-head">
         <div className="tutor-profile-status-copy">
-          <p className="tutor-profile-status-eyebrow">{statusLabel}</p>
+          <div className="tutor-profile-status-meta">
+            <p className="tutor-profile-status-eyebrow">{statusLabel}</p>
+            {view.status !== "SUSPENDED" ? (
+              <span className="tutor-profile-status-pct-inline" aria-label={`${view.percent}% complete`}>
+                {view.percent}%
+              </span>
+            ) : null}
+          </div>
           <h2 id="tutor-profile-status-title">{view.title}</h2>
           <p className="tutor-profile-status-summary">{view.summary}</p>
         </div>
-        {view.status !== "SUSPENDED" ? (
-          <div className="tutor-profile-status-pct" aria-label={`${view.percent}% complete`}>
-            <strong>{view.percent}%</strong>
-            <span>complete</span>
-          </div>
-        ) : null}
       </div>
 
       {view.status === "INCOMPLETE" ? (
-        <>
+        <div className="tutor-profile-status-body">
           <div
-            className="profile-strength-bar"
+            className="profile-strength-bar profile-strength-bar--compact"
             role="progressbar"
             aria-valuenow={view.percent}
             aria-valuemin={0}
@@ -55,19 +60,37 @@ export function TutorProfileStatusCard({
           >
             <div className="profile-strength-fill" style={{ width: `${view.percent}%` }} />
           </div>
-          <ul className="tutor-profile-status-checks">
-            {view.checks
-              .filter((c) => c.required)
-              .map((c) => (
-                <li key={c.key} className={c.ok ? "is-done" : "is-needed"}>
-                  <span className="tutor-profile-check-mark" aria-hidden>
-                    {c.ok ? "✓" : ""}
-                  </span>
-                  <span>{c.label}</span>
-                </li>
-              ))}
-          </ul>
-        </>
+
+          {needed.length > 0 ? (
+            <div className="tutor-profile-status-group">
+              <p className="tutor-profile-status-group-label">Still needed</p>
+              <ul className="tutor-profile-status-checks">
+                {needed.map((c) => (
+                  <li key={c.key} className="is-needed">
+                    <span className="tutor-profile-check-mark" aria-hidden />
+                    <span>{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {done.length > 0 ? (
+            <div className="tutor-profile-status-group">
+              <p className="tutor-profile-status-group-label">Done</p>
+              <ul className="tutor-profile-status-checks is-done-row">
+                {done.map((c) => (
+                  <li key={c.key} className="is-done">
+                    <span className="tutor-profile-check-mark" aria-hidden>
+                      ✓
+                    </span>
+                    <span>{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       {view.status === "LIVE" ? (
@@ -84,12 +107,12 @@ export function TutorProfileStatusCard({
 
       <div className="tutor-profile-status-actions">
         {view.cta ? (
-          <Link className="btn" href={view.cta.href}>
+          <Link className="btn btn-sm" href={view.cta.href}>
             {view.cta.label}
           </Link>
         ) : null}
         {view.secondaryCta ? (
-          <Link className="btn btn-secondary" href={view.secondaryCta.href}>
+          <Link className="btn btn-secondary btn-sm" href={view.secondaryCta.href}>
             {view.secondaryCta.label}
           </Link>
         ) : null}
