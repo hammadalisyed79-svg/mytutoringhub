@@ -10,7 +10,7 @@ import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
   title: "Become a Tutor – Free Listing & Tutor Pro Priority",
-  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Pro complimentary until 30 September 2026.`,
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Pro growth tools complimentary until 30 September 2026.`,
   path: "/become-a-tutor",
 });
 
@@ -79,10 +79,11 @@ export default async function BecomeATutorPage({
             <span>3</span>
             <h3>Go live automatically</h3>
             <p className="muted">
-              Eligible profiles appear in search with no manual approval queue. Until 30 September
-              2026 you get 2 free teaching listings; more require Tutor Pro (or a listing pack).
-              Tutor Pro adds priority ranking and unlimited enquiry reveals (complimentary until
-              the same date). From 1 October 2026 all teaching listings require a plan.
+              Eligible profiles appear in search with no manual approval queue. Free tutors get up
+              to 3 active teaching listings with ordinary search visibility. Tutor Pro unlocks up
+              to 10 listings plus relevance-first ranking and unlimited enquiry reveals
+              (complimentary until 30 September 2026). Listing Boost is optional. Identity Verified
+              is earned after review — Priority Verification Review only jumps the queue.
             </p>
           </div>
         </div>

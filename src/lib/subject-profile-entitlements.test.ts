@@ -1,66 +1,44 @@
 import assert from "node:assert/strict";
 import {
-  FREE_SUBJECT_PROFILES_AFTER_PROMO,
-  FREE_SUBJECT_PROFILES_DURING_PROMO,
-  PAID_SUBJECT_PROFILE_CAP,
-  isSubjectProfilePromoActive,
+  FREE_SUBJECT_PROFILES,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
   resolveSubjectProfileActiveCap,
-  SUBJECT_PROFILE_PROMO_UNTIL,
 } from "@/lib/subject-profile-entitlements";
 
-const duringPromo = new Date(`${SUBJECT_PROFILE_PROMO_UNTIL}T12:00:00.000Z`);
-const afterPromo = new Date("2026-10-01T00:00:00.000Z");
-
-assert.equal(isSubjectProfilePromoActive(duringPromo), true);
-assert.equal(isSubjectProfilePromoActive(afterPromo), false);
+assert.equal(FREE_SUBJECT_PROFILES, 3);
+assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
 
 assert.equal(
   resolveSubjectProfileActiveCap({
-    now: duringPromo,
     unlimitedProfiles: false,
-    hasProfilePack: false,
+    hasTutorPro: false,
   }),
-  FREE_SUBJECT_PROFILES_DURING_PROMO,
+  FREE_SUBJECT_PROFILES,
 );
 
 assert.equal(
   resolveSubjectProfileActiveCap({
-    now: afterPromo,
     unlimitedProfiles: false,
-    hasProfilePack: false,
+    hasTutorPro: true,
   }),
-  FREE_SUBJECT_PROFILES_AFTER_PROMO,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
 );
 
 assert.equal(
   resolveSubjectProfileActiveCap({
-    now: afterPromo,
     unlimitedProfiles: false,
+    hasTutorPro: false,
     hasProfilePack: true,
   }),
-  PAID_SUBJECT_PROFILE_CAP,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
 );
 
 assert.equal(
   resolveSubjectProfileActiveCap({
-    now: duringPromo,
-    unlimitedProfiles: false,
-    hasProfilePack: true,
-  }),
-  PAID_SUBJECT_PROFILE_CAP,
-);
-
-assert.equal(
-  resolveSubjectProfileActiveCap({
-    now: afterPromo,
     unlimitedProfiles: true,
-    hasProfilePack: false,
+    hasTutorPro: false,
   }),
   Number.POSITIVE_INFINITY,
 );
-
-assert.equal(FREE_SUBJECT_PROFILES_DURING_PROMO, 2);
-assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 0);
-assert.equal(PAID_SUBJECT_PROFILE_CAP, 3);
 
 console.log("subject-profile-entitlements.test.ts: ok");

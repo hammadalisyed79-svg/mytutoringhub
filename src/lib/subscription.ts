@@ -154,12 +154,17 @@ export async function canCreateTutorAd(userId: string) {
   return { ok: true as const, profile };
 }
 
-/** Map active tutor subscriptions to search priority: Free=0, Basic=1, Verified/Elite=2.
- * Boost / Highlight / Extra Profiles do not buy ranking tier — only visibility on that listing
- * or a higher subject-profile cap.
+/**
+ * Ranking tier from paid growth plan only.
+ * Identity Verified (earned badge) is applied separately in syncTutorBadges —
+ * Priority Verification Review SKU never buys tier/badge.
+ * Boost / Highlight / Extra Profiles do not buy ranking tier.
  */
-export function computeTutorPlanTier(plans: Set<string>): number {
-  if (plans.has("VERIFIED_TUTOR")) return 2;
+export function computeTutorPlanTier(
+  plans: Set<string>,
+  opts?: { identityVerified?: boolean },
+): number {
+  if (opts?.identityVerified) return 2;
   if (plans.has("TUTOR_BASIC")) return 1;
   return 0;
 }
@@ -180,6 +185,7 @@ export function isTutorProfileListable(
     online?: boolean;
     inPerson?: boolean;
     qualifications?: string | null;
+    hasValidListingRate?: boolean;
   },
   name?: string | null,
 ): boolean {
@@ -193,6 +199,7 @@ export function isTutorProfileListable(
     location: profile.location,
     subjects: profile.subjects,
     hourlyRate: profile.hourlyRate,
+    hasValidListingRate: profile.hasValidListingRate,
     online: profile.online,
     inPerson: profile.inPerson,
     qualifications: profile.qualifications,
@@ -205,7 +212,14 @@ export async function syncTutorBadges(userId: string) {
   const [profile, user] = await Promise.all([
     prisma.tutorProfile.findUnique({
       where: { userId },
-      include: { ads: true },
+      include: {
+        ads: true,
+        subjectProfiles: {
+          where: { status: "ACTIVE", rate: { gte: 500 } },
+          select: { id: true, rate: true },
+          take: 1,
+        },
+      },
     }),
     prisma.user.findUnique({
       where: { id: userId },
@@ -254,9 +268,11 @@ export async function syncTutorBadges(userId: string) {
 
   // Verified badge is granted only by admin document review (verify_approve / set_verified).
   const verified = profile.verified;
-  const planTier = computeTutorPlanTier(plans);
+  const planTier = computeTutorPlanTier(plans, { identityVerified: verified });
+  const hasValidListingRate = profile.subjectProfiles.length > 0;
   const listable =
-    Boolean(user?.emailVerified) && isTutorProfileListable(profile, user?.name);
+    Boolean(user?.emailVerified) &&
+    isTutorProfileListable({ ...profile, hasValidListingRate }, user?.name);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },

@@ -155,6 +155,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       country: resolved.country || null,
       level: resolved.level || null,
       board: resolved.board || null,
+      listingIds: tutors
+        .map((t) => t.listingId || t.id)
+        .filter(Boolean)
+        .slice(0, 50)
+        .join(","),
+      resultCount: tutors.length,
     });
   }
 

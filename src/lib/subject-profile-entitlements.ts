@@ -1,29 +1,26 @@
-import { endOfPromoDay, formatPromoUntil } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import type { SubscriptionPlan } from "@/lib/types";
 
-/** Inclusive promo end — limited free subject profiles while active. */
+/**
+ * Marketplace V2 teaching-listing caps (canonical).
+ * Free = 3 active listings; Tutor Pro (TUTOR_BASIC) = 10.
+ * Legacy EXTRA_PROFILE_ADS maps to Pro cap (grandfather).
+ * Legacy UNLIMITED_ADS keeps unlimited (grandfather).
+ */
+export const FREE_SUBJECT_PROFILES = 3;
+export const TUTOR_PRO_SUBJECT_PROFILE_CAP = 10;
+
+/** @deprecated Use FREE_SUBJECT_PROFILES — V2 has no promo sunset on free listings. */
+export const FREE_SUBJECT_PROFILES_DURING_PROMO = FREE_SUBJECT_PROFILES;
+/** @deprecated Use FREE_SUBJECT_PROFILES — free allotment is permanent in V2. */
+export const FREE_SUBJECT_PROFILES_AFTER_PROMO = FREE_SUBJECT_PROFILES;
+/** @deprecated Use TUTOR_PRO_SUBJECT_PROFILE_CAP. */
+export const PAID_SUBJECT_PROFILE_CAP = TUTOR_PRO_SUBJECT_PROFILE_CAP;
+
+/** @deprecated Promo date retired from listing-cap model; kept for email/compat imports. */
 export const SUBJECT_PROFILE_PROMO_UNTIL = "2026-09-30";
 
-/**
- * Free active teaching listings during the launch window (through 30 Sep 2026).
- * FindTutors-style freemium: a small free allotment, then pay for more.
- */
-export const FREE_SUBJECT_PROFILES_DURING_PROMO = 2;
-
-/**
- * Free active teaching listings after the promo ends.
- * From 1 Oct 2026 every active listing requires a paid plan (0 free).
- */
-export const FREE_SUBJECT_PROFILES_AFTER_PROMO = 0;
-
-/**
- * With Extra Profile Ads or Tutor Basic, tutors may run this many active subject
- * profiles. Verified / Boost / Highlight do not unlock extra slots.
- */
-export const PAID_SUBJECT_PROFILE_CAP = 3;
-
-const PROFILE_PACK_PLANS: SubscriptionPlan[] = ["TUTOR_BASIC", "EXTRA_PROFILE_ADS"];
+const TUTOR_PRO_PLANS: SubscriptionPlan[] = ["TUTOR_BASIC", "EXTRA_PROFILE_ADS"];
 
 async function hasPlan(userId: string, plan: SubscriptionPlan) {
   const now = new Date();
@@ -53,16 +50,13 @@ async function hasAnyPlan(userId: string, plans: SubscriptionPlan[]) {
   return Boolean(sub);
 }
 
-export function isSubjectProfilePromoActive(now = new Date()): boolean {
-  const ends = endOfPromoDay(SUBJECT_PROFILE_PROMO_UNTIL);
-  return Boolean(ends && now.getTime() <= ends.getTime());
+/** @deprecated Listing caps no longer use a promo window. Always false. */
+export function isSubjectProfilePromoActive(_now = new Date()): boolean {
+  return false;
 }
 
-export function subjectProfilePromoLabel(now = new Date()): string {
-  if (!isSubjectProfilePromoActive(now)) {
-    return "Teaching listings require a plan from 1 October 2026. Tutor Pro (or a legacy listing pack) unlocks up to 3; Unlimited Profiles (legacy) removes the cap.";
-  }
-  return `${FREE_SUBJECT_PROFILES_DURING_PROMO} teaching listings free until ${formatPromoUntil(SUBJECT_PROFILE_PROMO_UNTIL)} — more require a plan`;
+export function subjectProfilePromoLabel(_now = new Date()): string {
+  return `Free plan includes ${FREE_SUBJECT_PROFILES} active teaching listings. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`;
 }
 
 /**
@@ -72,23 +66,23 @@ export function subjectProfilePromoLabel(now = new Date()): string {
 export function resolveSubjectProfileActiveCap(opts: {
   now?: Date;
   unlimitedProfiles: boolean;
-  hasProfilePack: boolean;
+  hasTutorPro: boolean;
+  /** @deprecated Alias for hasTutorPro (legacy Extra Profile Ads). */
+  hasProfilePack?: boolean;
 }): number {
   if (opts.unlimitedProfiles) return Number.POSITIVE_INFINITY;
-  if (opts.hasProfilePack) return PAID_SUBJECT_PROFILE_CAP;
-  if (isSubjectProfilePromoActive(opts.now)) return FREE_SUBJECT_PROFILES_DURING_PROMO;
-  return FREE_SUBJECT_PROFILES_AFTER_PROMO;
+  if (opts.hasTutorPro || opts.hasProfilePack) return TUTOR_PRO_SUBJECT_PROFILE_CAP;
+  return FREE_SUBJECT_PROFILES;
 }
 
-export async function getSubjectProfileActiveCap(userId: string, now = new Date()): Promise<number> {
-  const [unlimited, pack] = await Promise.all([
+export async function getSubjectProfileActiveCap(userId: string, _now = new Date()): Promise<number> {
+  const [unlimited, tutorPro] = await Promise.all([
     hasPlan(userId, "UNLIMITED_ADS"),
-    hasAnyPlan(userId, PROFILE_PACK_PLANS),
+    hasAnyPlan(userId, TUTOR_PRO_PLANS),
   ]);
   return resolveSubjectProfileActiveCap({
-    now,
     unlimitedProfiles: unlimited,
-    hasProfilePack: pack,
+    hasTutorPro: tutorPro,
   });
 }
 
@@ -109,8 +103,7 @@ export type SubjectProfileGate =
 
 /**
  * Gate for creating/reactivating a SubjectProfile.
- * Promo: 2 free. After promo: 0 free; Extra Profile Ads or Tutor Basic → up to 3;
- * Unlimited Profiles → unlimited.
+ * Free → 3; Tutor Pro / Extra Profile Ads (legacy) → 10; Unlimited Profiles (legacy) → ∞.
  */
 export async function canCreateSubjectProfile(
   userId: string,
@@ -140,26 +133,20 @@ export async function canCreateSubjectProfile(
   ]);
 
   if (activeCount >= cap) {
-    if (isSubjectProfilePromoActive(now) && cap <= FREE_SUBJECT_PROFILES_DURING_PROMO) {
-      return {
-        ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES_DURING_PROMO} teaching listings until 30 September 2026. Upgrade to Tutor Pro (or a legacy listing pack) to add more.`,
-        activeCount,
-        cap,
-      };
+    if (!Number.isFinite(cap)) {
+      return { ok: false, reason: "Active teaching listing limit reached.", activeCount, cap };
     }
-    if (cap <= FREE_SUBJECT_PROFILES_AFTER_PROMO) {
+    if (cap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason:
-          "Teaching listings require a plan from 1 October 2026. Upgrade to Tutor Pro (up to 3) or Unlimited Profiles (legacy).",
+        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active teaching listings. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
         activeCount,
         cap,
       };
     }
     return {
       ok: false,
-      reason: `Active teaching listing limit reached (${cap}). Upgrade to Unlimited Profiles (legacy) for more.`,
+      reason: `Active teaching listing limit reached (${cap}). Legacy Unlimited Profiles holders keep unlimited listings.`,
       activeCount,
       cap,
     };
@@ -169,7 +156,7 @@ export async function canCreateSubjectProfile(
 }
 
 /**
- * After the promo, pause oldest ACTIVE subject profiles that exceed the tutor's cap.
+ * Pause oldest ACTIVE subject profiles that exceed the tutor's cap.
  * Keeps the most recently updated listings live. No-op when under cap.
  */
 export async function enforceSubjectProfileCap(
@@ -213,15 +200,11 @@ export async function enforceSubjectProfileCap(
   return { paused: pause.length, kept: keep.length, cap };
 }
 
-/** Run cap enforcement for all tutors over their limit (post-promo cron). */
+/** Cap enforcement for tutors over their limit (cron / admin). */
 export async function enforceAllSubjectProfileCaps(now = new Date()): Promise<{
   tutorsChecked: number;
   profilesPaused: number;
 }> {
-  if (isSubjectProfilePromoActive(now)) {
-    return { tutorsChecked: 0, profilesPaused: 0 };
-  }
-
   const tutors = await prisma.tutorProfile.findMany({
     where: { subjectProfiles: { some: { status: "ACTIVE" } } },
     select: { userId: true },

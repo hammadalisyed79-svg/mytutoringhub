@@ -17,8 +17,8 @@ export default function PrivacyPage() {
           <h2>1. Data we collect</h2>
           <p>
             Account details (name, email, password hash), role, tutor profile content, student
-            requests, messages, reviews, subscription and payment references from Safepay (Stripe
-            fields may store Safepay trackers), and basic technical logs (IP, browser) for security.
+            requests, messages, reviews, subscription and payment references from our payment
+            processor (Safepay), and basic technical logs (IP, browser) for security.
           </p>
           <h2>2. How we use data</h2>
           <p>
@@ -58,6 +58,14 @@ export default function PrivacyPage() {
             My Tutoring Hub operates at{" "}
             <a href="https://www.mytutoringhub.com">www.mytutoringhub.com</a>. Privacy requests:{" "}
             <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.
+          </p>
+          <h2>9. Legal review backlog</h2>
+          <p>
+            The following items are documented for legal counsel review and do not block Marketplace
+            V2 shipping: minors / parent or guardian consent, international privacy transfers,
+            retention schedules, identity-verification document handling, and payment-processor
+            disclosures. A dedicated Child Safety &amp; Safeguarding Policy is a high-priority
+            post-V2 deliverable — this site does not claim that policy already exists.
           </p>
           <p>
             See also our{" "}

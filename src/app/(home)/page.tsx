@@ -451,12 +451,11 @@ export default async function HomePage() {
           <div>
             <h2>Are you a tutor? Start teaching</h2>
             <p>
-              Complete your profile to appear in search for free. Tutor Pro adds priority
-              ranking, unlimited enquiry reveals, and up to 3 teaching listings — complimentary
-              until 30 September 2026 (2 free teaching listings for everyone during the
-              launch; more require a plan). From 1 October 2026 listings are paid. Listing Boost
-              is optional; the Verified badge is earned via identity review. You keep 100%
-              of lesson fees.
+              Complete your profile to appear in search for free with up to 3 active teaching
+              listings. Tutor Pro unlocks up to 10 listings plus relevance-first ranking and
+              unlimited enquiry reveals — growth tools complimentary until 30 September 2026.
+              Listing Boost is optional; Identity Verified is earned via identity review. You keep
+              100% of lesson fees.
             </p>
           </div>
           <div className="hero-ctas">

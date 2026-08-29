@@ -45,7 +45,7 @@ const FAQS = [
   },
   {
     q: "Is Tutor Pro free?",
-    a: "Complete tutor profiles appear in search for free. Until 30 September 2026, every tutor gets 2 free teaching listings (more need a plan), and Tutor Pro (priority ranking + unlimited enquiry reveals) is complimentary. Listing Boost is optional per listing. The Verified badge is earned after identity review — Priority Verification Review only jumps the queue. From 1 October 2026, teaching listings require a plan; free students keep 3 new tutor contacts/month.",
+    a: "Complete tutor profiles appear in search for free with up to 3 active teaching listings. Tutor Pro unlocks up to 10 listings plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is optional per listing. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue. Free students keep 3 new tutor contacts/month.",
   },
   {
     q: "Why do I need to verify my email?",

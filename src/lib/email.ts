@@ -523,7 +523,7 @@ export function tutorProfileLiveEmailHtml(opts: {
     title: "You're live in search",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Congratulations — your tutor profile is complete and now visible to students browsing ${brand}.</p>
-<p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward Tutor Basic, Extra Profile Ads, or a Profile Boost.</p>
+<p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward Tutor Pro or a Listing Boost.</p>
 <p>Tip: add a <strong>subject profile</strong> for each subject you teach so Maths and Physics show as separate search cards. Boost any listing individually from your dashboard.</p>
 <p>Share your public profile link with students and start replying to requests.</p>`,
     cta: { label: "Manage subject profiles", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
@@ -537,7 +537,7 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     title: "Grow with Tutor Basic",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
-<p>Until 30 September 2026 you get <strong>2 free teaching listings</strong>; more need Extra Profile Ads, Basic, or Unlimited Profiles. From 1 October 2026 all teaching listings require a plan.</p>
+<p>Free tutors get up to <strong>3 active teaching listings</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
 <p>Complimentary Tutor Basic may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
   });
@@ -556,7 +556,7 @@ export function tutorSecondProfileEmailHtml(opts: {
     title: "Add a second subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
-<p>Create another teaching listing from your dashboard — you get 2 free until 30 September 2026.</p>`,
+<p>Create another teaching listing from your dashboard — free tutors can run up to 3 active listings; Tutor Pro unlocks up to 10.</p>`,
     cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });
 }

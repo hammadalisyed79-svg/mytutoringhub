@@ -37,8 +37,11 @@ export default async function PricingPage({
     if (role === "STUDENT") return p.audience === "student";
     return p.audience === "tutor";
   });
+  const { PUBLIC_ADDON_PLAN_IDS } = await import("@/lib/plans");
   const corePlans = visible.filter((p) => !p.isAddOn);
-  const addOns = visible.filter((p) => p.isAddOn);
+  const addOns = visible.filter(
+    (p) => p.isAddOn && (PUBLIC_ADDON_PLAN_IDS as readonly string[]).includes(p.id),
+  );
   const liveOffer = allPlans.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive);
 
   const me = session?.user

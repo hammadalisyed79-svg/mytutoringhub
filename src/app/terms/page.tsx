@@ -38,10 +38,11 @@ export default function TermsPage() {
             Review, Listing Boost per teaching listing, legacy listing packs) improve ranking and
             visibility tools. Subscriptions renew
             according to the plan you purchase unless cancelled. Limited-time offers (for example
-            complimentary Tutor Pro and 2 free teaching listings until a stated date) end
-            automatically; paid add-ons such as
-            Listing Boost are never included unless purchased. The Verified badge is granted only
-            after successful identity review. Platform
+            complimentary Tutor Pro until a stated date) end
+            automatically; free tutors keep up to 3 active teaching listings with ordinary search
+            visibility, and Tutor Pro unlocks up to 10. Paid add-ons such as
+            Listing Boost are never included unless purchased. The Identity Verified badge is
+            granted only after successful identity review. Platform
             subscriptions are processed by Safepay when card checkout is live; until then paid
             plans are activated manually after payment confirmation. Lesson fees stay
             off-platform and are never collected by My Tutoring Hub.

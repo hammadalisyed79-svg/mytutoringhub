@@ -9,6 +9,10 @@ import {
   STUDENT_FREE_CONTACT_LIMIT,
   TUTOR_FREE_REVEAL_LIMIT,
 } from "@/lib/plan-limits";
+import {
+  FREE_SUBJECT_PROFILES,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
+} from "@/lib/subject-profile-entitlements";
 
 export const FREE_VS_PAID_INTRO =
   "My Tutoring Hub is free to join. You only pay for platform tools — never a commission on lesson fees.";
@@ -87,17 +91,17 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     detail: "Tutors can reply to inbound messages even before email verification.",
   },
   {
-    feature: "Subject profiles in search",
-    free: "2 until 30 Sep",
-    paid: "Up to 3 / unlimited",
-    detail:
-      "2 free teaching listings until 30 Sep 2026; more need Tutor Pro (or a legacy listing pack). From 1 Oct 2026: 0 free — all listings require a plan (up to 3 on Tutor Pro / Extra; unlimited on legacy Unlimited Profiles).",
+    feature: "Active teaching listings",
+    free: `Up to ${FREE_SUBJECT_PROFILES}`,
+    paid: `Up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
+    detail: `Free tutors get up to ${FREE_SUBJECT_PROFILES} active teaching listings with organic search visibility. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Legacy Unlimited Profiles holders keep unlimited listings.`,
   },
   {
     feature: "Priority search ranking",
     free: "no",
     paid: "yes",
-    detail: "Tutor Pro improves placement among relevant matches (boost stays below strong subject fit).",
+    detail:
+      "Tutor Pro improves placement among relevant matches (boost stays below strong subject fit).",
   },
   {
     feature: "Student enquiry reveals per month",
@@ -112,17 +116,18 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     detail: "Free for tutors with a verified email.",
   },
   {
-    feature: "Verified badge",
+    feature: "Identity Verified badge",
     free: "Earned",
     paid: "Priority review",
     detail:
-      "Badge is earned only after successful identity review. Optional Priority Verification Review jumps the queue — you cannot buy the badge.",
+      "Badge is earned only after successful identity review. Optional Priority Verification Review jumps the queue — you cannot buy the badge. Wording is Identity Verified / Verified Identity — not a qualification or quality claim.",
   },
   {
     feature: "Listing Boost",
     free: "no",
     paid: "Per teaching listing",
-    detail: "Optional 30-day Listing Boost (legacy Highlight still honourable). Buy from each listing on your dashboard.",
+    detail:
+      "Optional 30-day Listing Boost (legacy Highlight still honourable for existing customers). Buy from each listing on your dashboard. Boost stays subordinate to subject relevance.",
   },
   {
     feature: "Commission on lessons",
@@ -146,7 +151,7 @@ export const STUDENT_PAID_HIGHLIGHTS = [
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  "Tutor Pro — priority ranking, unlimited reveals, up to 3 teaching listings (complimentary until 30 Sept 2026)",
+  `Tutor Pro — relevance-first ranking, unlimited reveals, up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} teaching listings (complimentary until 30 Sept 2026)`,
   "Optional — Listing Boost per teaching listing; Priority Verification Review (badge only after approval)",
 ] as const;
 
@@ -165,7 +170,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: "Yes — Tutor Pro (internally still Tutor Basic) is complimentary until 30 September 2026 (priority placement and unlimited enquiry reveals). Until then every tutor also gets 2 free teaching listings; more need Tutor Pro or a legacy listing pack. From 1 October 2026 teaching listings require a plan (0 free). Listing Boost is optional. The Verified badge is earned via identity review — Priority Verification Review only jumps the queue.",
+    a: `Yes — Tutor Pro (internally still Tutor Basic) is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active teaching listings with ordinary search visibility; Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a teaching listing?",
@@ -177,7 +182,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "What is the difference between Student Pass and Student Pro?",
-    a: "Student Pass unlocks unlimited tutor messaging, student request ads, and 10 past paper downloads per month. Student Pro includes everything in Pass plus unlimited past paper downloads and the AI study assistant.",
+    a: "Student Pass unlocks unlimited tutor messaging, student request ads, and 10 past paper downloads per month. Student Pro includes everything in Pass plus unlimited past paper downloads and the AI study assistant. Free accounts can browse past papers but need Pass, Pro, or a pay-per-paper purchase to download.",
   },
   {
     q: "Can I use the study assistant on a free account?",
@@ -185,7 +190,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each teaching listing on your tutor dashboard.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each teaching listing on your tutor dashboard. Extra Profile Ads and Unlimited Profiles are legacy products — existing holders keep their entitlements.",
   },
 ] as const;
 

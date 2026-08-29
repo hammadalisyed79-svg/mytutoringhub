@@ -26,7 +26,16 @@ export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.stud
 export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited eligible downloads. Anyone can browse the library; individual papers can also be purchased separately when offered.`;
 
 export const TUTOR_FREE_LISTING_LINE =
-  "Complete your profile to appear in search. Until 30 September 2026 you get 2 free teaching listings; more require a plan. From 1 October 2026 all teaching listings are paid.";
+  "Complete your profile to appear in search for free. Free tutors get up to 3 active teaching listings, enquiries, and 100% of lesson fees — no subscription required for ordinary search visibility. Tutor Pro unlocks up to 10 listings plus growth tools.";
+
+export const TUTOR_PRO_LISTING_LINE =
+  "Tutor Pro includes up to 10 active teaching listings, relevance-first ranking enhancement, unlimited enquiry reveals, enhanced student-request access, and analytics.";
+
+export const IDENTITY_VERIFIED_LINE =
+  "Identity Verified means a successful identity review — not a qualification, degree, quality, or background check. The badge is earned, not purchased; Priority Verification Review only jumps the queue.";
+
+export const PAST_PAPERS_ENTITLEMENT_LINE =
+  "Browse past papers free. Student Pass includes 10 downloads per month; Student Pro includes unlimited eligible downloads. Individual papers may also be purchased separately when offered.";
 
 export const GEO_CURRENCY_LINE =
   "Rates shown in your local currency · tutors online or in your city · GCSE, IGCSE, A-Level, Matric, and more";

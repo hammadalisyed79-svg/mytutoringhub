@@ -310,10 +310,10 @@ export function PricingPlansClient({
         <section className="pricing-addons-section">
           <h2 className="checkout-section-title">Optional tutor boosts</h2>
           <p className="muted pricing-addons-lead">
-            Optional visibility upgrades — verified badge, highlight or boost per subject profile,
-            Extra Profile Ads, and Unlimited Profiles billed separately
-            {paidCheckoutLive ? " on Safepay" : " after payment"}. These do not replace a complete
-            free listing.
+            Optional visibility upgrades — Priority Verification Review and Listing Boost
+            {paidCheckoutLive ? " on Safepay" : " after payment"}. Listing capacity is included in
+            Free (3) and Tutor Pro (10); legacy Extra/Unlimited packs are not sold as primary
+            products. These do not replace a complete free listing.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (

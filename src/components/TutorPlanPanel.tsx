@@ -109,8 +109,9 @@ export function TutorPlanPanel({
         ) : (
           <div className="tutor-plan-empty">
             <p>
-              Complete your profile to appear in search for free. Tutor Pro unlocks priority
-              ranking, unlimited enquiry reveals, and up to 3 teaching listings.
+              Complete your profile to appear in search for free with up to 3 teaching listings.
+              Tutor Pro unlocks relevance-first ranking, unlimited enquiry reveals, and up to 10
+              teaching listings.
             </p>
           </div>
         )}

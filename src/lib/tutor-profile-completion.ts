@@ -19,6 +19,11 @@ export type TutorProfileCompletionInput = {
   location?: string | null;
   subjects?: string | null;
   hourlyRate?: number | null;
+  /**
+   * Marketplace V2: Teaching Listing.rate is authoritative.
+   * When true, profile hourlyRate is not required for completion/listability.
+   */
+  hasValidListingRate?: boolean;
   online?: boolean;
   inPerson?: boolean;
   qualifications?: string | null;
@@ -42,7 +47,7 @@ export function isTutorCityComplete(input: TutorProfileCompletionInput) {
 export function isTutorTeachingComplete(input: TutorProfileCompletionInput) {
   const subjectsOk = Boolean(input.subjects?.trim());
   if (!subjectsOk) return false;
-  const rateOk = Number(input.hourlyRate) >= 500;
+  const rateOk = Number(input.hourlyRate) >= 500 || Boolean(input.hasValidListingRate);
   const modeOk = Boolean(input.online || input.inPerson);
   return rateOk && modeOk;
 }
@@ -90,7 +95,9 @@ export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
     {
       key: "rate",
       label: "Hourly rate",
-      ok: teachingStarted && Number(input.hourlyRate) >= 500,
+      ok:
+        teachingStarted &&
+        (Number(input.hourlyRate) >= 500 || Boolean(input.hasValidListingRate)),
       required: true,
     },
     {

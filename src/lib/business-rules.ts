@@ -9,11 +9,17 @@ import {
   STUDENT_PASS_PAPER_DOWNLOADS,
   TUTOR_FREE_REVEAL_LIMIT,
 } from "@/lib/plan-limits";
+import {
+  FREE_SUBJECT_PROFILES,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
+} from "@/lib/subject-profile-entitlements";
 
 export const BUSINESS = {
   studentFreeContactsPerMonth: STUDENT_FREE_CONTACT_LIMIT,
   studentPassPaperDownloadsPerMonth: STUDENT_PASS_PAPER_DOWNLOADS,
   tutorFreeEnquiryRevealsPerMonth: TUTOR_FREE_REVEAL_LIMIT,
+  tutorFreeActiveListings: FREE_SUBJECT_PROFILES,
+  tutorProActiveListings: TUTOR_PRO_SUBJECT_PROFILE_CAP,
   noLessonCommission: true,
   studentPassUnlimitedContacts: true,
   tutorFreeSearchWhenProfileComplete: true,

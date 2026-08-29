@@ -300,7 +300,7 @@ export function TutorAdsManager({
       <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
           {entitlement?.promoLabel ||
-            `2 teaching listings free until 30 September 2026; more require a plan. From 1 October 2026: ${entitlement?.freeCapAfterPromo ?? 0} free — Tutor Pro unlocks up to ${entitlement?.paidCap ?? 3}; Unlimited Profiles (legacy) removes the cap.`}
+            `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active teaching listings. Tutor Pro unlocks up to ${entitlement?.paidCap ?? 10}. Legacy Unlimited Profiles holders keep unlimited listings.`}
         </p>
         <p className="teaching-listings-meter">
           Active{" "}

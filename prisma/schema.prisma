@@ -571,6 +571,26 @@ model ProfileView {
   @@index([tutorId, viewedAt])
 }
 
+/// Durable Marketplace V2 search funnel (volume, zero-results, demand dims, listing impressions).
+model SearchAnalyticsEvent {
+  id           String   @id @default(cuid())
+  type         String
+  subject      String?
+  board        String?
+  location     String?
+  country      String?
+  level        String?
+  resultCount  Int?
+  listingIds   String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([subject, createdAt])
+  @@index([board, createdAt])
+  @@index([location, createdAt])
+}
+
 model StudentRequest {
   id          String   @id @default(cuid())
   studentId   String

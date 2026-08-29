@@ -88,14 +88,15 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "TUTOR_BASIC",
     name: "Tutor Pro",
     description:
-      "Paid growth plan: priority in relevant search, unlimited enquiry reveals, and up to 3 teaching listings. Free complete profiles already appear in search. (Internal plan id: Tutor Basic.)",
+      "Paid growth plan: relevance-first ranking boost, unlimited enquiry reveals, enhanced student-request access, analytics, and up to 10 active teaching listings. Free complete profiles already appear in search with up to 3 listings. (Internal plan id: Tutor Basic.)",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),
     features: [
-      "Priority ranking in relevant search",
+      "Ranking enhancement among relevant matches (never overrides subject fit)",
       "Unlimited enquiry reveals when you message students first",
-      "Up to 3 active teaching listings",
+      "Up to 10 active teaching listings",
+      "Enhanced student-request access and analytics",
       "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
@@ -104,19 +105,19 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Pro is complimentary until 30 September 2026. Until then, every tutor gets 2 free teaching listings; Tutor Pro or a legacy listing pack unlocks more. From 1 October 2026, teaching listings require a plan (0 free). Identity verification is a trust review (not a purchased badge). Listing Boost remains an optional paid add-on.",
+      "Tutor Pro is complimentary until 30 September 2026. Free tutors keep up to 3 active teaching listings with organic search visibility. Identity Verified is earned via review (not purchased). Listing Boost remains an optional paid add-on.",
   },
   {
     id: "VERIFIED_TUTOR",
     name: "Priority Verification Review",
     description:
-      "Jump the identity-verification queue. The Verified badge is earned only after a successful admin review — not purchased.",
+      "Jump the identity-verification queue. The Identity Verified badge is earned only after a successful admin review — not purchased — and stays on your profile after payment ends.",
     audience: "tutor",
     pricePkr: 2999,
     features: [
-      "Priority place in the verification review queue",
-      "Verified badge only if review is approved",
-      "Higher trust ranking after approval (Elite tier)",
+      "Priority place in the identity-verification review queue",
+      "Identity Verified badge only if review is approved",
+      "Badge persists after Priority Review payment ends",
     ],
     envPriceId: "STRIPE_PRICE_VERIFIED_TUTOR",
     isAddOn: true,
@@ -125,10 +126,10 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "HIGHLIGHTED_AD",
     name: "Listing Highlight (legacy)",
     description:
-      "Legacy 30-day highlight on one teaching listing. Prefer Listing Boost for new purchases.",
+      "Legacy 30-day highlight on one teaching listing. Prefer Listing Boost for new purchases. Existing holders keep entitlement.",
     audience: "tutor",
     pricePkr: 1299,
-    features: ["Highlighted badge on that listing", "Higher search placement for 30 days"],
+    features: ["Highlighted badge on that listing", "Stronger placement among relevant matches for 30 days"],
     envPriceId: "STRIPE_PRICE_HIGHLIGHTED_AD",
     isAddOn: true,
   },
@@ -136,7 +137,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "AD_BOOST",
     name: "Listing Boost",
     description:
-      "One-time checkout — boost one teaching listing for 30 days with periodic stronger placement (still ranked below strong subject match).",
+      "Preferred promo: boost one teaching listing for 30 days with stronger placement among relevant matches (never above strong subject fit).",
     audience: "tutor",
     pricePkr: 999,
     features: [
@@ -151,12 +152,11 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "EXTRA_PROFILE_ADS",
     name: "Extra Profile Ads (legacy)",
     description:
-      "Legacy pack: up to 3 active teaching listings. New tutors should use Tutor Pro for the same cap.",
+      "Legacy listing pack — no longer sold as a primary product. Grandfathered holders keep Tutor Pro–equivalent listing capacity (up to 10) and unlimited enquiry reveals.",
     audience: "tutor",
     pricePkr: 999,
     features: [
-      "Up to 3 active teaching listings",
-      "Each subject shows as its own listing",
+      "Up to 10 active teaching listings (V2 Pro-equivalent)",
       "Unlimited enquiry reveals while active",
     ],
     envPriceId: "STRIPE_PRICE_EXTRA_PROFILE_ADS",
@@ -166,17 +166,22 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "UNLIMITED_ADS",
     name: "Unlimited Profiles (legacy)",
     description:
-      "Legacy pack: unlimited active teaching listings. Grandfathered holders keep entitlement; new growth path is Tutor Pro pending final listing-cap policy.",
+      "Legacy pack — no longer sold as a primary product. Grandfathered holders keep unlimited active teaching listings and unlimited enquiry reveals.",
     audience: "tutor",
     pricePkr: 1999,
     features: [
       "Unlimited active teaching listings",
-      "Reach more niches and cities",
       "Unlimited enquiry reveals while active",
     ],
     envPriceId: "STRIPE_PRICE_UNLIMITED_ADS",
     isAddOn: true,
   },
+];
+
+/** Add-ons shown on public Pricing. Legacy listing-cap SKUs stay in DB/checkout for grandfathering. */
+export const PUBLIC_ADDON_PLAN_IDS: SubscriptionPlan[] = [
+  "VERIFIED_TUTOR",
+  "AD_BOOST",
 ];
 
 /** Code defaults. Live checkout/pricing uses `getLivePlans()` so admin can override amounts. */

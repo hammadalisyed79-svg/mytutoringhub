@@ -84,9 +84,9 @@ export default async function HowItWorksPage() {
                 cards
               </li>
               <li>
-                Tutor Pro unlocks priority ranking and unlimited enquiry reveals (complimentary
-                until 30 September 2026); 2 free teaching listings in the same window, then paid
-                from 1 October 2026
+                Free tutors get up to 3 active teaching listings in search; Tutor Pro unlocks up to
+                10 plus relevance-first ranking and unlimited enquiry reveals (complimentary until
+                30 September 2026)
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is
