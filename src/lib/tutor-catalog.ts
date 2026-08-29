@@ -245,15 +245,36 @@ export function tutorCountries() {
   return TOP_COUNTRIES.map((country) => country.name);
 }
 
+function uniquePreserveOrder(values: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of values) {
+    const value = raw.trim();
+    if (!value) continue;
+    const key = value.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(value);
+  }
+  return out;
+}
+
 export function citiesForCountry(countryName: string) {
   const country = TOP_COUNTRIES.find((row) => row.name === countryName);
+  // Alphabetical for profile dropdowns / letter grouping.
   return uniqueSorted(["Online", ...(country?.cities || []), ...(EXTRA_CITIES[countryName] || [])]);
 }
 
-/** Online first, then that country's market cities — used by tutor search. */
+/** Online first, then curated market order (not alphabetical) — used by tutor search suggestions. */
 export function citiesForSearchCountry(countryName: string) {
-  const cities = citiesForCountry(countryName).filter((city) => city !== "Online");
-  return countryName ? ["Online", ...cities] : [];
+  if (!countryName) return [];
+  const country = TOP_COUNTRIES.find((row) => row.name === countryName);
+  const curated = uniquePreserveOrder([
+    "Online",
+    ...(country?.cities || []),
+    ...(EXTRA_CITIES[countryName] || []),
+  ]);
+  return curated;
 }
 
 export function cityBelongsToCountry(city: string, countryName: string) {
