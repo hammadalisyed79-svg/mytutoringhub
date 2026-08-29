@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  isDisplayableTutorRef,
   listRecentTutors,
   listSavedTutors,
+  reconcileStoredTutors,
   trackRecentTutor,
   type SavedTutorRef,
 } from "@/lib/saved-tutors";
@@ -25,16 +27,36 @@ export function RecentAndSavedTutors({
   const [saved, setSaved] = useState<SavedTutorRef[]>([]);
 
   useEffect(() => {
-    function sync() {
-      setRecent(listRecentTutors());
-      setSaved(listSavedTutors());
+    let cancelled = false;
+
+    function applyLocal() {
+      setRecent(listRecentTutors().filter(isDisplayableTutorRef));
+      setSaved(listSavedTutors().filter(isDisplayableTutorRef));
     }
-    sync();
-    window.addEventListener("mth-saved-tutors", sync);
-    window.addEventListener("storage", sync);
+
+    async function boot() {
+      // Hide empty-name chips immediately, then purge IDs that 404 / aren't public.
+      applyLocal();
+      try {
+        const cleaned = await reconcileStoredTutors();
+        if (cancelled) return;
+        setRecent(cleaned.recent);
+        setSaved(cleaned.saved);
+      } catch {
+        if (!cancelled) applyLocal();
+      }
+    }
+
+    void boot();
+
+    // Local edits (save/unsave, other tabs) — do not re-hit the resolve API here
+    // (reconcile writes localStorage and would loop).
+    window.addEventListener("mth-saved-tutors", applyLocal);
+    window.addEventListener("storage", applyLocal);
     return () => {
-      window.removeEventListener("mth-saved-tutors", sync);
-      window.removeEventListener("storage", sync);
+      cancelled = true;
+      window.removeEventListener("mth-saved-tutors", applyLocal);
+      window.removeEventListener("storage", applyLocal);
     };
   }, []);
 
