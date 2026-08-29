@@ -20,8 +20,13 @@ export function TrackTutorView({ tutor }: { tutor: Omit<SavedTutorRef, "savedAt"
 
 export function RecentAndSavedTutors({
   mode = "both",
+  recentHeading = "Recently viewed",
+  className,
 }: {
   mode?: "recent" | "saved" | "both";
+  /** Override the recently-viewed section heading (homepage continue rail). */
+  recentHeading?: string;
+  className?: string;
 }) {
   const [recent, setRecent] = useState<SavedTutorRef[]>([]);
   const [saved, setSaved] = useState<SavedTutorRef[]>([]);
@@ -65,10 +70,10 @@ export function RecentAndSavedTutors({
   if (!showRecent && !showSaved) return null;
 
   return (
-    <div className="saved-tutors-rail">
+    <div className={`saved-tutors-rail${className ? ` ${className}` : ""}`}>
       {showRecent && (
         <section className="saved-tutors-block">
-          <h2 className="saved-tutors-heading">Recently viewed</h2>
+          <h2 className="saved-tutors-heading">{recentHeading}</h2>
           <div className="saved-tutors-row">
             {recent.map((row) => (
               <Link
