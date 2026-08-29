@@ -25,6 +25,7 @@ import { getVisitorRegion } from "@/lib/visitor-region";
 import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { pageMetadata, truncateDescription } from "@/lib/seo";
 import { searchResultsShouldNoIndex } from "@/lib/seo-indexation";
+import { trackProductEvent } from "@/lib/product-events";
 
 export const dynamic = "force-dynamic";
 
@@ -144,6 +145,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       sp.browse === "1",
   );
   const showGuided = sp.guided === "1" || !hasSearchIntent;
+
+  if (hasSearchIntent && !showGuided) {
+    trackProductEvent(tutors.length === 0 ? "search_zero_results" : "search_results_shown", {
+      total,
+      page,
+      subject: resolved.subject || null,
+      location: resolved.location || null,
+      country: resolved.country || null,
+      level: resolved.level || null,
+      board: resolved.board || null,
+    });
+  }
 
   const placeLabel = [
     resolved.location && resolved.location !== "Online" ? resolved.location : "",

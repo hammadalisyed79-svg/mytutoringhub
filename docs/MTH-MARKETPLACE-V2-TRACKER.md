@@ -17,8 +17,10 @@ Execution: evolve `SubjectProfile` as Teaching Listing (no parallel table).
 | Past paper syllabus match | Done | CTA passes board / level / code into search |
 | Saved + recently viewed | Done | localStorage favorites & recent rail |
 | Hero need-first | Done | Subject suggest + guided search link |
-| Admin demand intelligence | Later | Aggregate search / zero-result insights |
-| Search impressions analytics | Later | Event table + instrument search cards |
+| Professional dashboard UI | Done | Status card, tabs, wizard, badges, progress hierarchy |
+| Admin demand intelligence | Done | `/admin/demand` requests vs listings by subject |
+| Search funnel events | Done | `search_results_shown` / `search_zero_results` product events |
+| Search impression DB table | Later | Persist impressions beyond product-event stub |
 | Full booking / Safepay lesson pay | Deferred | Out of V2 scope |
 
 Do not declare **MARKETPLACE V2 IMPLEMENTATION COMPLETE** until remaining Later items are done, tested, and production-verified.

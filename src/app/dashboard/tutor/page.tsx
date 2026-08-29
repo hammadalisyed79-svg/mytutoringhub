@@ -220,12 +220,12 @@ export default async function TutorDashboardPage({
                   <span
                     className={`tutor-status-pill${user.tutorProfile.active ? " is-live" : ""}`}
                   >
-                    {user.tutorProfile.active ? "LIVE" : "INCOMPLETE"}
+                    {user.tutorProfile.active ? "Live" : "Incomplete"}
                   </span>
                   {user.tutorProfile.verified ? (
-                    <span className="badge badge-verified">✓ Verified</span>
+                    <span className="badge badge-verified">Verified</span>
                   ) : (
-                    <span className="badge">Unverified badge</span>
+                    <span className="badge badge-muted">Not verified</span>
                   )}
                   {badgeProgress ? (
                     <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />
@@ -234,9 +234,9 @@ export default async function TutorDashboardPage({
               </div>
 
               {!user.tutorProfile.active ? (
-                <div className="tutor-profile-hidden-note">
-                  Students cannot find this listing in search yet. Finish the required fields above,
-                  verify your email, then save — eligible profiles go live automatically.
+                <div className="tutor-profile-hidden-note" role="status">
+                  <strong>Not searchable yet.</strong> Finish required fields, verify your email, then
+                  save — eligible profiles go live automatically.
                 </div>
               ) : null}
 

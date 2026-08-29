@@ -290,18 +290,6 @@ export function TutorProfileForm({
     ],
   );
 
-  const recommendedChecks = useMemo(
-    () => [
-      { label: "Expertise", ok: expertiseList.length > 0 },
-      { label: "Levels", ok: levelList.length > 0 },
-      { label: "Languages", ok: languageList.length > 0 },
-      { label: "Experience", ok: experienceYears !== "" },
-      { label: "Availability", ok: slots.length > 0 },
-      { label: "Phone", ok: phone.trim().length > 0 },
-    ],
-    [expertiseList, levelList, languageList, experienceYears, slots, phone],
-  );
-
   const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
   const requiredTotal = completion.requiredTotal + 1;
   const progress = Math.round((requiredDone / requiredTotal) * 100);
@@ -626,36 +614,24 @@ export function TutorProfileForm({
       }}
     >
       {wizardChrome}
-      <div className="profile-complete">
+      <div className="profile-complete profile-complete--compact">
         <div className="profile-complete-head">
           <strong>
-            {requiredDone}/{requiredTotal} listing requirements complete
+            Step progress · {requiredDone}/{requiredTotal} required fields ready
           </strong>
-          <span className="muted">{progress}%</span>
+          <span className="profile-complete-pct">{progress}%</span>
         </div>
         <div className="profile-progress" aria-hidden>
           <span style={{ width: `${Math.min(100, progress)}%` }} />
         </div>
-        <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
-          Required fields use the same rules as public search eligibility. Optional steps can be
-          skipped — you can fill them later.
-        </p>
-        {currentStep.id === "finish" && (
-          <ul className="profile-complete-list">
-            <li className={emailVerified ? "is-done" : "is-needed"}>
-              {emailVerified ? "✓" : "○"} Email verified
-            </li>
-            {completion.checks.map((c) => (
-              <li key={c.key} className={c.ok ? "is-done" : c.required ? "is-needed" : ""}>
-                {c.ok ? "✓" : "○"} {c.label}
-              </li>
-            ))}
-            {recommendedChecks.map((c) => (
-              <li key={c.label} className={c.ok ? "is-done" : ""}>
-                {c.ok ? "✓" : "○"} {c.label} (recommended)
-              </li>
-            ))}
-          </ul>
+        {currentStep.id === "finish" ? (
+          <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
+            Review anything left above, then save. Optional details can be added anytime.
+          </p>
+        ) : (
+          <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
+            Full checklist stays at the top of this page — focus on this step, then continue.
+          </p>
         )}
       </div>
 

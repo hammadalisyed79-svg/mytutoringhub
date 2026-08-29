@@ -79,6 +79,7 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/reports" label="Open reports" value={openReports} />
         <Stat href="/admin/verifications" label="Pending verification" value={pendingVerification} />
         <Stat href="/admin/payments?status=INCOMPLETE" label="Incomplete payments" value={incompletePayments} />
+        <Stat href="/admin/demand" label="Marketplace demand" value={studentAds} />
         <Stat href="/admin/ads" label="Ads & listings" value={studentAds + subjectProfiles} />
         <Stat href="/admin/ads?kind=tutor" label="Teaching listings" value={subjectProfiles} />
         <Stat href="/admin/messages" label="Conversations" value={conversations} />
@@ -86,6 +87,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       <div className="admin-quick-links">
+        <Link href="/admin/demand">Marketplace demand</Link>
         <Link href="/admin/tutor-supply">Tutor supply</Link>
         <Link href="/admin/users">Find a user</Link>
         <Link href="/admin/plans">Plans & prices</Link>

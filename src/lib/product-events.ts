@@ -10,6 +10,8 @@ export type ProductEventName =
   | "enquiry_reveal"
   | "checkout_started"
   | "listing_viewed"
+  | "search_results_shown"
+  | "search_zero_results"
   | "become_tutor";
 
 export function trackProductEvent(
