@@ -276,6 +276,7 @@ export function TutorProfileForm({
   const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
   const [draftSaving, setDraftSaving] = useState(false);
   const [draftNote, setDraftNote] = useState("");
+  const [skippedOptional, setSkippedOptional] = useState<Set<string>>(() => new Set());
 
   // Keep the typed amount consistent when teaching country (hence currency) changes.
   useEffect(() => {
@@ -335,7 +336,6 @@ export function TutorProfileForm({
   const requiredTotal = completion.requiredTotal + 1;
   const progress = Math.round((requiredDone / requiredTotal) * 100);
   const currentStep = steps[Math.min(step, steps.length - 1)];
-  const wizardProgress = Math.round(((step + 1) / steps.length) * 100);
 
   function validateStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): string | null {
     switch (stepId) {
@@ -364,6 +364,56 @@ export function TutorProfileForm({
       default:
         return null;
     }
+  }
+
+  /** True only when the step’s data is actually filled — not merely visited. */
+  function isStepDataComplete(stepId: (typeof WIZARD_STEPS)[number]["id"]): boolean {
+    switch (stepId) {
+      case "photo":
+        return photoUrl.startsWith("https://");
+      case "basics":
+        return (
+          name.trim().length >= 2 && headline.trim().length >= 8 && bio.trim().length >= 40
+        );
+      case "place":
+        return Boolean(country?.trim() && location.trim());
+      case "teaching":
+        return (
+          subjectList.length > 0 && ratePkr >= MIN_HOURLY_RATE_PKR && (online || inPerson)
+        );
+      case "qualifications":
+        return Boolean(qualifications.trim());
+      case "extras":
+        return (
+          expertiseList.length > 0 ||
+          levelList.length > 0 ||
+          languageList.length > 0 ||
+          Boolean(teachingMethod.trim()) ||
+          experienceYears !== ""
+        );
+      case "schedule":
+        return slots.some((slot) => Boolean(slot.day && (slot.start || slot.end)));
+      case "contact":
+        return Boolean(phone.trim() || videoUrl.trim() || introVideoUrl.trim());
+      case "verify":
+        return Boolean(verified);
+      case "finish":
+        return Boolean(completion.complete && emailVerified);
+      default:
+        return false;
+    }
+  }
+
+  function stepStatus(stepId: (typeof WIZARD_STEPS)[number]["id"], index: number) {
+    const active = index === step;
+    const complete = isStepDataComplete(stepId);
+    const skipped = Boolean(
+      steps[index]?.optional && skippedOptional.has(stepId) && !complete,
+    );
+    // ✕ only for steps already passed without being filled — not for future steps.
+    const pending = !complete && !skipped && !active && index < step;
+    const upcoming = !complete && !skipped && !active && index > step;
+    return { active, complete, skipped, pending, upcoming };
   }
 
   function draftPayloadForStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): Record<string, unknown> | null {
@@ -471,6 +521,13 @@ export function TutorProfileForm({
     }
     const saved = await saveDraft(currentStep.id);
     if (!saved) return;
+    if (currentStep.optional && !isStepDataComplete(currentStep.id)) {
+      setSkippedOptional((prev) => {
+        const next = new Set(prev);
+        next.add(currentStep.id);
+        return next;
+      });
+    }
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
@@ -488,6 +545,16 @@ export function TutorProfileForm({
     if (!validateStep(currentStep.id)) {
       await saveDraft(currentStep.id, { silent: true });
     }
+    if (index > step) {
+      setSkippedOptional((prev) => {
+        const next = new Set(prev);
+        for (let i = step; i < index; i++) {
+          const row = steps[i];
+          if (row?.optional && !isStepDataComplete(row.id)) next.add(row.id);
+        }
+        return next;
+      });
+    }
     setStep(index);
   }
 
@@ -495,6 +562,11 @@ export function TutorProfileForm({
     if (!currentStep.optional) return;
     setError("");
     setDraftNote("");
+    setSkippedOptional((prev) => {
+      const next = new Set(prev);
+      next.add(currentStep.id);
+      return next;
+    });
     await saveDraft(currentStep.id, { silent: true });
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
@@ -676,24 +748,48 @@ export function TutorProfileForm({
 
   const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => currentStep.id === id;
 
+  const completedStepCount = steps.filter((row) => isStepDataComplete(row.id)).length;
+  const fieldProgressPct = progress;
+
   const stepNav = (
     <nav className="profile-wizard-steps" aria-label="Profile steps">
       <ol className="profile-wizard-steps-list">
         {steps.map((row, index) => {
-          const active = index === step;
-          const done = index < step;
+          const { active, complete, skipped, pending } = stepStatus(row.id, index);
+          const stateClass = active
+            ? " is-active"
+            : complete
+              ? " is-complete"
+              : skipped
+                ? " is-skipped"
+                : pending
+                  ? " is-pending"
+                  : "";
+          let markContent: string | number = index + 1;
+          if (complete) markContent = "✓";
+          else if (skipped) markContent = "–";
+          else if (pending) markContent = "✕";
+          const statusLabel = complete
+            ? "completed"
+            : skipped
+              ? "skipped"
+              : pending
+                ? "incomplete"
+                : active
+                  ? "current"
+                  : "upcoming";
           return (
             <li key={row.id}>
               <button
                 type="button"
-                className={`profile-wizard-step${active ? " is-active" : ""}${done ? " is-done" : ""}`}
+                className={`profile-wizard-step${stateClass}`}
                 aria-current={active ? "step" : undefined}
-                aria-label={`Step ${index + 1}: ${row.title}${done ? " (done)" : ""}${row.optional ? " (optional)" : ""}`}
-                title={row.title}
+                aria-label={`Step ${index + 1}: ${row.title} (${statusLabel}${row.optional ? ", optional" : ""})`}
+                title={`${row.title} — ${statusLabel}`}
                 onClick={() => void goToStep(index)}
               >
                 <span className="profile-wizard-step-num" aria-hidden="true">
-                  {done ? "✓" : index + 1}
+                  {markContent}
                 </span>
                 {active ? <span className="profile-wizard-step-label">{row.title}</span> : null}
               </button>
@@ -712,18 +808,37 @@ export function TutorProfileForm({
           {currentStep.optional ? " · Optional" : " · Required"}
         </p>
         <p className="profile-wizard-fields muted" aria-live="polite">
-          {requiredDone}/{requiredTotal} required fields ready · {progress}%
+          {requiredDone}/{requiredTotal} required fields · {fieldProgressPct}% ·{" "}
+          {completedStepCount}/{steps.length} steps done
         </p>
       </div>
-      <div className="guided-search-progress" aria-hidden="true">
-        <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
+      <div
+        className="guided-search-progress"
+        role="progressbar"
+        aria-valuenow={fieldProgressPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Required profile fields"
+      >
+        <div className="guided-search-progress-bar" style={{ width: `${fieldProgressPct}%` }} />
       </div>
       {stepNav}
+      <div className="profile-wizard-legend" aria-hidden="true">
+        <span>
+          <i className="profile-wizard-legend-dot is-complete" /> Done
+        </span>
+        <span>
+          <i className="profile-wizard-legend-dot is-pending" /> Pending
+        </span>
+        <span>
+          <i className="profile-wizard-legend-dot is-skipped" /> Skipped
+        </span>
+      </div>
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
       <p className="field-hint profile-wizard-persist-hint">
-        Each step is saved as a draft when you continue. Your listing stays private until the final
-        Save profile.
+        ✓ only when a step is filled. ✕ means you moved on before finishing it. Drafts save as you go —
+        your listing stays private until final Save profile.
       </p>
     </div>
   );
