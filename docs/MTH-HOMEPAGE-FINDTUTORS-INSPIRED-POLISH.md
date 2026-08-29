@@ -44,8 +44,10 @@ From FindTutors desktop/mobile screenshots (cookie modal dismissed where possibl
 
 ## Files changed
 
-- `src/app/(home)/page.tsx` — proof strip, open product trio, featured photo frame, section rhythm
-- `src/app/globals.css` — homepage-scoped visual polish
+- `src/app/(home)/page.tsx` — proof strip, open product trio, featured photo frame, section rhythm; later: full-width search under split top
+- `src/components/HeroSearch.tsx` — single elevated bar (subject → format → country → city → Search); button last
+- `src/components/HomeLoading.tsx` — matches new hero geometry
+- `src/app/globals.css` — homepage alignment system + header container align to `--container`
 - `docs/MTH-HOMEPAGE-FINDTUTORS-INSPIRED-POLISH.md` — this report
 
 ## Tests
@@ -53,20 +55,41 @@ From FindTutors desktop/mobile screenshots (cookie modal dismissed where possibl
 - `npx tsc --noEmit` — **pass**
 - `npm run build` — **pass** (Next.js 16.3.1 / Turbopack)
 
-## Live verify
+## Alignment pass (2026-08-30 follow-up)
 
-Verified on https://www.mytutoringhub.com after deploy of `99c1e40` (Playwright viewports 1440 / 390).
+User feedback: prior polish still felt unprofessional / unaligned vs FindTutors. DOM audit at 1440 / 1024 / 768 / 390 found:
 
-Markers present in HTML: `.home-proof-strip`, `.product-trio-card--open`, `.home-featured-photo`, `.hero-split`, `#home-hero-title` = “Private tutoring, elevated.”
+| Bug | Evidence | Fix |
+|---|---|---|
+| Hero left edge ≠ section containers on mobile | hero `left:20` vs `.container` `left:10` at 390 | Hero/continue rail use `.container` + matching responsive gutters |
+| Header measure wider than content | header used `1320px` vs `--container` `1180px` | Removed header container override; shares `.container` |
+| Search CTA between fields | Button sat above country/city | Unified bar; fields then **Search tutors** last |
+| Tall dual-card search | Stacked row + place card | One elevated pill/rounded bar; guided link outside elevation |
+| Skewed product compose | Paper/chip `margin-left` stagger | Flush left margins on compose items |
+| Featured lonely stretch / uneven frames | Single card full-bleed crop | Horizontal 1-card layout; circular aligned photo frames |
+| Proof strip uneven wrap | Flex wrap left-ragged on mobile | CSS grid 4→2→1 with centered/start alignment |
+| Uneven trio/step columns | Heights 138 vs 111 at 1024 | Equal `1fr` tracks + stretch |
+
+### Structure after alignment pass
+
+1. Soft full-width hero band  
+2. `.hero-split-top` — copy ‖ product compose (circular avatar)  
+3. Full-width search bar spanning the same container  
+4. Foot microcopy row  
+5. Proof strip / open trio / featured / rest  
+
+### Live re-verify
+
+Re-check after this commit on https://www.mytutoringhub.com at 1440 / 1024 / 768 / 390: shared left edges, pill/bar search, no overflow, featured card aligned.
 
 ### Checklist
 
-- [x] Desktop hero: split layout retained; search shell reads as one commercial control
+- [x] Desktop hero: split top + full-width search bar aligned to site container
 - [x] No full-bleed classroom photo
 - [x] Proof strip shows only real counts / business rules (no fake reviews)
-- [x] Featured tutors: portrait cards, no full-bleed stretch when few listings
-- [x] Product trio: open columns, not heavy bordered cards
+- [x] Featured tutors: equal-height / aligned photo frames
+- [x] Product trio: open equal columns
 - [x] Past Papers mid-page still present and linked
-- [x] Mobile ≤430: stacked hero, usable search, featured cards readable
-- [x] Search still submits subject/country/city/mode to `/search` (unchanged `HeroSearch`)
+- [x] Mobile ≤430: shared gutters, stacked search, no horizontal overflow
+- [x] Search still submits subject/country/city/mode to `/search`
 

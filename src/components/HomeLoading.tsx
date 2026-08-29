@@ -11,21 +11,25 @@ export function HomeLoading() {
       aria-live="polite"
       aria-label="Loading homepage"
     >
-      <div className="hero-content hero-split-inner">
-        <div className="hero-split-copy">
-          <div className="hero-brand-row" aria-hidden>
-            <span className="home-loading-skel home-loading-skel-mark" />
-            <span className="home-loading-skel home-loading-skel-kicker" />
+      <div className="container hero-content hero-split-inner">
+        <div className="hero-split-top">
+          <div className="hero-split-copy">
+            <div className="hero-brand-row" aria-hidden>
+              <span className="home-loading-skel home-loading-skel-mark" />
+              <span className="home-loading-skel home-loading-skel-kicker" />
+            </div>
+            <div className="home-loading-skel home-loading-skel-title" aria-hidden />
+            <div className="home-loading-skel home-loading-skel-lead" aria-hidden />
           </div>
-          <div className="home-loading-skel home-loading-skel-title" aria-hidden />
-          <div className="home-loading-skel home-loading-skel-lead" aria-hidden />
-          <div className="hero-search-shell" aria-hidden>
-            <div className="home-loading-skel home-loading-skel-search" />
+          <div className="hero-split-visual" aria-hidden>
+            <div className="home-loading-skel home-loading-skel-compose" />
           </div>
-          <div className="home-loading-skel home-loading-skel-strip" aria-hidden />
         </div>
-        <div className="hero-split-visual" aria-hidden>
-          <div className="home-loading-skel home-loading-skel-compose" />
+        <div className="hero-search-shell" aria-hidden>
+          <div className="home-loading-skel home-loading-skel-search" />
+        </div>
+        <div className="hero-split-foot" aria-hidden>
+          <div className="home-loading-skel home-loading-skel-strip" />
         </div>
       </div>
     </section>

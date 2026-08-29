@@ -206,31 +206,107 @@ export default async function HomePage() {
         }}
       />
       <section className="hero hero-findtutor hero-split" aria-labelledby="home-hero-title">
-        <div className="hero-content hero-split-inner">
-          <div className="hero-split-copy">
-            {session?.user && (
-              <LoggedInWelcome
-                userId={session.user.id}
-                name={session.user.name || "there"}
-                role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
-              />
-            )}
-            <div className="hero-brand-row">
-              <LogoMark className="hero-brand-mark" />
-              <p className="hero-kicker">World-class tutoring marketplace</p>
+        <div className="container hero-content hero-split-inner">
+          <div className="hero-split-top">
+            <div className="hero-split-copy">
+              {session?.user && (
+                <LoggedInWelcome
+                  userId={session.user.id}
+                  name={session.user.name || "there"}
+                  role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
+                />
+              )}
+              <div className="hero-brand-row">
+                <LogoMark className="hero-brand-mark" />
+                <p className="hero-kicker">World-class tutoring marketplace</p>
+              </div>
+              <h1 id="home-hero-title">Private tutoring, elevated.</h1>
+              <p className="hero-lead">
+                Find the right tutor for your subject, exam or goal — online or near you. Search free
+                and contact tutors directly.
+              </p>
             </div>
-            <h1 id="home-hero-title">Private tutoring, elevated.</h1>
-            <p className="hero-lead">
-              Find the right tutor for your subject, exam or goal — online or near you. Search free
-              and contact tutors directly.
-            </p>
-            <div className="hero-search-shell">
-              <HeroSearch
-                placeholder={region.searchPlaceholder}
-                suggestedCountry={region.countryName}
-                subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
-              />
+
+            <div className="hero-split-visual" aria-label="Product preview">
+              <div className="hero-compose">
+                {heroTutor ? (
+                  <article className="hero-tutor-card">
+                    <TutorAvatar
+                      className="tutor-avatar hero-tutor-avatar"
+                      photoUrl={heroTutor.photoUrl}
+                      cropX={heroTutor.photoCropX}
+                      cropY={heroTutor.photoCropY}
+                      cropZoom={heroTutor.photoCropZoom}
+                      initial={(heroTutor.user.name?.trim() || "T").slice(0, 1).toUpperCase()}
+                      priority
+                    />
+                    <div className="hero-tutor-card-body">
+                      {heroTutor.verified ? (
+                        <span className="badge badge-verified">Identity Verified</span>
+                      ) : null}
+                      <h2 className="hero-tutor-name">{heroTutor.user.name?.trim()}</h2>
+                      <p className="hero-tutor-subject">{heroTutor.subject}</p>
+                      {heroTutor.contextLine ? (
+                        <p className="muted hero-tutor-context">{heroTutor.contextLine}</p>
+                      ) : null}
+                      <div className="hero-tutor-meta">
+                        <span>{formatHourly(heroTutor.hourlyRate, currency)}</span>
+                        {heroTutor.availability ? <span>{heroTutor.availability}</span> : null}
+                      </div>
+                      <Link href={listingPath(heroTutor.listingId)} className="btn btn-secondary btn-sm">
+                        View profile
+                      </Link>
+                    </div>
+                  </article>
+                ) : (
+                  <article className="hero-tutor-card hero-tutor-card--fallback">
+                    <div className="hero-tutor-card-body">
+                      <p className="hero-kicker">Discover tutors</p>
+                      <h2 className="hero-tutor-name">Browse real teaching listings</h2>
+                      <p className="muted">
+                        Search by subject, exam board, and location — contact tutors directly.
+                      </p>
+                      <Link href="/search" className="btn btn-secondary btn-sm">
+                        Search tutors
+                      </Link>
+                    </div>
+                  </article>
+                )}
+
+                {heroPastPaper && heroPaperTaxonomy.length > 0 ? (
+                  <Link href={heroPaperHref} className="hero-paper-card">
+                    <span className="hero-paper-eyebrow">Past papers</span>
+                    <span className="hero-paper-preview" aria-hidden="true">
+                      <span className="hero-paper-sheet">
+                        <span className="hero-paper-rule" />
+                        <span className="hero-paper-rule" />
+                        <span className="hero-paper-rule short" />
+                      </span>
+                    </span>
+                    <span className="hero-paper-taxonomy">
+                      {heroPaperTaxonomy.map((part, i) => (
+                        <span key={`${i}-${part}`}>{part}</span>
+                      ))}
+                    </span>
+                    <span className="hero-paper-cta">Browse past papers →</span>
+                  </Link>
+                ) : null}
+
+                <Link href="/assistant" className="hero-study-chip">
+                  Study support · progress &amp; countdown
+                </Link>
+              </div>
             </div>
+          </div>
+
+          <div className="hero-search-shell">
+            <HeroSearch
+              placeholder={region.searchPlaceholder}
+              suggestedCountry={region.countryName}
+              subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
+            />
+          </div>
+          <div className="hero-split-foot">
             <p className="hero-microcopy">
               {BUSINESS.studentFreeContactsPerMonth} tutor contacts/month free ·{" "}
               {NO_LESSON_COMMISSION_SHORT}
@@ -239,82 +315,11 @@ export default async function HomePage() {
               Looking to teach? <Link href="/become-a-tutor">Become a tutor →</Link>
             </p>
           </div>
-
-          <div className="hero-split-visual" aria-label="Product preview">
-            <div className="hero-compose">
-              {heroTutor ? (
-                <article className="hero-tutor-card">
-                  <TutorAvatar
-                    className="tutor-avatar hero-tutor-avatar"
-                    photoUrl={heroTutor.photoUrl}
-                    cropX={heroTutor.photoCropX}
-                    cropY={heroTutor.photoCropY}
-                    cropZoom={heroTutor.photoCropZoom}
-                    initial={(heroTutor.user.name?.trim() || "T").slice(0, 1).toUpperCase()}
-                    priority
-                  />
-                  <div className="hero-tutor-card-body">
-                    {heroTutor.verified ? (
-                      <span className="badge badge-verified">Identity Verified</span>
-                    ) : null}
-                    <h2 className="hero-tutor-name">{heroTutor.user.name?.trim()}</h2>
-                    <p className="hero-tutor-subject">{heroTutor.subject}</p>
-                    {heroTutor.contextLine ? (
-                      <p className="muted hero-tutor-context">{heroTutor.contextLine}</p>
-                    ) : null}
-                    <div className="hero-tutor-meta">
-                      <span>{formatHourly(heroTutor.hourlyRate, currency)}</span>
-                      {heroTutor.availability ? <span>{heroTutor.availability}</span> : null}
-                    </div>
-                    <Link href={listingPath(heroTutor.listingId)} className="btn btn-secondary btn-sm">
-                      View profile
-                    </Link>
-                  </div>
-                </article>
-              ) : (
-                <article className="hero-tutor-card hero-tutor-card--fallback">
-                  <div className="hero-tutor-card-body">
-                    <p className="hero-kicker">Discover tutors</p>
-                    <h2 className="hero-tutor-name">Browse real teaching listings</h2>
-                    <p className="muted">
-                      Search by subject, exam board, and location — contact tutors directly.
-                    </p>
-                    <Link href="/search" className="btn btn-secondary btn-sm">
-                      Search tutors
-                    </Link>
-                  </div>
-                </article>
-              )}
-
-              {heroPastPaper && heroPaperTaxonomy.length > 0 ? (
-                <Link href={heroPaperHref} className="hero-paper-card">
-                  <span className="hero-paper-eyebrow">Past papers</span>
-                  <span className="hero-paper-preview" aria-hidden="true">
-                    <span className="hero-paper-sheet">
-                      <span className="hero-paper-rule" />
-                      <span className="hero-paper-rule" />
-                      <span className="hero-paper-rule short" />
-                    </span>
-                  </span>
-                  <span className="hero-paper-taxonomy">
-                    {heroPaperTaxonomy.map((part, i) => (
-                      <span key={`${i}-${part}`}>{part}</span>
-                    ))}
-                  </span>
-                  <span className="hero-paper-cta">Browse past papers →</span>
-                </Link>
-              ) : null}
-
-              <Link href="/assistant" className="hero-study-chip">
-                Study support · progress &amp; countdown
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
 
       <RecentAndSavedTutors
-        className="home-continue-rail"
+        className="container home-continue-rail"
         recentHeading="Continue where you left off"
       />
 

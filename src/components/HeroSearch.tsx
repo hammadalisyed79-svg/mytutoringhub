@@ -66,9 +66,12 @@ export function HeroSearch({
   }
 
   return (
-    <form className="hero-search" onSubmit={onSubmit}>
-      <div className="hero-search-row">
-        <div className="hero-search-suggest">
+    <form className="hero-search hero-search--bar" onSubmit={onSubmit}>
+      <div className="hero-search-bar" role="group" aria-label="Tutor search">
+        <div className="hero-search-field hero-search-field--query">
+          <span className="hero-search-field-label" aria-hidden="true">
+            Subject
+          </span>
           <SuggestField
             name="q"
             label="What do you want to learn?"
@@ -81,19 +84,31 @@ export function HeroSearch({
             hideLabel
           />
         </div>
-        <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Lesson mode">
-          <option value="">Any format</option>
-          <option value="online">Online</option>
-          <option value="inperson">In person</option>
-        </select>
-        <button className="btn" type="submit">
-          Search tutors
-        </button>
-      </div>
-      <div className="hero-search-place">
-        <label>
-          <span>Country</span>
-          <select value={country} onChange={(e) => onCountryChange(e.target.value)} aria-label="Country">
+        <div className="hero-search-field">
+          <label className="hero-search-field-label" htmlFor="hero-search-mode">
+            Format
+          </label>
+          <select
+            id="hero-search-mode"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            aria-label="Lesson mode"
+          >
+            <option value="">Any format</option>
+            <option value="online">Online</option>
+            <option value="inperson">In person</option>
+          </select>
+        </div>
+        <div className="hero-search-field">
+          <label className="hero-search-field-label" htmlFor="hero-search-country">
+            Country
+          </label>
+          <select
+            id="hero-search-country"
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+            aria-label="Country"
+          >
             <option value="">Any country</option>
             {countries.map((name) => (
               <option key={name} value={name}>
@@ -101,10 +116,13 @@ export function HeroSearch({
               </option>
             ))}
           </select>
-        </label>
-        <label>
-          <span>City</span>
+        </div>
+        <div className="hero-search-field">
+          <label className="hero-search-field-label" htmlFor="hero-search-city">
+            City
+          </label>
           <select
+            id="hero-search-city"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             aria-label="City"
@@ -116,12 +134,14 @@ export function HeroSearch({
               </option>
             ))}
           </select>
-        </label>
-        <p className="hero-guided-link muted">
-          Prefer step-by-step?{" "}
-          <Link href="/search?guided=1">Guided search</Link>
-        </p>
+        </div>
+        <button className="btn hero-search-submit" type="submit">
+          Search tutors
+        </button>
       </div>
+      <p className="hero-guided-link muted">
+        Prefer step-by-step? <Link href="/search?guided=1">Guided search</Link>
+      </p>
     </form>
   );
 }
