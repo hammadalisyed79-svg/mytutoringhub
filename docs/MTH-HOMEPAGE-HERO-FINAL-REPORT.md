@@ -53,6 +53,7 @@ Checked for overflow intent at 1440 / 1024 / 768 / 430 / 390 (CSS grid + `minmax
 - Decorative paper preview `aria-hidden`; LogoMark decorative.
 - Focus styles on search controls unchanged (brand outline).
 - Continue rail uses an `h2` only when content exists.
+- **Live fix (2026-08-30):** `.hero.hero-split .btn-secondary` restores brand-deep text on raised surface so View profile is readable (legacy `.hero .btn-secondary` was glass/white for the old photo hero).
 
 ## Performance
 
@@ -69,15 +70,37 @@ Checked for overflow intent at 1440 / 1024 / 768 / 430 / 390 (CSS grid + `minmax
 
 ## Live verify (post-deploy)
 
-Confirm on https://www.mytutoringhub.com:
+Verified on https://www.mytutoringhub.com (production Vercel; HEAD includes `daf4521` View profile contrast fix). Method: production HTML/CSS + Playwright viewport screenshots and DOM metrics (cursor-ide-browser MCP could not attach a stable tab in this session).
 
-- [ ] No full-background classroom photo in the hero
-- [ ] Balanced two-column split on desktop; stacked on mobile
-- [ ] Search is obvious and submits with subject/country/city/mode params
-- [ ] Right column shows a real tutor (or honest fallback) — no fake ratings/reviews
-- [ ] Past-paper mini-card uses real taxonomy when catalogue has papers
-- [ ] Recently viewed appears only below hero when data exists
-- [ ] No horizontal overflow at 1440 / 1024 / 768 / 430 / 390
+### Checklist
+
+- [x] No full-background classroom photo in the hero — **PASS** (`hero-split`; `background-image` none)
+- [x] Balanced two-column split on desktop; stacked on mobile — **PASS**
+- [x] Search is obvious and submits with subject/country/city/mode params — **PASS** (`/search?subject=Chemistry&country=…`)
+- [x] Right column shows a real tutor (or honest fallback) — no fake ratings/reviews — **PASS** (Zain Ali / Humanities; View profile → `/listings/…` 200)
+- [x] Past-paper mini-card uses real taxonomy when catalogue has papers — **PASS** (JC SEC / Science / 2025 / Question paper; link 200)
+- [x] Recently viewed appears only below hero when data exists — **PASS** (no empty rail for anonymous cold session)
+- [x] No horizontal overflow at checked widths — **PASS**
+
+### Viewport matrix
+
+| Viewport | Layout | Overflow | Photo bg | View profile | Result |
+|----------|--------|----------|----------|--------------|--------|
+| 1920 | Split (~48/52), content ~1180 | none | none | readable (FIXED) | **PASS** |
+| 1440 | Split | none | none | readable (FIXED) | **PASS** |
+| 1024 | Split | none | none | readable (FIXED) | **PASS** |
+| 768 | Stacked | none | none | readable (FIXED) | **PASS** |
+| 430 | Stacked | none | none | readable (FIXED) | **PASS** |
+| 390 | Stacked | none | none | readable (FIXED) | **PASS** |
+| 375 | Stacked | none | none | readable (FIXED) | **PASS** |
+| 360 | Stacked | none | none | readable (FIXED) | **PASS** |
+| 320 | Stacked | none | none | readable (FIXED) | **PASS** |
+
+### Defects found & fixed
+
+1. **View profile invisible on light split hero** — legacy `.hero .btn-secondary` used on-dark glass (white text / translucent fill). **FIXED** in `src/app/globals.css` via `.hero.hero-split .btn-secondary` overrides; deployed `daf4521`; re-verified live (brand-deep on white, visible CTA).
+
+No other confirmed hero defects in scope.
 
 ## Files touched (this pass)
 
@@ -99,4 +122,8 @@ Confirm on https://www.mytutoringhub.com:
 
 ---
 
-**MTH HOMEPAGE HERO — FINAL PRODUCTION POLISH COMPLETE**
+MTH HOMEPAGE HERO — LIVE VISUAL VERIFICATION PASSED
+
+HERO STATUS: FROZEN
+
+No further homepage hero design changes recommended unless future analytics, user testing, or a confirmed production defect provides evidence for change.
