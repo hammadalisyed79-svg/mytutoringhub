@@ -216,10 +216,21 @@ export function applyPlanOverrides(
     const over = overrides?.[plan.id];
     const price = Number(over?.pricePkr);
     const promoPrice = Number(over?.promoPricePkr);
+    let name = over?.name?.trim() || plan.name;
+    // Stale SiteSettings overrides must not resurrect retired public branding.
+    if (plan.id === "TUTOR_BASIC" && /^tutor\s*basic$/i.test(name)) {
+      name = "Tutor Pro";
+    }
+    if (plan.id === "VERIFIED_TUTOR" && /^verified\s*tutor$/i.test(name)) {
+      name = "Priority Verification Review";
+    }
+    if (plan.id === "AD_BOOST" && /^ad\s*boost$/i.test(name)) {
+      name = "Listing Boost";
+    }
     return {
       ...plan,
       pricePkr: Number.isFinite(price) && price >= 0 ? Math.round(price) : plan.pricePkr,
-      name: over?.name?.trim() || plan.name,
+      name,
       description: over?.description?.trim() || plan.description,
       promoEnabled: over?.promoEnabled ?? plan.promoEnabled ?? false,
       promoPricePkr: Number.isFinite(promoPrice) && promoPrice >= 0 ? Math.round(promoPrice) : plan.promoPricePkr,
