@@ -12467,11 +12467,41 @@ img {
   align-items: center;
 }
 
+.home-page .hero.hero-split .hero-tutor-avatar,
 .home-page .hero-tutor-avatar {
   width: 4.75rem;
   height: 4.75rem;
   border-radius: 999px;
   font-size: 1.35rem;
+}
+
+/* Mobile: search before product compose so first viewport stays action-first */
+@media (max-width: 899px) {
+  .home-page .hero.hero-split .hero-split-inner {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-page .hero-split-top {
+    display: contents;
+  }
+
+  .home-page .hero-split-copy {
+    order: 1;
+  }
+
+  .home-page .hero-search-shell {
+    order: 2;
+  }
+
+  .home-page .hero-split-foot {
+    order: 3;
+  }
+
+  .home-page .hero-split-visual {
+    order: 4;
+    margin-top: 0.25rem;
+  }
 }
 
 .home-page .hero-paper-card {
