@@ -234,14 +234,6 @@ export default async function TutorDashboardPage({
                 </div>
               ) : null}
 
-              {!user.tutorProfile.verified ? (
-                <p className="field-hint">
-                  Optional: use the <strong>Get verified</strong> step in the wizard (or{" "}
-                  <a href="/dashboard/tutor?tab=profile&amp;verify=1">jump to verification</a>) for
-                  the verified badge. Verification is not required to go live.
-                </p>
-              ) : null}
-
               <TutorProfileForm
                 initial={user.tutorProfile}
                 displayName={user.name}

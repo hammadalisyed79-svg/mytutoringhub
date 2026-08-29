@@ -519,12 +519,14 @@ export function TutorProfileForm({
                 type="button"
                 className={`profile-wizard-step${active ? " is-active" : ""}${done ? " is-done" : ""}`}
                 aria-current={active ? "step" : undefined}
+                aria-label={`Step ${index + 1}: ${row.title}${done ? " (done)" : ""}${row.optional ? " (optional)" : ""}`}
+                title={row.title}
                 onClick={() => goToStep(index)}
               >
                 <span className="profile-wizard-step-num" aria-hidden="true">
                   {done ? "✓" : index + 1}
                 </span>
-                <span className="profile-wizard-step-label">{row.title}</span>
+                {active ? <span className="profile-wizard-step-label">{row.title}</span> : null}
               </button>
             </li>
           );
@@ -535,13 +537,18 @@ export function TutorProfileForm({
 
   const wizardChrome = (
     <div className="profile-wizard-chrome">
+      <div className="profile-wizard-meta">
+        <p className="guided-search-step">
+          Step {step + 1} of {steps.length}
+          {currentStep.optional ? " · Optional" : " · Required"}
+        </p>
+        <p className="profile-wizard-fields muted" aria-live="polite">
+          {requiredDone}/{requiredTotal} required fields ready · {progress}%
+        </p>
+      </div>
       <div className="guided-search-progress" aria-hidden="true">
         <div className="guided-search-progress-bar" style={{ width: `${wizardProgress}%` }} />
       </div>
-      <p className="guided-search-step muted">
-        Step {step + 1} of {steps.length}
-        {currentStep.optional ? " · Optional" : " · Required"}
-      </p>
       {stepNav}
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
@@ -614,29 +621,26 @@ export function TutorProfileForm({
       }}
     >
       {wizardChrome}
-      <div className="profile-complete profile-complete--compact">
-        <div className="profile-complete-head">
-          <strong>
-            Step progress · {requiredDone}/{requiredTotal} required fields ready
-          </strong>
-          <span className="profile-complete-pct">{progress}%</span>
-        </div>
-        <div className="profile-progress" aria-hidden>
-          <span style={{ width: `${Math.min(100, progress)}%` }} />
-        </div>
-        {currentStep.id === "finish" ? (
+
+      {currentStep.id === "finish" ? (
+        <div className="profile-complete profile-complete--compact">
+          <div className="profile-complete-head">
+            <strong>
+              Ready to save · {requiredDone}/{requiredTotal} required fields ready
+            </strong>
+            <span className="profile-complete-pct">{progress}%</span>
+          </div>
+          <div className="profile-progress" aria-hidden>
+            <span style={{ width: `${Math.min(100, progress)}%` }} />
+          </div>
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
-            Review anything left above, then save. Optional details can be added anytime.
+            Review anything left, then save. Optional details can be added anytime.
           </p>
-        ) : (
-          <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
-            Full checklist stays at the top of this page — focus on this step, then continue.
-          </p>
-        )}
-      </div>
+        </div>
+      ) : null}
 
       {show("photo") && (
-      <section className="form-section profile-photo-top profile-photo-required">
+      <section className="form-section profile-photo-top profile-photo-step">
         <div className="profile-photo-hero">
           <PhotoFrameAdjust
             className="profile-photo-preview profile-photo-preview-lg"
@@ -649,19 +653,16 @@ export function TutorProfileForm({
               setPhotoCropY(y);
               setPhotoCropZoom(zoom);
             }}
-            emptyLabel="Add photo *"
+            emptyLabel="Add photo"
           />
           <div className="profile-photo-hero-copy">
-            <h3>
-              Profile photo <abbr className="req" title="Required">*</abbr>
-            </h3>
-            <p className="field-hint">
-              A clear, professional-looking headshot helps students trust your listing. Face clearly
-              visible works best — no biometric checks are run. JPEG, PNG, WebP, or GIF · max 2 MB.
+            <p className="field-hint profile-photo-lead">
+              Use a clear headshot with your face visible. JPEG, PNG, WebP, or GIF · max 2 MB.
+              No biometric checks are run.
             </p>
             <div className="profile-photo-actions">
               <button
-                className="btn btn-secondary btn-sm"
+                className="btn"
                 type="button"
                 onClick={() => photoInput.current?.click()}
                 disabled={uploading}
@@ -702,11 +703,11 @@ export function TutorProfileForm({
             />
             {photoError && <p className="form-error">{photoError}</p>}
             {photoMsg && <p className="success">{photoMsg}</p>}
-            {!photoUrl.startsWith("http") && (
-              <p className="form-error" style={{ marginBottom: 0 }}>
-                A profile photo is required before your listing can go live.
+            {!photoUrl.startsWith("http") && !photoError ? (
+              <p className="field-required-note" role="status">
+                Required to go live — upload a photo, then continue.
               </p>
-            )}
+            ) : null}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input
