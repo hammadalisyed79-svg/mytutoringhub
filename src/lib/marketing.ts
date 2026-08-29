@@ -44,21 +44,18 @@ export const SUBJECT_CATEGORIES = [
   },
 ];
 
+/** High-demand homepage chips — taxonomy names only. */
 export const POPULAR_SUBJECTS = [
   "Mathematics",
+  "English",
   "Physics",
   "Chemistry",
   "Biology",
-  "English",
-  "Urdu",
-  "IELTS",
-  "SAT Prep",
-  "CSS Prep",
-  "O Level Maths",
-  "JEE Prep",
-  "GCSE Maths",
   "Computer Science",
-  "Spoken English",
-  "Arabic",
-  "Quran Nazra",
+  "IELTS",
+  "GCSE Maths",
+  "IGCSE Maths",
+  "O Level Maths",
+  "A Level Physics",
+  "A Level Chemistry",
 ];

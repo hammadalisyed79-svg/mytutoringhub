@@ -2,6 +2,8 @@
 
 Date: 2026-08-30
 
+> **Follow-up:** conversion & visual polish documented in [`MTH-HOMEPAGE-FINAL-POLISH-REPORT.md`](./MTH-HOMEPAGE-FINAL-POLISH-REPORT.md).
+
 ## Confirmed issues
 
 - Global `.section` padding plus local overrides made consecutive homepage blocks uneven and tall.

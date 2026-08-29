@@ -4,6 +4,8 @@ import { uniqueSubjectsForCountry } from "@/lib/curriculum";
 import { MoreCountriesSelect } from "@/components/MoreCountriesSelect";
 
 const CHIP_SLOTS = 12;
+const COMPACT_CITY_SLOTS = 4;
+const COMPACT_CHIP_SLOTS = 4;
 
 function searchHref(country: MarketCountry) {
   const city = country.cities[0];
@@ -12,18 +14,27 @@ function searchHref(country: MarketCountry) {
   return `/search?${params.toString()}`;
 }
 
-function CountryMarketCard({ country }: { country: MarketCountry }) {
+function CountryMarketCard({
+  country,
+  compact,
+}: {
+  country: MarketCountry;
+  compact?: boolean;
+}) {
   const catalog = uniqueSubjectsForCountry(country.name);
-  const subjects = (catalog.length ? catalog : country.subjects).slice(0, CHIP_SLOTS);
+  const chipLimit = compact ? COMPACT_CHIP_SLOTS : CHIP_SLOTS;
+  const cityLimit = compact ? COMPACT_CITY_SLOTS : 3;
+  const subjects = (catalog.length ? catalog : country.subjects).slice(0, chipLimit);
+  const cities = country.cities.slice(0, cityLimit);
   const city = country.cities[0];
 
   return (
-    <article className="country-market">
+    <article className={`country-market${compact ? " country-market--compact" : ""}`}>
       <div className="country-market-head">
         <div>
           <h3>{country.name}</h3>
           <p className="muted">
-            {country.cities.slice(0, 3).map((c, i) => (
+            {cities.map((c, i) => (
               <span key={c}>
                 <Link
                   href={`/search?country=${encodeURIComponent(country.name)}&location=${encodeURIComponent(c)}`}
@@ -31,10 +42,10 @@ function CountryMarketCard({ country }: { country: MarketCountry }) {
                 >
                   {c}
                 </Link>
-                {i < Math.min(2, country.cities.length - 1) && " · "}
+                {i < cities.length - 1 && " · "}
               </span>
             ))}
-            {country.cities.length > 3 && (
+            {!compact && country.cities.length > 3 && (
               <>
                 {" "}
                 <Link
@@ -58,7 +69,7 @@ function CountryMarketCard({ country }: { country: MarketCountry }) {
             className="chip"
             title={`${subjectCode(subject)} · ${subject}`}
           >
-            <span className="subject-code">{subjectCode(subject)}</span>
+            {!compact && <span className="subject-code">{subjectCode(subject)}</span>}
             <span className="chip-text">{subject}</span>
           </Link>
         ))}
@@ -68,6 +79,7 @@ function CountryMarketCard({ country }: { country: MarketCountry }) {
 }
 
 export function CountryMarkets({
+  compact,
   pinnedCountry,
   moreCountryHref,
 }: {
@@ -75,29 +87,51 @@ export function CountryMarkets({
   pinnedCountry?: string | null;
   moreCountryHref?: (country: MarketCountry) => string;
 }) {
-  const { featured, rest } = selectFeaturedMarketCountries(pinnedCountry);
+  const { featured, rest } = selectFeaturedMarketCountries(pinnedCountry, { compact: !!compact });
 
   return (
     <>
-      <div className="country-markets">
+      <div className={`country-markets${compact ? " country-markets--compact" : ""}`}>
         {featured.map((country) => (
-          <CountryMarketCard key={country.code} country={country} />
+          <CountryMarketCard key={country.code} country={country} compact={compact} />
         ))}
       </div>
 
       {rest.length > 0 && (
-        <div className="country-more">
-          <h3 className="country-more-title">More countries</h3>
-          <p className="muted country-more-lead">
-            {rest.length} more markets. Choose one to open tutor search for that country.
-          </p>
-          <MoreCountriesSelect
-            placeholder="More countries"
-            options={rest.map((country) => ({
-              label: country.name,
-              href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
-            }))}
-          />
+        <div className={`country-more${compact ? " country-more--compact" : ""}`}>
+          {compact ? (
+            <>
+              <p className="muted country-more-lead">
+                Explore all countries — browse {rest.length + featured.length}+ tutoring markets.
+              </p>
+              <div className="country-more-actions">
+                <Link href="/subjects" className="btn btn-secondary">
+                  Browse 50+ markets
+                </Link>
+                <MoreCountriesSelect
+                  placeholder="Jump to a country"
+                  options={rest.map((country) => ({
+                    label: country.name,
+                    href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
+                  }))}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="country-more-title">More countries</h3>
+              <p className="muted country-more-lead">
+                {rest.length} more markets. Choose one to open tutor search for that country.
+              </p>
+              <MoreCountriesSelect
+                placeholder="More countries"
+                options={rest.map((country) => ({
+                  label: country.name,
+                  href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
+                }))}
+              />
+            </>
+          )}
         </div>
       )}
     </>

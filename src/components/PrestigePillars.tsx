@@ -1,19 +1,23 @@
 const PILLARS = [
   {
     title: "Curated discovery",
-    desc: "Search by subject, board, city, and level — then compare tutors side by side with clear rates and reviews.",
+    desc: "Search by subject, board, city, and level — compare clear rates and reviews.",
+    icon: "◎",
   },
   {
     title: "Transparent pricing",
-    desc: "Platform plans cover messaging and tools only. Lesson fees stay between you and your tutor.",
+    desc: "Plans cover messaging and tools only. Lesson fees stay between you and your tutor.",
+    icon: "◈",
   },
   {
     title: "Global, local feel",
-    desc: "From GCSE and IGCSE to Matric, FBISE, and university — tutors online or near you, priced locally.",
+    desc: "From GCSE and IGCSE to Matric, FBISE, and university — online or near you.",
+    icon: "◉",
   },
   {
     title: "Built for exam season",
-    desc: "Past papers, countdown tools, and direct tutor contact when revision matters most.",
+    desc: "Past papers, countdown tools, and direct tutor contact when revision matters.",
+    icon: "✦",
   },
 ] as const;
 
@@ -31,17 +35,18 @@ export function PrestigePillars({ curriculaLine }: { curriculaLine: string }) {
         <p className="eyebrow prestige-eyebrow">Why My Tutoring Hub</p>
         <h2 id="prestige-pillars-title">A world-class tutoring experience</h2>
         <p className="section-lead">
-          Professional tools for students and tutors — designed to feel clear, trustworthy, and
-          premium from the first search.
+          Clear tools for students and tutors — trustworthy from the first search.
         </p>
-        <div className="prestige-pillars">
-          {pillars.map((pillar, i) => (
-            <article key={pillar.title} className="prestige-pillar">
-              <span className="prestige-pillar-num" aria-hidden>
-                {String(i + 1).padStart(2, "0")}
+        <div className="prestige-pillars prestige-pillars--split">
+          {pillars.map((pillar) => (
+            <article key={pillar.title} className="prestige-pillar prestige-pillar--row">
+              <span className="prestige-pillar-icon" aria-hidden>
+                {pillar.icon}
               </span>
-              <h3>{pillar.title}</h3>
-              <p className="muted">{pillar.desc}</p>
+              <div>
+                <h3>{pillar.title}</h3>
+                <p className="muted">{pillar.desc}</p>
+              </div>
             </article>
           ))}
         </div>

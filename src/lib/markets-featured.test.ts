@@ -34,6 +34,16 @@ assert.ok(cf.includes("Pakistan"));
 assert.ok(cf.includes("Australia"));
 assert.ok(cr.includes("Singapore"));
 
+{
+  const compact = selectFeaturedMarketCountries(undefined, { compact: true });
+  assert.equal(compact.featured.length, 6);
+  assert.deepEqual(
+    compact.featured.map((c) => c.code),
+    ["GB", "AE", "PK", "SA", "US", "DE"],
+  );
+  assert.equal(compact.featured.length + compact.rest.length, TOP_COUNTRIES.length);
+}
+
 console.log("markets-featured tests passed");
 console.log("featured:", featured.map((c) => c.name).join(", "));
 console.log("curriculum rest:", cr.join(", "));

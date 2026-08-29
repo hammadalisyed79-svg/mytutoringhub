@@ -972,7 +972,7 @@ export const TOP_COUNTRIES: MarketCountry[] = TOP_COUNTRIES_BASE.map((country) =
   cities: MARKET_CITIES_BY_COUNTRY_CODE[country.code] || country.cities,
 }));
 
-/** Top 8 countries shown as cards on the homepage. */
+/** Top 8 countries shown as cards on subjects / full market pages. */
 export const HOMEPAGE_FEATURED_COUNTRY_CODES = [
   "PK",
   "IN",
@@ -982,6 +982,16 @@ export const HOMEPAGE_FEATURED_COUNTRY_CODES = [
   "SA",
   "CA",
   "AU",
+] as const;
+
+/** Compact homepage priority markets (SEO country routes unchanged). */
+export const HOMEPAGE_COMPACT_COUNTRY_CODES = [
+  "GB",
+  "AE",
+  "PK",
+  "SA",
+  "US",
+  "DE",
 ] as const;
 
 const HOMEPAGE_FEATURED = new Set<string>(HOMEPAGE_FEATURED_COUNTRY_CODES);
@@ -1031,22 +1041,35 @@ export function otherMarketCountries() {
 }
 
 export const FEATURED_COUNTRY_LIMIT = 8;
+export const COMPACT_FEATURED_COUNTRY_LIMIT = HOMEPAGE_COMPACT_COUNTRY_CODES.length;
+
+export function homepageCompactCountries() {
+  return HOMEPAGE_COMPACT_COUNTRY_CODES.map((code) => countryByCode(code)).filter(
+    (c): c is MarketCountry => c !== null,
+  );
+}
 
 /**
- * Exactly 8 country cards, plus the remaining markets for a dropdown.
- * If the visitor's country is not already in the 8, it replaces the last slot.
+ * Country cards for homepage/markets, plus remaining markets for a dropdown.
+ * Compact mode uses priority markets only (UK, UAE, PK, SA, US, DE).
+ * If the visitor's country is not already featured, it replaces the last slot.
  */
-export function selectFeaturedMarketCountries(pinnedName?: string | null): {
+export function selectFeaturedMarketCountries(
+  pinnedName?: string | null,
+  opts?: { compact?: boolean },
+): {
   featured: MarketCountry[];
   rest: MarketCountry[];
 } {
+  const limit = opts?.compact ? COMPACT_FEATURED_COUNTRY_LIMIT : FEATURED_COUNTRY_LIMIT;
+  const seed = opts?.compact ? homepageCompactCountries() : homepageFeaturedCountries();
   const seen = new Set<string>();
   const featured: MarketCountry[] = [];
-  for (const country of [...homepageFeaturedCountries(), ...TOP_COUNTRIES]) {
+  for (const country of [...seed, ...TOP_COUNTRIES]) {
     if (seen.has(country.code)) continue;
     seen.add(country.code);
     featured.push(country);
-    if (featured.length === FEATURED_COUNTRY_LIMIT) break;
+    if (featured.length === limit) break;
   }
 
   const pinned = pinnedName
@@ -1057,7 +1080,7 @@ export function selectFeaturedMarketCountries(pinnedName?: string | null): {
     if (featured.some((c) => c.code === pinned.code)) {
       featured.splice(0, featured.length, pinned, ...featured.filter((c) => c.code !== pinned.code));
     } else {
-      featured.splice(0, featured.length, pinned, ...featured.slice(0, FEATURED_COUNTRY_LIMIT - 1));
+      featured.splice(0, featured.length, pinned, ...featured.slice(0, limit - 1));
     }
   }
 
@@ -1066,7 +1089,7 @@ export function selectFeaturedMarketCountries(pinnedName?: string | null): {
     a.name.localeCompare(b.name),
   );
 
-  return { featured: featured.slice(0, FEATURED_COUNTRY_LIMIT), rest };
+  return { featured: featured.slice(0, limit), rest };
 }
 
 /** Short subject codes shown on chips and the directory (not ISO country codes). */
