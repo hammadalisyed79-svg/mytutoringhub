@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -11,9 +12,7 @@ import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
-import { buildPastPaperFilterTree } from "@/lib/past-papers/browse";
-import { curriculumCountries } from "@/lib/curriculum";
-import { PastPaperSearchForm } from "@/components/PastPaperSearchForm";
+import { HomePastPapersFallback, HomePastPapersShowcase } from "@/components/HomePastPapersShowcase";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import {
@@ -42,23 +41,7 @@ export default async function HomePage() {
   const pinnedCountry = getUserCountry(headersList);
   const region = getVisitorRegion(headersList);
   const curriculumCodeCount = CURRICULUM.length;
-  const countries = curriculumCountries(pinnedCountry);
-  const [pastPaperCount, boardCountRows] = await Promise.all([
-    prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
-    prisma.pastPaper.groupBy({
-      by: ["board", "country"],
-      where: publicAvailabilityWhere(),
-      _count: { _all: true },
-    }),
-  ]);
-  const boardCountsByCountry = new Map<string, Map<string, number>>();
-  for (const row of boardCountRows) {
-    if (!row.country) continue;
-    const bucket = boardCountsByCountry.get(row.country) || new Map<string, number>();
-    bucket.set(row.board, (bucket.get(row.board) || 0) + row._count._all);
-    boardCountsByCountry.set(row.country, bucket);
-  }
-  const pastPaperFilterTree = buildPastPaperFilterTree(countries, boardCountsByCountry);
+  const pastPaperCount = await prisma.pastPaper.count({ where: publicAvailabilityWhere() });
 
   const stats = [
     curriculumCodeCount > 0 && {
@@ -70,8 +53,6 @@ export default async function HomePage() {
       label: pastPaperCount === 1 ? "Past paper" : "Past papers",
     },
   ].filter(Boolean) as { value: string; label: string }[];
-
-  const pastPaperLabel = pastPaperCount.toLocaleString();
 
   return (
     <div className="home-page">
@@ -88,23 +69,33 @@ export default async function HomePage() {
       */}
       <section className="hero hero-findtutor hero-split hero-clean" aria-labelledby="home-hero-title">
         <div className="container hero-content hero-split-inner">
-          <div className="hero-clean-copy">
-            {session?.user && (
-              <LoggedInWelcome
-                userId={session.user.id}
-                name={session.user.name || "there"}
-                role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
-              />
-            )}
-            <div className="hero-brand-row">
-              <LogoMark className="hero-brand-mark" />
-              <p className="hero-kicker">World-class tutoring marketplace</p>
+          <div className="hero-clean-top">
+            <div className="hero-clean-copy">
+              {session?.user && (
+                <LoggedInWelcome
+                  userId={session.user.id}
+                  name={session.user.name || "there"}
+                  role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
+                />
+              )}
+              <div className="hero-brand-row">
+                <LogoMark className="hero-brand-mark" />
+                <p className="hero-kicker">World-class tutoring marketplace</p>
+              </div>
+              <h1 id="home-hero-title">Private tutoring, elevated.</h1>
+              <p className="hero-lead">
+                Find the right tutor for your subject, exam or goal — online or near you. Search free;
+                sign in to contact a tutor.
+              </p>
             </div>
-            <h1 id="home-hero-title">Private tutoring, elevated.</h1>
-            <p className="hero-lead">
-              Find the right tutor for your subject, exam or goal — online or near you. Search free;
-              sign in to contact a tutor.
-            </p>
+            <div className="hero-clean-motif" aria-hidden="true">
+              <span className="hero-motif-orb" />
+              <ul className="hero-motif-list">
+                <li>Find a tutor</li>
+                <li>Browse past papers</li>
+                <li>Study with tools</li>
+              </ul>
+            </div>
           </div>
 
           <div className="hero-search-shell">
@@ -140,14 +131,6 @@ export default async function HomePage() {
               <span>{stat.label}</span>
             </p>
           ))}
-          <p className="home-proof-item home-proof-item--text">
-            <span>{NO_LESSON_COMMISSION_SHORT}</span>
-          </p>
-          <p className="home-proof-item home-proof-item--text">
-            <span>
-              {BUSINESS.studentFreeContactsPerMonth} free tutor contacts / month
-            </span>
-          </p>
         </div>
       </section>
 
@@ -233,42 +216,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {pastPaperCount > 0 && (
-        <section className="section home-past-papers" aria-labelledby="home-past-papers-title">
-          <div className="container home-past-papers-inner">
-            <div className="home-past-papers-copy">
-              <p className="eyebrow">Exam preparation</p>
-              <h2 id="home-past-papers-title">
-                {pastPaperLabel} past papers. And tutors when you need help.
-              </h2>
-              <p className="section-lead">
-                Filter by board, qualification, subject, year, and session — then find a tutor who
-                teaches that exam track.
-              </p>
-              <div className="hero-ctas">
-                <Link href="/past-papers" className="btn">
-                  Browse Past Papers
-                </Link>
-                <Link href="/search" className="btn btn-secondary">
-                  Find an exam tutor
-                </Link>
-              </div>
-            </div>
-            <div className="home-past-papers-preview">
-              <p className="home-pp-preview-label" id="home-pp-filter-title">
-                Filter past papers
-              </p>
-              <PastPaperSearchForm
-                tree={pastPaperFilterTree}
-                pinnedCountry={pinnedCountry}
-                action="/past-papers"
-                compact
-                initial={{}}
-              />
-            </div>
-          </div>
-        </section>
-      )}
+      <Suspense fallback={<HomePastPapersFallback />}>
+        <HomePastPapersShowcase pinnedCountry={pinnedCountry ?? undefined} />
+      </Suspense>
 
       <section className="section section-alt home-student-request" aria-labelledby="student-request-title">
         <div className="container home-student-request-inner">

@@ -4,6 +4,7 @@
  */
 export function HomeLoading() {
   return (
+    <div className="home-page">
     <section
       className="hero hero-findtutor hero-split hero-clean home-route-loading"
       aria-busy="true"
@@ -27,5 +28,6 @@ export function HomeLoading() {
         </div>
       </div>
     </section>
+    </div>
   );
 }
