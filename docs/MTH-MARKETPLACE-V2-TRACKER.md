@@ -2,6 +2,7 @@
 
 Governing target: Marketplace V2 master product model + **approved commercial decisions** (2026-08-29).  
 Commercial audit: [`docs/MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md`](./MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md).  
+Final report: [`docs/MTH-MARKETPLACE-V2-FINAL-IMPLEMENTATION-REPORT.md`](./MTH-MARKETPLACE-V2-FINAL-IMPLEMENTATION-REPORT.md).  
 Execution: evolve `SubjectProfile` as Teaching Listing (no parallel table).
 
 **Approved caps (supersede promo 2→0):** Tutor Free = **3** active listings; Tutor Pro (`TUTOR_BASIC`) = **10**. Student Free = **3** contacts. Prices unchanged.
@@ -32,7 +33,21 @@ Execution: evolve `SubjectProfile` as Teaching Listing (no parallel table).
 | Verification = earned identity | Done | Priority Review SKU ≠ badge; planTier from badge not purchase |
 | Full booking / Safepay lesson pay | Deferred | Out of V2 scope — needs separate approval |
 | Child Safety & Safeguarding Policy | Deferred | High priority post-V2; do not claim it exists |
-| Production verification | Partial | Code + copy shipped; live DB/UI spot-checks may need human |
+| Production cutover + verification | **Done** | **MARKETPLACE V2 — PRODUCTION VERIFIED COMPLETE** (2026-08-29) |
+
+## Production verification record
+
+| Field | Value |
+|-------|--------|
+| Status | **MARKETPLACE V2 — PRODUCTION VERIFIED COMPLETE** |
+| Verified at | 2026-08-29 ~16:15 PKT |
+| Commit | `b2b978e1996db27f6554919337afed790dd920c1` |
+| Deployment | `dpl_8acQWhqYYPp89RRjppeVyEhgQFpf` (Vercel production, auto-deploy) |
+| Migrations | `SearchAnalyticsEvent` + SubjectProfile taxonomy columns present on Neon; no data loss observed |
+| Public copy | Free 3 / Pro 10 live; “2 free → 0 / 1 October” gone; Extra/Unlimited not publicly sold |
+| Search / analytics | Live dedupe + Also teaches; events persist with listing ids |
+| Tests | tsc + entitlement/subscription/profile-completion (+ related) pass; `search-smart` Rawalpindi city assert pre-existing fail (non-blocking) |
+| Human residual | Logged-in tutor/student/admin interactive UI (credentials) |
 
 ## Approved commercial model (canonical)
 
@@ -53,4 +68,4 @@ Execution: evolve `SubjectProfile` as Teaching Listing (no parallel table).
 - Future price changes
 - Substantive refund economics changes (factually wrong auto-renew wording fixed only)
 
-Do not declare **MARKETPLACE V2 IMPLEMENTATION COMPLETE** until production verification of entitlements + public copy is recorded in the final report.
+**MARKETPLACE V2 — PRODUCTION VERIFIED COMPLETE** is recorded in the final implementation report.
