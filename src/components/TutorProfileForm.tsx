@@ -265,6 +265,8 @@ export function TutorProfileForm({
   const [introVideoUrl, setIntroVideoUrl] = useState(initial.introVideoUrl || "");
   const [phone, setPhone] = useState(initial.phone || "");
   const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
+  const [draftSaving, setDraftSaving] = useState(false);
+  const [draftNote, setDraftNote] = useState("");
 
   const videoSrc = embedVideoSrc(introVideoUrl || videoUrl);
   const cities = useMemo(() => citiesForCountry(country), [country]);
@@ -344,31 +346,136 @@ export function TutorProfileForm({
     }
   }
 
-  function goNext() {
+  function draftPayloadForStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): Record<string, unknown> | null {
+    switch (stepId) {
+      case "photo":
+        if (!photoUrl.startsWith("https://")) return null;
+        return {
+          photoUrl,
+          photoCropX,
+          photoCropY,
+          photoCropZoom,
+          wizardStep: "photo",
+        };
+      case "basics":
+        return {
+          name: name.trim(),
+          headline: headline.trim(),
+          bio: bio.trim(),
+          wizardStep: "basics",
+        };
+      case "place":
+        return {
+          country,
+          location: location.trim(),
+          wizardStep: "place",
+        };
+      case "teaching":
+        return {
+          subjects: joinCsv(subjectList),
+          hourlyRate: ratePkr,
+          online,
+          inPerson,
+          wizardStep: "teaching",
+        };
+      case "qualifications":
+        return {
+          qualifications: qualifications.trim(),
+          wizardStep: "qualifications",
+        };
+      case "extras":
+        return {
+          expertise: joinCsv(expertiseList),
+          levels: joinCsv(levelList),
+          languages: joinCsv(languageList),
+          experienceYears: experienceYears === "" ? null : Number(experienceYears),
+          teachingMethod: teachingMethod.trim(),
+          wizardStep: "extras",
+        };
+      case "schedule":
+        return {
+          availability: serializeAvailability(slots),
+          wizardStep: "schedule",
+        };
+      case "contact":
+        return {
+          phone: phone.trim(),
+          videoUrl: videoUrl.trim(),
+          introVideoUrl: introVideoUrl.trim(),
+          offersFreeTrial,
+          wizardStep: "contact",
+        };
+      default:
+        return null;
+    }
+  }
+
+  async function saveDraft(
+    stepId: (typeof WIZARD_STEPS)[number]["id"],
+    opts?: { silent?: boolean },
+  ): Promise<boolean> {
+    const payload = draftPayloadForStep(stepId);
+    if (!payload) return true;
+    setDraftSaving(true);
+    if (!opts?.silent) setDraftNote("");
+    try {
+      const res = await fetch("/api/profile/tutor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError((data as { error?: string }).error || "Could not save this step. Try again.");
+        return false;
+      }
+      if (!opts?.silent) {
+        setDraftNote("Progress saved — not public until you finish and save.");
+      }
+      return true;
+    } catch {
+      setError("Could not save this step. Check your connection and try again.");
+      return false;
+    } finally {
+      setDraftSaving(false);
+    }
+  }
+
+  async function goNext() {
     setError("");
+    setDraftNote("");
     const problem = validateStep(currentStep.id);
     if (problem) {
       setError(problem);
       return;
     }
+    const saved = await saveDraft(currentStep.id);
+    if (!saved) return;
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
   function goBack() {
     setError("");
+    setDraftNote("");
     setStep((s) => Math.max(0, s - 1));
   }
 
-  function goToStep(index: number) {
+  async function goToStep(index: number) {
     if (index < 0 || index >= steps.length || index === step) return;
     setError("");
-    // Free navigation so tutors can review earlier answers anytime.
+    setDraftNote("");
+    // Persist the step you're leaving when it already validates.
+    if (!validateStep(currentStep.id)) {
+      await saveDraft(currentStep.id, { silent: true });
+    }
     setStep(index);
   }
 
-  function skipOptional() {
+  async function skipOptional() {
     if (!currentStep.optional) return;
     setError("");
+    setDraftNote("");
+    await saveDraft(currentStep.id, { silent: true });
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
@@ -429,6 +536,23 @@ export function TutorProfileForm({
       setPhotoCropY(0);
       setPhotoCropZoom(1);
       setPhotoMsg("Drag the photo to adjust · scroll to zoom");
+      // Persist immediately so refresh does not lose the uploaded photo.
+      void fetch("/api/profile/tutor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          photoUrl: result.url,
+          photoCropX: 0,
+          photoCropY: 0,
+          photoCropZoom: 1,
+          wizardStep: "photo",
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) return;
+          setDraftNote("Photo saved — not public until you finish and save.");
+        })
+        .catch(() => undefined);
     } catch {
       setPhotoError("Photo upload failed. Check your connection and try again.");
     } finally {
@@ -546,7 +670,7 @@ export function TutorProfileForm({
                 aria-current={active ? "step" : undefined}
                 aria-label={`Step ${index + 1}: ${row.title}${done ? " (done)" : ""}${row.optional ? " (optional)" : ""}`}
                 title={row.title}
-                onClick={() => goToStep(index)}
+                onClick={() => void goToStep(index)}
               >
                 <span className="profile-wizard-step-num" aria-hidden="true">
                   {done ? "✓" : index + 1}
@@ -577,6 +701,10 @@ export function TutorProfileForm({
       {stepNav}
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
+      <p className="field-hint profile-wizard-persist-hint">
+        Each step is saved as a draft when you continue. Your listing stays private until the final
+        Save profile.
+      </p>
     </div>
   );
 
@@ -586,24 +714,30 @@ export function TutorProfileForm({
         type="button"
         className="btn btn-secondary"
         onClick={goBack}
-        disabled={step === 0}
+        disabled={step === 0 || draftSaving}
         aria-disabled={step === 0}
       >
         Back
       </button>
       <div className="profile-wizard-actions-right">
+        {draftNote ? <p className="profile-wizard-draft-note muted">{draftNote}</p> : null}
         {currentStep.optional ? (
-          <button type="button" className="btn btn-secondary" onClick={skipOptional}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={draftSaving}
+            onClick={() => void skipOptional()}
+          >
             Skip for now
           </button>
         ) : null}
         {currentStep.id === "finish" ? (
-          <button className="btn" type="button" disabled={uploading || saving} onClick={() => void save()}>
+          <button className="btn" type="button" disabled={uploading || saving || draftSaving} onClick={() => void save()}>
             {saving ? "Saving…" : "Save profile"}
           </button>
         ) : (
-          <button className="btn" type="button" onClick={goNext}>
-            {currentStep.id === "verify" ? "Continue" : "Next"}
+          <button className="btn" type="button" disabled={draftSaving || uploading} onClick={() => void goNext()}>
+            {draftSaving ? "Saving…" : currentStep.id === "verify" ? "Continue" : "Next"}
           </button>
         )}
       </div>
@@ -617,15 +751,26 @@ export function TutorProfileForm({
         {wizardChrome}
         <VerificationForm embedded compact />
         <div className="guided-search-actions profile-wizard-actions">
-          <button type="button" className="btn btn-secondary" onClick={goBack}>
+          <button type="button" className="btn btn-secondary" onClick={goBack} disabled={draftSaving}>
             Back
           </button>
           <div className="profile-wizard-actions-right">
-            <button type="button" className="btn btn-secondary" onClick={skipOptional}>
+            {draftNote ? <p className="profile-wizard-draft-note muted">{draftNote}</p> : null}
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={draftSaving}
+              onClick={() => void skipOptional()}
+            >
               Skip verification
             </button>
-            <button type="button" className="btn" onClick={goNext}>
-              Continue
+            <button
+              type="button"
+              className="btn"
+              disabled={draftSaving}
+              onClick={() => void goNext()}
+            >
+              {draftSaving ? "Saving…" : "Continue"}
             </button>
           </div>
         </div>
@@ -639,7 +784,7 @@ export function TutorProfileForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (currentStep.id !== "finish") {
-          goNext();
+          void goNext();
           return;
         }
         void save();

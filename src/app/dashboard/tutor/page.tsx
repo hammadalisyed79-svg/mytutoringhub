@@ -27,6 +27,7 @@ import {
   isTutorDashboardProfileComplete,
   getDbUserRole,
 } from "@/lib/dashboard-home";
+import { resolveTutorWizardResumeStep } from "@/lib/tutor-wizard";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
@@ -270,9 +271,16 @@ export default async function TutorDashboardPage({
                 startStep={
                   sp.verify === "1" && !user.tutorProfile.verified
                     ? "verify"
-                    : user.tutorProfile.active
-                      ? "finish"
-                      : undefined
+                    : resolveTutorWizardResumeStep(
+                        {
+                          ...user.tutorProfile,
+                          name: user.name,
+                        },
+                        {
+                          verified: user.tutorProfile.verified,
+                          live: user.tutorProfile.active,
+                        },
+                      )
                 }
               />
             </section>

@@ -286,3 +286,228 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Could not save profile" }, { status: 500 });
   }
 }
+
+const draftSchema = z.object({
+  name: z.string().min(2).max(80).optional(),
+  headline: z.string().max(120).optional(),
+  bio: z.string().max(4000).optional(),
+  subjects: z.string().max(2000).optional(),
+  hourlyRate: z.number().min(0).max(50000).optional(),
+  location: z.string().max(120).optional(),
+  country: z.string().max(80).optional(),
+  expertise: z.string().max(1000).optional(),
+  online: z.boolean().optional(),
+  inPerson: z.boolean().optional(),
+  photoUrl: z.string().max(2000).optional(),
+  photoCropX: z.coerce.number().min(-100).max(100).optional(),
+  photoCropY: z.coerce.number().min(-100).max(100).optional(),
+  photoCropZoom: z.coerce.number().min(1).max(3).optional(),
+  qualifications: z.string().max(2000).optional(),
+  teachingMethod: z.string().max(2000).optional(),
+  languages: z.string().max(500).optional(),
+  levels: z.string().max(500).optional(),
+  availability: z.string().max(4000).optional(),
+  experienceYears: z.coerce.number().int().min(0).max(40).optional().nullable(),
+  videoUrl: z.string().max(500).optional().or(z.literal("")),
+  introVideoUrl: z.string().max(500).optional().or(z.literal("")),
+  offersFreeTrial: z.boolean().optional(),
+  phone: z.string().max(40).optional(),
+  wizardStep: z.string().max(40).optional(),
+});
+
+/**
+ * Partial draft save for the multi-step profile wizard.
+ * Does not publish: syncTutorBadges only sets active when the profile is listable.
+ */
+export async function PATCH(req: Request) {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "TUTOR" && session.user.role !== "ADMIN")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const data = draftSchema.parse(await req.json());
+    let existing = await prisma.tutorProfile.findUnique({
+      where: { userId: session.user.id },
+    });
+    if (!existing) {
+      existing = await prisma.tutorProfile.create({
+        data: {
+          userId: session.user.id,
+          bio: "",
+          subjects: "",
+          hourlyRate: 1500,
+          location: "",
+          online: true,
+          inPerson: false,
+          active: false,
+        },
+      });
+    }
+
+    const patch: Record<string, unknown> = {};
+
+    if (data.name !== undefined) {
+      const parsedName = parseDisplayNameInput(data.name);
+      if (!parsedName.ok) {
+        return NextResponse.json({ error: parsedName.error }, { status: 400 });
+      }
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { name: parsedName.name },
+      });
+    }
+
+    if (data.photoUrl !== undefined) {
+      const rawPhoto = data.photoUrl.trim();
+      if (rawPhoto.startsWith("data:")) {
+        return NextResponse.json(
+          { error: "Upload photos via the file picker. Data URLs are not stored." },
+          { status: 400 },
+        );
+      }
+      if (rawPhoto && !/^https:\/\//i.test(rawPhoto)) {
+        return NextResponse.json({ error: "Photo must be an https:// URL" }, { status: 400 });
+      }
+      if (rawPhoto && !isAllowedBlobUrl(rawPhoto)) {
+        return NextResponse.json(
+          { error: "Upload your photo via the file picker on this page." },
+          { status: 400 },
+        );
+      }
+      patch.photoUrl = rawPhoto || null;
+    }
+    if (data.photoCropX !== undefined) patch.photoCropX = data.photoCropX;
+    if (data.photoCropY !== undefined) patch.photoCropY = data.photoCropY;
+    if (data.photoCropZoom !== undefined) patch.photoCropZoom = data.photoCropZoom;
+
+    if (data.headline !== undefined) patch.headline = data.headline.trim() || null;
+    if (data.bio !== undefined) patch.bio = data.bio.trim();
+    if (data.qualifications !== undefined) patch.qualifications = data.qualifications.trim() || null;
+    if (data.teachingMethod !== undefined) patch.teachingMethod = data.teachingMethod.trim() || null;
+    if (data.online !== undefined) patch.online = data.online;
+    if (data.inPerson !== undefined) patch.inPerson = data.inPerson;
+    if (data.offersFreeTrial !== undefined) patch.offersFreeTrial = data.offersFreeTrial;
+    if (data.videoUrl !== undefined) patch.videoUrl = data.videoUrl.trim() || null;
+    if (data.introVideoUrl !== undefined) patch.introVideoUrl = data.introVideoUrl.trim() || null;
+    if (data.experienceYears !== undefined) {
+      patch.experienceYears =
+        data.experienceYears == null || Number.isNaN(data.experienceYears)
+          ? null
+          : data.experienceYears;
+    }
+    if (data.hourlyRate !== undefined && Number.isFinite(data.hourlyRate)) {
+      patch.hourlyRate = Math.round(data.hourlyRate);
+    }
+    if (data.availability !== undefined) {
+      patch.availability = serializeAvailability(parseAvailability(data.availability)) || null;
+    }
+
+    if (data.country !== undefined) {
+      const country = data.country.trim();
+      if (country && !tutorCountries().includes(country)) {
+        return NextResponse.json({ error: "Select a listed country" }, { status: 400 });
+      }
+      if (country) patch.country = country;
+    }
+
+    if (data.location !== undefined) {
+      const country = String(patch.country || existing.country || "");
+      const cityOptions = [...citiesForCountry(country), ...splitCsv(existing.location)];
+      const location = data.location.trim();
+      patch.location =
+        pickKnown([location], cityOptions)[0] ||
+        (location.toLowerCase() === "online" ? "Online" : location);
+    }
+
+    if (data.subjects !== undefined) {
+      const listed = await prisma.subject.findMany({ select: { name: true } });
+      const subjectCatalog = mergeSubjectNames(
+        listed.map((row) => row.name),
+        catalogSubjectNames(),
+        splitCsv(existing.subjects),
+      );
+      const subjectParts = splitCsv(data.subjects);
+      const subjects = pickKnown(subjectParts, subjectCatalog);
+      if (subjectParts.length && subjects.length !== subjectParts.length) {
+        return NextResponse.json({ error: "Choose subjects from the listed catalog only" }, { status: 400 });
+      }
+      patch.subjects = joinCsv(subjects);
+    }
+
+    const subjectCsv = String(patch.subjects ?? existing.subjects ?? "");
+    const subjectList = splitCsv(subjectCsv);
+    if (data.expertise !== undefined) {
+      const skillCatalog = [
+        ...expertiseForSubjects(subjectList),
+        ...GENERIC_EXPERTISE,
+        ...splitCsv(existing.expertise),
+      ];
+      patch.expertise = joinCsv(pickKnown(splitCsv(data.expertise), skillCatalog)) || null;
+    }
+    if (data.levels !== undefined) {
+      const levelCatalog = tutorLevelOptions(curriculumLevels());
+      patch.levels =
+        joinCsv(
+          pickKnown(splitCsv(data.levels), [
+            ...levelCatalog.core,
+            ...levelCatalog.more,
+            ...splitCsv(existing.levels),
+          ]),
+        ) || null;
+    }
+    if (data.languages !== undefined) {
+      const languageCatalog = tutorLanguageOptions();
+      patch.languages =
+        joinCsv(
+          pickKnown(splitCsv(data.languages), [
+            ...languageCatalog.core,
+            ...languageCatalog.more,
+            ...splitCsv(existing.languages),
+          ]),
+        ) || null;
+    }
+
+    if (data.phone !== undefined) {
+      const rawPhone = data.phone.trim();
+      if (!rawPhone) {
+        patch.phone = null;
+      } else {
+        const countryName = String(patch.country || existing.country || "");
+        const countryCode = countryByName(countryName)?.code || "PK";
+        const normalizedPhone = normalizePhone(rawPhone, countryCode);
+        if (!isValidPhone(normalizedPhone)) {
+          return NextResponse.json({ error: "Enter a valid phone number for your country." }, { status: 400 });
+        }
+        patch.phone = normalizedPhone;
+      }
+    }
+
+    if (Object.keys(patch).length === 0 && data.name === undefined) {
+      return NextResponse.json({ ok: true, draft: true, active: existing.active });
+    }
+
+    const profile = await prisma.tutorProfile.update({
+      where: { id: existing.id },
+      data: patch,
+    });
+
+    // Recalculate public visibility — incomplete drafts stay hidden.
+    await syncTutorBadges(session.user.id);
+    const refreshed = await prisma.tutorProfile.findUnique({ where: { id: profile.id } });
+
+    return NextResponse.json({
+      ok: true,
+      draft: true,
+      active: refreshed?.active ?? false,
+      photoUrl: refreshed?.photoUrl ?? profile.photoUrl,
+      wizardStep: data.wizardStep || null,
+    });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json({ error: e.issues[0]?.message || "Could not save draft" }, { status: 400 });
+    }
+    console.error("Tutor profile draft save failed:", e);
+    return NextResponse.json({ error: "Could not save progress" }, { status: 500 });
+  }
+}

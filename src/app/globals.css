@@ -10507,6 +10507,17 @@ img {
   flex-wrap: wrap;
   gap: 0.55rem;
   margin-left: auto;
+  align-items: center;
+}
+
+.profile-wizard-draft-note {
+  margin: 0;
+  font-size: 0.82rem;
+  max-width: 16rem;
+}
+
+.profile-wizard-persist-hint {
+  margin: 0.55rem 0 0;
 }
 
 .field-required-note {
