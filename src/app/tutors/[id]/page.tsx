@@ -17,7 +17,7 @@ import {
   getTutorBadgeStats,
   getTrustBadgesForProfiles,
 } from "@/lib/tutor-badges";
-import { ReportButton } from "@/components/ReportButton";
+import { ReportButton, BlockUserButton } from "@/components/ReportButton";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { listingPath } from "@/lib/subject-profile";
@@ -360,7 +360,7 @@ export default async function TutorProfilePage({ params }: Params) {
             {isOwner ? (
               <>
                 you add subjects and a headline (or photo) on your{" "}
-                <Link href="/dashboard">dashboard</Link>. Tutor Basic adds priority ranking, not
+                <Link href="/dashboard">dashboard</Link>. Tutor Pro adds priority ranking, not
                 basic visibility.
               </>
             ) : (
@@ -500,8 +500,11 @@ export default async function TutorProfilePage({ params }: Params) {
             </div>
 
             {session?.user && (
-              <div className="panel profile-sidebar-extra">
+              <div className="panel profile-sidebar-extra stack">
                 <ReportButton targetType="TUTOR" targetId={tutor.id} />
+                {session.user.id !== tutor.userId && (
+                  <BlockUserButton userId={tutor.userId} userName={tutor.user.name} />
+                )}
               </div>
             )}
           </aside>

@@ -125,6 +125,17 @@ export async function POST(req: Request) {
     }
   }
 
+  const { isEitherBlocked } = await import("@/lib/user-blocks");
+  if (await isEitherBlocked(session.user.id, recipientUserId)) {
+    return NextResponse.json(
+      {
+        error: "blocked",
+        message: "Messaging is unavailable because one of you has blocked the other.",
+      },
+      { status: 403 },
+    );
+  }
+
   if (isNewContact && role === "TUTOR" && recipient.role === "STUDENT") {
     const check = await canPerformAction(session.user.id, "enquiry_reveal");
     if (!check.allowed) {

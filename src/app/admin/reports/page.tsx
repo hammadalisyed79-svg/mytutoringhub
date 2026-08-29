@@ -73,7 +73,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
           {reports.map((r) => (
             <article key={r.id} className="ad-row">
               <strong>
-                {r.status} · {r.targetType} · {r.targetId}
+                {r.status} · {r.category || "OTHER"} · {r.targetType} · {r.targetId}
               </strong>
               <p>
                 From{" "}
