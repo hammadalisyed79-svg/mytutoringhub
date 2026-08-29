@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   FREE_SUBJECT_PROFILES_AFTER_PROMO,
+  FREE_SUBJECT_PROFILES_DURING_PROMO,
   PAID_SUBJECT_PROFILE_CAP,
   isSubjectProfilePromoActive,
   resolveSubjectProfileActiveCap,
@@ -19,7 +20,7 @@ assert.equal(
     unlimitedProfiles: false,
     hasProfilePack: false,
   }),
-  Number.POSITIVE_INFINITY,
+  FREE_SUBJECT_PROFILES_DURING_PROMO,
 );
 
 assert.equal(
@@ -42,6 +43,15 @@ assert.equal(
 
 assert.equal(
   resolveSubjectProfileActiveCap({
+    now: duringPromo,
+    unlimitedProfiles: false,
+    hasProfilePack: true,
+  }),
+  PAID_SUBJECT_PROFILE_CAP,
+);
+
+assert.equal(
+  resolveSubjectProfileActiveCap({
     now: afterPromo,
     unlimitedProfiles: true,
     hasProfilePack: false,
@@ -49,7 +59,8 @@ assert.equal(
   Number.POSITIVE_INFINITY,
 );
 
-assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
+assert.equal(FREE_SUBJECT_PROFILES_DURING_PROMO, 2);
+assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 0);
 assert.equal(PAID_SUBJECT_PROFILE_CAP, 3);
 
 console.log("subject-profile-entitlements.test.ts: ok");

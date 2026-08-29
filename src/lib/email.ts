@@ -537,7 +537,7 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     title: "Grow with Tutor Basic",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
-<p>Subject profiles stay free during the launch promo. After 30 September 2026, Extra Profile Ads or Basic unlocks up to 3 active listings.</p>
+<p>Until 30 September 2026 you get <strong>2 free teaching listings</strong>; more need Extra Profile Ads, Basic, or Unlimited Profiles. From 1 October 2026 all teaching listings require a plan.</p>
 <p>Complimentary Tutor Basic may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
   });
@@ -556,7 +556,7 @@ export function tutorSecondProfileEmailHtml(opts: {
     title: "Add a second subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
-<p>Create another subject profile from your dashboard — during the launch promo, extra profiles are free.</p>`,
+<p>Create another teaching listing from your dashboard — you get 2 free until 30 September 2026.</p>`,
     cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });
 }

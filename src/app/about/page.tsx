@@ -35,9 +35,9 @@ export default function AboutPage() {
           <h2>Launch offer</h2>
           <p>
             Tutor Basic (priority ranking and unlimited contacts) is complimentary until 30 September
-            2026. Unlimited subject profiles are free for every tutor during the same window.
-            Verified, Highlight, Profile Boost, Extra Profile Ads, and Unlimited Profiles stay paid.
-            After that date free tutors keep 1 subject profile; the standard Tutor Basic price
+            2026. Every tutor gets 2 free teaching listings during the same window; more require a
+            plan. Verified, Highlight, Profile Boost, Extra Profile Ads, and Unlimited Profiles stay paid.
+            From 1 October 2026 all teaching listings require a plan; the standard Tutor Basic price
             applies.
           </p>
           <h2>Trust &amp; safety</h2>

@@ -453,8 +453,8 @@ export default async function HomePage() {
             <p>
               Complete your profile to appear in search for free. Tutor Basic adds priority
               ranking, unlimited enquiry reveals, and up to 3 subject profiles — complimentary
-              until 30 September 2026 (unlimited subject profiles free for everyone during the
-              launch). Verified, Highlight, and Profile Boost stay paid per listing. You keep 100%
+              until 30 September 2026 (2 free teaching listings for everyone during the
+              launch; more require a plan). From 1 October 2026 listings are paid. Verified, Highlight, and Profile Boost stay paid per listing. You keep 100%
               of lesson fees.
             </p>
           </div>

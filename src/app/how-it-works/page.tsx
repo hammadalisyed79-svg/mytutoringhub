@@ -85,7 +85,8 @@ export default async function HowItWorksPage() {
               </li>
               <li>
                 Tutor Basic unlocks priority ranking and unlimited enquiry reveals (complimentary
-                until 30 September 2026); subject profiles are unlimited free during the same launch
+                until 30 September 2026); 2 free teaching listings in the same window, then paid
+                from 1 October 2026
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is

@@ -300,7 +300,7 @@ export function TutorAdsManager({
       <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
           {entitlement?.promoLabel ||
-            `After the launch promo: ${entitlement?.freeCapAfterPromo ?? 1} free active listing; Tutor Basic / Extra Profile Ads unlock up to ${entitlement?.paidCap ?? 3}; Unlimited Profiles removes the cap.`}
+            `2 teaching listings free until 30 September 2026; more require a plan. From 1 October 2026: ${entitlement?.freeCapAfterPromo ?? 0} free — Extra Profile Ads / Tutor Basic unlock up to ${entitlement?.paidCap ?? 3}; Unlimited Profiles removes the cap.`}
         </p>
         <p className="teaching-listings-meter">
           Active{" "}

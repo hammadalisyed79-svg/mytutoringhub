@@ -104,7 +104,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Basic is complimentary until 30 September 2026. Until then, unlimited subject profiles are free for every tutor. From 1 October 2026, free accounts keep 1 subject profile and 3 student contacts/month; Basic unlocks priority, unlimited contacts, and up to 3 subject profiles. Verified badge, highlight, and profile boost remain paid add-ons.",
+      "Tutor Basic is complimentary until 30 September 2026. Until then, every tutor gets 2 free teaching listings; Extra Profile Ads, Basic, or Unlimited Profiles unlock more. From 1 October 2026, teaching listings require a plan (0 free); Basic unlocks priority, unlimited contacts, and up to 3 listings. Verified badge, highlight, and profile boost remain paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",

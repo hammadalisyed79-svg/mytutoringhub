@@ -26,7 +26,7 @@ export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.stud
 export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited downloads.`;
 
 export const TUTOR_FREE_LISTING_LINE =
-  "Complete your profile to appear in search for free. Tutor Basic adds priority placement and unlimited enquiry reveals.";
+  "Complete your profile to appear in search. Until 30 September 2026 you get 2 free teaching listings; more require a plan. From 1 October 2026 all teaching listings are paid.";
 
 export const GEO_CURRENCY_LINE =
   "Rates shown in your local currency · tutors online or in your city · GCSE, IGCSE, A-Level, Matric, and more";

@@ -228,7 +228,7 @@ export async function getPlanDashboardSummary(
     usageLabel: "student contacts this month",
     renewsOn: hasBasic ? renewsOn : null,
     upgradeHint: hasBasic
-      ? "Unlimited student contact when you initiate. Free accounts keep 1 subject profile after the launch promo; paid packs unlock more."
-      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month. Extra Profile Ads or Tutor Basic unlock more subject profiles and unlimited contacts.`,
+      ? "Unlimited student contact when you initiate. Free accounts get 2 teaching listings until 30 Sep 2026, then paid plans unlock listings."
+      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime and get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month. Until 30 Sep 2026 you get 2 free teaching listings; Extra Profile Ads or Tutor Basic unlock more.`,
   };
 }

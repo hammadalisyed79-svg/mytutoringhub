@@ -45,7 +45,7 @@ const FAQS = [
   },
   {
     q: "Is Tutor Basic free?",
-    a: "Complete tutor profiles appear in search for free. Until 30 September 2026, unlimited subject profiles are free for every tutor, and Tutor Basic (priority ranking + unlimited enquiry reveals when you message students first) is complimentary. Verified badge, Highlight, and Profile Boost remain paid add-ons — Boost/Highlight are bought per subject profile. From 1 October 2026, free tutors keep 1 subject profile and 3 enquiry reveals/month; free students keep 3 new tutor contacts/month.",
+    a: "Complete tutor profiles appear in search for free. Until 30 September 2026, every tutor gets 2 free teaching listings (more need a plan), and Tutor Basic (priority ranking + unlimited enquiry reveals) is complimentary. Verified badge, Highlight, and Profile Boost remain paid add-ons — Boost/Highlight are bought per listing. From 1 October 2026, teaching listings require a plan; free students keep 3 new tutor contacts/month.",
   },
   {
     q: "Why do I need to verify my email?",

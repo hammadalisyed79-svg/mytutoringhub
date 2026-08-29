@@ -38,7 +38,7 @@ export default function TermsPage() {
             Boost per subject profile, Extra Profile Ads, Unlimited Profiles) improve ranking and
             visibility tools. Subscriptions renew
             according to the plan you purchase unless cancelled. Limited-time offers (for example
-            complimentary Tutor Basic and unlimited subject profiles until a stated date) end
+            complimentary Tutor Basic and 2 free teaching listings until a stated date) end
             automatically; paid add-ons such as
             Verified, Highlight, and Profile Boost are never included unless purchased. Platform
             subscriptions are processed by Safepay when card checkout is live; until then paid

@@ -88,10 +88,10 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
   },
   {
     feature: "Subject profiles in search",
-    free: "1 after promo",
+    free: "2 until 30 Sep",
     paid: "Up to 3 / unlimited",
     detail:
-      "Unlimited free subject profiles until 30 Sep 2026. After that: 1 free; Extra Profile Ads or Tutor Basic unlock up to 3; Unlimited Profiles removes the cap.",
+      "2 free teaching listings until 30 Sep 2026; more need Extra Profile Ads, Tutor Basic, or Unlimited Profiles. From 1 Oct 2026: 0 free — all listings require a plan (up to 3 on Basic/Extra, unlimited on Unlimited Profiles).",
   },
   {
     feature: "Priority search ranking",
@@ -164,7 +164,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Basic really free right now?",
-    a: "Yes — Tutor Basic is complimentary until 30 September 2026. Until then, every tutor also gets unlimited free subject profiles. Basic unlocks priority placement and unlimited enquiry reveals. From 1 October 2026, free accounts keep 1 subject profile and 3 contacts/month. Verified badge, highlight, and profile boost remain paid add-ons (bought per subject profile).",
+    a: "Yes — Tutor Basic is complimentary until 30 September 2026 (priority placement and unlimited enquiry reveals). Until then every tutor also gets 2 free teaching listings; more need Extra Profile Ads, Basic, or Unlimited Profiles. From 1 October 2026 teaching listings require a plan (0 free). Verified badge, highlight, and profile boost remain paid add-ons (bought per listing).",
   },
   {
     q: "What is a subject profile?",
