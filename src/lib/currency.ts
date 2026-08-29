@@ -245,9 +245,8 @@ export function hourlyRateInputValue(amountPkr: number, currency: CurrencyCode):
   if (currency === "PKR") return String(Math.round(amountPkr));
   const local = pkrToCurrency(amountPkr, currency);
   if (!Number.isFinite(local)) return "";
-  if (ZERO_DECIMAL.has(currency)) return String(Math.max(1, Math.round(local)));
-  const rounded = Math.round(local * 100) / 100;
-  return String(rounded);
+  // Integer-friendly form values (matches hourlyRateInputStep / HTML number validation).
+  return String(Math.max(1, Math.round(local)));
 }
 
 /** Convert a form input (visitor currency) back to whole PKR for storage. */
@@ -256,18 +255,20 @@ export function hourlyRateInputToPkr(amountLocal: number, currency: CurrencyCode
   return Math.round(currencyToPkr(amountLocal, currency));
 }
 
-/** Minimum input amount in visitor currency that still meets MIN_HOURLY_RATE_PKR. */
+/**
+ * Minimum input amount in visitor currency that still meets MIN_HOURLY_RATE_PKR.
+ * Ceiled to a whole number so HTML `step=1` accepts ordinary integer rates (e.g. €10).
+ */
 export function minHourlyRateInput(currency: CurrencyCode): number {
   if (currency === "PKR") return MIN_HOURLY_RATE_PKR;
   const local = pkrToCurrency(MIN_HOURLY_RATE_PKR, currency);
-  if (ZERO_DECIMAL.has(currency)) return Math.max(1, Math.ceil(local));
-  return Math.max(0.01, Math.ceil(local * 100) / 100);
+  return Math.max(1, Math.ceil(local));
 }
 
+/** HTML number input step — whole units for display currencies; 100 PKR for PKR. */
 export function hourlyRateInputStep(currency: CurrencyCode): number {
   if (currency === "PKR") return 100;
-  if (ZERO_DECIMAL.has(currency)) return 1;
-  return 0.5;
+  return 1;
 }
 
 export function formatPlanPrice(
