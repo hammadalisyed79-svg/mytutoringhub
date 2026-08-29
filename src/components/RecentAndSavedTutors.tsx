@@ -71,7 +71,12 @@ export function RecentAndSavedTutors({
           <h2 className="saved-tutors-heading">Recently viewed</h2>
           <div className="saved-tutors-row">
             {recent.map((row) => (
-              <Link key={`r-${row.tutorProfileId}`} href={row.href} className="saved-tutor-chip">
+              <Link
+                key={`r-${row.tutorProfileId}`}
+                href={row.href}
+                className="saved-tutor-chip"
+                title={row.subject ? `${row.name} · ${row.subject}` : row.name}
+              >
                 <span className="saved-tutor-chip-name">{row.name}</span>
                 {row.subject && <span className="muted">{row.subject}</span>}
               </Link>

@@ -6032,8 +6032,10 @@ select:focus {
   border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
   background: var(--surface, #fff);
   text-decoration: none;
-  color: inherit;
+  /* Force readable ink — hero sets color: white, which made empty-looking chips. */
+  color: var(--ink, #14241f);
   min-width: 8rem;
+  max-width: 14rem;
 }
 
 .saved-tutor-chip.is-saved {
@@ -6043,6 +6045,21 @@ select:focus {
 .saved-tutor-chip-name {
   font-weight: 600;
   font-size: 0.9rem;
+  color: var(--ink, #14241f);
+}
+
+.saved-tutor-chip .muted {
+  color: var(--muted, #5c6e67);
+  font-size: 0.78rem;
+}
+
+.hero .saved-tutors-heading {
+  color: var(--white);
+}
+
+.hero .saved-tutor-chip {
+  color: var(--ink, #14241f);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .hero-search-suggest {
@@ -10927,8 +10944,10 @@ img {
   border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
   background: var(--surface, #fff);
   text-decoration: none;
-  color: inherit;
+  /* Force readable ink — hero sets color: white, which made empty-looking chips. */
+  color: var(--ink, #14241f);
   min-width: 8rem;
+  max-width: 14rem;
 }
 
 .saved-tutor-chip.is-saved {
@@ -10938,6 +10957,21 @@ img {
 .saved-tutor-chip-name {
   font-weight: 600;
   font-size: 0.9rem;
+  color: var(--ink, #14241f);
+}
+
+.saved-tutor-chip .muted {
+  color: var(--muted, #5c6e67);
+  font-size: 0.78rem;
+}
+
+.hero .saved-tutors-heading {
+  color: var(--white);
+}
+
+.hero .saved-tutor-chip {
+  color: var(--ink, #14241f);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .hero-search-suggest {
