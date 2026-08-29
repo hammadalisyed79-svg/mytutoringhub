@@ -78,6 +78,7 @@ function ListingCta({
 
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
+  const session = await auth();
   const listing = await prisma.subjectProfile.findUnique({
     where: { id },
     select: {
@@ -101,12 +102,13 @@ export async function generateMetadata({ params }: Params) {
           online: true,
           inPerson: true,
           qualifications: true,
+          userId: true,
           user: { select: { name: true, emailVerified: true, suspended: true } },
         },
       },
     },
   });
-  if (!listing || listing.status !== "ACTIVE") {
+  if (!listing) {
     return pageMetadata({
       title: "Listing not found",
       description: "This subject listing is unavailable.",
@@ -114,6 +116,22 @@ export async function generateMetadata({ params }: Params) {
       noIndex: true,
     });
   }
+
+  const isOwner = session?.user?.id === listing.tutorProfile.userId;
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isPublicListing =
+    listing.status === "ACTIVE" &&
+    canViewTutorProfilePublicly(tutorPublicVisibilityInput(listing.tutorProfile));
+
+  if (!isPublicListing && !isOwner && !isAdmin) {
+    return pageMetadata({
+      title: "Listing not found",
+      description: "This subject listing is unavailable.",
+      path: listingPath(id),
+      noIndex: true,
+    });
+  }
+
   const name = listing.tutorProfile.user.name?.trim() || "Tutor";
   const desc =
     listing.headline ||
@@ -121,6 +139,16 @@ export async function generateMetadata({ params }: Params) {
     listing.tutorProfile.headline ||
     publicTutorBio(listing.tutorProfile.bio) ||
     `${name} offers ${listing.subject} tutoring.`;
+
+  if (!isPublicListing) {
+    return pageMetadata({
+      title: `${listing.title} · preview`,
+      description: "Your teaching listing preview on My Tutoring Hub.",
+      path: listingPath(id),
+      noIndex: true,
+    });
+  }
+
   return pageMetadata({
     title: `${listing.title} · ${listing.subject}`,
     description: truncateDescription(
@@ -160,11 +188,12 @@ export default async function SubjectListingPage({ params }: Params) {
   const viewerId = session?.user?.id;
   const isOwner = Boolean(viewerId && viewerId === tutor.userId);
   const isAdmin = session?.user?.role === "ADMIN";
+  const isPublicListing =
+    listing.status === "ACTIVE" &&
+    canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor));
 
-  if (
-    listing.status !== "ACTIVE" ||
-    (!isOwner && !isAdmin && !canViewTutorProfilePublicly(tutorPublicVisibilityInput(tutor)))
-  ) {
+  // Owners/admins can always preview; public visitors only see live searchable listings.
+  if (!isPublicListing && !isOwner && !isAdmin) {
     notFound();
   }
 
@@ -209,25 +238,30 @@ export default async function SubjectListingPage({ params }: Params) {
   });
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
 
-  trackProductEvent("listing_viewed", {
-    listingId: listing.id,
-    subject: listing.subject,
-    tutorProfileId: tutor.id,
-    viewerId: viewerId || null,
-  });
+  if (isPublicListing) {
+    trackProductEvent("listing_viewed", {
+      listingId: listing.id,
+      subject: listing.subject,
+      tutorProfileId: tutor.id,
+      viewerId: viewerId || null,
+    });
+  }
 
   return (
     <>
-      <TrackTutorView
-        tutor={{
-          tutorProfileId: tutor.id,
-          listingId: listing.id,
-          name: tutorName,
-          subject: listing.subject,
-          photoUrl: tutor.photoUrl,
-          href: listingPath(listing.id),
-        }}
-      />
+      {isPublicListing ? (
+        <TrackTutorView
+          tutor={{
+            tutorProfileId: tutor.id,
+            listingId: listing.id,
+            name: tutorName,
+            subject: listing.subject,
+            photoUrl: tutor.photoUrl,
+            href: listingPath(listing.id),
+          }}
+        />
+      ) : null}
+      {isPublicListing ? (
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -260,9 +294,33 @@ export default async function SubjectListingPage({ params }: Params) {
           ],
         }}
       />
+      ) : null}
 
       <div className="page">
         <div className="container profile-page">
+          {(isOwner || isAdmin) && !isPublicListing ? (
+            <p className="panel profile-notice" role="status">
+              {isOwner ? (
+                <>
+                  This is a private preview
+                  {listing.status !== "ACTIVE" ? ` (${listing.status.toLowerCase()})` : ""}. Students
+                  can’t see it in search until your master profile is complete and this listing is
+                  active.{" "}
+                  <Link href="/dashboard/tutor?tab=profile">Finish profile &amp; listings</Link>
+                </>
+              ) : (
+                <>Admin preview — this listing is not publicly searchable yet.</>
+              )}
+            </p>
+          ) : null}
+
+          {isOwner && isPublicListing ? (
+            <p className="panel profile-notice" role="status">
+              This is your public teaching listing.{" "}
+              <Link href="/dashboard/tutor?tab=profile#teaching-listings">Edit listings</Link>
+            </p>
+          ) : null}
+
           <p className="muted" style={{ marginBottom: "0.75rem" }}>
             <Link href="/search">← Search</Link>
             {" · "}

@@ -351,7 +351,7 @@ export function TutorAdsManager({
 
               <div className="teaching-listing-actions">
                 <Link className="btn btn-secondary btn-sm" href={listingPath(listing.id)} target="_blank">
-                  View public page
+                  {listing.status === "ACTIVE" ? "View listing page" : "Preview listing"}
                 </Link>
                 {listing.status === "ACTIVE" ? (
                   <button
