@@ -1,31 +1,22 @@
 import type { TutorProfileCompletionInput } from "@/lib/tutor-profile-completion";
 
+/** Short FindTutor-style setup — advanced fields live outside this flow. */
 export const TUTOR_WIZARD_STEP_IDS = [
   "photo",
   "basics",
   "place",
   "teaching",
-  "qualifications",
-  "extras",
-  "schedule",
-  "contact",
-  "verify",
   "finish",
 ] as const;
 
 export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
 
 /**
- * Resume the profile wizard at the first incomplete required step.
- * Optional steps are skipped for resume — tutors can open them from the step rail.
+ * Resume at the first incomplete required step.
  */
 export function resolveTutorWizardResumeStep(
   profile: TutorProfileCompletionInput & {
     photoUrl?: string | null;
-    availability?: string | null;
-    phone?: string | null;
-    videoUrl?: string | null;
-    introVideoUrl?: string | null;
   },
   opts?: { verified?: boolean; preferFinishWhenLive?: boolean; live?: boolean },
 ): TutorWizardStepId {
@@ -43,12 +34,8 @@ export function resolveTutorWizardResumeStep(
   const subjectsOk = Boolean(profile.subjects?.trim());
   const rateOk = typeof profile.hourlyRate === "number" && profile.hourlyRate >= 500;
   const modeOk = Boolean(profile.online || profile.inPerson);
-  // Seeded rate/online without subjects still means teaching is unfinished.
-  if (!subjectsOk || !rateOk || !modeOk) return "teaching";
-
-  if (!profile.qualifications?.trim()) return "qualifications";
-
-  if (!opts?.verified) return "verify";
+  const qualsOk = Boolean(profile.qualifications?.trim());
+  if (!subjectsOk || !rateOk || !modeOk || !qualsOk) return "teaching";
 
   return "finish";
 }

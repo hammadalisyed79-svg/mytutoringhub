@@ -70,6 +70,7 @@ function ListingTaxonomyFields({
   levels,
   boards,
   defaults,
+  compact = false,
 }: {
   levels: string[];
   boards: string[];
@@ -79,49 +80,70 @@ function ListingTaxonomyFields({
     qualification?: string | null;
     syllabusCode?: string | null;
   };
+  compact?: boolean;
 }) {
+  const core = (
+    <label>
+      Level
+      <select name="level" defaultValue={defaults?.level || "All levels"}>
+        {levels.map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const extras = (
+    <>
+      <label>
+        Exam board <span className="muted">(optional)</span>
+        <select name="board" defaultValue={defaults?.board || ""}>
+          <option value="">Any / not specified</option>
+          {boards.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Qualification <span className="muted">(optional)</span>
+        <input
+          name="qualification"
+          placeholder="e.g. O Level, GCSE"
+          defaultValue={defaults?.qualification || ""}
+        />
+      </label>
+      <label>
+        Syllabus code <span className="muted">(optional)</span>
+        <input
+          name="syllabusCode"
+          placeholder="e.g. 5070"
+          defaultValue={defaults?.syllabusCode || ""}
+        />
+      </label>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <>
+        {core}
+        <details className="profile-advanced-details">
+          <summary>Optional — board &amp; syllabus</summary>
+          <div className="teaching-listing-grid profile-advanced-block">{extras}</div>
+        </details>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="teaching-listing-grid">
-        <label>
-          Level
-          <select name="level" defaultValue={defaults?.level || "All levels"}>
-            {levels.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Exam board <span className="muted">(optional)</span>
-          <select name="board" defaultValue={defaults?.board || ""}>
-            <option value="">Any / not specified</option>
-            {boards.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="teaching-listing-grid">
-        <label>
-          Qualification <span className="muted">(optional)</span>
-          <input
-            name="qualification"
-            placeholder="e.g. O Level, GCSE, AS & A Level"
-            defaultValue={defaults?.qualification || ""}
-          />
-        </label>
-        <label>
-          Syllabus code <span className="muted">(optional)</span>
-          <input
-            name="syllabusCode"
-            placeholder="e.g. 5070"
-            defaultValue={defaults?.syllabusCode || ""}
-          />
-        </label>
+        {core}
+        {extras}
       </div>
     </>
   );
@@ -445,6 +467,7 @@ export function TutorAdsManager({
                       qualification: listing.qualification,
                       syllabusCode: listing.syllabusCode,
                     }}
+                    compact
                   />
                   <label>
                     City / area
@@ -500,8 +523,7 @@ export function TutorAdsManager({
         >
           <h3 style={{ marginTop: 0 }}>Add teaching listing</h3>
           <p className="field-hint">
-            One clear service per listing — for example GCSE Maths and A Level Maths as separate
-            listings. Students search by what they need to learn.
+            One subject service per listing — students search these like FindTutors ads.
           </p>
           <label>
             <span>
@@ -530,14 +552,10 @@ export function TutorAdsManager({
               name="title"
               required
               minLength={5}
-              placeholder="Cambridge O Level Mathematics · exam prep"
+              placeholder="e.g. GCSE Maths · exam prep"
             />
           </label>
-          <label>
-            Short headline
-            <input name="headline" placeholder="Shown on search cards" />
-          </label>
-          <ListingTaxonomyFields levels={levels} boards={boards} />
+          <ListingTaxonomyFields levels={levels} boards={boards} compact />
           <label>
             <span>
               City / area <abbr className="req" title="Required">
@@ -563,16 +581,8 @@ export function TutorAdsManager({
               placeholder={hourlyRateInputValue(1500, currency)}
             />
             <span className="field-hint">
-              Enter the amount in {currency}. Minimum {formatMoney(rateMinLocal, currency)}.
+              Minimum {formatMoney(rateMinLocal, currency)}.
             </span>
-          </label>
-          <label>
-            Tell students about this lesson
-            <textarea
-              name="description"
-              rows={3}
-              placeholder="What this listing covers, who it is for, and how you teach…"
-            />
           </label>
           <fieldset className="form-fieldset">
             <legend>How you teach</legend>
@@ -585,6 +595,23 @@ export function TutorAdsManager({
               </label>
             </div>
           </fieldset>
+          <details className="profile-advanced-details">
+            <summary>Optional — headline &amp; description</summary>
+            <div className="profile-advanced-block">
+              <label>
+                Short headline
+                <input name="headline" placeholder="Shown on search cards" />
+              </label>
+              <label>
+                About this lesson
+                <textarea
+                  name="description"
+                  rows={3}
+                  placeholder="Who it is for and how you teach…"
+                />
+              </label>
+            </div>
+          </details>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <button className="btn btn-sm" type="submit">
               Publish listing

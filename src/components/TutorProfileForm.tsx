@@ -79,62 +79,32 @@ const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif
 const WIZARD_STEPS = [
   {
     id: "photo",
-    title: "Add a profile photo",
-    hint: "A clear headshot helps students trust you. Required to go live.",
+    title: "Profile photo",
+    hint: "A clear headshot — required to go live.",
     optional: false,
   },
   {
     id: "basics",
-    title: "Name and about you",
-    hint: "This is what students read first.",
+    title: "About you",
+    hint: "Your name and a short introduction for students.",
     optional: false,
   },
   {
     id: "place",
-    title: "Where you teach from",
-    hint: "Country and city power search filters.",
+    title: "Location",
+    hint: "Country and city for search.",
     optional: false,
   },
   {
     id: "teaching",
-    title: "Subjects, rate, and format",
-    hint: "What you teach and how students book you.",
+    title: "What you teach",
+    hint: "Subjects, hourly rate, and how you teach. Add more subject listings after you save.",
     optional: false,
-  },
-  {
-    id: "qualifications",
-    title: "Qualifications",
-    hint: "Your highest qualification is required for search.",
-    optional: false,
-  },
-  {
-    id: "extras",
-    title: "Strengthen your listing",
-    hint: "Optional — levels, languages, and expertise. Skip if you want to finish faster.",
-    optional: true,
-  },
-  {
-    id: "schedule",
-    title: "Weekly availability",
-    hint: "Optional — students see this on your public profile.",
-    optional: true,
-  },
-  {
-    id: "contact",
-    title: "Contact and intro video",
-    hint: "Optional — phone and video links. Skip anytime.",
-    optional: true,
-  },
-  {
-    id: "verify",
-    title: "Get verified",
-    hint: "Optional — upload a government photo ID for the Verified badge. Skip and do this later if you prefer.",
-    optional: true,
   },
   {
     id: "finish",
-    title: "Save and grow",
-    hint: "Save your listing, then grow with star badges and optional boosts.",
+    title: "Save profile",
+    hint: "Save to go live when email is verified. Then add subject-wise teaching listings.",
     optional: false,
   },
 ] as const;
@@ -209,8 +179,8 @@ export function TutorProfileForm({
   listingActive?: boolean;
   verified?: boolean;
   trustBadge?: TutorTrustBadge | string;
-  /** Jump straight to a wizard step (e.g. verify). */
-  startStep?: (typeof WIZARD_STEPS)[number]["id"];
+  /** Jump straight to a wizard step (verify opens finish + ID upload). */
+  startStep?: (typeof WIZARD_STEPS)[number]["id"] | "verify";
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
 }) {
@@ -237,13 +207,14 @@ export function TutorProfileForm({
   const [photoError, setPhotoError] = useState("");
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
-  const steps = useMemo(
-    () => (verified ? WIZARD_STEPS.filter((row) => row.id !== "verify") : [...WIZARD_STEPS]),
-    [verified],
-  );
+  const steps = useMemo(() => [...WIZARD_STEPS], []);
   const initialStepIndex = Math.max(
     0,
-    startStep ? steps.findIndex((row) => row.id === startStep) : 0,
+    startStep && startStep !== "verify"
+      ? steps.findIndex((row) => row.id === startStep)
+      : startStep === "verify"
+        ? steps.findIndex((row) => row.id === "finish")
+        : 0,
   );
   const [step, setStep] = useState(initialStepIndex >= 0 ? initialStepIndex : 0);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
@@ -342,11 +313,15 @@ export function TutorProfileForm({
       case "photo":
         if (!photoUrl.startsWith("https://")) return "Upload a profile photo to continue.";
         return null;
-      case "basics":
+      case "basics": {
         if (name.trim().length < 2) return "Enter the name students see (at least 2 characters).";
-        if (headline.trim().length < 8) return "Add a headline of at least 8 characters.";
         if (bio.trim().length < 40) return "Write at least 40 characters about your teaching.";
+        if (headline.trim().length < 8) {
+          const auto = `${name.trim()} · Private tutor`.slice(0, 120);
+          setHeadline(auto);
+        }
         return null;
+      }
       case "place":
         if (!country) return "Select the country you teach from.";
         if (!location.trim()) return "Select a city.";
@@ -357,8 +332,6 @@ export function TutorProfileForm({
           return `Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
         }
         if (!online && !inPerson) return "Choose online, in person, or both.";
-        return null;
-      case "qualifications":
         if (!qualifications.trim()) return "Add your highest qualification.";
         return null;
       default:
@@ -372,31 +345,16 @@ export function TutorProfileForm({
       case "photo":
         return photoUrl.startsWith("https://");
       case "basics":
-        return (
-          name.trim().length >= 2 && headline.trim().length >= 8 && bio.trim().length >= 40
-        );
+        return name.trim().length >= 2 && bio.trim().length >= 40;
       case "place":
         return Boolean(country?.trim() && location.trim());
       case "teaching":
         return (
-          subjectList.length > 0 && ratePkr >= MIN_HOURLY_RATE_PKR && (online || inPerson)
+          subjectList.length > 0 &&
+          ratePkr >= MIN_HOURLY_RATE_PKR &&
+          (online || inPerson) &&
+          Boolean(qualifications.trim())
         );
-      case "qualifications":
-        return Boolean(qualifications.trim());
-      case "extras":
-        return (
-          expertiseList.length > 0 ||
-          levelList.length > 0 ||
-          languageList.length > 0 ||
-          Boolean(teachingMethod.trim()) ||
-          experienceYears !== ""
-        );
-      case "schedule":
-        return slots.some((slot) => Boolean(slot.day && (slot.start || slot.end)));
-      case "contact":
-        return Boolean(phone.trim() || videoUrl.trim() || introVideoUrl.trim());
-      case "verify":
-        return Boolean(verified);
       case "finish":
         return Boolean(completion.complete && emailVerified);
       default:
@@ -427,13 +385,19 @@ export function TutorProfileForm({
           photoCropZoom,
           wizardStep: "photo",
         };
-      case "basics":
+      case "basics": {
+        const effectiveHeadline =
+          headline.trim().length >= 8
+            ? headline.trim()
+            : `${name.trim()} · Private tutor`.slice(0, 120);
+        if (effectiveHeadline !== headline) setHeadline(effectiveHeadline);
         return {
           name: name.trim(),
-          headline: headline.trim(),
+          headline: effectiveHeadline,
           bio: bio.trim(),
           wizardStep: "basics",
         };
+      }
       case "place":
         return {
           country,
@@ -446,34 +410,8 @@ export function TutorProfileForm({
           hourlyRate: ratePkr,
           online,
           inPerson,
-          wizardStep: "teaching",
-        };
-      case "qualifications":
-        return {
           qualifications: qualifications.trim(),
-          wizardStep: "qualifications",
-        };
-      case "extras":
-        return {
-          expertise: joinCsv(expertiseList),
-          levels: joinCsv(levelList),
-          languages: joinCsv(languageList),
-          experienceYears: experienceYears === "" ? null : Number(experienceYears),
-          teachingMethod: teachingMethod.trim(),
-          wizardStep: "extras",
-        };
-      case "schedule":
-        return {
-          availability: serializeAvailability(slots),
-          wizardStep: "schedule",
-        };
-      case "contact":
-        return {
-          phone: phone.trim(),
-          videoUrl: videoUrl.trim(),
-          introVideoUrl: introVideoUrl.trim(),
-          offersFreeTrial,
-          wizardStep: "contact",
+          wizardStep: "teaching",
         };
       default:
         return null;
@@ -685,9 +623,13 @@ export function TutorProfileForm({
       setError("Add your highest qualification before saving.");
       return;
     }
+    const effectiveHeadline =
+      headline.trim().length >= 8
+        ? headline.trim()
+        : `${name.trim()} · Private tutor`.slice(0, 120);
     const payload = {
       name: name.trim(),
-      headline: headline.trim(),
+      headline: effectiveHeadline,
       bio: bio.trim(),
       subjects: joinCsv(subjectList),
       expertise: joinCsv(expertiseList),
@@ -734,7 +676,7 @@ export function TutorProfileForm({
       );
       await update({ name: name.trim() });
       if (nowLive && !listingActive) {
-        router.push("/dashboard/tutor?tab=growth&live=1");
+        router.push("/dashboard/tutor?tab=profile&live=1#teaching-listings");
         router.refresh();
         return;
       }
@@ -828,17 +770,13 @@ export function TutorProfileForm({
           <i className="profile-wizard-legend-dot is-complete" /> Done
         </span>
         <span>
-          <i className="profile-wizard-legend-dot is-pending" /> Pending
-        </span>
-        <span>
-          <i className="profile-wizard-legend-dot is-skipped" /> Skipped
+          <i className="profile-wizard-legend-dot is-pending" /> Incomplete
         </span>
       </div>
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
       <p className="field-hint profile-wizard-persist-hint">
-        ✓ only when a step is filled. ✕ means you moved on before finishing it. Drafts save as you go —
-        your listing stays private until final Save profile.
+        Five short steps. Progress saves as you go — your listing stays private until you save.
       </p>
     </div>
   );
@@ -872,46 +810,12 @@ export function TutorProfileForm({
           </button>
         ) : (
           <button className="btn" type="button" disabled={draftSaving || uploading} onClick={() => void goNext()}>
-            {draftSaving ? "Saving…" : currentStep.id === "verify" ? "Continue" : "Next"}
+            {draftSaving ? "Saving…" : "Next"}
           </button>
         )}
       </div>
     </div>
   );
-
-  // Keep verification outside the profile <form> to avoid nested forms.
-  if (currentStep.id === "verify") {
-    return (
-      <div className="stack-form profile-form profile-form-wizard" id="get-verified">
-        {wizardChrome}
-        <VerificationForm embedded compact />
-        <div className="guided-search-actions profile-wizard-actions">
-          <button type="button" className="btn btn-secondary" onClick={goBack} disabled={draftSaving}>
-            Back
-          </button>
-          <div className="profile-wizard-actions-right">
-            {draftNote ? <p className="profile-wizard-draft-note muted">{draftNote}</p> : null}
-            <button
-              type="button"
-              className="btn btn-secondary"
-              disabled={draftSaving}
-              onClick={() => void skipOptional()}
-            >
-              Skip verification
-            </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={draftSaving}
-              onClick={() => void goNext()}
-            >
-              {draftSaving ? "Saving…" : "Continue"}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <form
@@ -939,7 +843,8 @@ export function TutorProfileForm({
             <span style={{ width: `${Math.min(100, progress)}%` }} />
           </div>
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
-            Review anything left, then save. Optional details can be added anytime.
+            Save your master profile, then add a teaching listing for each subject below — like FindTutors
+            subject ads.
           </p>
         </div>
       ) : null}
@@ -1034,9 +939,6 @@ export function TutorProfileForm({
 
       {show("basics") && (
       <section className="form-section">
-        <h3>Basic information</h3>
-        <p className="field-hint">Students use these to decide whether to message you.</p>
-
         <label>
           <span>
             Name <abbr className="req" title="Required">*</abbr>
@@ -1050,54 +952,44 @@ export function TutorProfileForm({
             onChange={(e) => setName(e.target.value)}
             placeholder="The name students see"
           />
-          <span className="field-hint">
-            Use your real teaching name. Placeholder or promotional names cannot go live in search.
-          </span>
         </label>
 
         <label>
           <span>
-            Tutor headline <abbr className="req" title="Required">*</abbr>
-          </span>
-          <input
-            name="headline"
-            minLength={8}
-            maxLength={120}
-            value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
-            placeholder="Cambridge IGCSE & A Level Physics Tutor"
-          />
-          <span className="field-hint">
-            {headline.trim().length}/120 · Be specific — e.g. “Cambridge IGCSE &amp; A Level Physics
-            Tutor”, not just “Teacher”.
-          </span>
-        </label>
-
-        <label>
-          <span>
-            About me <abbr className="req" title="Required">*</abbr>
+            About you <abbr className="req" title="Required">*</abbr>
           </span>
           <textarea
             name="bio"
             minLength={40}
             maxLength={4000}
-            rows={6}
+            rows={5}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="Who you teach, how you run lessons, and what results students can expect."
           />
           <span className="field-hint">
-            Tell students about your teaching experience, subjects, teaching style, and who you can
-            help. Aim for about 120–400 characters (minimum 40). {bio.trim().length}/4000
+            Minimum 40 characters. {bio.trim().length}/4000
           </span>
         </label>
+
+        <details className="profile-advanced-details">
+          <summary>Optional headline</summary>
+          <label>
+            <span>Tutor headline</span>
+            <input
+              name="headline"
+              maxLength={120}
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+              placeholder="Auto-filled from your name if left blank"
+            />
+          </label>
+        </details>
       </section>
       )}
 
       {show("place") && (
       <section className="form-section">
-        <h3>Location</h3>
-        <p className="field-hint">Country and city are shown on your public profile and used in search.</p>
         <div className="form-grid-2">
           <label>
             <span>
@@ -1134,18 +1026,17 @@ export function TutorProfileForm({
 
       {show("teaching") && (
       <section className="form-section">
-        <h3>Subjects &amp; teaching</h3>
         <CatalogMultiSelect
           label="Subjects you teach"
           required
           searchable
           directory
-          max={12}
+          max={8}
           selected={subjectList}
           onChange={setSubjects}
           options={listedSubjects}
-          addLabel="Add another listed subject"
-          hint="Choose from the catalog (e.g. Mathematics) — avoid free-text duplicates like Math / Maths when the listed subject already exists."
+          addLabel="Add subject"
+          hint="Start with your main subjects. You can add separate listings per subject after saving."
         />
 
         <label>
@@ -1162,12 +1053,8 @@ export function TutorProfileForm({
             onChange={(e) => setHourlyRate(e.target.value)}
           />
           <span className="field-hint">
-            {country
-              ? `Based on ${country} · enter ${rateCurrency}.`
-              : `Enter ${rateCurrency} for your location. Set teaching country in the previous step to lock the right currency.`}{" "}
-            We store {ratePkr > 0 ? `${ratePkr.toLocaleString("en")} PKR` : "PKR"} as the site base so
-            students worldwide see their own currency. Minimum{" "}
-            {formatMoney(rateMinLocal, rateCurrency)}.
+            Minimum {formatMoney(rateMinLocal, rateCurrency)}. Add subject-specific rates in teaching
+            listings later.
           </span>
         </label>
 
@@ -1184,214 +1071,175 @@ export function TutorProfileForm({
             </label>
           </div>
         </fieldset>
-      </section>
-      )}
 
-      {show("qualifications") && (
-      <section className="form-section">
-        <h3>Qualifications</h3>
         <label>
-          Highest qualification <abbr className="req" title="Required">*</abbr>
-          <textarea
+          <span>
+            Highest qualification <abbr className="req" title="Required">*</abbr>
+          </span>
+          <input
             name="qualifications"
-            rows={3}
             value={qualifications}
             onChange={(e) => setQualifications(e.target.value)}
-            placeholder="MSc Chemistry, examiner experience, teaching licence…"
-          />
-        </label>
-      </section>
-      )}
-
-      {show("extras") && (
-      <section className="form-section">
-        <h3>Strengthen your listing (optional)</h3>
-        <CatalogMultiSelect
-          label="Expertise"
-          selected={expertiseList}
-          onChange={setExpertiseList}
-          options={expertiseOptions}
-          extraOptions={GENERIC_EXPERTISE}
-          max={16}
-          addLabel="Add more expertise"
-          emptyHint="Select subjects first — expertise follows those subjects."
-          hint={
-            subjectList.length
-              ? "Skills are matched to the subjects you selected."
-              : "Select subjects first — expertise options follow those subjects."
-          }
-        />
-        <CatalogMultiSelect
-          label="Levels"
-          selected={levelList}
-          onChange={setLevelList}
-          options={levelCatalog.core}
-          extraOptions={levelCatalog.more}
-          max={10}
-          addLabel="Add more levels"
-          hint="Tap every stage you teach."
-        />
-        <CatalogMultiSelect
-          label="Languages"
-          selected={languageList}
-          onChange={setLanguageList}
-          options={languageCatalog.core}
-          extraOptions={languageCatalog.more}
-          max={8}
-          addLabel="Add more languages"
-          hint="Languages you can teach in."
-        />
-        <label>
-          Experience in years
-          <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-            <option value="">Select years…</option>
-            {EXPERIENCE_YEAR_OPTIONS.map((row) => (
-              <option key={row.value} value={row.value}>
-                {row.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          How you teach
-          <textarea
-            name="teachingMethod"
-            rows={3}
-            value={teachingMethod}
-            onChange={(e) => setTeachingMethod(e.target.value)}
-            placeholder="Past papers, weekly homework, lesson notes after each session…"
-          />
-        </label>
-      </section>
-      )}
-
-      {show("schedule") && (
-      <section className="form-section">
-        <h3>Weekly availability (optional)</h3>
-        <fieldset className="catalog-pick">
-          <legend>Weekly availability</legend>
-          <p className="field-hint">
-            Add the days and times you can teach. Students see this calendar on your public profile.
-          </p>
-          <div className="schedule-rows">
-            {slots.map((slot, index) => (
-              <div key={`${slot.day}-${index}`} className="schedule-row">
-                <select
-                  aria-label="Day"
-                  value={slot.day}
-                  onChange={(e) => updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })}
-                >
-                  {WEEKDAYS.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  aria-label="Start time"
-                  value={slot.start}
-                  onChange={(e) => updateSlot(index, { start: e.target.value })}
-                >
-                  {TIMES.map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </select>
-                <span className="muted">to</span>
-                <select
-                  aria-label="End time"
-                  value={slot.end}
-                  onChange={(e) => updateSlot(index, { end: e.target.value })}
-                >
-                  {TIMES.map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  type="button"
-                  onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-          <button
-            className="btn btn-secondary btn-sm"
-            type="button"
-            onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
-          >
-            Add time slot
-          </button>
-        </fieldset>
-      </section>
-      )}
-
-      {show("contact") && (
-      <section className="form-section">
-        <h3>Contact and media (optional)</h3>
-        <label className="radio">
-          <input
-            type="checkbox"
-            checked={offersFreeTrial}
-            onChange={(e) => setOffersFreeTrial(e.target.checked)}
-          />{" "}
-          Free first lesson
-        </label>
-        <label>
-          Intro video link
-          <input
-            name="videoUrl"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-            placeholder="YouTube or Vimeo URL"
-            inputMode="url"
-          />
-        </label>
-        <label>
-          Introduction video URL
-          <input
-            name="introVideoUrl"
-            value={introVideoUrl}
-            onChange={(e) => setIntroVideoUrl(e.target.value)}
-            placeholder="YouTube, Vimeo, or direct video link"
-            inputMode="url"
-          />
-        </label>
-        {videoSrc ? (
-          <div className="media-embed-wrap profile-video-preview">
-            <iframe
-              className="media-embed"
-              title="Intro video preview"
-              src={videoSrc}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
-        ) : null}
-        <label>
-          Phone
-          <PhoneInput
-            value={phone}
-            onChange={setPhone}
-            defaultCountryCode={defaultPhoneCountry}
-            hint="Shown on your public profile only after you are verified."
+            placeholder="e.g. MSc Chemistry, PGCE, B.Ed"
           />
         </label>
       </section>
       )}
 
       {currentStep.id === "finish" && (
-        <ProfileImprovePanel
-          listingLive={listingActive}
-          verified={verified}
-          trustBadge={trustBadge}
-        />
+        <>
+          <p className="field-hint">
+            After you save, scroll to <strong>My teaching listings</strong> to create a subject-wise
+            profile for each service (rate, level, board).
+          </p>
+          <details className="profile-advanced-details" id="get-verified" open={startStep === "verify"}>
+            <summary>Optional — ID verification, schedule, contact</summary>
+            <div className="profile-advanced-block">
+              {!verified ? <VerificationForm embedded compact /> : (
+                <p className="success">You are verified.</p>
+              )}
+              <CatalogMultiSelect
+                label="Expertise"
+                selected={expertiseList}
+                onChange={setExpertiseList}
+                options={expertiseOptions}
+                extraOptions={GENERIC_EXPERTISE}
+                max={16}
+                addLabel="Add expertise"
+              />
+              <CatalogMultiSelect
+                label="Levels"
+                selected={levelList}
+                onChange={setLevelList}
+                options={levelCatalog.core}
+                extraOptions={levelCatalog.more}
+                max={10}
+                addLabel="Add levels"
+              />
+              <CatalogMultiSelect
+                label="Languages"
+                selected={languageList}
+                onChange={setLanguageList}
+                options={languageCatalog.core}
+                extraOptions={languageCatalog.more}
+                max={8}
+                addLabel="Add languages"
+              />
+              <label>
+                Experience in years
+                <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
+                  <option value="">Select years…</option>
+                  {EXPERIENCE_YEAR_OPTIONS.map((row) => (
+                    <option key={row.value} value={row.value}>
+                      {row.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                How you teach
+                <textarea
+                  name="teachingMethod"
+                  rows={2}
+                  value={teachingMethod}
+                  onChange={(e) => setTeachingMethod(e.target.value)}
+                  placeholder="Past papers, weekly homework…"
+                />
+              </label>
+              <fieldset className="catalog-pick">
+                <legend>Weekly availability</legend>
+                <div className="schedule-rows">
+                  {slots.map((slot, index) => (
+                    <div key={`${slot.day}-${index}`} className="schedule-row">
+                      <select
+                        aria-label="Day"
+                        value={slot.day}
+                        onChange={(e) =>
+                          updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
+                        }
+                      >
+                        {WEEKDAYS.map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        aria-label="Start time"
+                        value={slot.start}
+                        onChange={(e) => updateSlot(index, { start: e.target.value })}
+                      >
+                        {TIMES.map((time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="muted">to</span>
+                      <select
+                        aria-label="End time"
+                        value={slot.end}
+                        onChange={(e) => updateSlot(index, { end: e.target.value })}
+                      >
+                        {TIMES.map((time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        type="button"
+                        onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
+                >
+                  Add time slot
+                </button>
+              </fieldset>
+              <label className="radio">
+                <input
+                  type="checkbox"
+                  checked={offersFreeTrial}
+                  onChange={(e) => setOffersFreeTrial(e.target.checked)}
+                />{" "}
+                Free first lesson
+              </label>
+              <label>
+                Intro video URL
+                <input
+                  name="introVideoUrl"
+                  value={introVideoUrl}
+                  onChange={(e) => setIntroVideoUrl(e.target.value)}
+                  placeholder="YouTube or Vimeo"
+                  inputMode="url"
+                />
+              </label>
+              <label>
+                Phone
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  defaultCountryCode={defaultPhoneCountry}
+                  hint="Shown publicly only after verification."
+                />
+              </label>
+            </div>
+          </details>
+          <ProfileImprovePanel
+            listingLive={listingActive}
+            verified={verified}
+            trustBadge={trustBadge}
+          />
+        </>
       )}
 
       {error && <p className="form-error">{error}</p>}

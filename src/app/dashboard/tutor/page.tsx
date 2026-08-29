@@ -13,11 +13,7 @@ import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getPlan } from "@/lib/plans";
-import {
-  TutorBadgeProgressPanel,
-  TutorRecommendationForm,
-} from "@/components/TutorBadgeProgress";
-import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
+import { TutorBadgeProgressPanel, TutorRecommendationForm } from "@/components/TutorBadgeProgress";
 import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
 import {
   type DashboardSearchParams,
@@ -97,17 +93,19 @@ export default async function TutorDashboardPage({
             <h1 className="page-title">Hi, {user.name}</h1>
             <p className="muted">
               {statusView?.status === "LIVE"
-                ? "Your listing is live — grow your badge and reply to student requests."
-                : "Complete your profile to appear in search, then reply to student requests."}
+                ? "Your profile is live — manage subject listings and reply to students."
+                : "Finish a short profile (5 steps), then add subject listings students can find."}
             </p>
           </div>
           <div className="page-hero-actions">
             <Link className="btn btn-sm" href="/messages">
               Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
             </Link>
-            <Link className="btn btn-secondary btn-sm" href="/ads">
-              Student requests
-            </Link>
+            {profileComplete ? (
+              <Link className="btn btn-secondary btn-sm" href="/ads">
+                Student requests
+              </Link>
+            ) : null}
             <SwitchProfileButton
               target="STUDENT"
               label="Student mode"
@@ -137,9 +135,17 @@ export default async function TutorDashboardPage({
           </p>
         )}
 
-        <TutorDashboardTabs active={activeTab} sp={sp} profilePct={statusView?.percent} />
+        {profileComplete ? (
+          <TutorDashboardTabs active={activeTab} sp={sp} profilePct={statusView?.percent} />
+        ) : (
+          <nav className="page-tabs tutor-dashboard-tabs" aria-label="Tutor setup">
+            <span className="page-tab is-active" aria-current="page">
+              Quick setup
+            </span>
+          </nav>
+        )}
 
-        {activeTab === "growth" ? (
+        {profileComplete && activeTab === "growth" ? (
           <>
             <section className="panel tutor-student-requests-panel">
               <h2>Students looking for tutors</h2>
@@ -228,33 +234,29 @@ export default async function TutorDashboardPage({
               <section className="panel tutor-profile-workspace" id="tutor-profile">
               <div className="tutor-profile-workspace-head">
                 <div>
-                  <h2>My profile</h2>
+                  <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
                   <p className="muted">
-                    Your professional identity — photo, bio, verification, and reviews. Teaching
-                    services live in listings below.
+                    {profileComplete
+                      ? "Your photo, bio, and verification. Subject services are managed as listings below."
+                      : "Photo → about you → location → what you teach → save. Then add subject listings."}
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
                   <span
                     className={`tutor-status-pill${user.tutorProfile.active ? " is-live" : ""}`}
                   >
-                    {user.tutorProfile.active ? "Live" : "Incomplete"}
+                    {user.tutorProfile.active ? "Live" : "Setup"}
                   </span>
                   {user.tutorProfile.verified ? (
                     <span className="badge badge-verified">Verified</span>
-                  ) : (
-                    <span className="badge badge-muted">Not verified</span>
-                  )}
-                  {badgeProgress ? (
-                    <TutorTrustBadgePill badge={badgeProgress.current} size="sm" />
                   ) : null}
                 </div>
               </div>
 
               {!user.tutorProfile.active ? (
                 <div className="tutor-profile-hidden-note" role="status">
-                  <strong>Not searchable yet.</strong> Finish required fields, verify your email, then
-                  save — eligible profiles go live automatically.
+                  <strong>Not in search yet.</strong> Complete the steps below and verify your email —
+                  then save. Eligible profiles go live automatically.
                 </div>
               ) : null}
 
@@ -287,12 +289,11 @@ export default async function TutorDashboardPage({
           ) : null}
 
             {user.tutorProfile ? (
-              <section className="panel" id="teaching-listings-section">
-                <h2>My teaching listings</h2>
+              <section className="panel" id="teaching-listings">
+                <h2 id="teaching-listings-section">My teaching listings</h2>
                 <p className="muted">
-                  Each listing is one teaching service students can search for — with its own rate,
-                  level, board, and boost. Your photo, verification, and reviews stay on your master
-                  profile.
+                  Create one listing per subject or level (e.g. GCSE Maths and A Level Maths). Each
+                  has its own rate — this is how students find you.
                 </p>
                 <TutorAdsManager
                   subjects={catalogSubjects}
