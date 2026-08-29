@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
@@ -33,6 +33,7 @@ import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
+  currencyFromCountry,
   DEFAULT_HOURLY_RATE_PKR,
   formatMoney,
   hourlyRateInputStep,
@@ -219,8 +220,17 @@ export function TutorProfileForm({
   const countries = useMemo(() => tutorCountries(), []);
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
   const languageCatalog = useMemo(() => tutorLanguageOptions(), []);
-  const rateMinLocal = minHourlyRateInput(currency);
-  const rateStep = hourlyRateInputStep(currency);
+  const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
+
+  /** Rate currency follows teaching country (Germany → EUR); falls back to visitor currency. */
+  const rateCurrency = useMemo(() => {
+    const code = countryByName(country)?.code;
+    return code ? currencyFromCountry(code) : currency;
+  }, [country, currency]);
+
+  const rateMinLocal = minHourlyRateInput(rateCurrency);
+  const rateStep = hourlyRateInputStep(rateCurrency);
+  const rateCurrencyRef = useRef(rateCurrency);
 
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -248,10 +258,9 @@ export function TutorProfileForm({
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
   const [levelList, setLevelList] = useState(splitCsv(initial.levels));
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
-  const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
   const [location, setLocation] = useState(initial.location || "");
   const [hourlyRate, setHourlyRate] = useState(
-    hourlyRateInputValue(initial.hourlyRate || DEFAULT_HOURLY_RATE_PKR, currency),
+    hourlyRateInputValue(initial.hourlyRate || DEFAULT_HOURLY_RATE_PKR, rateCurrency),
   );
   const [online, setOnline] = useState(initial.online);
   const [inPerson, setInPerson] = useState(initial.inPerson);
@@ -268,6 +277,17 @@ export function TutorProfileForm({
   const [draftSaving, setDraftSaving] = useState(false);
   const [draftNote, setDraftNote] = useState("");
 
+  // Keep the typed amount consistent when teaching country (hence currency) changes.
+  useEffect(() => {
+    if (rateCurrencyRef.current === rateCurrency) return;
+    const previous = rateCurrencyRef.current;
+    const asPkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, previous);
+    rateCurrencyRef.current = rateCurrency;
+    setHourlyRate(hourlyRateInputValue(asPkr || DEFAULT_HOURLY_RATE_PKR, rateCurrency));
+    // Only re-base when currency changes, not on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rateCurrency]);
+
   const videoSrc = embedVideoSrc(introVideoUrl || videoUrl);
   const cities = useMemo(() => citiesForCountry(country), [country]);
   const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
@@ -279,7 +299,7 @@ export function TutorProfileForm({
     return [...catalogSubjects, ...extra];
   }, [catalogSubjects, subjectList]);
 
-  const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, currency);
+  const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
 
   const completion = useMemo(
     () =>
@@ -334,7 +354,7 @@ export function TutorProfileForm({
       case "teaching":
         if (!subjectList.length) return "Select at least one subject.";
         if (ratePkr < MIN_HOURLY_RATE_PKR) {
-          return `Hourly rate must be at least ${formatMoney(rateMinLocal, currency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
+          return `Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
         }
         if (!online && !inPerson) return "Choose online, in person, or both.";
         return null;
@@ -586,7 +606,7 @@ export function TutorProfileForm({
       return;
     }
     if (ratePkr < MIN_HOURLY_RATE_PKR) {
-      setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, currency)}.`);
+      setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)}.`);
       return;
     }
     if (!qualifications.trim()) {
@@ -1015,7 +1035,7 @@ export function TutorProfileForm({
 
         <label>
           <span>
-            Hourly rate ({currency}) <abbr className="req" title="Required">*</abbr>
+            Hourly rate ({rateCurrency}) <abbr className="req" title="Required">*</abbr>
           </span>
           <input
             name="hourlyRate"
@@ -1027,9 +1047,12 @@ export function TutorProfileForm({
             onChange={(e) => setHourlyRate(e.target.value)}
           />
           <span className="field-hint">
-            Enter your rate in {currency}. We store{" "}
-            {ratePkr > 0 ? `${ratePkr.toLocaleString("en")} PKR` : "PKR"} as the site base so students
-            worldwide see their own currency. Minimum {formatMoney(rateMinLocal, currency)}.
+            {country
+              ? `Based on ${country} · enter ${rateCurrency}.`
+              : `Enter ${rateCurrency} for your location. Set teaching country in the previous step to lock the right currency.`}{" "}
+            We store {ratePkr > 0 ? `${ratePkr.toLocaleString("en")} PKR` : "PKR"} as the site base so
+            students worldwide see their own currency. Minimum{" "}
+            {formatMoney(rateMinLocal, rateCurrency)}.
           </span>
         </label>
 

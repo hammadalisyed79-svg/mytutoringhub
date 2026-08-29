@@ -151,7 +151,12 @@ export async function prepareDashboardHome(userId: string, role: Role, sp: Dashb
 
   const [justActivated, currency] = await Promise.all([
     reconcileUserSafepayPayments(userId),
-    getVisitorCurrency({ fallbackCountryCode: tutorCountryCode }),
+    // Tutor rates follow teaching country (e.g. Germany → EUR), not only IP geo.
+    getVisitorCurrency(
+      tutorCountryCode
+        ? { preferCountryCode: tutorCountryCode }
+        : { fallbackCountryCode: null },
+    ),
     reconcileUserSafepayPaperPurchases(userId),
   ]);
   if (role === "TUTOR") {
