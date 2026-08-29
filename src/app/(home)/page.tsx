@@ -318,22 +318,50 @@ export default async function HomePage() {
         recentHeading="Continue where you left off"
       />
 
+      <section className="home-proof-strip" aria-label="Platform facts">
+        <div className="container home-proof-strip-inner">
+          {stats.map((stat) => (
+            <p key={stat.label} className="home-proof-item">
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </p>
+          ))}
+          <p className="home-proof-item home-proof-item--text">
+            <span>{NO_LESSON_COMMISSION_SHORT}</span>
+          </p>
+          <p className="home-proof-item home-proof-item--text">
+            <span>
+              {BUSINESS.studentFreeContactsPerMonth} free tutor contacts / month
+            </span>
+          </p>
+        </div>
+      </section>
+
       <section className="section product-trio-section" aria-labelledby="product-trio-title">
         <div className="container">
           <h2 id="product-trio-title" className="product-trio-title">
             {HOMEPAGE_PRODUCT_TRIO}
           </h2>
           <p className="section-lead">{HOMEPAGE_PRODUCT_TRIO_LEAD}</p>
-          <div className="product-trio-grid">
-            <Link href="/search" className="product-trio-card">
+          <div className="product-trio-grid product-trio-grid--open">
+            <Link href="/search" className="product-trio-card product-trio-card--open">
+              <span className="product-trio-index" aria-hidden="true">
+                01
+              </span>
               <strong>Find tutors</strong>
               <span className="muted">Browse free · 3 new contacts/month included</span>
             </Link>
-            <Link href="/past-papers" className="product-trio-card">
+            <Link href="/past-papers" className="product-trio-card product-trio-card--open">
+              <span className="product-trio-index" aria-hidden="true">
+                02
+              </span>
               <strong>Past papers</strong>
               <span className="muted">Exam papers by board, year, and session</span>
             </Link>
-            <Link href="/assistant" className="product-trio-card">
+            <Link href="/assistant" className="product-trio-card product-trio-card--open">
+              <span className="product-trio-index" aria-hidden="true">
+                03
+              </span>
               <strong>Study support</strong>
               <span className="muted">Countdown, progress logs, and AI assistant</span>
             </Link>
@@ -342,18 +370,20 @@ export default async function HomePage() {
       </section>
 
       {featured.length > 0 && (
-        <section className="section section-alt home-featured-tutors" aria-labelledby="featured-tutors-title">
+        <section className="section home-featured-tutors" aria-labelledby="featured-tutors-title">
           <div className="container">
             <div className="section-head">
               <div>
                 <h2 id="featured-tutors-title">Featured tutors</h2>
-                <p className="section-lead">Real tutors with active teaching listings — one card each.</p>
+                <p className="section-lead">
+                  Active teaching listings from real tutors — compare subject, rate, and availability.
+                </p>
               </div>
               <Link href="/search" className="btn btn-secondary">
                 See all tutors
               </Link>
             </div>
-            <div className={`tutor-grid home-featured-grid home-featured-grid--${Math.min(featured.length, 4)}`}>
+            <div className={`home-featured-grid home-featured-grid--${Math.min(featured.length, 4)}`}>
               {featured.map((t) => {
                 const avg =
                   t.reviews.length > 0
@@ -362,15 +392,17 @@ export default async function HomePage() {
                 const tutorName = t.user.name?.trim() || "Tutor";
                 const short = featuredShortLine(t.headline || t.bio);
                 return (
-                  <article key={t.tutorProfileId} className="tutor-card home-featured-card">
-                    <TutorAvatar
-                      className="tutor-avatar"
-                      photoUrl={t.photoUrl}
-                      cropX={t.photoCropX}
-                      cropY={t.photoCropY}
-                      cropZoom={t.photoCropZoom}
-                      initial={tutorName.slice(0, 1).toUpperCase()}
-                    />
+                  <article key={t.tutorProfileId} className="home-featured-card">
+                    <div className="home-featured-photo">
+                      <TutorAvatar
+                        className="tutor-avatar home-featured-avatar"
+                        photoUrl={t.photoUrl}
+                        cropX={t.photoCropX}
+                        cropY={t.photoCropY}
+                        cropZoom={t.photoCropZoom}
+                        initial={tutorName.slice(0, 1).toUpperCase()}
+                      />
+                    </div>
                     <div className="home-featured-card-body">
                       <div className="meta">
                         {t.verified && <span className="badge badge-verified">Identity Verified</span>}
@@ -379,7 +411,7 @@ export default async function HomePage() {
                       <p className="home-featured-subject">{t.subject}</p>
                       {t.contextLine ? <p className="muted home-featured-context">{t.contextLine}</p> : null}
                       {short ? <p className="home-featured-line">{short}</p> : null}
-                      <div className="meta">
+                      <div className="meta home-featured-meta">
                         <span>{formatHourly(t.hourlyRate, currency)}</span>
                         {t.availability ? <span>{t.availability}</span> : null}
                         {avg !== null && <span>{avg.toFixed(1)} ★</span>}
@@ -396,7 +428,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="section" aria-labelledby="how-it-works-title">
+      <section className="section section-alt" aria-labelledby="how-it-works-title">
         <div className="container">
           <h2 id="how-it-works-title">How My Tutoring Hub works</h2>
           <p className="section-lead">Search, contact, and arrange lessons in three clear steps.</p>
@@ -427,7 +459,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section section-alt" aria-labelledby="popular-subjects-title">
+      <section className="section" aria-labelledby="popular-subjects-title">
         <div className="container">
           <h2 id="popular-subjects-title">Popular subjects</h2>
           <p className="section-lead">High-demand subjects across school, exams, and university.</p>
@@ -482,19 +514,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {stats.length > 0 && (
-        <section className="section section-stats prestige-stats home-stats-compact">
-          <div className="container stats-row">
-            {stats.map((stat) => (
-              <div key={stat.label} className="prestige-stat">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       <section className="section section-alt home-student-request" aria-labelledby="student-request-title">
         <div className="container home-student-request-inner">
           <div>
@@ -516,7 +535,7 @@ export default async function HomePage() {
 
       <PrestigePillars curriculaLine={region.curriculaLine} />
 
-      <section className="section section-alt home-free-summary" aria-labelledby="free-summary-title">
+      <section className="section home-free-summary" aria-labelledby="free-summary-title">
         <div className="container">
           <h2 id="free-summary-title">Start free. Upgrade when you need more.</h2>
           <div className="home-free-summary-grid">
