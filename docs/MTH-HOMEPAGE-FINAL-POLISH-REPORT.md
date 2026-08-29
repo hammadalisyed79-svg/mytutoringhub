@@ -68,10 +68,12 @@ Scoped `.home-page` rhythm preserved; past-papers / markets / free-summary stack
 
 ## Live verify checklist
 
-- [ ] No duplicate featured tutors
-- [ ] No giant invite widget on homepage
-- [ ] No small marketplace metrics
-- [ ] Simplified plans summary
-- [ ] Past Papers section present (when count > 0)
-- [ ] Compact markets
-- [ ] Clean final CTA
+Verified on https://www.mytutoringhub.com after deploy of `45cb6bc` (+ subsequent hero split `31fd260`):
+
+- [x] No duplicate featured tutors (one card per tutorProfileId)
+- [x] No giant invite widget on homepage (`Invite a tutor` absent; nudge link present)
+- [x] No small marketplace metrics (`Active tutors` absent)
+- [x] Simplified plans summary (`Start free. Upgrade` + Compare plans)
+- [x] Past Papers section present (`Exam preparation` / past papers count headline)
+- [x] Compact markets (`Tutoring markets`)
+- [x] Clean final CTA + Direct tutor contact trust ribbon (no Bank transfer)
