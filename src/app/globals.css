@@ -12764,3 +12764,193 @@ img {
     grid-template-columns: auto 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Homepage CLEAN HERO + DENSITY PASS (user-rejected floating product compose
+   and Featured Tutors; search-first only; tighter rhythm)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html {
+  scroll-padding-top: calc(var(--header-h) + 3.25rem);
+}
+
+.site-header {
+  background: rgba(248, 246, 241, 0.97);
+}
+
+.home-page {
+  --home-section-y: clamp(2.5rem, 4vw, 3.75rem);
+  --home-section-y-compact: clamp(1.5rem, 2.5vw, 2.25rem);
+  --home-lead-mb: 0.85rem;
+}
+
+.home-page > .section {
+  padding-block: var(--home-section-y);
+}
+
+.home-page .product-trio-section {
+  padding-block: var(--home-section-y-compact);
+}
+
+.home-page .section h2,
+.home-page .product-trio-title,
+.home-page .section-head {
+  scroll-margin-top: calc(var(--header-h) + 3.25rem);
+}
+
+/* Clean search-first hero — no right-side product compose */
+.home-page .hero.hero-clean,
+.home-page .hero.hero-split.hero-clean {
+  display: block;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 15%, rgba(var(--brand-rgb), 0.08) 0%, transparent 55%),
+    linear-gradient(180deg, #f6f3ec 0%, #f1eee6 50%, #eef1eb 100%);
+  background-image:
+    radial-gradient(ellipse 70% 55% at 85% 15%, rgba(var(--brand-rgb), 0.08) 0%, transparent 55%),
+    linear-gradient(180deg, #f6f3ec 0%, #f1eee6 50%, #eef1eb 100%);
+}
+
+.home-page .hero.hero-clean .hero-split-inner,
+.home-page .hero.hero-clean .hero-content.hero-split-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.1rem;
+  padding: clamp(1.5rem, 2.8vw, 2.35rem) 0 clamp(1.25rem, 2.2vw, 1.85rem);
+  max-width: none;
+  grid-template-columns: none;
+}
+
+.home-page .hero-clean-copy {
+  max-width: 40rem;
+}
+
+.home-page .hero.hero-clean h1 {
+  max-width: 14ch;
+  margin: 0 0 0.55rem;
+}
+
+.home-page .hero.hero-clean .hero-lead {
+  margin: 0;
+  max-width: 42ch;
+}
+
+.home-page .hero.hero-clean .hero-search-shell {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.home-page .hero.hero-clean .hero-split-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  align-items: baseline;
+}
+
+.home-page .hero.hero-clean .hero-microcopy,
+.home-page .hero.hero-clean .hero-teach-link {
+  margin: 0;
+}
+
+/* Hide legacy compose if any CSS remnants remain */
+.home-page .hero-clean .hero-split-visual,
+.home-page .hero-clean .hero-compose,
+.home-page .hero-clean .hero-tutor-card,
+.home-page .hero-clean .hero-paper-card,
+.home-page .hero-clean .hero-study-chip {
+  display: none !important;
+}
+
+/* Continue rail — tight under hero */
+.home-page .home-continue-rail {
+  padding: 0.55rem 0 0.15rem;
+  margin-top: 0;
+}
+
+/* Proof strip — clustered, not ultra-wide sparse */
+.home-page .home-proof-strip {
+  padding-block: 0.75rem;
+}
+
+.home-page .home-proof-strip-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.55rem 1.5rem;
+  max-width: 52rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.home-page .home-proof-item {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
+  width: auto;
+}
+
+.home-page .home-proof-item strong {
+  font-size: 1rem;
+}
+
+/* Student request — compact grouping, not miles apart */
+.home-page .home-student-request-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1rem 1.5rem;
+  max-width: 48rem;
+}
+
+.home-page .home-student-request .hero-ctas {
+  margin-top: 0.15rem;
+}
+
+.home-page .home-tutor-recruit-inner,
+.home-page .cta-band-inner {
+  gap: 1rem 1.5rem;
+}
+
+/* Past papers — tighter band */
+.home-page .home-past-papers {
+  padding-block: var(--home-section-y);
+}
+
+.home-page .home-past-papers-inner {
+  gap: 1.25rem 1.75rem;
+  align-items: start;
+}
+
+.home-page .section-actions {
+  margin-top: 0.85rem;
+}
+
+.home-page .home-subject-chips {
+  margin-bottom: 0.35rem;
+}
+
+@media (max-width: 720px) {
+  .home-page {
+    --home-section-y: clamp(2.25rem, 6vw, 3rem);
+    --home-section-y-compact: 1.5rem;
+  }
+
+  .home-page .home-proof-strip-inner {
+    max-width: none;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 0.45rem 1rem;
+  }
+
+  .home-page .home-student-request-inner {
+    max-width: none;
+    flex-direction: column;
+  }
+}

@@ -7,21 +7,12 @@ import { PrestigePillars } from "@/components/PrestigePillars";
 import { LoggedInWelcome } from "@/components/LoggedInWelcome";
 import { LogoMark } from "@/components/Logo";
 import { JsonLd } from "@/components/JsonLd";
-import { TutorAvatar } from "@/components/TutorAvatar";
-import { formatHourly } from "@/lib/currency";
-import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
 import { CURRICULUM } from "@/lib/curriculum";
 import { CountryMarkets } from "@/components/CountryMarkets";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
-import {
-  publicListedTutorWhere,
-  canViewTutorProfilePublicly,
-  tutorPublicVisibilityInput,
-} from "@/lib/tutor-public-eligibility";
-import { listingPath } from "@/lib/subject-profile";
 import {
   HOMEPAGE_PRODUCT_TRIO,
   HOMEPAGE_PRODUCT_TRIO_LEAD,
@@ -33,14 +24,6 @@ import { BUSINESS, NO_LESSON_COMMISSION_SHORT } from "@/lib/business-rules";
 import { RecentAndSavedTutors } from "@/components/RecentAndSavedTutors";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 import { catalogSubjectNames } from "@/lib/subject-catalog";
-import { formatTutorAvailability } from "@/lib/tutor-catalog";
-import {
-  dedupeFeaturedListingsByTutor,
-  featuredListingContextLine,
-  featuredShortLine,
-  pickHeroShowcaseTutor,
-} from "@/lib/featured-tutors";
-import { documentTypeLabel } from "@/lib/past-papers/stored-filename";
 
 export const dynamic = "force-dynamic";
 
@@ -61,128 +44,11 @@ const PAST_PAPER_FILTER_PREVIEW = [
 
 export default async function HomePage() {
   const session = await auth();
-  const currency = await getVisitorCurrency();
   const headersList = await headers();
   const pinnedCountry = getUserCountry(headersList);
   const region = getVisitorRegion(headersList);
   const curriculumCodeCount = CURRICULUM.length;
-  const [pastPaperCount, featuredRaw, heroPastPaper] = await Promise.all([
-    prisma.pastPaper.count({ where: publicAvailabilityWhere() }),
-    prisma.subjectProfile.findMany({
-      where: {
-        status: "ACTIVE",
-        tutorProfile: publicListedTutorWhere(),
-      },
-      orderBy: [{ highlightedUntil: "desc" }, { boostUntil: "desc" }, { updatedAt: "desc" }],
-      take: 48,
-      select: {
-        id: true,
-        subject: true,
-        title: true,
-        headline: true,
-        rate: true,
-        level: true,
-        board: true,
-        qualification: true,
-        tutorProfile: {
-          select: {
-            id: true,
-            verified: true,
-            photoUrl: true,
-            photoCropX: true,
-            photoCropY: true,
-            photoCropZoom: true,
-            active: true,
-            forceActive: true,
-            bio: true,
-            country: true,
-            location: true,
-            online: true,
-            inPerson: true,
-            qualifications: true,
-            user: { select: { name: true, emailVerified: true, suspended: true } },
-            reviews: { select: { rating: true } },
-          },
-        },
-      },
-    }),
-    prisma.pastPaper.findFirst({
-      where: publicAvailabilityWhere(),
-      orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
-      select: {
-        board: true,
-        qualification: true,
-        subject: true,
-        year: true,
-        session: true,
-        documentType: true,
-        paperType: true,
-      },
-    }),
-  ]);
-
-  const featuredEligible = featuredRaw
-    .filter((row) => canViewTutorProfilePublicly(tutorPublicVisibilityInput(row.tutorProfile)))
-    .map((row) => {
-      const p = row.tutorProfile;
-      return {
-        listingId: row.id,
-        tutorProfileId: p.id,
-        subject: row.subject,
-        headline: row.headline || row.title || p.user.name,
-        hourlyRate: row.rate,
-        verified: p.verified,
-        photoUrl: p.photoUrl,
-        photoCropX: p.photoCropX,
-        photoCropY: p.photoCropY,
-        photoCropZoom: p.photoCropZoom,
-        user: p.user,
-        reviews: p.reviews,
-        bio: p.bio,
-        contextLine: featuredListingContextLine({
-          qualification: row.qualification,
-          board: row.board,
-          level: row.level,
-        }),
-        availability: formatTutorAvailability({
-          location: p.location,
-          country: p.country,
-          online: p.online,
-          inPerson: p.inPerson,
-        }),
-      };
-    });
-
-  const featured = dedupeFeaturedListingsByTutor(featuredEligible, 4);
-  const heroTutor = pickHeroShowcaseTutor(featuredEligible);
-
-  const heroPaperHref = (() => {
-    if (!heroPastPaper) return "/past-papers";
-    const params = new URLSearchParams();
-    if (heroPastPaper.board) params.set("board", heroPastPaper.board);
-    if (heroPastPaper.qualification) params.set("qualification", heroPastPaper.qualification);
-    if (heroPastPaper.subject) params.set("subject", heroPastPaper.subject);
-    if (heroPastPaper.year) params.set("year", String(heroPastPaper.year));
-    const q = params.toString();
-    return q ? `/past-papers?${q}` : "/past-papers";
-  })();
-
-  const heroPaperTypeLabel =
-    heroPastPaper && (heroPastPaper.documentType || heroPastPaper.paperType)
-      ? documentTypeLabel(heroPastPaper.documentType || heroPastPaper.paperType)
-      : "";
-
-  const heroPaperTaxonomy = heroPastPaper
-    ? [
-        heroPastPaper.board,
-        heroPastPaper.qualification,
-        heroPastPaper.subject,
-        heroPastPaper.year ? String(heroPastPaper.year) : "",
-        heroPaperTypeLabel || heroPastPaper.paperType,
-      ]
-        .map((s) => (s || "").trim())
-        .filter(Boolean)
-    : [];
+  const pastPaperCount = await prisma.pastPaper.count({ where: publicAvailabilityWhere() });
 
   const stats = [
     curriculumCodeCount > 0 && {
@@ -205,98 +71,30 @@ export default async function HomePage() {
           "@graph": [organizationJsonLd(), websiteJsonLd()],
         }}
       />
-      <section className="hero hero-findtutor hero-split" aria-labelledby="home-hero-title">
+
+      {/*
+        Hero is search-first only. Floating tutor / past-paper product cards were
+        removed — they cluttered the first viewport; tutors live on /search.
+      */}
+      <section className="hero hero-findtutor hero-split hero-clean" aria-labelledby="home-hero-title">
         <div className="container hero-content hero-split-inner">
-          <div className="hero-split-top">
-            <div className="hero-split-copy">
-              {session?.user && (
-                <LoggedInWelcome
-                  userId={session.user.id}
-                  name={session.user.name || "there"}
-                  role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
-                />
-              )}
-              <div className="hero-brand-row">
-                <LogoMark className="hero-brand-mark" />
-                <p className="hero-kicker">World-class tutoring marketplace</p>
-              </div>
-              <h1 id="home-hero-title">Private tutoring, elevated.</h1>
-              <p className="hero-lead">
-                Find the right tutor for your subject, exam or goal — online or near you. Search free
-                and contact tutors directly.
-              </p>
+          <div className="hero-clean-copy">
+            {session?.user && (
+              <LoggedInWelcome
+                userId={session.user.id}
+                name={session.user.name || "there"}
+                role={session.user.role as "STUDENT" | "TUTOR" | "ADMIN"}
+              />
+            )}
+            <div className="hero-brand-row">
+              <LogoMark className="hero-brand-mark" />
+              <p className="hero-kicker">World-class tutoring marketplace</p>
             </div>
-
-            <div className="hero-split-visual" aria-label="Product preview">
-              <div className="hero-compose">
-                {heroTutor ? (
-                  <article className="hero-tutor-card">
-                    <TutorAvatar
-                      className="tutor-avatar hero-tutor-avatar"
-                      photoUrl={heroTutor.photoUrl}
-                      cropX={heroTutor.photoCropX}
-                      cropY={heroTutor.photoCropY}
-                      cropZoom={heroTutor.photoCropZoom}
-                      initial={(heroTutor.user.name?.trim() || "T").slice(0, 1).toUpperCase()}
-                      priority
-                    />
-                    <div className="hero-tutor-card-body">
-                      {heroTutor.verified ? (
-                        <span className="badge badge-verified">Identity Verified</span>
-                      ) : null}
-                      <h2 className="hero-tutor-name">{heroTutor.user.name?.trim()}</h2>
-                      <p className="hero-tutor-subject">{heroTutor.subject}</p>
-                      {heroTutor.contextLine ? (
-                        <p className="muted hero-tutor-context">{heroTutor.contextLine}</p>
-                      ) : null}
-                      <div className="hero-tutor-meta">
-                        <span>{formatHourly(heroTutor.hourlyRate, currency)}</span>
-                        {heroTutor.availability ? <span>{heroTutor.availability}</span> : null}
-                      </div>
-                      <Link href={listingPath(heroTutor.listingId)} className="btn btn-secondary btn-sm">
-                        View profile
-                      </Link>
-                    </div>
-                  </article>
-                ) : (
-                  <article className="hero-tutor-card hero-tutor-card--fallback">
-                    <div className="hero-tutor-card-body">
-                      <p className="hero-kicker">Discover tutors</p>
-                      <h2 className="hero-tutor-name">Browse real teaching listings</h2>
-                      <p className="muted">
-                        Search by subject, exam board, and location — contact tutors directly.
-                      </p>
-                      <Link href="/search" className="btn btn-secondary btn-sm">
-                        Search tutors
-                      </Link>
-                    </div>
-                  </article>
-                )}
-
-                {heroPastPaper && heroPaperTaxonomy.length > 0 ? (
-                  <Link href={heroPaperHref} className="hero-paper-card">
-                    <span className="hero-paper-eyebrow">Past papers</span>
-                    <span className="hero-paper-preview" aria-hidden="true">
-                      <span className="hero-paper-sheet">
-                        <span className="hero-paper-rule" />
-                        <span className="hero-paper-rule" />
-                        <span className="hero-paper-rule short" />
-                      </span>
-                    </span>
-                    <span className="hero-paper-taxonomy">
-                      {heroPaperTaxonomy.map((part, i) => (
-                        <span key={`${i}-${part}`}>{part}</span>
-                      ))}
-                    </span>
-                    <span className="hero-paper-cta">Browse past papers →</span>
-                  </Link>
-                ) : null}
-
-                <Link href="/assistant" className="hero-study-chip">
-                  Study support · progress &amp; countdown
-                </Link>
-              </div>
-            </div>
+            <h1 id="home-hero-title">Private tutoring, elevated.</h1>
+            <p className="hero-lead">
+              Find the right tutor for your subject, exam or goal — online or near you. Search free
+              and contact tutors directly.
+            </p>
           </div>
 
           <div className="hero-search-shell">
@@ -306,6 +104,7 @@ export default async function HomePage() {
               subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
             />
           </div>
+
           <div className="hero-split-foot">
             <p className="hero-microcopy">
               {BUSINESS.studentFreeContactsPerMonth} tutor contacts/month free ·{" "}
@@ -373,65 +172,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {featured.length > 0 && (
-        <section className="section home-featured-tutors" aria-labelledby="featured-tutors-title">
-          <div className="container">
-            <div className="section-head">
-              <div>
-                <h2 id="featured-tutors-title">Featured tutors</h2>
-                <p className="section-lead">
-                  Active teaching listings from real tutors — compare subject, rate, and availability.
-                </p>
-              </div>
-              <Link href="/search" className="btn btn-secondary">
-                See all tutors
-              </Link>
-            </div>
-            <div className={`home-featured-grid home-featured-grid--${Math.min(featured.length, 4)}`}>
-              {featured.map((t) => {
-                const avg =
-                  t.reviews.length > 0
-                    ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
-                    : null;
-                const tutorName = t.user.name?.trim() || "Tutor";
-                const short = featuredShortLine(t.headline || t.bio);
-                return (
-                  <article key={t.tutorProfileId} className="home-featured-card">
-                    <div className="home-featured-photo">
-                      <TutorAvatar
-                        className="tutor-avatar home-featured-avatar"
-                        photoUrl={t.photoUrl}
-                        cropX={t.photoCropX}
-                        cropY={t.photoCropY}
-                        cropZoom={t.photoCropZoom}
-                        initial={tutorName.slice(0, 1).toUpperCase()}
-                      />
-                    </div>
-                    <div className="home-featured-card-body">
-                      <div className="meta">
-                        {t.verified && <span className="badge badge-verified">Identity Verified</span>}
-                      </div>
-                      <h3>{tutorName}</h3>
-                      <p className="home-featured-subject">{t.subject}</p>
-                      {t.contextLine ? <p className="muted home-featured-context">{t.contextLine}</p> : null}
-                      {short ? <p className="home-featured-line">{short}</p> : null}
-                      <div className="meta home-featured-meta">
-                        <span>{formatHourly(t.hourlyRate, currency)}</span>
-                        {t.availability ? <span>{t.availability}</span> : null}
-                        {avg !== null && <span>{avg.toFixed(1)} ★</span>}
-                      </div>
-                      <Link href={listingPath(t.listingId)} className="btn btn-secondary home-featured-cta">
-                        View profile
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       <section className="section section-alt" aria-labelledby="how-it-works-title">
         <div className="container">
@@ -567,10 +307,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section
-        className="section home-tutor-recruit"
-        aria-labelledby="home-tutor-recruit-title"
-      >
+      <section className="section home-tutor-recruit" aria-labelledby="home-tutor-recruit-title">
         <div className="container home-tutor-recruit-inner">
           <div>
             <h2 id="home-tutor-recruit-title">Teach students worldwide</h2>

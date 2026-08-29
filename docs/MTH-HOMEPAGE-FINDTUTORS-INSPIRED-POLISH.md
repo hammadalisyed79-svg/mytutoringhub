@@ -55,7 +55,25 @@ From FindTutors desktop/mobile screenshots (cookie modal dismissed where possibl
 - `npx tsc --noEmit` — **pass**
 - `npm run build` — **pass** (Next.js 16.3.1 / Turbopack)
 
-## Alignment pass (2026-08-30 follow-up)
+## Clean hero + no Featured Tutors (2026-08-30)
+
+**Why Zain Ali / Past Papers floated in the hero:** they were added in an earlier “split-hero product composition” pass to show marketplace + Past Papers in the first viewport — user rejected that as unprofessional vs FindTutors.
+
+**Removed**
+- Entire homepage **Featured tutors** section (tutors only via `/search`)
+- Homepage featured-tutor Prisma query
+- Hero floating tutor card, Past Papers mini-card, and Study support chip
+
+**Changed**
+- Search-first clean hero: brand + H1 + lead + full-width search bar only
+- Tighter section padding (~40–60px)
+- Proof strip clustered (not ultra-wide sparse)
+- Student-request CTAs grouped compactly
+- Sticky header overlap: `scroll-padding-top` + section `scroll-margin-top` + more opaque header
+- Continue rail gap tightened under hero
+
+Past Papers mid-page section kept as MTH differentiator.
+
 
 User feedback: prior polish still felt unprofessional / unaligned vs FindTutors. DOM audit at 1440 / 1024 / 768 / 390 found:
 
