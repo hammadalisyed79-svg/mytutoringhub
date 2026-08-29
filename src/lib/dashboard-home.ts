@@ -9,6 +9,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { curriculumLevels } from "@/lib/curriculum";
 import { becomeTutor } from "@/lib/oauth";
+import { countryByName } from "@/lib/markets";
 import type { Role } from "@/lib/types";
 
 export type DashboardSearchParams = {
@@ -136,19 +137,27 @@ export async function getDbUserRole(userId: string): Promise<Role | null> {
 
 /** Reconcile payments / badges, then load the signed-in user for a role home. */
 export async function prepareDashboardHome(userId: string, role: Role, sp: DashboardSearchParams) {
+  const stubEarly = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      role: true,
+      tutorProfile: { select: { id: true, country: true } },
+    },
+  });
+  const tutorCountryCode =
+    role === "TUTOR" && stubEarly?.tutorProfile?.country
+      ? countryByName(stubEarly.tutorProfile.country)?.code
+      : null;
+
   const [justActivated, currency] = await Promise.all([
     reconcileUserSafepayPayments(userId),
-    getVisitorCurrency(),
+    getVisitorCurrency({ fallbackCountryCode: tutorCountryCode }),
     reconcileUserSafepayPaperPurchases(userId),
   ]);
   if (role === "TUTOR") {
     await syncTutorBadges(userId);
     // Heal accounts that flipped to TUTOR without a listing row (legacy become-tutor bug).
-    const stub = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { tutorProfile: true },
-    });
-    if (stub?.role === "TUTOR" && !stub.tutorProfile) {
+    if (stubEarly?.role === "TUTOR" && !stubEarly.tutorProfile) {
       await becomeTutor(userId);
     }
   }

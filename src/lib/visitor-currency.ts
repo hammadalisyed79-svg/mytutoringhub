@@ -5,8 +5,13 @@ import {
   type CurrencyCode,
 } from "@/lib/currency";
 
-/** Resolve visitor currency from Vercel geo, then Accept-Language, else USD. */
-export async function getVisitorCurrency(): Promise<CurrencyCode> {
+type VisitorCurrencyOpts = {
+  /** Used when CDN geo headers are missing (e.g. tutor profile country code). */
+  fallbackCountryCode?: string | null;
+};
+
+/** Resolve visitor currency from CDN geo, then optional fallback country, then Accept-Language. */
+export async function getVisitorCurrency(opts?: VisitorCurrencyOpts): Promise<CurrencyCode> {
   const h = await headers();
   const country =
     h.get("x-vercel-ip-country") ||
@@ -14,6 +19,10 @@ export async function getVisitorCurrency(): Promise<CurrencyCode> {
     h.get("x-country-code");
   if (country && country !== "XX" && country !== "T1") {
     return currencyFromCountry(country);
+  }
+  const fallback = opts?.fallbackCountryCode?.trim();
+  if (fallback) {
+    return currencyFromCountry(fallback);
   }
   return currencyFromAcceptLanguage(h.get("accept-language"));
 }

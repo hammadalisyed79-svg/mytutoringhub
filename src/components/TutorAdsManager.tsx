@@ -7,7 +7,7 @@ import { SubscribeButton } from "@/components/SubscribeButton";
 import { listingPath } from "@/lib/subject-profile";
 import { tutorLevelOptions } from "@/lib/tutor-catalog";
 import { curriculumBoards } from "@/lib/curriculum";
-import type { CurrencyCode } from "@/lib/currency";
+import { formatHourly, type CurrencyCode } from "@/lib/currency";
 
 type Listing = {
   id: string;
@@ -258,8 +258,6 @@ export function TutorAdsManager({
       ? String(entitlement.cap)
       : "—";
 
-  const currencyLabel = currency === "PKR" ? "PKR" : currency;
-
   return (
     <div className="teaching-listings-manager" id="teaching-listings">
       <div className="teaching-listings-summary">
@@ -272,6 +270,10 @@ export function TutorAdsManager({
           <strong>{entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length}</strong>
           {" / "}
           <strong>{capLabel}</strong>
+        </p>
+        <p className="field-hint" style={{ margin: "0.35rem 0 0" }}>
+          Rates are saved in PKR (site base). Students and this dashboard show them as{" "}
+          <strong>{currency}</strong> for your location.
         </p>
       </div>
 
@@ -325,7 +327,7 @@ export function TutorAdsManager({
                 <div>
                   <strong className="teaching-listing-title">{listing.title}</strong>
                   <div className="muted teaching-listing-meta">
-                    {taxonomy} · {listing.location} · {currencyLabel} {listing.rate}/hr
+                    {taxonomy} · {listing.location} · {formatHourly(listing.rate, currency)}
                   </div>
                   <div className="muted" style={{ fontSize: "0.85rem", marginTop: "0.2rem" }}>
                     {[listing.online ? "Online" : null, listing.inPerson ? "In person" : null]
@@ -434,7 +436,7 @@ export function TutorAdsManager({
                     <input name="location" required defaultValue={listing.location} />
                   </label>
                   <label>
-                    Hourly rate ({currencyLabel})
+                    Hourly rate (PKR)
                     <input
                       name="rate"
                       type="number"
@@ -443,6 +445,10 @@ export function TutorAdsManager({
                       required
                       defaultValue={listing.rate}
                     />
+                    <span className="field-hint">
+                      Stored in PKR · shown as {formatHourly(listing.rate, currency)} for viewers in{" "}
+                      {currency}. Minimum 500 PKR.
+                    </span>
                   </label>
                   <label>
                     About this lesson
@@ -526,12 +532,16 @@ export function TutorAdsManager({
           </label>
           <label>
             <span>
-              Hourly rate ({currencyLabel}){" "}
+              Hourly rate (PKR){" "}
               <abbr className="req" title="Required">
                 *
               </abbr>
             </span>
-            <input name="rate" type="number" min={500} step={100} required />
+            <input name="rate" type="number" min={500} step={100} required placeholder="e.g. 1500" />
+            <span className="field-hint">
+              Enter the amount in PKR. Students see it converted to their local currency (currently{" "}
+              {currency} for you). Minimum 500 PKR.
+            </span>
           </label>
           <label>
             Tell students about this lesson

@@ -8,6 +8,7 @@ import type { Role } from "@/lib/types";
 import Link from "next/link";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getVisitorRegion } from "@/lib/visitor-region";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 
 export const metadata = {
   title: "Post a request",
@@ -40,6 +41,7 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
   }
   const allowed = await canPostAd(session.user.id, session.user.role as Role);
   const region = getVisitorRegion(await headers());
+  const currency = await getVisitorCurrency();
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -53,7 +55,8 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
         <h1 className="page-title">Post a tutor request</h1>
         <p className="muted">
           Describe the subject, level, and city. Tutors can reply within their enquiry limits. An
-          active Student Pass is required to post.
+          active Student Pass is required to post. Budgets are entered in PKR and shown in{" "}
+          <strong>{currency}</strong> on the board.
         </p>
         {!allowed ? (
           <div className="panel">
@@ -67,6 +70,7 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
             subjects={subjectNames}
             titlePlaceholder={region.adTitlePlaceholder}
             levelPlaceholder={region.adLevelPlaceholder}
+            currency={currency}
             initial={{
               subject: sp.subject,
               level: sp.level,

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatHourly, type CurrencyCode } from "@/lib/currency";
 
 export type NewAdFormInitial = {
   subject?: string;
@@ -19,11 +20,13 @@ export function NewAdForm({
   titlePlaceholder,
   levelPlaceholder,
   initial,
+  currency = "PKR",
 }: {
   subjects: string[];
   titlePlaceholder: string;
   levelPlaceholder: string;
   initial?: NewAdFormInitial;
+  currency?: CurrencyCode;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -150,7 +153,10 @@ export function NewAdForm({
       <label>
         Budget per hour (PKR, optional)
         <input name="budget" type="number" min={500} step={100} placeholder="e.g. 1500" />
-        <span className="field-hint">Tutors see this converted to their local currency.</span>
+        <span className="field-hint">
+          Enter PKR. Example: 1500 PKR shows as {formatHourly(1500, currency)} to viewers in{" "}
+          {currency}.
+        </span>
       </label>
       <label>
         <span>

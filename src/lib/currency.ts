@@ -154,12 +154,11 @@ export function currencyFromAcceptLanguage(header: string | null | undefined): C
   if (!header) return "USD";
   const primary = header.split(",")[0]?.trim() || "";
   const region = primary.split("-")[1]?.toUpperCase();
+  // Only trust explicit region tags (en-PK → PKR, fr-FR → EUR). Bare languages like
+  // "fr" or "de" used to force EUR and mis-price visitors when geo headers are missing.
   if (region && COUNTRY_CURRENCY[region]) return COUNTRY_CURRENCY[region];
   const lang = primary.split("-")[0]?.toLowerCase();
   if (lang === "ur" || lang === "pa") return "PKR";
-  if (lang === "ar") return "AED";
-  if (lang === "en") return "USD";
-  if (lang === "de" || lang === "fr" || lang === "es" || lang === "it" || lang === "nl") return "EUR";
   return "USD";
 }
 

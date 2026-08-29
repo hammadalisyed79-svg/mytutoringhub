@@ -336,6 +336,9 @@ export function SearchFiltersForm({
               defaultValue={initial.max || ""}
               placeholder="Optional"
             />
+            <span className="field-hint">
+              Enter a maximum in {currency}. We convert it to match tutors’ stored PKR rates.
+            </span>
           </label>
         </div>
 
