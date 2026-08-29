@@ -170,7 +170,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — Tutor Pro (internally still Tutor Basic) is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active teaching listings with ordinary search visibility; Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active teaching listings with ordinary search visibility; Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a teaching listing?",

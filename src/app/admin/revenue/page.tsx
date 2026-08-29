@@ -148,7 +148,7 @@ export default async function RevenuePage() {
       <h1 style={{ fontSize: 24, fontWeight: 700 }}>Revenue Dashboard</h1>
       <p style={{ color: "#6b7280", fontSize: 13, marginTop: -8 }}>
         Live Prisma data from Subscription, PastPaperPurchase, and ServiceFeeEvent. MRR uses stored{" "}
-        <code>priceAmount</code> when present (often 0 for complimentary Tutor Basic). Past paper
+        <code>priceAmount</code> when present (often 0 for complimentary Tutor Pro). Past paper
         totals are in PKR.
       </p>
 

@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 const PLAN_LABELS: Record<string, string> = {
   STUDENT_PASS: "Student Pass",
   STUDENT_PRO: "Student Pro",
-  TUTOR_BASIC: "Tutor Basic",
+  TUTOR_BASIC: "Tutor Pro",
   VERIFIED_TUTOR: "Verified Tutor",
   HIGHLIGHTED_AD: "Highlighted Listing",
   AD_BOOST: "Profile Boost",

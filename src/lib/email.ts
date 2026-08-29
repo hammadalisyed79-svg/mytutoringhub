@@ -389,7 +389,7 @@ export function postVerifyTutorEmailHtml(opts: {
     title: "Welcome to My Tutoring Hub",
     body: `<p>Hi ${opts.name},</p>
 <p>Your email is confirmed — welcome aboard. Complete your tutor profile (photo, about you, location, and subjects) to appear in search.</p>
-<p>When you're ready to grow, Tutor Basic adds priority placement. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
+<p>When you're ready to grow, Tutor Pro adds priority placement. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
     cta: { label: "Open tutor dashboard", href: opts.dashboardUrl },
   });
 }
@@ -508,7 +508,7 @@ export function tutorProfileNeverStartedEmailHtml(opts: { name: string; dashboar
     title: "Start your tutor profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>You verified your email but haven't started your tutor profile yet. It only takes a few minutes to add a photo, subjects, headline, and your highest qualification.</p>
-<p>Complete profiles appear in search for free. Tutor Basic adds priority placement when you're ready to grow.</p>`,
+<p>Complete profiles appear in search for free. Tutor Pro adds priority placement when you're ready to grow.</p>`,
     cta: { label: "Start my profile", href: opts.dashboardUrl },
   });
 }
@@ -534,11 +534,11 @@ export function tutorProfileLiveEmailHtml(opts: {
 export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string }) {
   return emailLayout({
     preheader: "Unlock priority placement and unlimited enquiry reveals.",
-    title: "Grow with Tutor Basic",
+    title: "Grow with Tutor Pro",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your profile is live. <strong>Tutor Basic</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
+<p>Your profile is live. <strong>Tutor Pro</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
 <p>Free tutors get up to <strong>3 active teaching listings</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
-<p>Complimentary Tutor Basic may still be available — check Pricing for current offers.</p>`,
+<p>Complimentary Tutor Pro may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
   });
 }

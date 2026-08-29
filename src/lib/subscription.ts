@@ -112,7 +112,7 @@ export async function hasStudentMessagingPass(userId: string) {
   return hasAnyActivePlan(userId, STUDENT_MESSAGING_PLANS);
 }
 
-/** Unlimited enquiry reveals — Tutor Basic or profile-pack plans only (not Boost/Highlight). */
+/** Unlimited enquiry reveals — Tutor Pro or profile-pack plans only (not Boost/Highlight). */
 export async function hasPaidTutorPlan(userId: string) {
   return hasAnyActivePlan(userId, TUTOR_UNLIMITED_REVEAL_PLANS);
 }

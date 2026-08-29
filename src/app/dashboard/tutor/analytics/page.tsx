@@ -414,7 +414,7 @@ export default async function TutorAnalyticsPage() {
                   textTransform: "uppercase",
                 }}
               >
-                {hasPaidPlan ? "Tutor Basic+" : listed ? "Free listing" : "Not listed"}
+                {hasPaidPlan ? "Tutor Pro+" : listed ? "Free listing" : "Not listed"}
               </span>
               <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>plan</span>
             </div>
@@ -422,7 +422,7 @@ export default async function TutorAnalyticsPage() {
               {listed
                 ? hasPaidPlan
                   ? "Listed with paid priority. Profile Boost puts you at the top of search periodically."
-                  : "Listed in search for free. Tutor Basic adds priority ranking and unlimited enquiry reveals."
+                  : "Listed in search for free. Tutor Pro adds priority ranking and unlimited enquiry reveals."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
           </section>
@@ -491,7 +491,7 @@ export default async function TutorAnalyticsPage() {
               Complete your profile to appear in search
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
-              Add subjects and a headline (or photo) on your dashboard. Tutor Basic is optional for
+              Add subjects and a headline (or photo) on your dashboard. Tutor Pro is optional for
               priority ranking and unlimited enquiry reveals — verification, highlight, and boost stay
               on Pricing (boost each subject profile from your dashboard).
             </p>

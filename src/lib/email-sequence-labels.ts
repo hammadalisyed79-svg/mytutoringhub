@@ -12,7 +12,7 @@ export const EMAIL_SEQUENCE_LABELS: Record<string, string> = {
   [NURTURE_SEQUENCES.TUTOR_PROFILE_R4]: "Tutor profile reminder 4",
   [NURTURE_SEQUENCES.TUTOR_PROFILE_NEVER_STARTED]: "Tutor profile never started",
   [NURTURE_SEQUENCES.TUTOR_PROFILE_LIVE]: "Profile live congratulations",
-  [NURTURE_SEQUENCES.TUTOR_PLAN_NUDGE]: "Tutor Basic nudge",
+  [NURTURE_SEQUENCES.TUTOR_PLAN_NUDGE]: "Tutor Pro nudge",
   [NURTURE_SEQUENCES.TUTOR_VERIFY_NUDGE]: "ID verification nudge",
   [NURTURE_SEQUENCES.TUTOR_SECOND_PROFILE]: "Add second subject profile",
   [NURTURE_SEQUENCES.TUTOR_BOOST_NUDGE]: "Boost subject profile nudge",

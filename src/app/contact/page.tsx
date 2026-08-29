@@ -33,7 +33,7 @@ export default function ContactPage() {
               <Link href="/help">Help &amp; FAQ</Link> — plans, email, verification, refunds
             </li>
             <li>
-              <Link href="/pricing">Pricing</Link> — Student Pass, Tutor Basic, and add-ons
+              <Link href="/pricing">Pricing</Link> — Student Pass, Tutor Pro, and add-ons
             </li>
             <li>
               Report a listing from the tutor profile or student ad (signed-in users)

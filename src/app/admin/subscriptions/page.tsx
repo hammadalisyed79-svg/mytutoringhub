@@ -22,7 +22,7 @@ type Subscription = {
 const PLAN_OPTIONS: { value: string; label: string }[] = [
   { value: "STUDENT_PASS", label: "Student Pass" },
   { value: "STUDENT_PRO", label: "Student Pro" },
-  { value: "TUTOR_BASIC", label: "Tutor Basic" },
+  { value: "TUTOR_BASIC", label: "Tutor Pro" },
   { value: "VERIFIED_TUTOR", label: "Verified Tutor" },
   { value: "HIGHLIGHTED_AD", label: "Highlighted Listing" },
   { value: "AD_BOOST", label: "Profile Boost" },
@@ -200,7 +200,7 @@ export default function SubscriptionsPage() {
       >
         {[
           { label: "Total subscriptions", value: totalSubs },
-          { label: "Active Tutor Basic", value: activeProTutors },
+          { label: "Active Tutor Pro", value: activeProTutors },
           { label: "Active tutor add-ons", value: activeEliteTutors },
           { label: "Active student plans", value: activeStudentPlans },
           { label: "Est. MRR (stored price)", value: `£${mrr.toFixed(2)}` },

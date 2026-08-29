@@ -231,7 +231,7 @@ export async function sendTutorPlanNudgeEmail(userId: string) {
   try {
     await sendEmail({
       to: user.email,
-      subject: "Grow with Tutor Basic · My Tutoring Hub",
+      subject: "Grow with Tutor Pro · My Tutoring Hub",
       html: tutorPlanNudgeEmailHtml({
         name: user.name,
         pricingUrl: `${appUrl()}/pricing`,

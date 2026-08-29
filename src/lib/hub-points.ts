@@ -115,7 +115,7 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
   if (role === "TUTOR") {
     return [
       {
-        title: "Tutor Basic",
+        title: "Tutor Pro",
         description: "Priority ranking & subject profiles",
         href: "/pricing?plan=TUTOR_BASIC",
         badge: "Popular",
@@ -169,7 +169,7 @@ function hubPointsEarnHints(role: string) {
 
 function hubPointsRedeemHints(role: string) {
   return role === "TUTOR"
-    ? ["Tutor Basic & add-ons", "Profile Boost", "Highlighted profile", "Unlimited Profiles"]
+    ? ["Tutor Pro & add-ons", "Profile Boost", "Highlighted profile", "Unlimited Profiles"]
     : ["Student Pass", "Student Pro"];
 }
 

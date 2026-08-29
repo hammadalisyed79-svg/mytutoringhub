@@ -131,7 +131,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
 
       <section className="panel">
         <h2>Grant a complimentary plan</h2>
-        <p className="muted">Give Student Pass, Tutor Basic, or add-ons without checkout.</p>
+        <p className="muted">Give Student Pass, Tutor Pro, or add-ons without checkout.</p>
         <AdminGrantPlanForm />
       </section>
     </>

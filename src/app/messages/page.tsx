@@ -140,7 +140,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             <h2>No conversations yet</h2>
             <p className="muted">
               {session.user.role === "TUTOR"
-                ? "Browse student requests and reply. Tutor Basic unlocks unlimited enquiry reveals when you message first."
+                ? "Browse student requests and reply. Tutor Pro unlocks unlimited enquiry reveals when you message first."
                 : hasUnlimited
                   ? "Search tutors and send a message — your plan includes unlimited tutor contacts this month."
                   : studentPlanSummary && contactsRemaining != null && contactsLimit != null

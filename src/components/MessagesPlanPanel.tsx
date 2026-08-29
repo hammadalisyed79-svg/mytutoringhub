@@ -113,7 +113,7 @@ export async function MessagesPlanPanel({
   const lead =
     role === "STUDENT"
       ? `Free accounts include ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Upgrade to Student Pass for unlimited messaging.`
-      : "Tutor Basic removes the monthly cap when you contact students first.";
+      : "Tutor Pro removes the monthly cap when you contact students first.";
 
   // While composing a new message and still allowed to send, keep the page focused.
   if (composing && !freeLimitExhausted) {
