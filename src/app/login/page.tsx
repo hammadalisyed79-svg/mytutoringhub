@@ -30,22 +30,26 @@ export default async function LoginPage({
   return (
     <AuthModalFrame title="Log in to your account" titleId="login-title">
       {sp.verified === "1" && (
-        <p className="success auth-notice">Email verified. You can log in now.</p>
+        <p className="success auth-notice">
+          Email confirmed. You can log in now — a short welcome message is on its way.
+        </p>
       )}
       {sp.verify === "sent" && (
         <p className="auth-notice muted">
-          Account created. Confirm your email first — then return here to log in.
+          Account created. Check your inbox for <strong>Confirm your email</strong>, open the
+          link, then click Confirm. After that you can log in here.
         </p>
       )}
       {sp.verify === "expired" && (
         <p className="form-error auth-notice">
-          That verification link expired. Enter your email below and resend a new confirmation
-          link.
+          That confirmation link has expired. Enter your email below to send a new one. If you
+          already confirmed, just log in.
         </p>
       )}
       {sp.verify === "invalid" && (
         <p className="form-error auth-notice">
-          That verification link is invalid. Enter your email below and request a new one.
+          That confirmation link is invalid. Enter your email below to request a new one, or log
+          in if you already verified.
         </p>
       )}
       <LoginForm

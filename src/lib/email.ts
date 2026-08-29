@@ -356,11 +356,12 @@ export function studentAdDigestHtml(opts: {
 
 export function verifyEmailHtml(name: string, verifyUrl: string) {
   return emailLayout({
-    preheader: "Confirm your email to unlock messaging and requests.",
+    preheader: "Confirm your email to finish signing up.",
     title: "Confirm your email",
     body: `<p>Hi ${name},</p>
-<p>Please confirm your email address to unlock messaging, student requests, and the study assistant on ${brand}.</p>
-<p>This link expires in 24 hours.</p>`,
+<p>Thanks for joining <strong>${brand}</strong>. Confirm your email to finish signing up.</p>
+<p>Open the button below, then click <strong>Confirm email address</strong> on the next page. This link expires in 24 hours.</p>
+<p>After you confirm, you can log in — we will send a short welcome message with next steps.</p>`,
     cta: { label: "Confirm email address", href: verifyUrl },
   });
 }
@@ -370,10 +371,10 @@ export function postVerifyStudentEmailHtml(opts: {
   searchUrl: string;
 }) {
   return emailLayout({
-    preheader: "You're verified — start browsing tutors.",
-    title: "Email confirmed",
+    preheader: "Welcome — you're verified. Start browsing tutors.",
+    title: "Welcome to My Tutoring Hub",
     body: `<p>Hi ${opts.name},</p>
-<p>Your email is confirmed. You can now message tutors, post student requests, and use the study tools on ${brand}.</p>
+<p>Your email is confirmed — welcome aboard. You can now message tutors, post student requests, and use the study tools on ${brand}.</p>
 <p>Your free account includes <strong>${BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month</strong>. Lesson fees always stay between you and the tutor — we never take a cut.</p>`,
     cta: { label: "Find tutors", href: opts.searchUrl },
   });
@@ -384,12 +385,12 @@ export function postVerifyTutorEmailHtml(opts: {
   dashboardUrl: string;
 }) {
   return emailLayout({
-    preheader: "You're verified — complete your profile to appear in search.",
-    title: "Email confirmed",
+    preheader: "Welcome — complete your tutor profile to appear in search.",
+    title: "Welcome to My Tutoring Hub",
     body: `<p>Hi ${opts.name},</p>
-<p>Your email is confirmed. Complete your tutor profile (subjects, headline, and photo) to appear in search for free.</p>
-<p>When you're ready to grow, Tutor Basic adds priority placement and unlimited enquiry reveals. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
-    cta: { label: "Complete tutor profile", href: opts.dashboardUrl },
+<p>Your email is confirmed — welcome aboard. Complete your tutor profile (photo, about you, location, and subjects) to appear in search.</p>
+<p>When you're ready to grow, Tutor Basic adds priority placement. Profile Boost lifts one subject listing to the top of search for 30 days.</p>`,
+    cta: { label: "Open tutor dashboard", href: opts.dashboardUrl },
   });
 }
 

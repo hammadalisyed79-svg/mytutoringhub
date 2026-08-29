@@ -111,8 +111,8 @@ export async function sendPostVerifyEmail(userId: string) {
       to: user.email,
       subject:
         user.role === "TUTOR"
-          ? "Email confirmed — complete your tutor profile"
-          : "Email confirmed — find your tutor",
+          ? "Welcome to My Tutoring Hub — complete your profile"
+          : "Welcome to My Tutoring Hub",
       html,
     });
     return { sent: true as const };

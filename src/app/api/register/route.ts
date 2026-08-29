@@ -4,7 +4,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { issueEmailVerification } from "@/lib/email-verification";
 import { attributeReferralOnSignup } from "@/lib/hub-points";
-import { sendEmail, welcomeEmailHtml } from "@/lib/email";
 import { getSiteSettings } from "@/lib/site-settings";
 import { isValidEmail, normalizeEmail } from "@/lib/email-address";
 import { normalizeDisplayName } from "@/lib/display-name";
@@ -71,13 +70,8 @@ export async function POST(req: Request) {
       });
     }
 
+    // Only the confirmation email at signup. Welcome goes out after verify.
     await issueEmailVerification({ id: user.id, name: user.name, email: user.email });
-
-    void sendEmail({
-      to: user.email,
-      subject: "Welcome to My Tutoring Hub",
-      html: welcomeEmailHtml(user.name, user.role),
-    }).catch((err) => console.error("[register] welcome email failed", err));
 
     if (data.ref?.trim()) {
       try {

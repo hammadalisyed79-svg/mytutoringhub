@@ -7,7 +7,7 @@ assert.equal(hashed.length, 64);
 assert.notEqual(hashed, hashEmailToken("other"));
 
 const url = emailVerificationUrl(token);
-assert.match(url, /\/api\/auth\/verify-email\?token=/);
+assert.match(url, /\/verify-email\?token=/);
 assert.ok(url.includes(encodeURIComponent(token)));
 
 console.log("email-verification.test.ts: ok");

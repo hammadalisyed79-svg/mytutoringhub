@@ -11,7 +11,9 @@ export function hashEmailToken(token: string) {
 
 export function emailVerificationUrl(token: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+  // Landing page requires a button click — email scanners that prefetch GET
+  // links cannot consume the token and falsely expire it.
+  return `${appUrl}/verify-email?token=${encodeURIComponent(token)}`;
 }
 
 /** Mint a fresh verification token (replaces any prior token for this user). */
