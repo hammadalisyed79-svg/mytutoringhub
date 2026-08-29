@@ -10057,6 +10057,10 @@ img {
   gap: 0.85rem;
 }
 
+.teaching-listings-feedback:not(:empty) {
+  margin-top: 0.85rem;
+}
+
 .teaching-listings-empty {
   padding: 1rem 1.1rem;
   border: 1px dashed var(--border, rgba(0, 0, 0, 0.14));

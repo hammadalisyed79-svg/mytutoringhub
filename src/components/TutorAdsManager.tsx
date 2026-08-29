@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubscribeButton } from "@/components/SubscribeButton";
@@ -18,6 +18,45 @@ import {
   type CurrencyCode,
 } from "@/lib/currency";
 import { scoreListingQuality } from "@/lib/listing-quality";
+
+const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
+
+type FeedbackFlash = { type: "ok" | "err"; text: string; at: number };
+
+function peekFeedbackFlash(): FeedbackFlash | null {
+  try {
+    const raw = sessionStorage.getItem(FEEDBACK_FLASH_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as FeedbackFlash;
+    if (!parsed?.text || !parsed.at) return null;
+    if (Date.now() - parsed.at > 8000) {
+      sessionStorage.removeItem(FEEDBACK_FLASH_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeFeedbackFlash(type: "ok" | "err", text: string) {
+  try {
+    sessionStorage.setItem(
+      FEEDBACK_FLASH_KEY,
+      JSON.stringify({ type, text, at: Date.now() } satisfies FeedbackFlash),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearFeedbackFlash() {
+  try {
+    sessionStorage.removeItem(FEEDBACK_FLASH_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 type Listing = {
   id: string;
@@ -162,6 +201,7 @@ export function TutorAdsManager({
   paidCheckoutLive?: boolean;
 }) {
   const router = useRouter();
+  const feedbackRef = useRef<HTMLDivElement>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [error, setError] = useState("");
@@ -184,14 +224,46 @@ export function TutorAdsManager({
       .catch(() => undefined);
   }
 
+  function revealFeedback() {
+    requestAnimationFrame(() => {
+      feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+
+  function clearFeedback() {
+    setError("");
+    setMsg("");
+    clearFeedbackFlash();
+  }
+
+  function flashSuccess(text: string) {
+    setError("");
+    setMsg(text);
+    writeFeedbackFlash("ok", text);
+    revealFeedback();
+  }
+
+  function flashError(text: string) {
+    setMsg("");
+    setError(text);
+    clearFeedbackFlash();
+    revealFeedback();
+  }
+
   useEffect(() => {
     load();
+    const flash = peekFeedbackFlash();
+    if (!flash) return;
+    if (flash.type === "ok") setMsg(flash.text);
+    else setError(flash.text);
+    revealFeedback();
+    const t = window.setTimeout(() => clearFeedbackFlash(), 600);
+    return () => window.clearTimeout(t);
   }, []);
 
   async function create(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
-    setMsg("");
+    clearFeedback();
     const fd = new FormData(e.currentTarget);
     const res = await fetch("/api/tutor-ads", {
       method: "POST",
@@ -213,20 +285,19 @@ export function TutorAdsManager({
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error || "Could not create teaching listing");
+      flashError(data.error || "Could not create teaching listing");
       return;
     }
-    setMsg("Teaching listing published.");
     e.currentTarget.reset();
     setShowCreate(false);
+    flashSuccess("Listing published — students can find it in search.");
     load();
     router.refresh();
   }
 
   async function saveEdit(e: React.FormEvent<HTMLFormElement>, id: string) {
     e.preventDefault();
-    setError("");
-    setMsg("");
+    clearFeedback();
     setBusyId(id);
     const fd = new FormData(e.currentTarget);
     const res = await fetch("/api/tutor-ads", {
@@ -250,17 +321,17 @@ export function TutorAdsManager({
     const data = await res.json();
     setBusyId(null);
     if (!res.ok) {
-      setError(data.error || "Could not save");
+      flashError(data.error || "Could not save");
       return;
     }
-    setMsg("Teaching listing updated.");
     setEditingId(null);
+    flashSuccess("Listing updated.");
     load();
     router.refresh();
   }
 
   async function setStatus(id: string, status: string) {
-    setError("");
+    clearFeedback();
     setBusyId(id);
     const res = await fetch("/api/tutor-ads", {
       method: "PATCH",
@@ -270,9 +341,14 @@ export function TutorAdsManager({
     const data = await res.json();
     setBusyId(null);
     if (!res.ok) {
-      setError(data.error || "Could not update status");
+      flashError(data.error || "Could not update status");
       return;
     }
+    flashSuccess(
+      status === "PAUSED"
+        ? "Listing paused — it is hidden from search."
+        : "Listing reactivated — students can find it in search.",
+    );
     load();
     router.refresh();
   }
@@ -326,9 +402,6 @@ export function TutorAdsManager({
           </ul>
         </div>
       )}
-
-      {error && <p className="form-error">{error}</p>}
-      {msg && <p className="success">{msg}</p>}
 
       <div className="teaching-listings-list">
         {listings.length === 0 && (
@@ -520,6 +593,19 @@ export function TutorAdsManager({
             </article>
           );
         })}
+      </div>
+
+      <div ref={feedbackRef} className="teaching-listings-feedback">
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        {msg && (
+          <p className="success panel" role="status">
+            {msg}
+          </p>
+        )}
       </div>
 
       {showCreate ? (
