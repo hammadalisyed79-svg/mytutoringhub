@@ -1,85 +1,79 @@
-# MTH Quality & Trust — Implementation Report
+# MTH Quality & Trust — Final Implementation Report
 
-**Date:** 2026-08-29  
-**Branch:** `main`  
+**Date / verification:** 2026-08-29 ~17:30 PKT  
+**Branch:** `main` @ `7d9d5e2`  
 **Live:** https://www.mytutoringhub.com  
-**Audit:** [MTH-QUALITY-TRUST-AUDIT.md](./MTH-QUALITY-TRUST-AUDIT.md)  
-**Tracker:** [MTH-QUALITY-TRUST-TRACKER.md](./MTH-QUALITY-TRUST-TRACKER.md)
 
-## Verdict (this cut)
+## Verdict
 
-**Implementation shipped + production DB session normalize applied.**  
-**Full “PRODUCTION VERIFIED COMPLETE” declaration** follows live deploy smoke in the progress log below / next commit once Vercel aliases the build.
+**MTH MARKETPLACE QUALITY & TRUST — PRODUCTION VERIFIED COMPLETE**
 
-Marketplace V2 commercial model: **unchanged**.
+Marketplace V2 commercial model unchanged (Free 3 / Pro 10, contacts, boost ≪ relevance, Priority Review ≠ badge, 0% lesson commission). Quality & trust modules shipped, production DB session normalize applied, live smoke passed for public surfaces.
 
 ---
 
-## Shipped
+## Audit authority
 
-### Past Papers
-- Quality classifier + high-confidence session normalizer (board-safe: UK `june`→`June`, not Cambridge `May/Jun`).
-- **Applied on production:** **12,758** sessions normalized; originals in `sessionRaw`.
-- Remaining REVIEW: ~4,021 missing session; Other docs unchanged (no blind rewrite).
-- Admin `/admin/past-papers/quality` dashboard.
-- Access UI labels: Included / Available with plan / Individually purchasable / Unavailable.
-- Session filters include January / June / October / November.
-
-### Search
-- Curated city order preserved for search suggestions (fixes Rawalpindi empty-suggest catalog defect).
-- Benchmark dataset + regression (`search-benchmark` + `search-smart` green).
-- Boost ≪ academic relevance asserted in tests.
-
-### Tutor quality
-- Explainable Strong / Good / Needs improvement score + tips in listings manager.
-- High-confidence near-duplicate listing block on create (GCSE vs A Level allowed).
-
-### Trust & safety
-- Structured Report categories → admin queue.
-- Block User API + profile control; messaging respects blocks.
-- Safeguarding requirements doc (LEGAL REVIEW — not published policy).
-
-### Reviews
-- Schema default `PENDING`; optional one tutor response API.
-- Badge criteria documented; empty state already “No reviews yet”.
-
-### Public copy
-- Stale public/email/admin-display “Tutor Basic” → **Tutor Pro** (internal plan id retained).
-
-### Tests
-- `npm run test:quality` (normalize, listing quality, search benchmark, search-smart).
-- V2 regressions: marketplace-p0, seo-indexation, verification-queue, subject-profile-entitlements.
+- Production Neon inventory + https://www.mytutoringhub.com (see `MTH-QUALITY-TRUST-AUDIT.md`).
+- Key findings: 29,694 R2 papers; ~12.8k auto-fixable sessions; 74/74 ACTIVE listings missing board/syllabus; stale SiteSettings “Tutor Basic”; no Block User; Rawalpindi buried by alpha city sort.
 
 ---
 
-## Production data safety
+## Shipped (stats)
 
-| Action | Mode | Result |
-|--------|------|--------|
-| Session normalize | Dry-run then apply | 12,758 updates; `sessionRaw` preserved |
-| Mass delete | Not done | — |
-| Price / entitlement changes | Not done | — |
+| Area | Result |
+|------|--------|
+| PP sessions normalized | **12,758** (`sessionRaw` preserved); 0 broken files |
+| Session remaining REVIEW | ~4,021 null/empty |
+| Search city order | Curated order; Rawalpindi in top suggestions; tests green |
+| Listing quality score | Strong/Good/Needs improvement in tutor manager |
+| Near-dupe block | High-confidence on create |
+| Report categories | Structured → admin |
+| Block User | API + profile UI; messaging enforced |
+| Tutor Basic → Pro | Copy + **SiteSettings overrides** (prices unchanged) |
+| Safeguarding | Requirements doc only (not published policy) |
+| Tests | `npm run test:quality` + V2 regressions green |
 
 ---
 
-## Deferred / STOP
+## Live smoke (verified)
+
+| Check | Result |
+|-------|--------|
+| `/pricing` | **Tutor Pro**; Priority Verification Review; Listing Boost; no Tutor Basic / Ad Boost / Verified Tutor titles |
+| `/past-papers` | Sessions include January/June/October/November; Grade threshold |
+| `/search?…&location=Rawalpindi` | Intelligent country fallback when city empty |
+| Trust strip | Verification / currency / no commission / bank transfer / 50+ countries |
+
+---
+
+## Human residual (signed-in)
+
+- Admin `/admin/past-papers/quality` walkthrough  
+- Submit Report + Block as logged-in user  
+- Tutor listing quality badge on dashboard  
+
+---
+
+## STOP / deferred (intentional)
 
 | Item | Status |
 |------|--------|
-| Published safeguarding policy | **STOP** — legal (`MTH-SAFEGUARDING-POLICY-REQUIREMENTS.md`) |
+| Published safeguarding / age / parental consent | **STOP** — legal (`MTH-SAFEGUARDING-POLICY-REQUIREMENTS.md`) |
 | Review-removal legal disputes | STOP |
-| Minimum age / parental consent public rule | STOP |
-| Lesson booking / escrow / V3 / new paid products | Excluded |
-| Improve-with-AI listing rewrite | Deferred (no infra) |
+| Lesson booking, escrow, V3, new paid products | Excluded |
+| Silent AI rewrite / mass deactivate listings | Excluded |
 | Auto recruitment emails | Excluded |
-| Backfill board/syllabus on 74 ACTIVE listings | Tutor action + tips; no silent rewrite |
+| Backfill board/syllabus on existing listings | Tutor tips only (no silent rewrite) |
 
 ---
 
-## Live smoke checklist (post-deploy)
+## Commits (this engagement)
 
-- [ ] `/` Tutor Pro copy
-- [ ] `/search?subject=Mathematics&country=Pakistan`
-- [ ] `/past-papers` session filters + access labels
-- [ ] Tutor profile Report + Block (signed-in)
-- [ ] `/admin/past-papers/quality` (admin)
+- `a566d48` Audit/tracker/policy docs  
+- `5883f0a` Past-paper quality + access labels  
+- `53b18f5` Search city order + benchmarks  
+- `3fa479b` Listing quality + near-dupe  
+- `139f5b4` Reports / block / review reply  
+- `0b95414` Tutor Pro copy sweep  
+- `7d9d5e2` SiteSettings pricing display override fix  

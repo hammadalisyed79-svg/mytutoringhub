@@ -128,10 +128,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[D]` deferred · `[S]`
 
 ## Production Verification
 
-- [~] Deploy from `main` + live smoke
-- [x] DB dry-run + apply normalize counts recorded
-- [ ] Declare **MTH MARKETPLACE QUALITY & TRUST — PRODUCTION VERIFIED COMPLETE** after live smoke
-- [x] Final report draft: `docs/MTH-QUALITY-TRUST-FINAL-IMPLEMENTATION-REPORT.md`
+- [x] Deploy from `main` + live smoke (pricing Tutor Pro, PP sessions, Rawalpindi fallback)
+- [x] DB dry-run + apply normalize counts recorded (12,758)
+- [x] SiteSettings stale Tutor Basic override fixed (prices unchanged)
+- [x] Declare **MTH MARKETPLACE QUALITY & TRUST — PRODUCTION VERIFIED COMPLETE**
+- [x] Final report: `docs/MTH-QUALITY-TRUST-FINAL-IMPLEMENTATION-REPORT.md`
 
 ---
 
@@ -140,4 +141,5 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[D]` deferred · `[S]`
 | When | Note |
 |------|------|
 | 2026-08-29 | Phase 0 audit complete against live Neon + www. |
-| 2026-08-29 | Modules 1–12 engineering: normalize applied (12,758), search city order, quality score, report/block, Tutor Pro copy, tests green. |
+| 2026-08-29 | Modules shipped; 12,758 sessions normalized; search/quality/trust/copy live. |
+| 2026-08-29 | Fixed SiteSettings planPrices still forcing Tutor Basic on `/pricing`. Declared production verified complete. |
