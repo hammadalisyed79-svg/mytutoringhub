@@ -172,20 +172,18 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="stack-lg">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 700 }}>Subscriptions</h1>
-        <button className="btn btn-secondary" type="button" onClick={exportCsv} disabled={loading}>
-          Export CSV
-        </button>
-      </div>
+      <header className="panel page-hero">
+        <div className="page-hero-copy">
+          <h1 className="page-title" style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
+            Subscriptions
+          </h1>
+        </div>
+        <div className="page-hero-actions">
+          <button className="btn btn-secondary btn-sm" type="button" onClick={exportCsv} disabled={loading}>
+            Export CSV
+          </button>
+        </div>
+      </header>
 
       {error && (
         <p className="form-error" style={{ margin: 0 }}>

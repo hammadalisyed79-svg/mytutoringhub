@@ -90,8 +90,8 @@ export default async function TutorDashboardPage({
   return (
     <div className="page tutor-dashboard-page">
       <div className="container">
-        <header className="tutor-dashboard-hero">
-          <div>
+        <header className="panel page-hero tutor-dashboard-hero">
+          <div className="page-hero-copy">
             <h1 className="page-title">Hi, {user.name}</h1>
             <p className="muted">
               {statusView?.status === "LIVE"
@@ -99,22 +99,14 @@ export default async function TutorDashboardPage({
                 : "Complete your profile to appear in search, then reply to student requests."}
             </p>
           </div>
-          {user.tutorProfile ? (
-            <div className="tutor-dashboard-hero-actions">
-              {user.tutorProfile.active ? (
-                <Link className="btn btn-secondary btn-sm" href={`/tutors/${user.tutorProfile.id}`}>
-                  View public profile
-                </Link>
-              ) : (
-                <Link className="btn btn-secondary btn-sm" href={`/tutors/${user.tutorProfile.id}`}>
-                  Preview my public profile
-                </Link>
-              )}
-              <Link className="btn btn-sm" href="/messages">
-                Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
-              </Link>
-            </div>
-          ) : null}
+          <div className="page-hero-actions">
+            <Link className="btn btn-sm" href="/messages">
+              Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
+            </Link>
+            <Link className="btn btn-secondary btn-sm" href="/ads">
+              Student requests
+            </Link>
+          </div>
         </header>
 
         {statusView ? (
@@ -147,9 +139,11 @@ export default async function TutorDashboardPage({
                 Browse open student requests that match subjects you teach. Messaging limits follow
                 your current plan — free accounts can still reply within existing rules.
               </p>
-              <Link className="btn btn-secondary" href="/ads">
-                View student requests
-              </Link>
+              <div className="panel-actions-row">
+                <Link className="btn btn-secondary" href="/ads">
+                  View student requests
+                </Link>
+              </div>
             </section>
 
             <div className="tutor-dashboard-overview">

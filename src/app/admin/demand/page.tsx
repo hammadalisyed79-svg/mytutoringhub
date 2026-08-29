@@ -17,10 +17,13 @@ export default async function AdminDemandPage() {
         </p>
       </div>
 
-      <div className="admin-quick-links" style={{ marginBottom: "1rem" }}>
-        <Link href="/admin">Overview</Link>
-        <Link href="/admin/tutor-supply">Tutor supply</Link>
-        <Link href="/admin/ads">Listings & requests</Link>
+      <div className="admin-toolbar panel">
+        <p className="admin-toolbar-label">Related</p>
+        <div className="admin-quick-links">
+          <Link href="/admin">Overview</Link>
+          <Link href="/admin/tutor-supply">Tutor supply</Link>
+          <Link href="/admin/ads">Listings & requests</Link>
+        </div>
       </div>
 
       {recruit.length > 0 ? (

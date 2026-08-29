@@ -19,8 +19,12 @@ export default async function StudentPlanPage() {
   return (
     <div className="page">
       <div className="container narrow-prose">
-        <h1 className="page-title">Your plan</h1>
-        <p className="section-lead">{summary.upgradeHint}</p>
+        <header className="panel page-hero">
+          <div className="page-hero-copy">
+            <h1 className="page-title">Your plan</h1>
+            <p className="muted">{summary.upgradeHint}</p>
+          </div>
+        </header>
         <PlanBanner
           role="STUDENT"
           planName={summary.planName}
@@ -30,14 +34,17 @@ export default async function StudentPlanPage() {
           usageLabel={summary.usageLabel}
           renewsOn={summary.renewsOn}
         />
-        <p style={{ marginTop: "1.25rem" }}>
-          <Link href="/pricing" className="btn">
-            {summary.planTier === "free" ? "Upgrade plan" : "View pricing"}
-          </Link>{" "}
-          <Link href="/dashboard/student" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
-            Back to dashboard
-          </Link>
-        </p>
+        <section className="panel panel-actions" style={{ marginTop: "1.25rem" }}>
+          <h2 className="panel-actions-title">Manage plan</h2>
+          <div className="panel-actions-row">
+            <Link href="/pricing" className="btn">
+              {summary.planTier === "free" ? "Upgrade plan" : "View pricing"}
+            </Link>
+            <Link href="/dashboard/student" className="btn btn-secondary">
+              Back to dashboard
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

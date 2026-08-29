@@ -2716,19 +2716,53 @@ select:focus {
   margin-bottom: 0.35rem;
 }
 
-.tutor-dashboard-hero {
+.page-hero {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.tutor-dashboard-hero-actions {
+.page-hero .page-title {
+  margin-bottom: 0.35rem;
+}
+
+.page-hero-copy {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.page-hero-copy > .muted:last-child {
+  margin-bottom: 0;
+}
+
+.page-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panel-actions-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.panel-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .tutor-dashboard-alert {
@@ -3384,21 +3418,6 @@ select:focus {
 /* —— Student dashboard —— */
 .student-dashboard-page .page-title {
   margin-bottom: 0.35rem;
-}
-
-.student-dashboard-hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
-}
-
-.student-dashboard-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 .student-dashboard-alert {
@@ -6672,6 +6691,19 @@ select:focus {
   border-top: 1px solid var(--line);
 }
 
+.pagination.panel {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1.1rem;
+  border-top: none;
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+}
+
+.pagination .pagination-status {
+  margin: 0;
+}
+
 .stack {
   display: grid;
   gap: 1.5rem;
@@ -8356,19 +8388,16 @@ img {
     min-width: 0;
   }
 
-  .tutor-dashboard-hero,
-  .student-dashboard-hero {
+  .page-hero {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .tutor-dashboard-hero-actions,
-  .student-dashboard-hero-actions {
+  .page-hero-actions {
     width: 100%;
   }
 
-  .tutor-dashboard-hero-actions .btn,
-  .student-dashboard-hero-actions .btn {
+  .page-hero-actions .btn {
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -8809,8 +8838,38 @@ img {
 .admin-quick-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem 1.1rem;
+  gap: 0.45rem 0.85rem;
   font-weight: 600;
+  align-items: center;
+}
+
+.admin-toolbar.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+  margin-bottom: 1.15rem;
+  padding: 0.85rem 1.1rem;
+}
+
+.admin-toolbar-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-quick-links a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.admin-quick-links a.is-active {
+  color: var(--brand-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 .paper-crumb {

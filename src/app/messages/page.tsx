@@ -87,6 +87,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     <div className="page">
       <div className="container">
         <h1 className="page-title">Messages</h1>
+        <p className="section-lead">{VALUE_PROPOSITION}</p>
         <MessagesAccountBanner email={session.user.email || ""} role={session.user.role} />
         {!emailVerified && (
           <p
@@ -103,7 +104,6 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             already in your inbox.
           </p>
         )}
-        <p className="section-lead">{VALUE_PROPOSITION}</p>
 
         {/* Compose first — messaging is the job of this page when a tutor is selected */}
         {composing && recipientId && (

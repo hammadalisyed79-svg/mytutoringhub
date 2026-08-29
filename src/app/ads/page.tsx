@@ -141,17 +141,19 @@ export default async function AdsPage() {
   return (
     <div className="page">
       <div className="container">
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
-          <div>
+        <header className="panel page-hero">
+          <div className="page-hero-copy">
             <h1 className="page-title">Student requests</h1>
-            <p className="section-lead">{STUDENT_REQUESTS_LINE}</p>
+            <p className="muted">{STUDENT_REQUESTS_LINE}</p>
           </div>
           {session?.user?.role === "STUDENT" && (
-            <Link href="/ads/new" className="btn">
-              Post a request
-            </Link>
+            <div className="page-hero-actions">
+              <Link href="/ads/new" className="btn btn-sm">
+                Post a request
+              </Link>
+            </div>
           )}
-        </div>
+        </header>
 
         <p className="muted ads-board-note">
           {VALUE_PROPOSITION}

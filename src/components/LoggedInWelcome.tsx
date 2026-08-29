@@ -38,9 +38,11 @@ export async function LoggedInWelcome({
         <p className="logged-in-welcome-text">
           Welcome back, <strong>{firstName}</strong>.
         </p>
-        <Link href="/admin" className="btn btn-sm">
-          Admin dashboard
-        </Link>
+        <div className="logged-in-welcome-actions">
+          <Link href="/admin" className="btn btn-sm">
+            Admin dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -67,9 +69,11 @@ export async function LoggedInWelcome({
           <> — {match.count.toLocaleString()} active tutors ready to help</>
         )}
       </p>
-      <Link href={searchHref} className="btn btn-sm">
-        {match.kind === "subjects" ? "View matches" : "Browse tutors"}
-      </Link>
+      <div className="logged-in-welcome-actions">
+        <Link href={searchHref} className="btn btn-sm">
+          {match.kind === "subjects" ? "View matches" : "Browse tutors"}
+        </Link>
+      </div>
     </div>
   );
 }

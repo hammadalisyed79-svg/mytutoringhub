@@ -152,13 +152,16 @@ export default async function AdminNurturePage({
         </div>
       </div>
 
-      <div className="admin-quick-links">
-        <Link href="/admin/nurture" className={!profileOnly && !sequenceFilter ? "is-active" : undefined}>
-          All emails
-        </Link>
-        <Link href="/admin/nurture?profile=1" className={profileOnly ? "is-active" : undefined}>
-          Profile reminders only
-        </Link>
+      <div className="admin-toolbar panel">
+        <p className="admin-toolbar-label">Filter</p>
+        <div className="admin-quick-links">
+          <Link href="/admin/nurture" className={!profileOnly && !sequenceFilter ? "is-active" : undefined}>
+            All emails
+          </Link>
+          <Link href="/admin/nurture?profile=1" className={profileOnly ? "is-active" : undefined}>
+            Profile reminders only
+          </Link>
+        </div>
       </div>
 
       <section className="panel">

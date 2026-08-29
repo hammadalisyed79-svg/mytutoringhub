@@ -471,13 +471,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         </div>
 
         {pages > 1 && (
-          <div className="pagination">
+          <nav className="pagination panel panel-actions" aria-label="Search results pages">
             {page > 1 && (
               <Link className="btn btn-secondary btn-sm" href={`/search?${searchQuery(sp, page - 1)}`}>
                 Previous
               </Link>
             )}
-            <span className="muted">
+            <span className="muted pagination-status">
               Page {page} of {pages}
             </span>
             {page < pages && (
@@ -485,7 +485,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 Next
               </Link>
             )}
-          </div>
+          </nav>
         )}
           </>
         )}

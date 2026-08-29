@@ -50,19 +50,19 @@ export default async function StudentDashboardPage({
   return (
     <div className="page student-dashboard-page">
       <div className="container">
-        <header className="student-dashboard-hero">
-          <div>
+        <header className="panel page-hero student-dashboard-hero">
+          <div className="page-hero-copy">
             <h1 className="page-title">Hi, {user.name}</h1>
             <p className="muted">
               Find a tutor, use free monthly contacts or a Student Pass, or post a request.
             </p>
           </div>
-          <div className="student-dashboard-hero-actions">
-            <Link href="/search" className="btn btn-sm">
-              Search tutors
-            </Link>
-            <Link href="/messages" className="btn btn-secondary btn-sm">
+          <div className="page-hero-actions">
+            <Link href="/messages" className="btn btn-sm">
               Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
+            </Link>
+            <Link href="/search" className="btn btn-secondary btn-sm">
+              Search tutors
             </Link>
           </div>
         </header>

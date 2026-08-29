@@ -86,16 +86,19 @@ export default async function AdminOverviewPage() {
         <Stat href="/admin/past-papers" label="Past papers" value={pastPapers} />
       </div>
 
-      <div className="admin-quick-links">
-        <Link href="/admin/demand">Marketplace demand</Link>
-        <Link href="/admin/tutor-supply">Tutor supply</Link>
-        <Link href="/admin/users">Find a user</Link>
-        <Link href="/admin/plans">Plans & prices</Link>
-        <Link href="/admin/settings">Site settings</Link>
-        <Link href="/admin/payments">Recover a payment</Link>
-        <Link href="/admin/reports">Safety queue</Link>
-        <Link href="/admin/audit">Audit log</Link>
-        <Link href="/admin/nurture">Nurture emails</Link>
+      <div className="admin-toolbar panel">
+        <p className="admin-toolbar-label">Quick links</p>
+        <div className="admin-quick-links">
+          <Link href="/admin/demand">Marketplace demand</Link>
+          <Link href="/admin/tutor-supply">Tutor supply</Link>
+          <Link href="/admin/users">Find a user</Link>
+          <Link href="/admin/plans">Plans & prices</Link>
+          <Link href="/admin/settings">Site settings</Link>
+          <Link href="/admin/payments">Recover a payment</Link>
+          <Link href="/admin/reports">Safety queue</Link>
+          <Link href="/admin/audit">Audit log</Link>
+          <Link href="/admin/nurture">Nurture emails</Link>
+        </div>
       </div>
 
       <section className="panel">
