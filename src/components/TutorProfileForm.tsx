@@ -29,6 +29,7 @@ import {
 } from "@/lib/availability";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
+import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
@@ -952,23 +953,44 @@ export function TutorProfileForm({
           />
         </label>
 
-        <label>
-          <span>
-            About you <abbr className="req" title="Required">*</abbr>
-          </span>
-          <textarea
-            name="bio"
-            minLength={40}
-            maxLength={4000}
-            rows={5}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Who you teach, how you run lessons, and what results students can expect."
-          />
+        <div className="tutor-bio-field">
+          <label>
+            <span>
+              About you <abbr className="req" title="Required">*</abbr>
+            </span>
+            <textarea
+              name="bio"
+              minLength={40}
+              maxLength={4000}
+              rows={5}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Who you teach, how you run lessons, and what results students can expect."
+            />
+          </label>
           <span className="field-hint">
             Minimum 40 characters. {bio.trim().length}/4000
           </span>
-        </label>
+          <TutorBioAiHelp
+            bio={bio}
+            name={name}
+            headline={headline}
+            subjects={subjectList}
+            location={location}
+            country={country}
+            qualifications={qualifications}
+            experienceYears={
+              experienceYears === "" || Number.isNaN(Number(experienceYears))
+                ? null
+                : Number(experienceYears)
+            }
+            teachingMethod={teachingMethod}
+            languages={joinCsv(languageList)}
+            levels={joinCsv(levelList)}
+            expertise={joinCsv(expertiseList)}
+            onApply={setBio}
+          />
+        </div>
 
         <details className="profile-advanced-details">
           <summary>Optional headline</summary>

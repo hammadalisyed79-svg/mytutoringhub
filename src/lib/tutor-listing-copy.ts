@@ -3,7 +3,8 @@ export const DEFAULT_TUTOR_BIO = "New tutor — update your profile in the dashb
 export function isDefaultTutorBio(bio?: string | null) {
   const text = bio?.trim() || "";
   if (!text) return true;
-  return text === DEFAULT_TUTOR_BIO || /^New tutor\s*[—-]\s*update your profile/i.test(text);
+  if (text === DEFAULT_TUTOR_BIO) return true;
+  return /^New tutor\s*[—–-]\s*update (your|this) profile/i.test(text);
 }
 
 export function publicTutorBio(bio?: string | null, isOwner = false) {

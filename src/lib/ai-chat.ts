@@ -1,13 +1,14 @@
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { completeWithFallback, mapOpenAiError } from "@/lib/ai-openai";
+import { AI_TUTOR_BIO_KIND } from "@/lib/tutor-bio-ai";
 import {
   AI_STUDY_KIND,
   AI_SUPPORT_KIND,
   AI_WINDOW_MS,
 } from "@/lib/ai-support";
 
-export type AiChatKind = typeof AI_STUDY_KIND | typeof AI_SUPPORT_KIND;
+export type AiChatKind = typeof AI_STUDY_KIND | typeof AI_SUPPORT_KIND | typeof AI_TUTOR_BIO_KIND;
 
 export async function countUserAiMessages(userId: string, kind: AiChatKind, since: Date) {
   return prisma.aiMessage.count({
@@ -85,6 +86,75 @@ export async function sendAiChatMessage({
 
   return {
     ok: true as const,
+    message: {
+      id: assistant.id,
+      role: assistant.role,
+      content: assistant.content,
+      createdAt: assistant.createdAt,
+    },
+    remaining: Math.max(0, rateLimit - used - 1),
+  };
+}
+
+/** One-shot completion (no prior chat history) — used for tutor bio drafts. */
+export async function completeAiOneShot({
+  userId,
+  kind,
+  userContent,
+  systemPrompt,
+  rateLimit,
+}: {
+  userId: string;
+  kind: AiChatKind;
+  userContent: string;
+  systemPrompt: string;
+  rateLimit: number;
+}) {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    return { ok: false as const, status: 503, error: "AI is not configured" };
+  }
+
+  const since = new Date(Date.now() - AI_WINDOW_MS);
+  const used = await countUserAiMessages(userId, kind, since);
+  if (used >= rateLimit) {
+    return {
+      ok: false as const,
+      status: 429,
+      error: `Daily limit reached (${rateLimit} / 24h). Try again later or email admin@mytutoringhub.com.`,
+    };
+  }
+
+  const userMsg = await prisma.aiMessage.create({
+    data: { userId, kind, role: "user", content: userContent },
+  });
+
+  const openai = new OpenAI({ apiKey });
+  let reply = "";
+  try {
+    const completion = await completeWithFallback(openai, systemPrompt, [
+      { role: "user", content: userContent },
+    ]);
+    reply = completion.choices[0]?.message?.content?.trim() || "";
+  } catch (err) {
+    console.error(`OpenAI ${kind} one-shot error`, err);
+    await prisma.aiMessage.delete({ where: { id: userMsg.id } }).catch(() => undefined);
+    const mapped = mapOpenAiError(err);
+    return {
+      ok: false as const,
+      status: mapped.status,
+      error: mapped.error,
+      code: mapped.code,
+    };
+  }
+
+  const assistant = await prisma.aiMessage.create({
+    data: { userId, kind, role: "assistant", content: reply || " " },
+  });
+
+  return {
+    ok: true as const,
+    text: reply,
     message: {
       id: assistant.id,
       role: assistant.role,
