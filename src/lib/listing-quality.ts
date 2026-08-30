@@ -1,6 +1,7 @@
 /**
  * Explainable teaching-listing quality score.
  * Never rewrites tutor copy — tips only.
+ * Bands: Strong (≥75), Good (≥65), Needs improvement (<65).
  */
 
 export type ListingQualityBand = "Strong" | "Good" | "Needs improvement";
@@ -113,8 +114,9 @@ export function scoreListingQuality(listing: ListingQualityInput): ListingQualit
     tips.push("Mark whether you teach online, in person, or both.");
   }
 
+  // Bands: Strong 75+, Good 65–74, Needs improvement below 65 (mid scores are not “Good”).
   const band: ListingQualityBand =
-    score >= 75 ? "Strong" : score >= 50 ? "Good" : "Needs improvement";
+    score >= 75 ? "Strong" : score >= 65 ? "Good" : "Needs improvement";
 
   return {
     score: Math.min(100, score),

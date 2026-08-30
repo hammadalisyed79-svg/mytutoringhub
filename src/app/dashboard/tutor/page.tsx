@@ -301,10 +301,9 @@ export default async function TutorDashboardPage({
             {user.tutorProfile ? (
               <section className="panel" id="teaching-listings">
                 <h2 id="teaching-listings-section">My Teaching Profiles</h2>
-                <p className="muted">
-                  One Teaching Profile per subject (for example Mathematics). Levels, boards, and
-                  syllabus codes sit inside that profile. Each has its own rate and{" "}
-                  <code>/listings/{"{id}"}</code> page — this is how students find you.
+                <p className="muted teaching-listings-intro">
+                  One Teaching Profile per subject. Levels, boards, and rates live inside each
+                  profile — that is how students find you in search.
                 </p>
                 <TutorAdsManager
                   subjects={catalogSubjects}
