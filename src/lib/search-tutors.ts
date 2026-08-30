@@ -17,7 +17,20 @@ import {
   canViewTutorProfilePublicly,
 } from "@/lib/tutor-public-eligibility";
 import { listingPath } from "@/lib/subject-profile";
-import { dedupeSearchByTutor, type AlsoTeachesItem } from "@/lib/search-dedupe";
+import {
+  attachAlsoTeaches,
+  BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
+  isSpecificTeachingProfileSearch,
+  paginateWithTutorCap,
+  tutorHasMoreThanCap,
+  type AlsoTeachesItem,
+} from "@/lib/search-dedupe";
+import {
+  isMissingCapabilitySchemaError,
+  listingHasCapability,
+  listingMatchesCanonicalSubject,
+  teachingProfileCapabilityWhere,
+} from "@/lib/search-capabilities";
 
 export type TutorSearchFilters = {
   q?: string;
@@ -36,7 +49,7 @@ export type TutorSearchFilters = {
   syllabusCode?: string;
 };
 
-/** Flattened search card: best matching Teaching Listing + parent tutor identity. */
+/** Flattened search card: one Teaching Profile listing + parent tutor identity. */
 export type SearchListingCard = {
   id: string;
   listingId: string;
@@ -77,6 +90,9 @@ export type SearchListingCard = {
 };
 
 export const PAGE_SIZE = 12;
+
+/** Flip to false after a live query proves SubjectProfileCapability is missing. */
+let queryCapabilities = true;
 
 function contains(value: string) {
   return { contains: value, mode: "insensitive" as const };
@@ -134,6 +150,7 @@ type ListingRow = {
   status: string;
   highlightedUntil: Date | null;
   boostUntil: Date | null;
+  capabilities?: { kind: string; value: string }[];
   tutorProfile: {
     id: string;
     headline: string | null;
@@ -192,7 +209,7 @@ function toSearchCard(row: ListingRow, now = new Date()): SearchListingCard {
     photoCropY: p.photoCropY,
     photoCropZoom: p.photoCropZoom,
     languages: p.languages,
-    levels: row.level || p.levels,
+    levels: row.level || null,
     board: row.board,
     qualification: row.qualification,
     syllabusCode: row.syllabusCode,
@@ -269,7 +286,13 @@ export async function searchTutors(
     };
   };
 
-  const query = async (useLocation: boolean, useCountry: boolean) => {
+  const query = async (useLocation: boolean, useCountry: boolean, includeJoinTable: boolean) => {
+    const capabilityFilters = teachingProfileCapabilityWhere({
+      board,
+      level,
+      syllabusCode,
+      includeJoinTable,
+    });
     const rows = await prisma.subjectProfile.findMany({
       where: {
         status: "ACTIVE",
@@ -279,17 +302,7 @@ export async function searchTutors(
         ...(useLocation && location && location !== "Online"
           ? { location: contains(location) }
           : {}),
-        ...(board ? { board: contains(board) } : {}),
-        ...(syllabusCode ? { syllabusCode: contains(syllabusCode) } : {}),
-        ...(level
-          ? {
-              OR: [
-                { level: contains(level) },
-                { qualification: contains(level) },
-                { tutorProfile: { levels: contains(level) } },
-              ],
-            }
-          : {}),
+        ...(capabilityFilters.length ? { AND: capabilityFilters } : {}),
         ...(subject
           ? {
               OR: expandSubjectTerms(subject).flatMap((term) => [
@@ -350,27 +363,40 @@ export async function searchTutors(
         status: true,
         highlightedUntil: true,
         boostUntil: true,
+        ...(includeJoinTable ? { capabilities: { select: { kind: true, value: true } } } : {}),
         tutorProfile: { select: LISTING_PARENT_SELECT },
       },
     });
     return (rows as ListingRow[]).filter(isPublicListing);
   };
 
-  let listings = await query(true, Boolean(country));
+  const querySafe = async (useLocation: boolean, useCountry: boolean) => {
+    if (queryCapabilities) {
+      try {
+        return await query(useLocation, useCountry, true);
+      } catch (err) {
+        if (!isMissingCapabilitySchemaError(err)) throw err;
+        queryCapabilities = false;
+      }
+    }
+    return query(useLocation, useCountry, false);
+  };
+
+  let listings = await querySafe(true, Boolean(country));
   let locationRelaxed = false;
   let keptCountry = Boolean(country);
   if (listings.length === 0 && location && location !== "Online" && (subject || keyword)) {
     if (country) {
-      listings = await query(false, true);
+      listings = await querySafe(false, true);
       if (listings.length > 0) {
         locationRelaxed = true;
       } else {
-        listings = await query(false, false);
+        listings = await querySafe(false, false);
         locationRelaxed = listings.length > 0;
         keptCountry = false;
       }
     } else {
-      listings = await query(false, false);
+      listings = await querySafe(false, false);
       locationRelaxed = listings.length > 0;
     }
   }
@@ -390,7 +416,8 @@ export async function searchTutors(
       const countryBoost =
         country && (card.country || "").toLowerCase().includes(country.toLowerCase()) ? 3 : 0;
       const subjectFieldMatch = subject
-        ? expandSubjectTerms(subject).some(
+        ? listingMatchesCanonicalSubject(row, subject) ||
+          expandSubjectTerms(subject).some(
             (term) =>
               card.subject.toLowerCase().includes(term.toLowerCase()) ||
               (card.expertise || "").toLowerCase().includes(term.toLowerCase()),
@@ -398,19 +425,10 @@ export async function searchTutors(
           ? 50
           : 0
         : 0;
-      const levelFieldMatch =
-        level &&
-        ((card.levels || "").toLowerCase().includes(level.toLowerCase()) ||
-          (card.qualification || "").toLowerCase().includes(level.toLowerCase()))
-          ? 30
-          : 0;
-      const boardMatch =
-        board && (card.board || "").toLowerCase().includes(board.toLowerCase()) ? 40 : 0;
+      const levelFieldMatch = level && listingHasCapability(row, "LEVEL", level) ? 30 : 0;
+      const boardMatch = board && listingHasCapability(row, "BOARD", board) ? 40 : 0;
       const codeMatchScore =
-        syllabusCode &&
-        (card.syllabusCode || "").toUpperCase() === syllabusCode.toUpperCase()
-          ? 80
-          : 0;
+        syllabusCode && listingHasCapability(row, "SYLLABUS_CODE", syllabusCode) ? 80 : 0;
       return {
         card: {
           ...card,
@@ -439,8 +457,6 @@ export async function searchTutors(
     })
     .sort((a, b) => b.score - a.score);
 
-  const deduped = dedupeSearchByTutor(scored);
-
   function avgRating(card: SearchListingCard) {
     if (!card.reviews.length) return -1;
     return card.reviews.reduce((s, r) => s + r.rating, 0) / card.reviews.length;
@@ -448,32 +464,44 @@ export async function searchTutors(
 
   const ordered =
     sort === "price_asc"
-      ? [...deduped].sort((a, b) => a.card.hourlyRate - b.card.hourlyRate || b.score - a.score)
+      ? [...scored].sort((a, b) => a.card.hourlyRate - b.card.hourlyRate || b.score - a.score)
       : sort === "price_desc"
-        ? [...deduped].sort((a, b) => b.card.hourlyRate - a.card.hourlyRate || b.score - a.score)
+        ? [...scored].sort((a, b) => b.card.hourlyRate - a.card.hourlyRate || b.score - a.score)
         : sort === "rating"
-          ? [...deduped].sort(
+          ? [...scored].sort(
               (a, b) =>
                 avgRating(b.card) - avgRating(a.card) ||
                 b.card.reviews.length - a.card.reviews.length ||
                 b.score - a.score,
             )
-          : deduped;
+          : scored;
 
-  const total = ordered.length;
-  const slice = ordered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => ({
+  const specific = isSpecificTeachingProfileSearch({ subject, board, level, syllabusCode });
+  const paged = paginateWithTutorCap(
+    ordered,
+    page,
+    PAGE_SIZE,
+    specific ? Number.POSITIVE_INFINITY : BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
+  );
+  const tutorCapApplied =
+    !specific && tutorHasMoreThanCap(ordered, BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
+
+  const withAlso = attachAlsoTeaches(paged.items, ordered);
+  const slice = withAlso.map((s) => ({
     ...s.card,
     alsoTeaches: s.alsoTeaches,
   }));
   return {
     tutors: slice,
-    total,
+    total: paged.total,
     page,
     pageSize: PAGE_SIZE,
-    pages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    resolved: { subject, location, country, level, board, keyword, mode, sort },
+    pages: paged.pages,
+    resolved: { subject, location, country, level, board, syllabusCode, keyword, mode, sort, specific },
     locationRelaxed,
     keptCountry,
+    specific,
+    tutorCapApplied,
   };
 }
 

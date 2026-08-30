@@ -42,6 +42,7 @@ type SearchParams = Promise<{
   language?: string;
   page?: string;
   sort?: string;
+  syllabusCode?: string;
   browse?: string;
   guided?: string;
 }>;
@@ -63,6 +64,7 @@ function studentRequestHref(sp: {
   if (sp.mode === "inperson") params.set("inPerson", "1");
   if (sp.q) params.set("q", sp.q);
   if ("board" in sp && sp.board) params.set("board", String(sp.board));
+  if ("syllabusCode" in sp && sp.syllabusCode) params.set("syllabusCode", String(sp.syllabusCode));
   const qs = params.toString();
   return qs ? `/ads/new?${qs}` : "/ads/new";
 }
@@ -122,7 +124,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     subjects.map((s) => s.name),
     catalogSubjectNames(),
   );
-  const { tutors, total, page, pages, resolved, locationRelaxed, keptCountry } = await searchTutors(sp, {
+  const { tutors, total, page, pages, resolved, locationRelaxed, keptCountry, tutorCapApplied } =
+    await searchTutors(sp, {
     currency,
     subjectNames,
   });
@@ -136,6 +139,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       sp.mode ||
       sp.level ||
       sp.board ||
+      sp.syllabusCode ||
       sp.language ||
       sp.max ||
       sp.verified ||
@@ -172,7 +176,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   const summary = [
     total.toLocaleString(),
-    total === 1 ? "tutor" : "tutors",
+    total === 1 ? "Teaching Profile" : "Teaching Profiles",
     resolved.subject ? `for ${resolved.subject}` : "",
     locationRelaxed
       ? keptCountry && resolved.country
@@ -243,6 +247,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
               levelPlaceholder={region.levelPlaceholder}
             />
             <p className="muted search-summary">{summary}</p>
+            {tutorCapApplied && (
+              <p className="search-note muted">
+                Up to 2 Teaching Profiles per tutor are shown on each page. Extra profiles appear on
+                later pages or on the tutor’s own listings.
+              </p>
+            )}
             <RecentAndSavedTutors />
           </>
         )}
@@ -313,11 +323,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                 : null;
             const boosted = isBoostActive(t.boostUntil);
-            const subjectChips = (t.subjects || "")
-              .split(/[,;|]/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .slice(0, 3);
+            const subjectChips = [t.subject].map((s) => s.trim()).filter(Boolean);
             const snippet = isDefaultTutorBio(t.bio) ? "" : (t.bio || "").slice(0, 90).trim();
             const reviewSnippet = (t.reviews.find((r) => r.comment?.trim())?.comment || "")
               .slice(0, 72)
@@ -442,7 +448,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
                   <div className="tc-card-actions">
                     <Link href={listingPath(t.id)} className="btn btn-sm">
-                      View listing
+                      View Teaching Profile
                     </Link>
                     {session?.user ? (
                       <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">

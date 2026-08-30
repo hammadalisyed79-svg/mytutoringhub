@@ -1,6 +1,6 @@
 # Teaching Profiles — product plan
 
-**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). **PHASE 2 COMPLETE** (2026-08-30). **PHASE 3 COMPLETE** (2026-08-30) — subject uniqueness in create/update paths, duplicate detection, dry-run consolidation tooling. Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Unique index SQL is still NOT applied** (7 live ACTIVE collisions). Do not change search-dedupe, entitlements 3/10, Boost SKU, messaging, or production listing rows.  
+**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). **PHASE 2 COMPLETE** (2026-08-30). **PHASE 3 COMPLETE** (2026-08-30). **PHASE 4 COMPLETE** (2026-08-30) — search unit is the Teaching Profile card; capability matching on join rows + scalar cache; broad search max 2 cards per tutor per page. Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Unique index SQL is still NOT applied** (7 live ACTIVE collisions). Do not change wizard, uniqueness-on-write, entitlements 3/10, Boost SKU, messaging, dashboard rewrite, or production listing rows.  
 **Date:** 2026-08-30  
 **Repo:** `C:\Tutor`  
 **Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
@@ -22,7 +22,7 @@
 | Account / main tutor profile | Master profile / “My profile” | `User` + `TutorProfile` |
 | **Teaching Profile** | Teaching Listing | `SubjectProfile` (Prisma model name **kept**; do not rename) |
 | Ads / lists separately | Listing Boost + public listing page | `SubjectProfile` row + optional `AD_BOOST` / `HIGHLIGHTED_AD` windows |
-| Student search card | Search result (today **one per tutor**) | `searchTutors()` → `dedupeSearchByTutor()` — **target: one card per matching Teaching Profile**, with broad-search max 2 per `TutorProfile` per page |
+| Student search card | Search result (**one card per Teaching Profile**) | `searchTutors()` → capability match + `applyPerPageTutorCap` (broad: max 2 per `TutorProfile` per page). Specific search is uncapped. |
 
 This plan uses **Teaching Profile** in product copy. Internals may still say Teaching Listing / `SubjectProfile`. Public URLs stay `/listings/{id}`.
 
@@ -124,20 +124,15 @@ Dashboard after complete profile: **My teaching listings** (`TutorAdsManager` at
 - Boost/Highlight checkout already binds to one `subjectProfileId` (`src/lib/listing-checkout.ts` → `applyVisibilityToSubjectProfile`). **Keep.** Boost does **not** raise cap.
 - Boost price (code default): `AD_BOOST` **PKR 999** one-time, 30 days. Copy target: “Boost this Teaching Profile”; SKU remains Listing Boost.
 
-Gap vs locked intent: search still collapses listings to one card per tutor, so a boosted Physics profile can hide behind a higher-scoring History card (“Also teaches”).
+Search display (Phase 4): one card per matching Teaching Profile. Broad search caps **2 cards per tutor per page**; extra profiles defer to later pages. “Also teaches” is a subject-only cross-link to siblings **not on the current page**.
 
-### A.5 Search unit vs search display (the conflict)
+### A.5 Search unit vs search display (Phase 4)
 
-**Query unit is already the listing.** `searchTutors()` (`src/lib/search-tutors.ts`) loads `SubjectProfile` where `status: "ACTIVE"` and parent tutor is publicly listable. Filters use **scalar** `contains` on `board`, `syllabusCode`, `level` / `qualification`, and also `tutorProfile.levels` as a fallback for level. Cards use listing subject/title/rate; identity comes from parent `TutorProfile`. Result links go to `/listings/{id}`.
+**Query unit is the Teaching Profile.** `searchTutors()` loads `SubjectProfile` where `status: "ACTIVE"` and parent tutor is publicly listable. Board / level / qualification / syllabus filters match `SubjectProfileCapability` **and** the scalar display cache. Master `TutorProfile.levels` is **not** a listing-level fallback. Broad subject search still uses canonical subject / `expandSubjectTerms` on the listing subject. Cards use listing subject/title/rate; identity comes from parent `TutorProfile`. Result links stay `/listings/{id}`.
 
-**Display unit is one tutor.** After scoring, results pass through `dedupeSearchByTutor()` (`src/lib/search-dedupe.ts`): highest-scoring listing wins; siblings become “Also teaches…”. Tests assert two listings for tutor `t1` become **one** card. Pagination counts **deduped tutors** (`PAGE_SIZE = 12`).
+**Display unit is the Teaching Profile card.** Specific search (resolved subject and/or board / level / syllabus code): one card per matching listing, no per-tutor collapse. Broad search (location / keyword / country / mode / price only): `applyPerPageTutorCap` keeps at most **2** cards from the same `TutorProfile` on each page of 12; extras are deferred, not dropped. Pagination counts **cards**. Featured homepage strip stays one-per-tutor (`dedupeFeaturedListingsByTutor`). `similarTutors()` still excludes the whole parent tutor.
 
-**Locked display:** each matching Teaching Profile may appear as its **own** card. Broad/unfiltered search: **maximum 2 cards from the same `TutorProfile` per result page**. Subject-specific or strongly filtered search: show the matching profile (no extra per-tutor cap beyond relevance). “Also teaches” is a **secondary cross-link only**, not a substitute for a missing card.
-
-Other collapsing to review in the same search phase:
-
-- `dedupeFeaturedListingsByTutor` in `src/lib/featured-tutors.ts`.
-- `similarTutors()` excludes the whole parent tutor (`excludeTutorProfileId`) — keep that so similar-rail does not show the same person’s other subjects as “similar tutors”.
+**Classifier (locked in Phase 4):** specific = resolved `subject` OR `board` OR `level` OR `syllabusCode` after `parseSearchQuery` / `resolveSubjectName` / curriculum code extract. Example: `q=physics tutor` → Physics → specific. Location-only “tutor Rawalpindi” → broad.
 
 ### A.6 Entitlements and prices (live V2 — **KEPT**)
 
@@ -305,7 +300,7 @@ Examples:
 
 This is also how Past Papers **Find a tutor** must work (Cambridge → A Level → Mathematics → 9709). **Do not** create a separate Mathematics profile per syllabus just to match papers.
 
-Until capabilities are multi-value, today’s filters only match the **single** `board` / `level` / `qualification` / `syllabusCode` on the row (plus `contains` on title/description/keyword). A Maths tutor who stored GCSE on one row and 9709 on another would only match 9709 on the second row — after consolidation they must match on the **one** Maths profile.
+Phase 4 matches board / level / qualification / syllabus on the **join table unioned with the scalar cache**. A listing with GCSE only on a capability row matches a GCSE filter even when the scalar still says “All levels”. Master `TutorProfile.levels` CSV no longer qualifies a listing. After Phase 9 consolidation, one Maths profile should carry every capability; until then the 7 live same-subject collisions may still appear as separate cards on a specific search.
 
 Keep current score policy: Boost remains subordinate to subject/board/level/code relevance (`SEARCH_RANK_WEIGHTS` in search). Do not let Boosted Chemistry outrank a better Chemistry match.
 
@@ -320,7 +315,7 @@ Each card: subject, listing title, listing rate, listing Boost, same tutor photo
 
 Replace `dedupeSearchByTutor` on the main search path with this policy (not a full no-op: broad search still needs a per-tutor-per-page cap of 2). Pagination counts **Teaching Profile cards**, with the diversity cap applied per page.
 
-Exact classifier for “broad vs specific” is technical question 5. Direction: if the student (or Past Papers CTA) supplied a resolved subject and/or board/level/code filter, treat as specific; empty subject + generic keyword/location only is broad.
+**Classifier (Phase 4):** if the student (or Past Papers CTA) supplied a resolved subject and/or board/level/code filter, treat as specific; empty subject + generic keyword/location only is broad. Implemented as `isSpecificTeachingProfileSearch()` in `src/lib/search-dedupe.ts`.
 
 ### D.3 “Also teaches”
 
@@ -463,7 +458,7 @@ Phase 1 produced the migration **preview** and checked in additive DDL. Producti
 
 Boost/cap/admin writers (`listing-boost.ts`, `subject-profile-entitlements.ts`, `admin-actions.ts`) touch status/Boost only, not taxonomy scalars.
 
-**Audit (readers of those scalars on listings):** `src/lib/search-tutors.ts` (contains/equals filters + rank), `src/lib/listing-quality.ts` (score + near-dup), `src/components/TutorAdsManager.tsx`, `src/app/listings/[id]/page.tsx` (chips + JSON-LD via `subjectListingJsonLd`), `src/app/tutors/[id]/page.tsx`, `src/app/ads/page.tsx`, `src/lib/tutor-bio-ai.ts` / `src/app/api/ai/tutor-bio/route.ts`, `src/lib/featured-tutors.ts`. Search still uses **scalars**; join tables are not queried yet (Phase 4).
+**Audit (readers of those scalars on listings):** `src/lib/search-tutors.ts` (Phase 4: join-table capability match + scalar cache; scalars-only retry if the capability table is missing), `src/lib/listing-quality.ts` (score + near-dup), `src/components/TutorAdsManager.tsx`, `src/app/listings/[id]/page.tsx` (chips + JSON-LD via `subjectListingJsonLd`), `src/app/tutors/[id]/page.tsx`, `src/app/ads/page.tsx`, `src/lib/tutor-bio-ai.ts` / `src/app/api/ai/tutor-bio/route.ts`, `src/lib/featured-tutors.ts`.
 
 **Schema (Option A — implemented):**
 
@@ -583,7 +578,7 @@ Removed/reduced: 3→1 commercial cliff, grandfathering vs hard pause on 1 Oct, 
 
 ## L. Implementation phases
 
-Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1, Phase 2, and Phase 3 are done.** Next is Phase 4 (search: Teaching Profile cards, capability matching, max 2 per tutor on broad search).
+Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1, Phase 2, Phase 3, and Phase 4 are done.** Next is Phase 5 (dashboard: My Teaching Profiles).
 
 | Phase | Work |
 |-------|------|
@@ -591,7 +586,7 @@ Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1, Ph
 | **1. Schema / migration design** | Audit `SubjectProfile`. Option A join table. Canonical subject helper. Partial unique index (ACTIVE only, SQL, collision-gated). Read-only preview. **Done 2026-08-30** — see §G.5. |
 | **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. **Done 2026-08-30.** |
 | **3. Subject uniqueness** | One ACTIVE canonical subject per tutor. Duplicate detection replaces subject+level+board. Safe consolidation **tooling** (preview, not silent merge). **Done 2026-08-30.** |
-| **4. Search** | Teaching Profile cards. Capability matching (board/level/qual/code). Broad search max 2 cards per `TutorProfile` per page. Relevance-first; Boost subordinate. Also teaches = secondary only. Review similar-rail and featured dedupe. **NEXT.** |
+| **4. Search** | Teaching Profile cards. Capability matching (board/level/qual/code). Broad search max 2 cards per `TutorProfile` per page. Relevance-first; Boost subordinate. Also teaches = secondary only. Similar-rail still excludes the parent tutor; homepage featured strip stays one-per-tutor. **Done 2026-08-30.** |
 | **5. Dashboard** | My Teaching Profiles. Create/edit/pause/activate. Cap meter Free 3 / Pro 10. Boost per Teaching Profile. Multi-value capability editors. |
 | **6. Messaging context** | Keep one conversation per student–tutor. Retain subject/listing context in thread. |
 | **7. Derived master subjects** | Sync `TutorProfile.subjects` from ACTIVE Teaching Profiles. Remove remaining manual writes. |
@@ -613,11 +608,14 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 2. **Canonical subject rules** — `canonicalTeachingSubject()` in `src/lib/teaching-profile-subject.ts`. Reuses `resolveSubjectName` + `catalogSubjectNames()` / `SUBJECT_ALIASES` / `SUBJECT_CODES`. Exam-family prefixes (`GCSE Maths`, `A Level Physics`) collapse to the core subject. Trailing syllabus codes on a matched subject (`Chemistry 5070`) collapse. Custom unmatched labels stay verbatim; uniqueness is case-insensitive via `key`. Exam-prep products (SAT Prep, IELTS, CSS Prep) stay distinct. Stored on `SubjectProfile.canonicalSubject` (SQL first-pass copies trimmed `subject`; alias-aware backfill is Phase 3/9). Wizard UX unchanged.
 3. **ACTIVE uniqueness mechanism** — **not** Prisma `@@unique([tutorProfileId, subject])` and **not** `@@unique` on all statuses. Raw SQL partial unique index `SubjectProfile_active_tutor_canonical_uidx` on `(tutorProfileId, lower(btrim(canonicalSubject))) WHERE status = 'ACTIVE' AND canonicalSubject <> ''`. DDL **skips** creating the index when ACTIVE collisions exist. Preview (2026-08-30): **7** ACTIVE collision groups / **5** tutors — **do not apply the index until Phase 9**. Phase 3 writers enforce the product rule in JS (`shouldRejectActiveCanonicalWrite`). Pause-then-recreate of a new ACTIVE is allowed beside a PAUSED row; activating a paused row is blocked while another ACTIVE of that canonical subject exists. Existing collisions may still be edited in place.
 
-### Still open (Phase 4 / 9)
+### Answered in Phase 4
 
-3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection is **documented and dry-run** (Boost → Highlight → most complete capabilities → oldest `/listings/{id}` → smallest id). Capability union is previewed. **No merge in Phase 3.**
-4. **How to preserve existing URLs during consolidation** — dry-run lists survivor vs would-redirect ids. Keep vs 301 vs Boost-window policy still executes only in Phase 9. **No redirects in Phase 3.**
-5. **Exact broad-vs-specific search classification** — Phase 4.
+5. **Exact broad-vs-specific search classification** — specific when resolved `subject`, `board`, `level`, or `syllabusCode` is present (`isSpecificTeachingProfileSearch`). Broad otherwise (location / keyword / country / mode / price). Broad pages apply max 2 cards per tutor; extras defer to later pages. Specific search is uncapped (the 7 live Maths collisions may still show as separate cards).
+
+### Still open (Phase 9)
+
+3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection is **documented and dry-run** (Boost → Highlight → most complete capabilities → oldest `/listings/{id}` → smallest id). Capability union is previewed. **No merge in Phase 4.**
+4. **How to preserve existing URLs during consolidation** — dry-run lists survivor vs would-redirect ids. Keep vs 301 vs Boost-window policy still executes only in Phase 9. **No redirects in Phase 4.**
 6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles — **answered in Phase 2:** yes. Step 4 collects default lesson type; the first Teaching Profile inherits it (tutor can override on that step). Master `hourlyRate` is a cache copied from the first listing rate; **listability uses the Teaching Profile rate**, not the master field.
 
 ---
@@ -648,6 +646,7 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 | 2026-08-30 | **APPROVED PRODUCT DIRECTION** (see box below) | User lock-in, this plan |
 | 2026-08-30 | **PHASE 2 COMPLETE:** Wizard is photo → about you → location → qualifications / lesson defaults → explicit first Teaching Profile. Master bulk subject picker removed. No CSV auto-create / no `"General tutoring"`. Listability = email + master identity + ≥1 ACTIVE Teaching Profile with valid rate. Unique index still not applied. | This revision |
 | 2026-08-30 | **PHASE 3 COMPLETE:** One ACTIVE Teaching Profile per canonical subject in create/update paths. Duplicate detection on tutor dashboard + `/admin/teaching-profiles`. Dry-run consolidation (no execute). Unique index still not applied. 7 live ACTIVE collisions left in place. | This revision |
+| 2026-08-30 | **PHASE 4 COMPLETE:** Search results are Teaching Profile cards. Capability filters match join rows + scalar cache (not master `TutorProfile.levels`). Broad search max 2 cards per tutor per page; specific search uncapped. Also teaches = subject-only cross-link. Featured badge stays off. Unique index still not applied. | This revision |
 
 ### 2026-08-30 — APPROVED PRODUCT DIRECTION
 
@@ -681,9 +680,9 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 
 TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 
-IMPLEMENTATION STATUS: PHASE 3 COMPLETE. UNIQUE INDEX STILL NOT APPLIED.
+IMPLEMENTATION STATUS: PHASE 4 COMPLETE. UNIQUE INDEX STILL NOT APPLIED.
 
 NEXT STEP:
-Phase 4 — search (Teaching Profile cards, capability matching,
-max 2 per tutor on broad search). Do not start Phase 5–10 from this
-Phase 3 change set.
+Phase 5 — dashboard My Teaching Profiles (create/edit/pause/activate,
+cap meter Free 3 / Pro 10, Boost per Teaching Profile, multi-value
+capability editors). Do not start Phase 6–10 from this Phase 4 change set.

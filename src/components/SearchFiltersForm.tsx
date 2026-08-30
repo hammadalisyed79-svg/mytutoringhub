@@ -28,6 +28,7 @@ type Props = {
     country?: string;
     level?: string;
     board?: string;
+    syllabusCode?: string;
     language?: string;
     mode?: string;
     max?: string;
@@ -75,6 +76,7 @@ export function SearchFiltersForm({
   const [location, setLocation] = useState(initial.location || "");
   const [level, setLevel] = useState(initial.level || "");
   const [board, setBoard] = useState(initial.board || "");
+  const [syllabusCode, setSyllabusCode] = useState(initial.syllabusCode || "");
   const [language, setLanguage] = useState(initial.language || "");
   const [applying, setApplying] = useState(false);
 
@@ -174,6 +176,7 @@ export function SearchFiltersForm({
     location && { key: "location", label: resolveCity(location, cityPool).label || location },
     level && { key: "level", label: level },
     board && { key: "board", label: board },
+    syllabusCode && { key: "syllabusCode", label: syllabusCode },
     language && { key: "language", label: language },
     initial.mode === "online" && { key: "mode", label: "Online" },
     initial.mode === "inperson" && { key: "mode", label: "In person" },
@@ -197,6 +200,7 @@ export function SearchFiltersForm({
   const moreFiltersActive = Boolean(
     level ||
       board ||
+      syllabusCode ||
       language ||
       initial.mode ||
       initial.max ||
@@ -308,6 +312,17 @@ export function SearchFiltersForm({
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            Syllabus code
+            <input
+              name="syllabusCode"
+              value={syllabusCode}
+              onChange={(e) => setSyllabusCode(e.target.value)}
+              placeholder="9709, 0580…"
+              autoComplete="off"
+              spellCheck={false}
+            />
           </label>
           <SuggestField
             name="language"
