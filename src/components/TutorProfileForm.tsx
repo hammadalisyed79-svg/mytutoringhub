@@ -18,6 +18,7 @@ import {
   tutorLanguageOptions,
   tutorLevelOptions,
 } from "@/lib/tutor-catalog";
+import { curriculumBoards, curriculumCodesForSubject } from "@/lib/curriculum";
 import {
   availabilityTimeOptions,
   emptyAvailabilitySlot,
@@ -97,14 +98,14 @@ const WIZARD_STEPS = [
   },
   {
     id: "teaching",
-    title: "What you teach",
-    hint: "Subjects, hourly rate, and how you teach. Add more subject listings after you save.",
+    title: "Qualifications",
+    hint: "Your highest qualification and default lesson type. Subject Teaching Profiles come next.",
     optional: false,
   },
   {
     id: "finish",
-    title: "Save profile",
-    hint: "Save to go live when email is verified. Then add subject-wise teaching listings.",
+    title: "Teaching Profile",
+    hint: "Create your first Teaching Profile — one subject students can search for.",
     optional: false,
   },
 ] as const;
@@ -169,6 +170,7 @@ export function TutorProfileForm({
   trustBadge = "NEW",
   startStep,
   currency = "PKR",
+  hasValidTeachingProfile = false,
 }: {
   initial: Initial;
   displayName: string;
@@ -183,6 +185,8 @@ export function TutorProfileForm({
   startStep?: (typeof WIZARD_STEPS)[number]["id"] | "verify";
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
+  /** Skip first-profile create when an ACTIVE Teaching Profile already exists. */
+  hasValidTeachingProfile?: boolean;
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -207,7 +211,19 @@ export function TutorProfileForm({
   const [photoError, setPhotoError] = useState("");
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
-  const steps = useMemo(() => [...WIZARD_STEPS], []);
+  const steps = useMemo(() => {
+    return WIZARD_STEPS.map((row) => {
+      if (row.id !== "finish") return row;
+      if (hasValidTeachingProfile) {
+        return {
+          ...row,
+          title: "Save profile",
+          hint: "Optional extras. Your first Teaching Profile is already set.",
+        };
+      }
+      return row;
+    });
+  }, [hasValidTeachingProfile]);
   const initialStepIndex = Math.max(
     0,
     startStep && startStep !== "verify"
@@ -226,6 +242,12 @@ export function TutorProfileForm({
   const [name, setName] = useState(displayName);
   const [bio, setBio] = useState(initial.bio || "");
   const [subjectList, setSubjectList] = useState(splitCsv(initial.subjects));
+  const [firstSubject, setFirstSubject] = useState(() => splitCsv(initial.subjects)[0] || "");
+  const [teachingDescription, setTeachingDescription] = useState("");
+  const [teachingLevels, setTeachingLevels] = useState<string[]>([]);
+  const [teachingBoards, setTeachingBoards] = useState<string[]>([]);
+  const [teachingQuals, setTeachingQuals] = useState<string[]>([]);
+  const [teachingCodes, setTeachingCodes] = useState<string[]>([]);
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
   const [levelList, setLevelList] = useState(splitCsv(initial.levels));
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
@@ -264,13 +286,35 @@ export function TutorProfileForm({
   const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
   const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
   const listedSubjects = useMemo(() => {
-    const extra = subjectList.filter(
-      (name) => !catalogSubjects.some((item) => item.toLowerCase() === name.toLowerCase()),
+    const extra = [firstSubject, ...subjectList].filter(
+      (name) => name && !catalogSubjects.some((item) => item.toLowerCase() === name.toLowerCase()),
     );
     return [...catalogSubjects, ...extra];
-  }, [catalogSubjects, subjectList]);
+  }, [catalogSubjects, firstSubject, subjectList]);
+
+  const boardOptions = useMemo(() => curriculumBoards(), []);
+  const syllabusCodeOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const row of curriculumCodesForSubject(firstSubject)) {
+      const code = row.code?.trim();
+      if (!code || seen.has(code)) continue;
+      seen.add(code);
+      out.push(code);
+    }
+    return out;
+  }, [firstSubject]);
 
   const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
+
+  const firstProfileReady =
+    hasValidTeachingProfile ||
+    Boolean(
+      firstSubject.trim() &&
+        ratePkr >= MIN_HOURLY_RATE_PKR &&
+        teachingDescription.trim().length >= 20 &&
+        (online || inPerson),
+    );
 
   const completion = useMemo(
     () =>
@@ -286,6 +330,8 @@ export function TutorProfileForm({
         online,
         inPerson,
         qualifications,
+        hasValidTeachingProfile: firstProfileReady,
+        hasValidListingRate: firstProfileReady,
       }),
     [
       name,
@@ -299,6 +345,7 @@ export function TutorProfileForm({
       online,
       inPerson,
       qualifications,
+      firstProfileReady,
     ],
   );
 
@@ -326,12 +373,19 @@ export function TutorProfileForm({
         if (!location.trim()) return "Select a city.";
         return null;
       case "teaching":
-        if (!subjectList.length) return "Select at least one subject.";
+        if (!online && !inPerson) return "Choose online, in person, or both.";
+        if (!qualifications.trim()) return "Add your highest qualification.";
+        return null;
+      case "finish":
+        if (hasValidTeachingProfile) return null;
+        if (!firstSubject.trim()) return "Choose the subject for your first Teaching Profile.";
         if (ratePkr < MIN_HOURLY_RATE_PKR) {
           return `Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
         }
+        if (teachingDescription.trim().length < 20) {
+          return "Describe how you teach this subject (at least 20 characters).";
+        }
         if (!online && !inPerson) return "Choose online, in person, or both.";
-        if (!qualifications.trim()) return "Add your highest qualification.";
         return null;
       default:
         return null;
@@ -348,14 +402,17 @@ export function TutorProfileForm({
       case "place":
         return Boolean(country?.trim() && location.trim());
       case "teaching":
-        return (
-          subjectList.length > 0 &&
-          ratePkr >= MIN_HOURLY_RATE_PKR &&
-          (online || inPerson) &&
-          Boolean(qualifications.trim())
-        );
+        return (online || inPerson) && Boolean(qualifications.trim());
       case "finish":
-        return Boolean(completion.complete && emailVerified);
+        return Boolean(
+          completion.complete &&
+            emailVerified &&
+            (hasValidTeachingProfile ||
+              (firstSubject.trim() &&
+                ratePkr >= MIN_HOURLY_RATE_PKR &&
+                teachingDescription.trim().length >= 20 &&
+                (online || inPerson))),
+        );
       default:
         return false;
     }
@@ -405,8 +462,6 @@ export function TutorProfileForm({
         };
       case "teaching":
         return {
-          subjects: joinCsv(subjectList),
-          hourlyRate: ratePkr,
           online,
           inPerson,
           qualifications: qualifications.trim(),
@@ -602,10 +657,6 @@ export function TutorProfileForm({
       setError("Select the country you teach from.");
       return;
     }
-    if (!subjectList.length) {
-      setError("Select at least one subject from the catalog.");
-      return;
-    }
     if (name.trim().length < 2) {
       setError("Enter the name students see (at least 2 characters).");
       return;
@@ -614,26 +665,34 @@ export function TutorProfileForm({
       setError("Upload a profile photo before saving.");
       return;
     }
-    if (ratePkr < MIN_HOURLY_RATE_PKR) {
-      setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)}.`);
-      return;
-    }
     if (!qualifications.trim()) {
       setError("Add your highest qualification before saving.");
       return;
+    }
+    if (!hasValidTeachingProfile) {
+      if (!firstSubject.trim()) {
+        setError("Choose the subject for your first Teaching Profile.");
+        return;
+      }
+      if (ratePkr < MIN_HOURLY_RATE_PKR) {
+        setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)}.`);
+        return;
+      }
+      if (teachingDescription.trim().length < 20) {
+        setError("Describe how you teach this subject (at least 20 characters).");
+        return;
+      }
     }
     const effectiveHeadline =
       headline.trim().length >= 8
         ? headline.trim()
         : `${name.trim()} · Private tutor`.slice(0, 120);
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: name.trim(),
       headline: effectiveHeadline,
       bio: bio.trim(),
-      subjects: joinCsv(subjectList),
       expertise: joinCsv(expertiseList),
       country,
-      hourlyRate: ratePkr,
       location: location.trim(),
       online,
       inPerson,
@@ -652,6 +711,22 @@ export function TutorProfileForm({
       offersFreeTrial,
       phone: phone.trim(),
     };
+    if (hasValidTeachingProfile) {
+      if (ratePkr >= MIN_HOURLY_RATE_PKR) payload.hourlyRate = ratePkr;
+    } else {
+      payload.hourlyRate = ratePkr;
+      payload.firstTeachingProfile = {
+        subject: firstSubject.trim(),
+        description: teachingDescription.trim(),
+        rate: ratePkr,
+        online,
+        inPerson,
+        levels: teachingLevels,
+        boards: teachingBoards,
+        qualifications: teachingQuals,
+        syllabusCodes: teachingCodes,
+      };
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/profile/tutor", {
@@ -670,7 +745,7 @@ export function TutorProfileForm({
       const nowLive = Boolean(data.active);
       setMsg(
         nowLive
-          ? "Profile saved — your listing is live in search."
+          ? "Profile saved — your Teaching Profile is live in search."
           : "Profile saved. Finish the remaining required fields to go live.",
       );
       await update({ name: name.trim() });
@@ -775,7 +850,7 @@ export function TutorProfileForm({
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
       <p className="field-hint profile-wizard-persist-hint">
-        Five short steps. Progress saves as you go — your listing stays private until you save.
+        Five short steps. Progress saves as you go — you stay private until you save a Teaching Profile.
       </p>
     </div>
   );
@@ -805,7 +880,11 @@ export function TutorProfileForm({
         ) : null}
         {currentStep.id === "finish" ? (
           <button className="btn" type="button" disabled={uploading || saving || draftSaving} onClick={() => void save()}>
-            {saving ? "Saving…" : "Save profile"}
+            {saving
+              ? "Saving…"
+              : hasValidTeachingProfile
+                ? "Save profile"
+                : "Create Teaching Profile"}
           </button>
         ) : (
           <button className="btn" type="button" disabled={draftSaving || uploading} onClick={() => void goNext()}>
@@ -842,8 +921,9 @@ export function TutorProfileForm({
             <span style={{ width: `${Math.min(100, progress)}%` }} />
           </div>
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
-            Save your master profile, then add a teaching listing for each subject below — like FindTutors
-            subject ads.
+            {hasValidTeachingProfile
+              ? "Your first Teaching Profile is already set. Save any remaining profile details, then manage Teaching Profiles below."
+              : "Create one Teaching Profile for a single subject. Add more subjects later as separate Teaching Profiles."}
           </p>
         </div>
       ) : null}
@@ -1046,52 +1126,6 @@ export function TutorProfileForm({
 
       {show("teaching") && (
       <section className="form-section">
-        <CatalogMultiSelect
-          label="Subjects you teach"
-          required
-          searchable
-          directory
-          max={8}
-          selected={subjectList}
-          onChange={setSubjects}
-          options={listedSubjects}
-          addLabel="Add subject"
-          hint="Start with your main subjects. You can add separate listings per subject after saving."
-        />
-
-        <label>
-          <span>
-            Hourly rate ({rateCurrency}) <abbr className="req" title="Required">*</abbr>
-          </span>
-          <input
-            name="hourlyRate"
-            type="number"
-            min={rateMinLocal}
-            step={rateStep}
-            inputMode="decimal"
-            value={hourlyRate}
-            onChange={(e) => setHourlyRate(e.target.value)}
-          />
-          <span className="field-hint">
-            Minimum {formatMoney(rateMinLocal, rateCurrency)}. Add subject-specific rates in teaching
-            listings later.
-          </span>
-        </label>
-
-        <fieldset className="form-fieldset">
-          <legend>
-            Lesson type <abbr className="req" title="Required">*</abbr>
-          </legend>
-          <div className="checks">
-            <label className="radio">
-              <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Online
-            </label>
-            <label className="radio">
-              <input type="checkbox" checked={inPerson} onChange={(e) => setInPerson(e.target.checked)} /> In person
-            </label>
-          </div>
-        </fieldset>
-
         <label>
           <span>
             Highest qualification <abbr className="req" title="Required">*</abbr>
@@ -1103,15 +1137,146 @@ export function TutorProfileForm({
             placeholder="e.g. MSc Chemistry, PGCE, B.Ed"
           />
         </label>
+
+        <fieldset className="form-fieldset">
+          <legend>
+            Default lesson type <abbr className="req" title="Required">*</abbr>
+          </legend>
+          <p className="field-hint" style={{ marginTop: 0 }}>
+            New Teaching Profiles inherit this. You can change it per subject.
+          </p>
+          <div className="checks">
+            <label className="radio">
+              <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Online
+            </label>
+            <label className="radio">
+              <input type="checkbox" checked={inPerson} onChange={(e) => setInPerson(e.target.checked)} /> In person
+            </label>
+          </div>
+        </fieldset>
       </section>
       )}
 
       {currentStep.id === "finish" && (
         <>
-          <p className="field-hint">
-            After you save, scroll to <strong>My teaching listings</strong> to create a subject-wise
-            profile for each service (rate, level, board).
-          </p>
+          {hasValidTeachingProfile ? (
+            <p className="field-hint">
+              You already have a Teaching Profile. Manage subjects, rates, and Boost under{" "}
+              <strong>My Teaching Profiles</strong> below. Optional extras here stay on your main profile.
+            </p>
+          ) : (
+            <section className="form-section">
+              <CatalogMultiSelect
+                label="Subject"
+                required
+                searchable
+                directory
+                max={1}
+                selected={firstSubject ? [firstSubject] : []}
+                onChange={(next) => {
+                  const value = next[0] || "";
+                  setFirstSubject(value);
+                  setSubjects(value ? [value] : []);
+                }}
+                options={listedSubjects}
+                addLabel="Add subject"
+                hint="One canonical subject per Teaching Profile (for example Mathematics, not GCSE Maths)."
+              />
+
+              <label>
+                <span>
+                  Hourly rate ({rateCurrency}) <abbr className="req" title="Required">*</abbr>
+                </span>
+                <input
+                  name="hourlyRate"
+                  type="number"
+                  min={rateMinLocal}
+                  step={rateStep}
+                  inputMode="decimal"
+                  value={hourlyRate}
+                  onChange={(e) => setHourlyRate(e.target.value)}
+                />
+                <span className="field-hint">
+                  Minimum {formatMoney(rateMinLocal, rateCurrency)}. This rate is for this Teaching Profile.
+                </span>
+              </label>
+
+              <label>
+                <span>
+                  Teaching description <abbr className="req" title="Required">*</abbr>
+                </span>
+                <textarea
+                  name="teachingDescription"
+                  minLength={20}
+                  maxLength={4000}
+                  rows={4}
+                  value={teachingDescription}
+                  onChange={(e) => setTeachingDescription(e.target.value)}
+                  placeholder="Who this subject is for, how you teach it, and what results students can expect."
+                />
+                <span className="field-hint">{teachingDescription.trim().length}/4000 · at least 20 characters</span>
+              </label>
+
+              <fieldset className="form-fieldset">
+                <legend>
+                  How you teach this subject <abbr className="req" title="Required">*</abbr>
+                </legend>
+                <div className="checks">
+                  <label className="radio">
+                    <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Online
+                  </label>
+                  <label className="radio">
+                    <input
+                      type="checkbox"
+                      checked={inPerson}
+                      onChange={(e) => setInPerson(e.target.checked)}
+                    />{" "}
+                    In person
+                  </label>
+                </div>
+              </fieldset>
+
+              <CatalogMultiSelect
+                label="Levels"
+                selected={teachingLevels}
+                onChange={setTeachingLevels}
+                options={levelCatalog.core}
+                extraOptions={levelCatalog.more}
+                max={12}
+                addLabel="Add level"
+                hint="Select every level this subject covers (GCSE and A Level can live on the same Mathematics profile)."
+              />
+              <CatalogMultiSelect
+                label="Exam boards / curricula"
+                selected={teachingBoards}
+                onChange={setTeachingBoards}
+                options={boardOptions}
+                max={12}
+                addLabel="Add board"
+                hint="Optional. Cambridge, Edexcel, and others belong inside this subject profile."
+              />
+              <CatalogMultiSelect
+                label="Qualification stages"
+                selected={teachingQuals}
+                onChange={setTeachingQuals}
+                options={levelCatalog.core}
+                extraOptions={levelCatalog.more}
+                max={12}
+                addLabel="Add qualification"
+                hint="Optional. O Level, GCSE, A Level, IB, and similar."
+              />
+              <CatalogMultiSelect
+                label="Syllabus / subject codes"
+                selected={teachingCodes}
+                onChange={setTeachingCodes}
+                options={syllabusCodeOptions}
+                searchable
+                max={16}
+                addLabel="Add code"
+                hint="Optional. e.g. 0580, 9709 — helps Past Papers visitors find you."
+              />
+            </section>
+          )}
           <details className="profile-advanced-details" id="get-verified" open={startStep === "verify"}>
             <summary>Optional — ID verification, schedule, contact</summary>
             <div className="profile-advanced-block">

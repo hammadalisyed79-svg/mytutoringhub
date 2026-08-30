@@ -1,3 +1,9 @@
+import { MIN_HOURLY_RATE_PKR } from "@/lib/currency";
+import {
+  teachingCompletionFromListings,
+  type TeachingProfileListabilityRow,
+} from "@/lib/teaching-profile-write";
+
 export const DEFAULT_TUTOR_BIO = "New tutor — update this profile.";
 
 /** Registration / OAuth seed — not intentional tutor choices. */
@@ -17,13 +23,21 @@ export type TutorProfileCompletionInput = {
   bio?: string | null;
   country?: string | null;
   location?: string | null;
+  /** Derived cache only — not a listability gate. */
   subjects?: string | null;
   hourlyRate?: number | null;
   /**
-   * Marketplace V2: Teaching Listing.rate is authoritative.
-   * When true, profile hourlyRate is not required for completion/listability.
+   * Marketplace V2: Teaching Profile.rate is authoritative.
+   * When true, master hourlyRate is not required for completion/listability.
    */
   hasValidListingRate?: boolean;
+  /**
+   * At least one ACTIVE Teaching Profile with subject, valid rate, and lesson mode.
+   * Public searchability must not depend on TutorProfile.subjects CSV.
+   */
+  hasValidTeachingProfile?: boolean;
+  /** Optional listings — used when the boolean flags are omitted. */
+  subjectProfiles?: TeachingProfileListabilityRow[] | null;
   online?: boolean;
   inPerson?: boolean;
   qualifications?: string | null;
@@ -40,20 +54,37 @@ export function isTutorCityComplete(input: TutorProfileCompletionInput) {
   return true;
 }
 
+export function resolveTeachingCompletion(input: TutorProfileCompletionInput) {
+  if (typeof input.hasValidTeachingProfile === "boolean") {
+    const rate = Boolean(input.hasValidListingRate) || input.hasValidTeachingProfile;
+    return {
+      hasValidTeachingProfile: input.hasValidTeachingProfile,
+      hasValidListingRate: rate,
+    };
+  }
+  if (input.subjectProfiles) {
+    return teachingCompletionFromListings(input.subjectProfiles);
+  }
+  if (input.hasValidListingRate) {
+    return { hasValidTeachingProfile: true, hasValidListingRate: true };
+  }
+  return { hasValidTeachingProfile: false, hasValidListingRate: false };
+}
+
 /**
- * Rate / lesson mode are seeded on signup. Only count them once the tutor has
- * chosen subjects (teaching step), so defaults never look “done”.
+ * Teaching is complete only with an ACTIVE Teaching Profile (subject + rate + mode).
+ * Master subjects CSV and master hourlyRate are not sufficient.
  */
 export function isTutorTeachingComplete(input: TutorProfileCompletionInput) {
-  const subjectsOk = Boolean(input.subjects?.trim());
-  if (!subjectsOk) return false;
-  const rateOk = Number(input.hourlyRate) >= 500 || Boolean(input.hasValidListingRate);
-  const modeOk = Boolean(input.online || input.inPerson);
-  return rateOk && modeOk;
+  return resolveTeachingCompletion(input).hasValidTeachingProfile;
 }
 
 export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
-  const teachingStarted = Boolean(input.subjects?.trim());
+  const teaching = resolveTeachingCompletion(input);
+  const rateOk =
+    teaching.hasValidListingRate ||
+    (teaching.hasValidTeachingProfile && Number(input.hourlyRate) >= MIN_HOURLY_RATE_PKR);
+
   const checks: ProfileFieldCheck[] = [
     { key: "name", label: "Name", ok: (input.name?.trim().length ?? 0) >= 2, required: true },
     {
@@ -87,23 +118,21 @@ export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
       required: true,
     },
     {
-      key: "subjects",
-      label: "Subjects",
-      ok: teachingStarted,
+      key: "teachingProfile",
+      label: "Teaching Profile",
+      ok: teaching.hasValidTeachingProfile,
       required: true,
     },
     {
       key: "rate",
       label: "Hourly rate",
-      ok:
-        teachingStarted &&
-        (Number(input.hourlyRate) >= 500 || Boolean(input.hasValidListingRate)),
+      ok: teaching.hasValidTeachingProfile && rateOk,
       required: true,
     },
     {
       key: "lessonType",
       label: "Lesson type",
-      ok: teachingStarted && Boolean(input.online || input.inPerson),
+      ok: teaching.hasValidTeachingProfile,
       required: true,
     },
     {
@@ -131,6 +160,26 @@ export function isTutorProfileComplete(input: TutorProfileCompletionInput) {
   return getTutorProfileCompletion(input).complete;
 }
 
+/** Normalize Prisma tutor rows (optionally with subjectProfiles) for completion helpers. */
+export function completionInputFromTutorRow(
+  profile: TutorProfileCompletionInput & {
+    subjectProfiles?: TeachingProfileListabilityRow[] | null;
+  },
+  name?: string | null,
+): TutorProfileCompletionInput {
+  const teaching = teachingCompletionFromListings(profile.subjectProfiles);
+  return {
+    ...profile,
+    name: name ?? profile.name,
+    hasValidTeachingProfile:
+      profile.hasValidTeachingProfile !== undefined
+        ? profile.hasValidTeachingProfile
+        : teaching.hasValidTeachingProfile,
+    hasValidListingRate:
+      profile.hasValidListingRate !== undefined ? profile.hasValidListingRate : teaching.hasValidListingRate,
+  };
+}
+
 export function isTutorProfileStarted(profile: {
   photoUrl?: string | null;
   headline?: string | null;
@@ -140,7 +189,11 @@ export function isTutorProfileStarted(profile: {
   qualifications?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  hasValidTeachingProfile?: boolean;
+  subjectProfiles?: TeachingProfileListabilityRow[] | null;
 }) {
+  if (profile.hasValidTeachingProfile) return true;
+  if (teachingCompletionFromListings(profile.subjectProfiles).hasValidTeachingProfile) return true;
   if (profile.photoUrl?.trim()) return true;
   if (profile.headline?.trim()) return true;
   if (profile.qualifications?.trim()) return true;

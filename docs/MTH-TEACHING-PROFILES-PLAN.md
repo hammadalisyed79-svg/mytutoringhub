@@ -1,6 +1,6 @@
 # Teaching Profiles — product plan
 
-**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Phase 2 (wizard) has not started.** Do not change wizard, search-dedupe, entitlements, Boost, messaging, or production listing rows.  
+**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). **PHASE 2 COMPLETE** (2026-08-30) — wizard / completion / listability. Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Unique index SQL is still NOT applied** (7 live ACTIVE collisions). Do not change search-dedupe, entitlements 3/10, Boost SKU, messaging, or production listing rows.  
 **Date:** 2026-08-30  
 **Repo:** `C:\Tutor`  
 **Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
@@ -239,6 +239,14 @@ First Teaching Profile collects:
 Wizard resume (`resolveTutorWizardResumeStep`) currently blocks on `profile.subjects` and master `hourlyRate`. It must resume on **“no Teaching Profile yet”** instead.
 
 Completion / status card (`tutor-profile-completion`, `tutor-profile-status`, dashboard percent) must treat **first ACTIVE Teaching Profile** as the teaching gate, not the CSV.
+
+### C.5 Phase 2 implemented (2026-08-30)
+
+- Wizard steps: Profile photo → About you → Location → Qualifications / default lesson type → Create your first Teaching Profile (or Save profile if a valid ACTIVE listing already exists).
+- `POST /api/profile/tutor` no longer requires `TutorProfile.subjects` and **does not** auto-create a listing from `subjects.split(",")[0]` or `"General tutoring"`. First Teaching Profile is created only when the tutor sends `firstTeachingProfile` and they do not already have a valid ACTIVE listing (existing Maths duplicates are left alone).
+- First-profile writers dual-write `SubjectProfileCapability` rows + scalar display cache + `canonicalSubject`.
+- Listability: `hasValidTeachingProfile` = ACTIVE + non-empty subject + rate ≥ 500 PKR + online or in-person. Master CSV and master `hourlyRate` are not sufficient.
+- Unique index SQL **not applied**. Caps remain Free 3 / Pro 10. Search-dedupe unchanged.
 
 ### C.2 Where tutors create and manage Teaching Profiles
 
@@ -563,14 +571,14 @@ Removed/reduced: 3→1 commercial cliff, grandfathering vs hard pause on 1 Oct, 
 
 ## L. Implementation phases
 
-Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1 is done.** Next is Phase 2 (wizard) — do not start it from this Phase 1 work.
+Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1 and Phase 2 are done.** Next is Phase 3 (subject uniqueness / duplicate detection tooling, still no silent merge).
 
 | Phase | Work |
 |-------|------|
 | **0. Product lock** | Record all approved decisions from 2026-08-30 (this revision). **Done in this file.** No code. |
 | **1. Schema / migration design** | Audit `SubjectProfile`. Option A join table. Canonical subject helper. Partial unique index (ACTIVE only, SQL, collision-gated). Read-only preview. **Done 2026-08-30** — see §G.5. |
-| **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. **Not started.** |
-| **3. Subject uniqueness** | One ACTIVE canonical subject per tutor. Duplicate detection replaces subject+level+board. Safe consolidation **tooling** (preview, not silent merge). |
+| **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. **Done 2026-08-30.** |
+| **3. Subject uniqueness** | One ACTIVE canonical subject per tutor. Duplicate detection replaces subject+level+board. Safe consolidation **tooling** (preview, not silent merge). **NEXT.** |
 | **4. Search** | Teaching Profile cards. Capability matching (board/level/qual/code). Broad search max 2 cards per `TutorProfile` per page. Relevance-first; Boost subordinate. Also teaches = secondary only. Review similar-rail and featured dedupe. |
 | **5. Dashboard** | My Teaching Profiles. Create/edit/pause/activate. Cap meter Free 3 / Pro 10. Boost per Teaching Profile. Multi-value capability editors. |
 | **6. Messaging context** | Keep one conversation per student–tutor. Retain subject/listing context in thread. |
@@ -593,12 +601,12 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 2. **Canonical subject rules** — `canonicalTeachingSubject()` in `src/lib/teaching-profile-subject.ts`. Reuses `resolveSubjectName` + `catalogSubjectNames()` / `SUBJECT_ALIASES` / `SUBJECT_CODES`. Exam-family prefixes (`GCSE Maths`, `A Level Physics`) collapse to the core subject. Trailing syllabus codes on a matched subject (`Chemistry 5070`) collapse. Custom unmatched labels stay verbatim; uniqueness is case-insensitive via `key`. Exam-prep products (SAT Prep, IELTS, CSS Prep) stay distinct. Stored on `SubjectProfile.canonicalSubject` (SQL first-pass copies trimmed `subject`; alias-aware backfill is Phase 3/9). Wizard UX unchanged.
 3. **ACTIVE uniqueness mechanism** — **not** Prisma `@@unique([tutorProfileId, subject])` and **not** `@@unique` on all statuses. Raw SQL partial unique index `SubjectProfile_active_tutor_canonical_uidx` on `(tutorProfileId, lower(btrim(canonicalSubject))) WHERE status = 'ACTIVE' AND canonicalSubject <> ''`. DDL **skips** creating the index when ACTIVE collisions exist. Preview (2026-08-30): **7** ACTIVE collision groups / **5** tutors — **do not apply the index until Phase 9**. Pause-then-recreate must reuse the paused row (Phase 2/3 writers).
 
-### Still open (Phase 2+ / 9)
+### Still open (Phase 3+ / 9)
 
 3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection (quality, recency, Boost, traffic); capability union; conflict when two rows disagree. Preview inventory exists; **no merge**.
 4. **How to preserve existing URLs during consolidation** — keep vs 301 vs canonical; what happens to Boost windows on the retired id. **No redirects in Phase 1.**
 5. **Exact broad-vs-specific search classification** — Phase 4.
-6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles — Phase 2.
+6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles — **answered in Phase 2:** yes. Step 4 collects default lesson type; the first Teaching Profile inherits it (tutor can override on that step). Master `hourlyRate` is a cache copied from the first listing rate; **listability uses the Teaching Profile rate**, not the master field.
 
 ---
 
@@ -626,7 +634,7 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 | 2026-08-29 | V2: Free **3** permanent, Pro **10**; retire 2→0 listing-cap promo | Tracker + final implementation report |
 | 2026-08-30 | **Rejected:** Free 3 until 30 Sep 2026 then 1 + paid extras; no grandfathering work for that cliff | This plan revision |
 | 2026-08-30 | **APPROVED PRODUCT DIRECTION** (see box below) | User lock-in, this plan |
-| 2026-08-30 | **PHASE 1 COMPLETE:** Option A join table `SubjectProfileCapability`; `canonicalSubject` + alias helper; partial unique index SQL (ACTIVE only, collision-gated); read-only preview. Phase 2 not started. | This revision |
+| 2026-08-30 | **PHASE 2 COMPLETE:** Wizard is photo → about you → location → qualifications / lesson defaults → explicit first Teaching Profile. Master bulk subject picker removed. No CSV auto-create / no `"General tutoring"`. Listability = email + master identity + ≥1 ACTIVE Teaching Profile with valid rate. Unique index still not applied. | This revision |
 
 ### 2026-08-30 — APPROVED PRODUCT DIRECTION
 
@@ -660,8 +668,8 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 
 TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 
-IMPLEMENTATION STATUS: PHASE 1 COMPLETE. PHASE 2 NOT STARTED.
+IMPLEMENTATION STATUS: PHASE 2 COMPLETE. UNIQUE INDEX STILL NOT APPLIED.
 
 NEXT STEP:
-Phase 2 — wizard / completion (explicit first Teaching Profile; stop bulk
-picker and auto-create). Do not start Phase 2 from this Phase 1 change set.
+Phase 3 — subject uniqueness / duplicate detection tooling (preview, not
+silent merge). Do not start Phase 4–10 from this Phase 2 change set.

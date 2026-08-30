@@ -269,7 +269,7 @@ export function TutorAdsManager({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        subject: String(fd.get("subject")),
+        subject: String(fd.get("subjectCustom") || fd.get("subject") || "").trim(),
         title: String(fd.get("title")),
         level: String(fd.get("level") || "All levels"),
         board: String(fd.get("board") || ""),
@@ -285,12 +285,12 @@ export function TutorAdsManager({
     });
     const data = await res.json();
     if (!res.ok) {
-      flashError(data.error || "Could not create teaching listing");
+      flashError(data.error || "Could not create Teaching Profile");
       return;
     }
     e.currentTarget.reset();
     setShowCreate(false);
-    flashSuccess("Listing published — students can find it in search.");
+    flashSuccess("Teaching Profile published — students can find it in search.");
     load();
     router.refresh();
   }
@@ -325,7 +325,7 @@ export function TutorAdsManager({
       return;
     }
     setEditingId(null);
-    flashSuccess("Listing updated.");
+    flashSuccess("Teaching Profile updated.");
     load();
     router.refresh();
   }
@@ -346,8 +346,8 @@ export function TutorAdsManager({
     }
     flashSuccess(
       status === "PAUSED"
-        ? "Listing paused — it is hidden from search."
-        : "Listing reactivated — students can find it in search.",
+        ? "Teaching Profile paused — it is hidden from search."
+        : "Teaching Profile reactivated — students can find it in search.",
     );
     load();
     router.refresh();
@@ -376,8 +376,8 @@ export function TutorAdsManager({
     <div className="teaching-listings-manager" id="teaching-listings">
       <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
-          {entitlement?.promoLabel ||
-            `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active teaching listings. Tutor Pro unlocks up to ${entitlement?.paidCap ?? 10}. Legacy Unlimited Profiles holders keep unlimited listings.`}
+            {entitlement?.promoLabel ||
+            `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active Teaching Profiles. Tutor Pro unlocks up to ${entitlement?.paidCap ?? 10}. Legacy Unlimited Profiles holders keep unlimited profiles.`}
         </p>
         <p className="teaching-listings-meter">
           Active{" "}
@@ -393,7 +393,7 @@ export function TutorAdsManager({
 
       {listings.length > 0 && (
         <div className="listing-quality-tips">
-          <p className="listing-quality-title">Make listings easier to find</p>
+          <p className="listing-quality-title">Make Teaching Profiles easier to find</p>
           <ul>
             <li>Use a clear title students would search for (e.g. “Cambridge O Level Chemistry 5070”).</li>
             <li>Add exam board and syllabus code when relevant — Past Paper visitors match on these.</li>
@@ -407,8 +407,8 @@ export function TutorAdsManager({
         {listings.length === 0 && (
           <div className="teaching-listings-empty">
             <p style={{ margin: 0 }}>
-              No teaching listings yet. Add what you teach — subject, level, and rate — so students
-              searching for that exact need can find you.
+              No Teaching Profiles yet. Create one for a subject you teach — students are not in
+              search for that subject until you publish it.
             </p>
           </div>
         )}
@@ -496,7 +496,7 @@ export function TutorAdsManager({
                   type="button"
                   onClick={() => setEditingId(editing ? null : listing.id)}
                 >
-                  {editing ? "Close" : "Edit"}
+                  {editing ? "Close" : "Edit Teaching Profile"}
                 </button>
               </div>
 
@@ -506,7 +506,7 @@ export function TutorAdsManager({
                     plan="AD_BOOST"
                     planLabel="Listing Boost"
                     currency={currency}
-                    label={boosted ? "Extend boost 30 days" : "Boost this listing"}
+                    label={boosted ? "Extend boost 30 days" : "Boost this Teaching Profile"}
                     featured
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
@@ -605,9 +605,9 @@ export function TutorAdsManager({
           onSubmit={create}
           style={{ marginTop: "1rem" }}
         >
-          <h3 style={{ marginTop: 0 }}>Add teaching listing</h3>
+          <h3 style={{ marginTop: 0 }}>Create Teaching Profile</h3>
           <p className="field-hint">
-            One subject service per listing — students search these like FindTutors ads.
+            One canonical subject per Teaching Profile. Levels and boards go inside this profile.
           </p>
           <label>
             <span>
@@ -615,7 +615,7 @@ export function TutorAdsManager({
                 *
               </abbr>
             </span>
-            <select name="subject" required defaultValue="">
+            <select name="subject" defaultValue="">
               <option value="" disabled>
                 What do you teach?
               </option>
@@ -625,6 +625,10 @@ export function TutorAdsManager({
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            Or type a subject
+            <input name="subjectCustom" placeholder="e.g. Further Mathematics" />
           </label>
           <label>
             <span>
@@ -698,7 +702,7 @@ export function TutorAdsManager({
           </details>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <button className="btn btn-sm" type="submit">
-              Publish listing
+              Publish Teaching Profile
             </button>
             <button
               className="btn btn-secondary btn-sm"
@@ -723,15 +727,15 @@ export function TutorAdsManager({
               className="btn btn-sm"
               type="button"
               onClick={() => setShowCreate(true)}
-              disabled={subjects.length === 0}
+              disabled={false}
             >
-              Add teaching listing
+              Add Teaching Profile
             </button>
           )}
           {subjects.length === 0 && (
             <p className="muted" style={{ marginTop: "0.5rem" }}>
-              Add subjects on your account profile first, then create a teaching listing for each
-              service you offer.
+              Subject catalog is still loading. You can type a subject when you create a Teaching
+              Profile.
             </p>
           )}
         </div>

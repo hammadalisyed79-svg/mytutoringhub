@@ -24,14 +24,14 @@ export async function ProfileBoostPanel({
         <div>
           <h2 style={{ marginTop: 0 }}>{plan?.name || "Listing Boost"}</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
-            Boost each teaching listing separately — stronger placement among relevant matches for
+            Boost each Teaching Profile separately — stronger placement among relevant matches for
             ~30 days (never above strong subject fit).
           </p>
         </div>
       </div>
 
       <p className="profile-boost-status muted">
-        Open your Profile tab, pick a teaching listing, then use <strong>Listing Boost</strong> on
+        Open your Profile tab, pick a Teaching Profile, then use <strong>Listing Boost</strong> on
         that row.
         {priceLabel ? (
           <>
@@ -43,7 +43,7 @@ export async function ProfileBoostPanel({
 
       <div className="profile-boost-actions">
         <Link href="/dashboard/tutor?tab=profile#teaching-listings" className="btn">
-          Manage teaching listings
+          Manage Teaching Profiles
         </Link>
         {!compact && (
           <Link href="/pricing" className="btn btn-secondary">

@@ -16,6 +16,8 @@ const base = {
   location: "London",
   subjects: "Chemistry",
   hourlyRate: 2500,
+  hasValidTeachingProfile: true,
+  hasValidListingRate: true,
   online: true,
   inPerson: false,
   qualifications: "MSc Chemistry",

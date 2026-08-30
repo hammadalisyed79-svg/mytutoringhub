@@ -23,6 +23,7 @@ export type DashboardSearchParams = {
 };
 
 import { getTutorProfileCompletion, isTutorProfileComplete } from "@/lib/tutor-profile-completion";
+import type { TeachingProfileListabilityRow } from "@/lib/teaching-profile-write";
 
 export function profileStrength(
   tp: {
@@ -37,6 +38,9 @@ export function profileStrength(
     inPerson?: boolean;
     qualifications: string | null;
     availability: string | null;
+    hasValidTeachingProfile?: boolean;
+    hasValidListingRate?: boolean;
+    subjectProfiles?: TeachingProfileListabilityRow[] | null;
   },
   name?: string | null,
 ) {
@@ -52,6 +56,9 @@ export function profileStrength(
     online: tp.online,
     inPerson: tp.inPerson,
     qualifications: tp.qualifications,
+    hasValidTeachingProfile: tp.hasValidTeachingProfile,
+    hasValidListingRate: tp.hasValidListingRate,
+    subjectProfiles: tp.subjectProfiles,
   });
   const recommended = [
     !tp.availability?.trim() && "availability",
@@ -116,6 +123,9 @@ export function isTutorDashboardProfileComplete(
     online: tp.online,
     inPerson: tp.inPerson,
     qualifications: tp.qualifications,
+    hasValidTeachingProfile: tp.hasValidTeachingProfile,
+    hasValidListingRate: tp.hasValidListingRate,
+    subjectProfiles: tp.subjectProfiles,
   });
 }
 
@@ -174,7 +184,20 @@ export async function prepareDashboardHome(userId: string, role: Role, sp: Dashb
     where: { id: userId },
     include: {
       subscriptions: { orderBy: { createdAt: "desc" } },
-      tutorProfile: true,
+      tutorProfile: {
+        include: {
+          subjectProfiles: {
+            select: {
+              id: true,
+              status: true,
+              subject: true,
+              rate: true,
+              online: true,
+              inPerson: true,
+            },
+          },
+        },
+      },
       studentAds: { orderBy: { createdAt: "desc" }, take: 5 },
       reviewRequestsRecv: {
         where: { status: "PENDING" },

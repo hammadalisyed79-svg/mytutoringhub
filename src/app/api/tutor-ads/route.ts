@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canCreateTutorAd } from "@/lib/subscription";
-import {
-  defaultSubjectProfileTitle,
-  normalizeSubjectLabel,
-} from "@/lib/subject-profile";
+import { canCreateTutorAd, syncTutorBadges } from "@/lib/subscription";
+import { normalizeSubjectLabel } from "@/lib/subject-profile";
 import {
   canCreateSubjectProfile,
   getSubjectProfileActiveCap,
@@ -14,15 +11,32 @@ import {
   FREE_SUBJECT_PROFILES_AFTER_PROMO,
   PAID_SUBJECT_PROFILE_CAP,
 } from "@/lib/subject-profile-entitlements";
+import {
+  capabilitiesFromListingInput,
+  displayScalarsFromCapabilities,
+} from "@/lib/teaching-profile-capabilities";
+import { canonicalTeachingSubject } from "@/lib/teaching-profile-subject";
+import {
+  insertTeachingProfile,
+  mergeDerivedMasterSubjects,
+  replaceSubjectProfileCapabilities,
+  teachingProfilePersistFields,
+} from "@/lib/teaching-profile-write";
 import { z } from "zod";
+
+const stringList = z.array(z.string()).optional();
 
 const createSchema = z.object({
   subject: z.string().min(1),
   title: z.string().min(5).max(120),
-  level: z.string().min(1),
+  level: z.string().min(1).optional(),
   board: z.string().max(120).optional(),
   qualification: z.string().max(120).optional(),
   syllabusCode: z.string().max(40).optional(),
+  levels: stringList,
+  boards: stringList,
+  qualifications: stringList,
+  syllabusCodes: stringList,
   location: z.string().min(1),
   online: z.boolean(),
   inPerson: z.boolean(),
@@ -155,25 +169,52 @@ export async function POST(req: Request) {
   const gate = await canCreateTutorAd(session.user.id);
   if (!gate.ok) return NextResponse.json({ error: gate.reason }, { status: 403 });
   const data = createSchema.parse(await req.json());
-  const subject = normalizeSubjectLabel(data.subject);
-  if (!subject) {
-    return NextResponse.json({ error: "Enter a subject" }, { status: 400 });
-  }
+  const tutor = await prisma.tutorProfile.findUnique({
+    where: { id: gate.profile.id },
+    include: { user: { select: { name: true } } },
+  });
 
-  const board = normalizeOptional(data.board);
-  const qualification = normalizeOptional(data.qualification);
-  const syllabusCode = normalizeOptional(data.syllabusCode)?.toUpperCase() || null;
+  let persist;
+  try {
+    persist = teachingProfilePersistFields(
+      {
+        subject: data.subject,
+        title: data.title,
+        headline: data.headline?.trim() || tutor?.headline,
+        description: data.description,
+        rate: data.rate,
+        online: data.online,
+        inPerson: data.inPerson,
+        location: data.location,
+        country: tutor?.country,
+        levels: data.levels,
+        boards: data.boards,
+        qualifications: data.qualifications,
+        syllabusCodes: data.syllabusCodes,
+        level: data.level,
+        board: data.board,
+        qualification: data.qualification,
+        syllabusCode: data.syllabusCode,
+      },
+      { tutorName: tutor?.user.name },
+    );
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Enter a subject" },
+      { status: 400 },
+    );
+  }
 
   const duplicate = await findDuplicateListing({
     tutorProfileId: gate.profile.id,
-    subject,
-    level: data.level,
-    board,
+    subject: persist.subject,
+    level: persist.level,
+    board: persist.board,
   });
   if (duplicate) {
     return NextResponse.json(
       {
-        error: `You already have a teaching listing for ${subject} (${data.level}${board ? ` · ${board}` : ""}). Edit or reactivate it instead.`,
+        error: `You already have a teaching listing for ${persist.subject} (${persist.level}${persist.board ? ` · ${persist.board}` : ""}). Edit or reactivate it instead.`,
       },
       { status: 409 },
     );
@@ -187,7 +228,7 @@ export async function POST(req: Request) {
   const { isNearDuplicateListing } = await import("@/lib/listing-quality");
   for (const other of existingActive) {
     const near = isNearDuplicateListing(
-      { subject, level: data.level, board, title: data.title },
+      { subject: persist.subject, level: persist.level, board: persist.board, title: persist.title },
       other,
     );
     if (near.nearDup && near.confidence === "high") {
@@ -202,47 +243,32 @@ export async function POST(req: Request) {
     }
   }
 
-  const tutor = await prisma.tutorProfile.findUnique({
-    where: { id: gate.profile.id },
-    include: { user: { select: { name: true } } },
-  });
-
-  const row = await prisma.subjectProfile.create({
-    data: {
-      tutorProfileId: gate.profile.id,
-      subject,
-      title: data.title.trim() || defaultSubjectProfileTitle(subject, tutor?.user.name),
-      description: data.description || null,
-      level: data.level,
-      board,
-      qualification,
-      syllabusCode,
-      location: data.location,
-      country: tutor?.country || null,
-      online: data.online,
-      inPerson: data.inPerson,
-      rate: data.rate,
-      status: "ACTIVE",
-      headline: data.headline?.trim() || tutor?.headline || null,
+  const row = await insertTeachingProfile({
+    tutorProfileId: gate.profile.id,
+    tutorName: tutor?.user.name,
+    existingSubjectsCsv: tutor?.subjects,
+    input: {
+      subject: persist.subject,
+      title: persist.title,
+      headline: persist.headline,
+      description: persist.description,
+      rate: persist.rate,
+      online: persist.online,
+      inPerson: persist.inPerson,
+      location: persist.location,
+      country: persist.country,
+      levels: data.levels,
+      boards: data.boards,
+      qualifications: data.qualifications,
+      syllabusCodes: data.syllabusCodes,
+      level: persist.level,
+      board: persist.board || undefined,
+      qualification: persist.qualification || undefined,
+      syllabusCode: persist.syllabusCode || undefined,
     },
   });
 
-  await prisma.tutorAd
-    .create({
-      data: {
-        tutorProfileId: gate.profile.id,
-        subject: row.subject,
-        title: row.title,
-        level: row.level,
-        location: row.location,
-        online: row.online,
-        inPerson: row.inPerson,
-        rate: row.rate,
-        description: row.description,
-        status: row.status,
-      },
-    })
-    .catch(() => undefined);
+  await syncTutorBadges(session.user.id);
 
   return NextResponse.json(serializeListing(row));
 }
@@ -334,5 +360,58 @@ export async function PATCH(req: Request) {
     })
     .catch(() => undefined);
 
-  return NextResponse.json(serializeListing(updated));
+  const taxonomyTouched =
+    Boolean(nextSubject) ||
+    body.level != null ||
+    body.board !== undefined ||
+    body.qualification !== undefined ||
+    body.syllabusCode !== undefined ||
+    Array.isArray(body.levels) ||
+    Array.isArray(body.boards) ||
+    Array.isArray(body.qualifications) ||
+    Array.isArray(body.syllabusCodes);
+
+  let listed = updated;
+  if (taxonomyTouched) {
+    const caps = capabilitiesFromListingInput({
+      levels: body.levels,
+      boards: body.boards,
+      qualifications: body.qualifications,
+      syllabusCodes: body.syllabusCodes,
+      level: updated.level,
+      board: updated.board,
+      qualification: updated.qualification,
+      syllabusCode: updated.syllabusCode,
+    });
+    const scalars = displayScalarsFromCapabilities(caps);
+    await replaceSubjectProfileCapabilities(id, caps);
+    const canonical = nextSubject
+      ? canonicalTeachingSubject(nextSubject).canonical || nextSubject
+      : undefined;
+    listed = await prisma.subjectProfile.update({
+      where: { id },
+      data: {
+        ...scalars,
+        ...(canonical ? { canonicalSubject: canonical } : {}),
+      },
+    });
+  } else if (nextSubject) {
+    listed = await prisma.subjectProfile.update({
+      where: { id },
+      data: {
+        canonicalSubject: canonicalTeachingSubject(nextSubject).canonical || nextSubject,
+      },
+    });
+  }
+
+  if (nextSubject) {
+    await prisma.tutorProfile.update({
+      where: { id: profile.id },
+      data: { subjects: mergeDerivedMasterSubjects(profile.subjects, nextSubject) },
+    });
+  }
+
+  await syncTutorBadges(session.user.id);
+
+  return NextResponse.json(serializeListing(listed));
 }

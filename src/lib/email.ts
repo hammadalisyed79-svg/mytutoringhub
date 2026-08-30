@@ -444,7 +444,7 @@ export function tutorProfileIncompleteEmailHtml(opts: {
   step: number;
   dashboardUrl: string;
 }) {
-  const missingSubjects = opts.missing.some((m) => /subject/i.test(m));
+  const missingTeaching = opts.missing.some((m) => /teaching profile/i.test(m) || /subject/i.test(m));
   const missingPreview = opts.missing.slice(0, 4);
   const more =
     opts.missing.length > missingPreview.length
@@ -452,8 +452,8 @@ export function tutorProfileIncompleteEmailHtml(opts: {
       : "";
 
   if (opts.step === 1) {
-    const subjectLead = missingSubjects
-      ? `<p>Start by adding <strong>the subjects you teach</strong>, then finish any other remaining listing details so your profile can become eligible for tutor search.</p>`
+    const subjectLead = missingTeaching
+      ? `<p>Start by creating your first <strong>Teaching Profile</strong> (one subject, rate, and how you teach), then finish any other remaining details so your profile can become eligible for tutor search.</p>`
       : `<p>Finish the remaining listing details so your profile can become eligible for tutor search.</p>`;
     return emailLayout({
       preheader: "Your tutor account is ready — your profile is not visible to students yet",

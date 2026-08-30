@@ -24,6 +24,7 @@ import {
   getDbUserRole,
 } from "@/lib/dashboard-home";
 import { resolveTutorWizardResumeStep } from "@/lib/tutor-wizard";
+import { isValidActiveTeachingProfile } from "@/lib/teaching-profile-write";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
@@ -77,6 +78,7 @@ export default async function TutorDashboardPage({
         online: user.tutorProfile.online,
         inPerson: user.tutorProfile.inPerson,
         qualifications: user.tutorProfile.qualifications,
+        subjectProfiles: user.tutorProfile.subjectProfiles,
         emailVerified: user.emailVerified,
         forceActive: user.tutorProfile.forceActive,
         active: user.tutorProfile.active,
@@ -93,8 +95,8 @@ export default async function TutorDashboardPage({
             <h1 className="page-title">Hi, {user.name}</h1>
             <p className="muted">
               {statusView?.status === "LIVE"
-                ? "Your profile is live — manage subject listings and reply to students."
-                : "Finish a short profile (5 steps), then add subject listings students can find."}
+                ? "Your profile is live — manage Teaching Profiles and reply to students."
+                : "Finish a short profile (5 steps), then publish a Teaching Profile students can find."}
             </p>
           </div>
           <div className="page-hero-actions">
@@ -164,7 +166,7 @@ export default async function TutorDashboardPage({
               <h2>Also learning as a student?</h2>
               <p className="muted section-lead-tight">
                 Switch to student mode to search tutors, post requests, and use student contacts —
-                your tutor profile and teaching listings stay saved on this account.
+                your tutor profile and Teaching Profiles stay saved on this account.
               </p>
               <div className="panel-actions-row">
                 <SwitchProfileButton
@@ -212,11 +214,11 @@ export default async function TutorDashboardPage({
               <section className="panel" id="add-listing-cta">
                 <h2>Reach more students</h2>
                 <p className="muted">
-                  Add a teaching listing for each service you offer — then boost the ones that matter
+                  Add a Teaching Profile for each subject you offer — then boost the ones that matter
                   most. Students search by subject, level, and board.
                 </p>
                 <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#teaching-listings">
-                  Manage teaching listings
+                  Manage Teaching Profiles
                 </Link>
               </section>
             ) : null}
@@ -237,8 +239,8 @@ export default async function TutorDashboardPage({
                   <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
                   <p className="muted">
                     {profileComplete
-                      ? "Your photo, bio, and verification. Subject services are managed as listings below."
-                      : "Photo → about you → location → what you teach → save. Then add subject listings."}
+                      ? "Your photo, bio, and verification. Subjects are managed as Teaching Profiles below."
+                      : "Photo → about you → location → qualifications → first Teaching Profile."}
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
@@ -277,6 +279,7 @@ export default async function TutorDashboardPage({
                         {
                           ...user.tutorProfile,
                           name: user.name,
+                          subjectProfiles: user.tutorProfile.subjectProfiles,
                         },
                         {
                           verified: user.tutorProfile.verified,
@@ -284,16 +287,18 @@ export default async function TutorDashboardPage({
                         },
                       )
                 }
+                hasValidTeachingProfile={user.tutorProfile.subjectProfiles.some(isValidActiveTeachingProfile)}
               />
             </section>
           ) : null}
 
             {user.tutorProfile ? (
               <section className="panel" id="teaching-listings">
-                <h2 id="teaching-listings-section">My teaching listings</h2>
+                <h2 id="teaching-listings-section">My Teaching Profiles</h2>
                 <p className="muted">
-                  Create one listing per subject or level (e.g. GCSE Maths and A Level Maths). Each
-                  has its own rate — this is how students find you.
+                  One Teaching Profile per subject (for example Mathematics). Levels, boards, and
+                  syllabus codes sit inside that profile. Each has its own rate and{" "}
+                  <code>/listings/{"{id}"}</code> page — this is how students find you.
                 </p>
                 <TutorAdsManager
                   subjects={catalogSubjects}

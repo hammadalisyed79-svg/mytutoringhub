@@ -80,8 +80,8 @@ export default async function BecomeATutorPage({
             <h3>Go live automatically</h3>
             <p className="muted">
               Eligible profiles appear in search with no manual approval queue. Free tutors get up
-              to 3 active teaching listings with ordinary search visibility. Tutor Pro unlocks up
-              to 10 listings plus relevance-first ranking and unlimited enquiry reveals
+              to 3 active Teaching Profiles with ordinary search visibility. Tutor Pro unlocks up
+              to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals
               (complimentary until 30 September 2026). Listing Boost is optional. Identity Verified
               is earned after review — Priority Verification Review only jumps the queue.
             </p>
@@ -98,8 +98,8 @@ export default async function BecomeATutorPage({
           )}
         </div>
         <p className="muted" style={{ marginTop: "1rem" }}>
-          We do not promise a specific number of students. Visibility depends on subjects, location,
-          and how complete your listing is.{" "}
+          We do not promise a specific number of students. Visibility depends on your Teaching
+          Profiles, location, and how complete your main profile is.{" "}
           <Link href="/pricing">See optional tutor plans</Link>
         </p>
 

@@ -56,7 +56,7 @@ export function isSubjectProfilePromoActive(_now = new Date()): boolean {
 }
 
 export function subjectProfilePromoLabel(_now = new Date()): string {
-  return `Free plan includes ${FREE_SUBJECT_PROFILES} active teaching listings. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`;
+  return `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`;
 }
 
 /**
@@ -139,7 +139,7 @@ export async function canCreateSubjectProfile(
     if (cap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active teaching listings. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
+        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
         activeCount,
         cap,
       };

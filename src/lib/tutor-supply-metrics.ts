@@ -3,9 +3,8 @@
  */
 import { prisma } from "@/lib/prisma";
 import { isSuspiciousDisplayName } from "@/lib/display-name";
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, completionInputFromTutorRow, isTutorProfileStarted } from "@/lib/tutor-profile-completion";
 import { publicListedTutorWhere } from "@/lib/tutor-public-eligibility";
-import { isTutorProfileStarted } from "@/lib/tutor-profile-completion";
 
 export type TutorSupplyOverview = {
   totalTutorAccounts: number;
@@ -45,6 +44,9 @@ export async function getTutorSupplyOverview(): Promise<TutorSupplyOverview> {
         user: {
           select: { name: true, suspended: true, emailVerified: true, role: true },
         },
+        subjectProfiles: {
+          select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+        },
       },
     }),
   ]);
@@ -70,19 +72,7 @@ export async function getTutorSupplyOverview(): Promise<TutorSupplyOverview> {
     if (!profile.user.emailVerified) {
       unverifiedEmail += 1;
     }
-    const completion = getTutorProfileCompletion({
-      name: profile.user.name,
-      photoUrl: profile.photoUrl,
-      headline: profile.headline,
-      bio: profile.bio,
-      country: profile.country,
-      location: profile.location,
-      subjects: profile.subjects,
-      hourlyRate: profile.hourlyRate,
-      online: profile.online,
-      inPerson: profile.inPerson,
-      qualifications: profile.qualifications,
-    });
+    const completion = getTutorProfileCompletion(completionInputFromTutorRow(profile, profile.user.name));
     if (!completion.complete) {
       incomplete += 1;
       if (!isTutorProfileStarted(profile)) neverStarted += 1;
@@ -113,7 +103,12 @@ export async function getTutorSupplyGapReport(limit = 15): Promise<SupplyGapRow[
         active: false,
         user: { role: "TUTOR", suspended: false },
       },
-      include: { user: { select: { name: true } } },
+      include: {
+        user: { select: { name: true } },
+        subjectProfiles: {
+          select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+        },
+      },
     }),
     prisma.studentAd.findMany({
       where: { status: "OPEN" },
@@ -131,19 +126,7 @@ export async function getTutorSupplyGapReport(limit = 15): Promise<SupplyGapRow[
   const incompleteBy = new Map<string, number>();
   for (const p of incompleteProfiles) {
     if (isSuspiciousDisplayName(p.user.name)) continue;
-    const completion = getTutorProfileCompletion({
-      name: p.user.name,
-      photoUrl: p.photoUrl,
-      headline: p.headline,
-      bio: p.bio,
-      country: p.country,
-      location: p.location,
-      subjects: p.subjects,
-      hourlyRate: p.hourlyRate,
-      online: p.online,
-      inPerson: p.inPerson,
-      qualifications: p.qualifications,
-    });
+    const completion = getTutorProfileCompletion(completionInputFromTutorRow(p, p.user.name));
     if (completion.complete) continue;
     for (const s of splitSubjects(p.subjects)) {
       incompleteBy.set(s, (incompleteBy.get(s) || 0) + 1);

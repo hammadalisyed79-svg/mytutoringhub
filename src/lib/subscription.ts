@@ -186,6 +186,14 @@ export function isTutorProfileListable(
     inPerson?: boolean;
     qualifications?: string | null;
     hasValidListingRate?: boolean;
+    hasValidTeachingProfile?: boolean;
+    subjectProfiles?: Array<{
+      status?: string | null;
+      subject?: string | null;
+      rate?: number | null;
+      online?: boolean | null;
+      inPerson?: boolean | null;
+    }> | null;
   },
   name?: string | null,
 ): boolean {
@@ -200,6 +208,8 @@ export function isTutorProfileListable(
     subjects: profile.subjects,
     hourlyRate: profile.hourlyRate,
     hasValidListingRate: profile.hasValidListingRate,
+    hasValidTeachingProfile: profile.hasValidTeachingProfile,
+    subjectProfiles: profile.subjectProfiles,
     online: profile.online,
     inPerson: profile.inPerson,
     qualifications: profile.qualifications,
@@ -215,9 +225,8 @@ export async function syncTutorBadges(userId: string) {
       include: {
         ads: true,
         subjectProfiles: {
-          where: { status: "ACTIVE", rate: { gte: 500 } },
-          select: { id: true, rate: true },
-          take: 1,
+          where: { status: "ACTIVE" },
+          select: { status: true, subject: true, rate: true, online: true, inPerson: true },
         },
       },
     }),
@@ -269,10 +278,9 @@ export async function syncTutorBadges(userId: string) {
   // Verified badge is granted only by admin document review (verify_approve / set_verified).
   const verified = profile.verified;
   const planTier = computeTutorPlanTier(plans, { identityVerified: verified });
-  const hasValidListingRate = profile.subjectProfiles.length > 0;
   const listable =
     Boolean(user?.emailVerified) &&
-    isTutorProfileListable({ ...profile, hasValidListingRate }, user?.name);
+    isTutorProfileListable({ ...profile, subjectProfiles: profile.subjectProfiles }, user?.name);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },

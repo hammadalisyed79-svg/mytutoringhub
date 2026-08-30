@@ -75,6 +75,13 @@ function isProfileIncomplete(
     online: boolean;
     inPerson: boolean;
     qualifications?: string | null;
+    subjectProfiles?: Array<{
+      status?: string | null;
+      subject?: string | null;
+      rate?: number | null;
+      online?: boolean | null;
+      inPerson?: boolean | null;
+    }> | null;
   },
   name: string,
 ) {
@@ -90,6 +97,7 @@ function isProfileIncomplete(
     online: tutor.online,
     inPerson: tutor.inPerson,
     qualifications: tutor.qualifications,
+    subjectProfiles: tutor.subjectProfiles,
   }).complete;
 }
 
@@ -149,9 +157,9 @@ export async function generateMetadata({ params }: Params) {
       user: { select: { id: true, name: true, emailVerified: true, suspended: true } },
       subjectProfiles: {
         where: { status: "ACTIVE" },
-        select: { id: true },
+        select: { id: true, status: true, subject: true, rate: true, online: true, inPerson: true },
         orderBy: { updatedAt: "desc" },
-        take: 2,
+        take: 8,
       },
     },
   });

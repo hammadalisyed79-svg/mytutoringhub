@@ -11,7 +11,7 @@ import {
   emailSequenceLabel,
   PROFILE_NURTURE_SEQUENCES,
 } from "@/lib/email-sequence-labels";
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, completionInputFromTutorRow } from "@/lib/tutor-profile-completion";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,13 @@ export default async function AdminUserDetailPage({ params }: Params) {
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
-      tutorProfile: true,
+      tutorProfile: {
+        include: {
+          subjectProfiles: {
+            select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+          },
+        },
+      },
       studentAds: { orderBy: { createdAt: "desc" }, take: 20 },
       subscriptions: { orderBy: { createdAt: "desc" } },
       reportsFiled: { orderBy: { createdAt: "desc" }, take: 10 },
@@ -44,19 +50,7 @@ export default async function AdminUserDetailPage({ params }: Params) {
 
   const profileCompletion =
     user.tutorProfile &&
-    getTutorProfileCompletion({
-      name: user.name,
-      photoUrl: user.tutorProfile.photoUrl,
-      headline: user.tutorProfile.headline,
-      bio: user.tutorProfile.bio,
-      country: user.tutorProfile.country,
-      location: user.tutorProfile.location,
-      subjects: user.tutorProfile.subjects,
-      hourlyRate: user.tutorProfile.hourlyRate,
-      online: user.tutorProfile.online,
-      inPerson: user.tutorProfile.inPerson,
-      qualifications: user.tutorProfile.qualifications,
-    });
+    getTutorProfileCompletion(completionInputFromTutorRow(user.tutorProfile, user.name));
 
   const profileNurtureEvents = user.emailSequenceEvents.filter((e) =>
     PROFILE_NURTURE_SEQUENCES.includes(e.sequence as (typeof PROFILE_NURTURE_SEQUENCES)[number]),

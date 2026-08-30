@@ -1,4 +1,8 @@
-import type { TutorProfileCompletionInput } from "@/lib/tutor-profile-completion";
+import {
+  isTutorCityComplete,
+  resolveTeachingCompletion,
+  type TutorProfileCompletionInput,
+} from "@/lib/tutor-profile-completion";
 
 /** Short FindTutor-style setup — advanced fields live outside this flow. */
 export const TUTOR_WIZARD_STEP_IDS = [
@@ -13,6 +17,8 @@ export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
 
 /**
  * Resume at the first incomplete required step.
+ * Teaching step is qualifications / lesson-mode defaults.
+ * Finish is “create first Teaching Profile” unless a valid ACTIVE listing already exists.
  */
 export function resolveTutorWizardResumeStep(
   profile: TutorProfileCompletionInput & {
@@ -29,13 +35,14 @@ export function resolveTutorWizardResumeStep(
   const bioOk = (profile.bio?.trim().length || 0) >= 40;
   if (!nameOk || !headlineOk || !bioOk) return "basics";
 
-  if (!profile.country?.trim() || !profile.location?.trim()) return "place";
+  if (!profile.country?.trim() || !isTutorCityComplete(profile)) return "place";
 
-  const subjectsOk = Boolean(profile.subjects?.trim());
-  const rateOk = typeof profile.hourlyRate === "number" && profile.hourlyRate >= 500;
   const modeOk = Boolean(profile.online || profile.inPerson);
   const qualsOk = Boolean(profile.qualifications?.trim());
-  if (!subjectsOk || !rateOk || !modeOk || !qualsOk) return "teaching";
+  if (!modeOk || !qualsOk) return "teaching";
+
+  const teaching = resolveTeachingCompletion(profile);
+  if (!teaching.hasValidTeachingProfile) return "finish";
 
   return "finish";
 }

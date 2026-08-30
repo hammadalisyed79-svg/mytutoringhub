@@ -15,13 +15,16 @@ import {
 import { curriculumLevels } from "@/lib/curriculum";
 import { countryByName } from "@/lib/markets";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
-import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
 import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
 import { isAllowedBlobUrl } from "@/lib/blob-url";
 import { tryAwardProfileCompleteBonus } from "@/lib/hub-points";
 import { sendTutorProfileLiveEmail } from "@/lib/email-nurture";
+import {
+  insertTeachingProfile,
+  shouldSkipFirstTeachingProfileCreate,
+} from "@/lib/teaching-profile-write";
 
 const schema = z
   .object({
@@ -36,11 +39,34 @@ const schema = z
       .trim()
       .min(40, "Tell students a bit more about how you teach (at least 40 characters)")
       .max(4000, "Bio must be 4000 characters or less"),
-    subjects: z.string().trim().min(2, "Select at least one subject"),
+    subjects: z.string().trim().max(2000).optional(),
     hourlyRate: z
       .number()
       .min(500, "Hourly rate must be at least 500 PKR")
-      .max(50000, "Hourly rate is too high"),
+      .max(50000, "Hourly rate is too high")
+      .optional(),
+    firstTeachingProfile: z
+      .object({
+        subject: z.string().trim().min(1, "Choose a subject"),
+        title: z.string().trim().min(5).max(120).optional(),
+        description: z
+          .string()
+          .trim()
+          .min(20, "Describe how you teach this subject (at least 20 characters)")
+          .max(4000),
+        rate: z.number().min(500).max(50000),
+        online: z.boolean(),
+        inPerson: z.boolean(),
+        levels: z.array(z.string()).optional(),
+        boards: z.array(z.string()).optional(),
+        qualifications: z.array(z.string()).optional(),
+        syllabusCodes: z.array(z.string()).optional(),
+      })
+      .refine((d) => d.online || d.inPerson, {
+        message: "Choose online, in person, or both for this Teaching Profile",
+        path: ["online"],
+      })
+      .optional(),
     location: z.string().trim().min(2, "Select your city, or Online"),
     country: z.string().trim().min(2, "Select your country").max(80),
     expertise: z.string().max(1000).optional(),
@@ -117,23 +143,14 @@ export async function PUT(req: Request) {
     }
     const photoUrl = rawPhoto;
 
-    const listed = await prisma.subject.findMany({ select: { name: true } });
     const existing = await prisma.tutorProfile.findUnique({
       where: { userId: session.user.id },
+      include: {
+        subjectProfiles: {
+          select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+        },
+      },
     });
-    const subjectCatalog = mergeSubjectNames(
-      listed.map((row) => row.name),
-      catalogSubjectNames(),
-      splitCsv(existing?.subjects),
-    );
-    const subjectParts = splitCsv(data.subjects);
-    if (!subjectParts.length) {
-      return NextResponse.json({ error: "Select at least one subject from the catalog" }, { status: 400 });
-    }
-    const subjects = pickKnown(subjectParts, subjectCatalog);
-    if (subjects.length !== subjectParts.length) {
-      return NextResponse.json({ error: "Choose subjects from the listed catalog only" }, { status: 400 });
-    }
 
     if (!tutorCountries().includes(data.country)) {
       return NextResponse.json({ error: "Select a listed country" }, { status: 400 });
@@ -143,10 +160,14 @@ export async function PUT(req: Request) {
       pickKnown([data.location], cityOptions)[0] ||
       (data.location.toLowerCase() === "online" ? "Online" : data.location);
 
+    const firstProfileSubject = data.firstTeachingProfile?.subject?.trim() || "";
     const levelCatalog = tutorLevelOptions(curriculumLevels());
     const languageCatalog = tutorLanguageOptions();
     const skillCatalog = [
-      ...expertiseForSubjects(subjects),
+      ...expertiseForSubjects([
+        ...splitCsv(existing?.subjects),
+        ...(firstProfileSubject ? [firstProfileSubject] : []),
+      ]),
       ...GENERIC_EXPERTISE,
       ...splitCsv(existing?.expertise),
     ];
@@ -161,7 +182,6 @@ export async function PUT(req: Request) {
         ...splitCsv(existing?.languages),
       ]),
     );
-    const subjectCsv = joinCsv(subjects);
     const availability = serializeAvailability(parseAvailability(data.availability));
     const experienceYears =
       data.experienceYears == null || Number.isNaN(data.experienceYears) ? null : data.experienceYears;
@@ -181,11 +201,16 @@ export async function PUT(req: Request) {
       data: { name: parsedName.name },
     });
 
+    const hourlyRate =
+      data.hourlyRate ??
+      data.firstTeachingProfile?.rate ??
+      existing?.hourlyRate ??
+      0;
+
     const profilePayload = {
       headline: data.headline,
       bio: data.bio,
-      subjects: subjectCsv,
-      hourlyRate: data.hourlyRate,
+      hourlyRate,
       location,
       country: data.country,
       expertise: expertise || null,
@@ -207,9 +232,11 @@ export async function PUT(req: Request) {
       phone: normalizedPhone,
     };
     const wasListable = existing
-      ? isTutorProfileListable(existing, parsedName.name)
+      ? isTutorProfileListable(
+          { ...existing, subjectProfiles: existing.subjectProfiles },
+          parsedName.name,
+        )
       : false;
-    const listable = isTutorProfileListable(profilePayload, parsedName.name);
 
     const profile = await prisma.tutorProfile.upsert({
       where: { userId: session.user.id },
@@ -217,52 +244,64 @@ export async function PUT(req: Request) {
       create: {
         userId: session.user.id,
         ...profilePayload,
-        // Free complete profiles list in search; paid plans add priority via syncTutorBadges.
-        active: listable,
+        subjects: existing?.subjects || "",
+        active: false,
       },
     });
 
-    const subjectCount = await prisma.subjectProfile.count({ where: { tutorProfileId: profile.id } });
-    if (subjectCount === 0) {
-      const { defaultSubjectProfileTitle, normalizeSubjectLabel, splitSubjectsCsv } = await import(
-        "@/lib/subject-profile"
-      );
-      const subjects = splitSubjectsCsv(profile.subjects);
-      const firstSubject = subjects[0] || "General tutoring";
-      const subject = normalizeSubjectLabel(firstSubject);
-      await prisma.subjectProfile.create({
-        data: {
-          tutorProfileId: profile.id,
-          subject,
-          title: profile.headline || defaultSubjectProfileTitle(subject),
-          headline: profile.headline,
-          description: profile.bio.slice(0, 500),
-          level: profile.levels?.split(",")[0]?.trim() || "All levels",
-          location: profile.location,
-          country: profile.country,
-          online: profile.online,
-          inPerson: profile.inPerson,
-          rate: profile.hourlyRate,
-          status: "ACTIVE",
+    let listings = existing?.subjectProfiles ?? [];
+    const skipFirst = shouldSkipFirstTeachingProfileCreate(listings);
+    if (data.firstTeachingProfile && !skipFirst) {
+      const { getSubjectProfileActiveCap } = await import("@/lib/subject-profile-entitlements");
+      const [cap, activeCount] = await Promise.all([
+        getSubjectProfileActiveCap(session.user.id),
+        prisma.subjectProfile.count({
+          where: { tutorProfileId: profile.id, status: "ACTIVE" },
+        }),
+      ]);
+      if (activeCount >= cap) {
+        return NextResponse.json(
+          { error: "Teaching Profile limit reached. Pause one or upgrade to Tutor Pro." },
+          { status: 403 },
+        );
+      }
+      const created = await insertTeachingProfile({
+        tutorProfileId: profile.id,
+        tutorName: parsedName.name,
+        existingSubjectsCsv: profile.subjects,
+        syncMasterRate: true,
+        input: {
+          subject: data.firstTeachingProfile.subject,
+          title: data.firstTeachingProfile.title,
+          headline: data.headline,
+          description: data.firstTeachingProfile.description,
+          rate: data.firstTeachingProfile.rate,
+          online: data.firstTeachingProfile.online,
+          inPerson: data.firstTeachingProfile.inPerson,
+          location,
+          country: data.country,
+          levels: data.firstTeachingProfile.levels,
+          boards: data.firstTeachingProfile.boards,
+          qualifications: data.firstTeachingProfile.qualifications,
+          syllabusCodes: data.firstTeachingProfile.syllabusCodes,
         },
       });
-      await prisma.tutorAd
-        .create({
-          data: {
-            tutorProfileId: profile.id,
-            subject,
-            title: profile.headline || defaultSubjectProfileTitle(subject),
-            level: profile.levels?.split(",")[0]?.trim() || "All levels",
-            location: profile.location,
-            online: profile.online,
-            inPerson: profile.inPerson,
-            rate: profile.hourlyRate,
-            description: profile.bio.slice(0, 500),
-            status: "ACTIVE",
-          },
-        })
-        .catch(() => undefined);
+      listings = [
+        ...listings,
+        {
+          status: created.status,
+          subject: created.subject,
+          rate: created.rate,
+          online: created.online,
+          inPerson: created.inPerson,
+        },
+      ];
     }
+
+    const listable = isTutorProfileListable(
+      { ...profilePayload, subjectProfiles: listings },
+      parsedName.name,
+    );
 
     await syncTutorBadges(session.user.id);
 
@@ -420,22 +459,7 @@ export async function PATCH(req: Request) {
         (location.toLowerCase() === "online" ? "Online" : location);
     }
 
-    if (data.subjects !== undefined) {
-      const listed = await prisma.subject.findMany({ select: { name: true } });
-      const subjectCatalog = mergeSubjectNames(
-        listed.map((row) => row.name),
-        catalogSubjectNames(),
-        splitCsv(existing.subjects),
-      );
-      const subjectParts = splitCsv(data.subjects);
-      const subjects = pickKnown(subjectParts, subjectCatalog);
-      if (subjectParts.length && subjects.length !== subjectParts.length) {
-        return NextResponse.json({ error: "Choose subjects from the listed catalog only" }, { status: 400 });
-      }
-      patch.subjects = joinCsv(subjects);
-    }
-
-    const subjectCsv = String(patch.subjects ?? existing.subjects ?? "");
+    const subjectCsv = existing.subjects ?? "";
     const subjectList = splitCsv(subjectCsv);
     if (data.expertise !== undefined) {
       const skillCatalog = [

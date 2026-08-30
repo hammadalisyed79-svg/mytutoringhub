@@ -23,6 +23,7 @@ import {
   getTutorProfileCompletion,
   isTutorProfileComplete,
   isTutorProfileStarted,
+  completionInputFromTutorRow,
 } from "@/lib/tutor-profile-completion";
 import { trustBadgeMeta } from "@/lib/tutor-badges";
 import { hasAnyActivePlan } from "@/lib/subscription";
@@ -49,6 +50,14 @@ export const NURTURE_SEQUENCES = {
 
 const appUrl = () => process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
+const tutorProfileCompletionInclude = {
+  include: {
+    subjectProfiles: {
+      select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+    },
+  },
+} as const;
+
 export async function claimEmailEvent(userId: string, sequence: string): Promise<boolean> {
   try {
     await prisma.emailSequenceEvent.create({ data: { userId, sequence } });
@@ -64,31 +73,11 @@ async function releaseEmailEvent(userId: string, sequence: string) {
     .catch(() => undefined);
 }
 
-function tutorCompletionInput(user: { name: string }, profile: {
-  photoUrl: string | null;
-  headline: string | null;
-  bio: string;
-  country: string | null;
-  location: string;
-  subjects: string;
-  hourlyRate: number;
-  online: boolean;
-  inPerson: boolean;
-  qualifications: string | null;
-}) {
-  return getTutorProfileCompletion({
-    name: user.name,
-    photoUrl: profile.photoUrl,
-    headline: profile.headline,
-    bio: profile.bio,
-    country: profile.country,
-    location: profile.location,
-    subjects: profile.subjects,
-    hourlyRate: profile.hourlyRate,
-    online: profile.online,
-    inPerson: profile.inPerson,
-    qualifications: profile.qualifications,
-  });
+function tutorCompletionInput(
+  user: { name: string },
+  profile: Parameters<typeof completionInputFromTutorRow>[0],
+) {
+  return getTutorProfileCompletion(completionInputFromTutorRow(profile, user.name));
 }
 
 export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 | 3 | 4) {
@@ -108,7 +97,7 @@ export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 
       role: true,
       suspended: true,
       emailVerified: true,
-      tutorProfile: true,
+      tutorProfile: tutorProfileCompletionInclude,
     },
   });
   if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended || !user.tutorProfile) {
@@ -153,7 +142,15 @@ export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 
 export async function sendTutorProfileNeverStartedEmail(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, role: true, suspended: true, emailVerified: true, tutorProfile: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      suspended: true,
+      emailVerified: true,
+      tutorProfile: tutorProfileCompletionInclude,
+    },
   });
   if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended || !user.tutorProfile) {
     return { sent: false, reason: "ineligible" as const };
@@ -184,7 +181,15 @@ export async function sendTutorProfileNeverStartedEmail(userId: string) {
 export async function sendTutorProfileLiveEmail(userId: string, profileId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, role: true, suspended: true, emailVerified: true, tutorProfile: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      suspended: true,
+      emailVerified: true,
+      tutorProfile: tutorProfileCompletionInclude,
+    },
   });
   if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended || !user.tutorProfile) {
     return { sent: false, reason: "ineligible" as const };
@@ -247,7 +252,7 @@ export async function sendTutorPlanNudgeEmail(userId: string) {
 export async function sendTutorVerifyNudgeEmail(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { tutorProfile: true },
+    include: { tutorProfile: tutorProfileCompletionInclude },
   });
   if (!user?.email || !user.emailVerified || user.role !== "TUTOR" || user.suspended || !user.tutorProfile) {
     return { sent: false, reason: "ineligible" as const };
@@ -715,14 +720,16 @@ export async function runNurtureDigest() {
       tutorProfile: { isNot: null },
       emailSequenceEvents: { none: { sequence: NURTURE_SEQUENCES.TUTOR_PROFILE_R1 } },
     },
-    include: { tutorProfile: true },
+    include: { tutorProfile: tutorProfileCompletionInclude },
     take: 40,
   });
   sent.tutorProfileR1 = await countSent(
     await Promise.all(
       tutorR1.map(async (user) => {
         if (!user.tutorProfile || !isTutorProfileStarted(user.tutorProfile)) return { sent: false };
-        if (isTutorProfileComplete({ ...user.tutorProfile, name: user.name })) return { sent: false };
+        if (isTutorProfileComplete(completionInputFromTutorRow(user.tutorProfile, user.name))) {
+          return { sent: false };
+        }
         try {
           return await sendTutorProfileReminderEmail(user.id, 1);
         } catch (err) {
@@ -830,7 +837,7 @@ export async function runNurtureDigest() {
         },
       },
     },
-    include: { tutorProfile: true },
+    include: { tutorProfile: tutorProfileCompletionInclude },
     take: 40,
   });
   sent.tutorNeverStarted = await countSent(

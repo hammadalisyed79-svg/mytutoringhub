@@ -13,6 +13,8 @@ const base = {
   location: "London",
   subjects: "Chemistry",
   hourlyRate: 2500,
+  hasValidTeachingProfile: true,
+  hasValidListingRate: true,
   online: true,
   inPerson: false,
   qualifications: "MSc Chemistry",
@@ -26,6 +28,18 @@ const base = {
   assert.equal(a.desiredActive, true);
   assert.equal(a.listable, true);
   assert.equal(a.complete, true);
+}
+
+// master subjects CSV without a Teaching Profile is not listable
+{
+  const a = computeDesiredTutorPublicActive({
+    ...base,
+    hasValidTeachingProfile: false,
+    hasValidListingRate: false,
+  });
+  assert.equal(a.listable, false);
+  assert.equal(a.complete, false);
+  assert.ok(a.missingRequired.includes("Teaching Profile"));
 }
 
 // incomplete + verified → not eligible
@@ -51,7 +65,13 @@ const base = {
 
 // paid-incomplete is represented by incomplete profile (payment does not affect this helper)
 {
-  const a = computeDesiredTutorPublicActive({ ...base, subjects: "", qualifications: "" });
+  const a = computeDesiredTutorPublicActive({
+    ...base,
+    subjects: "",
+    qualifications: "",
+    hasValidTeachingProfile: false,
+    hasValidListingRate: false,
+  });
   assert.equal(a.desiredActive, false);
 }
 

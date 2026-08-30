@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { AdminActionButton, AdminBoostForm, AdminToggleTutorButton } from "@/components/AdminActions";
 import { getTutorSupplyOverview } from "@/lib/tutor-supply-metrics";
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, completionInputFromTutorRow } from "@/lib/tutor-profile-completion";
 import { isSuspiciousDisplayName } from "@/lib/display-name";
 
 export const dynamic = "force-dynamic";
@@ -67,6 +67,9 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
       take: 80,
       include: {
         user: { select: { id: true, name: true, email: true, suspended: true, emailVerified: true } },
+        subjectProfiles: {
+          select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+        },
       },
     }),
   ]);
@@ -76,19 +79,7 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
   );
 
   const rows = tutors.map((t) => {
-    const completion = getTutorProfileCompletion({
-      name: t.user.name,
-      photoUrl: t.photoUrl,
-      headline: t.headline,
-      bio: t.bio,
-      country: t.country,
-      location: t.location,
-      subjects: t.subjects,
-      hourlyRate: t.hourlyRate,
-      online: t.online,
-      inPerson: t.inPerson,
-      qualifications: t.qualifications,
-    });
+    const completion = getTutorProfileCompletion(completionInputFromTutorRow(t, t.user.name));
     const suspicious = isSuspiciousDisplayName(t.user.name);
     return { t, completion, suspicious };
   });

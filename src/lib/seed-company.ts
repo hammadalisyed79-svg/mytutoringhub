@@ -233,7 +233,8 @@ export async function seedCompanyData() {
       .split(/[,;/|]/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const unique = [...new Set(subjectList.length ? subjectList : ["General tutoring"])];
+    const unique = [...new Set(subjectList)];
+    if (!unique.length) continue;
     for (const subject of unique.slice(0, 3)) {
       await prisma.subjectProfile.create({
         data: {

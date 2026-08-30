@@ -26,7 +26,7 @@ export function ProfileImprovePanel({
           <p className="muted">
             {listingLive
               ? "Your listing is live. Keep subjects and availability up to date."
-              : "Finish required steps and save — eligible profiles appear in Find tutors automatically."}
+              : "Finish required steps and save a Teaching Profile — eligible profiles appear in Find tutors automatically."}
           </p>
           {listingLive ? (
             <span className="badge badge-verified">Live</span>
@@ -38,11 +38,11 @@ export function ProfileImprovePanel({
         <article className="profile-improve-card">
           <strong>2. Add board &amp; syllabus when relevant</strong>
           <p className="muted">
-            On each teaching listing, set exam board, qualification, and syllabus code if you teach
+            On each Teaching Profile, set exam board, qualification, and syllabus code if you teach
             a specific curriculum (e.g. Cambridge 0580). Skip fields that do not apply.
           </p>
           <Link href="/dashboard/tutor?tab=profile#teaching-listings" className="btn btn-sm">
-            Edit teaching listings
+            Edit Teaching Profiles
           </Link>
         </article>
 

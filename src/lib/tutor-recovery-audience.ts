@@ -4,7 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { isSuspiciousDisplayName } from "@/lib/display-name";
-import { getTutorProfileCompletion, isTutorProfileStarted } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, isTutorProfileStarted, completionInputFromTutorRow } from "@/lib/tutor-profile-completion";
 import { isEmailVerifiedFlag } from "@/lib/tutor-public-eligibility";
 
 export type RecoveryAudienceRow = {
@@ -73,6 +73,9 @@ export async function selectTutorRecoveryAudience(opts?: {
           createdAt: true,
         },
       },
+      subjectProfiles: {
+        select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+      },
     },
   });
 
@@ -111,19 +114,7 @@ export async function selectTutorRecoveryAudience(opts?: {
       continue;
     }
 
-    const completion = getTutorProfileCompletion({
-      name: profile.user.name,
-      photoUrl: profile.photoUrl,
-      headline: profile.headline,
-      bio: profile.bio,
-      country: profile.country,
-      location: profile.location,
-      subjects: profile.subjects,
-      hourlyRate: profile.hourlyRate,
-      online: profile.online,
-      inPerson: profile.inPerson,
-      qualifications: profile.qualifications,
-    });
+    const completion = getTutorProfileCompletion(completionInputFromTutorRow(profile, profile.user.name));
 
     if (completion.complete) {
       excluded.completeButHidden += 1;

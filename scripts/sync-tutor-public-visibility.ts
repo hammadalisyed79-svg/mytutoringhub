@@ -49,7 +49,9 @@ async function main() {
           role: true,
         },
       },
-      // plan labels only — no payment secrets
+      subjectProfiles: {
+        select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+      },
     },
   });
 
@@ -90,6 +92,7 @@ async function main() {
       online: p.online,
       inPerson: p.inPerson,
       qualifications: p.qualifications,
+      subjectProfiles: p.subjectProfiles,
       suspended: p.user.suspended,
     });
 

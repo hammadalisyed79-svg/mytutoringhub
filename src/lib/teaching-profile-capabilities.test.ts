@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   capabilitiesFromScalarRow,
+  capabilitiesFromListingInput,
   capabilityGroupKey,
   displayScalarsFromCapabilities,
   isCapabilityKind,
@@ -71,6 +72,28 @@ assert.equal(scalars.level, "GCSE");
 assert.equal(scalars.board, "Cambridge");
 assert.equal(scalars.qualification, null);
 assert.equal(scalars.syllabusCode, "0580");
+
+assert.deepEqual(
+  capabilitiesFromListingInput({
+    levels: ["GCSE", "A Level"],
+    boards: ["Cambridge"],
+    level: "ignored",
+  }).map((row) => `${row.kind}:${row.value}`),
+  ["LEVEL:GCSE", "LEVEL:A Level", "BOARD:Cambridge"],
+);
+
+assert.deepEqual(
+  capabilitiesFromListingInput({
+    level: "A Level",
+    board: "Edexcel",
+    syllabusCode: "9709",
+  }),
+  [
+    { kind: "LEVEL", value: "A Level" },
+    { kind: "BOARD", value: "Edexcel" },
+    { kind: "SYLLABUS_CODE", value: "9709" },
+  ],
+);
 
 assert.equal(displayScalarsFromCapabilities([]).level, "All levels");
 assert.equal(joinCapabilityLabels(["GCSE", "A Level"]), "GCSE · A Level");

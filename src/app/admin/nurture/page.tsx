@@ -5,7 +5,7 @@ import {
   PROFILE_NURTURE_SEQUENCES,
   emailSequenceLabel,
 } from "@/lib/email-sequence-labels";
-import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getTutorProfileCompletion, completionInputFromTutorRow } from "@/lib/tutor-profile-completion";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +62,13 @@ export default async function AdminNurturePage({
         tutorProfile: { isNot: null },
       },
       include: {
-        tutorProfile: true,
+        tutorProfile: {
+          include: {
+            subjectProfiles: {
+              select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+            },
+          },
+        },
         emailSequenceEvents: {
           where: { sequence: { in: [...PROFILE_NURTURE_SEQUENCES] } },
           orderBy: { sentAt: "desc" },
@@ -76,19 +82,9 @@ export default async function AdminNurturePage({
   const incompleteRows = incompleteTutors
     .map((user) => {
       if (!user.tutorProfile) return null;
-      const completion = getTutorProfileCompletion({
-        name: user.name,
-        photoUrl: user.tutorProfile.photoUrl,
-        headline: user.tutorProfile.headline,
-        bio: user.tutorProfile.bio,
-        country: user.tutorProfile.country,
-        location: user.tutorProfile.location,
-        subjects: user.tutorProfile.subjects,
-        hourlyRate: user.tutorProfile.hourlyRate,
-        online: user.tutorProfile.online,
-        inPerson: user.tutorProfile.inPerson,
-        qualifications: user.tutorProfile.qualifications,
-      });
+      const completion = getTutorProfileCompletion(
+        completionInputFromTutorRow(user.tutorProfile, user.name),
+      );
       if (completion.complete) return null;
       const profileEvents = user.emailSequenceEvents;
       const lastSent = profileEvents[0];

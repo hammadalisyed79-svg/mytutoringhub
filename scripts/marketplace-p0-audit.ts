@@ -41,6 +41,9 @@ async function main() {
           role: true,
         },
       },
+      subjectProfiles: {
+        select: { status: true, subject: true, rate: true, online: true, inPerson: true },
+      },
     },
   });
 

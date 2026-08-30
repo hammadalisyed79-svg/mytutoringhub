@@ -1,7 +1,7 @@
 /**
  * Teaching Profile capability kinds (join-table rows on SubjectProfile).
- * Scalar SubjectProfile.level/board/qualification/syllabusCode remain a display cache
- * until Phase 2+ dual-write. This module does not change wizard or listing APIs.
+ * Scalar SubjectProfile.level/board/qualification/syllabusCode remain a display cache.
+ * Phase 2 writers dual-write join rows + scalars.
  */
 
 import { splitSubjectsCsv } from "@/lib/subject-profile";
@@ -55,10 +55,11 @@ function pushUnique(
   out.push({ kind, value });
 }
 
-/**
- * Expand today's singular (sometimes CSV-stuffed) scalars into capability rows.
- * Skip empty tokens and the non-value "All levels" default.
- */
+function valuesOf(raw: string[] | string | null | undefined): string[] {
+  if (Array.isArray(raw)) return raw;
+  return splitSubjectsCsv(raw);
+}
+
 export function capabilitiesFromScalarRow(row: {
   level?: string | null;
   board?: string | null;
@@ -72,6 +73,50 @@ export function capabilitiesFromScalarRow(row: {
   for (const part of splitSubjectsCsv(row.qualification)) pushUnique(out, seen, "QUALIFICATION", part);
   for (const part of splitSubjectsCsv(row.syllabusCode)) pushUnique(out, seen, "SYLLABUS_CODE", part);
   return out;
+}
+
+/** Multi-value wizard / API arrays → join-table rows. */
+export function capabilitiesFromMultiValue(input: {
+  levels?: string[] | string | null;
+  boards?: string[] | string | null;
+  qualifications?: string[] | string | null;
+  syllabusCodes?: string[] | string | null;
+}): SubjectProfileCapabilityRow[] {
+  const out: SubjectProfileCapabilityRow[] = [];
+  const seen = new Set<string>();
+  for (const part of valuesOf(input.levels)) pushUnique(out, seen, "LEVEL", part);
+  for (const part of valuesOf(input.boards)) pushUnique(out, seen, "BOARD", part);
+  for (const part of valuesOf(input.qualifications)) pushUnique(out, seen, "QUALIFICATION", part);
+  for (const part of valuesOf(input.syllabusCodes)) pushUnique(out, seen, "SYLLABUS_CODE", part);
+  return out;
+}
+
+/**
+ * Prefer explicit arrays when the client sent them (including empty = none).
+ * Otherwise expand today's singular scalars (TutorAdsManager).
+ */
+export function capabilitiesFromListingInput(input: {
+  levels?: string[] | string | null;
+  boards?: string[] | string | null;
+  qualifications?: string[] | string | null;
+  syllabusCodes?: string[] | string | null;
+  level?: string | null;
+  board?: string | null;
+  qualification?: string | null;
+  syllabusCode?: string | null;
+}): SubjectProfileCapabilityRow[] {
+  const usedArrays =
+    Array.isArray(input.levels) ||
+    Array.isArray(input.boards) ||
+    Array.isArray(input.qualifications) ||
+    Array.isArray(input.syllabusCodes);
+  if (usedArrays) return capabilitiesFromMultiValue(input);
+  return capabilitiesFromScalarRow({
+    level: input.level,
+    board: input.board,
+    qualification: input.qualification,
+    syllabusCode: input.syllabusCode,
+  });
 }
 
 export function joinCapabilityLabels(values: string[]): string {
