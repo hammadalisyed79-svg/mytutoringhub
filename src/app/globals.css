@@ -6860,12 +6860,30 @@ select:focus {
   scroll-margin-top: calc(var(--header-h) + 1rem);
 }
 
-.profile-main {
-  grid-area: main;
+/* Alias for listing/tutor main column — do NOT use grid-area names here;
+   profile-v2-layout is a simple 2-col grid without template-areas. */
+.profile-main,
+.profile-content {
   min-width: 0;
 }
 
 .profile-aside {
+  min-width: 0;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  grid-template-areas: "main aside";
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.profile-layout > .profile-main {
+  grid-area: main;
+}
+
+.profile-layout > .profile-aside {
   grid-area: aside;
 }
 
@@ -7170,10 +7188,6 @@ select:focus {
   font-weight: 600;
 }
 
-.profile-content {
-  min-width: 0;
-}
-
 .profile-content-card h2 {
   margin: 0 0 0.85rem;
   font-family: var(--font-display), Georgia, serif;
@@ -7448,6 +7462,34 @@ select:focus {
   display: grid;
   gap: 0.65rem;
   margin-top: 0.75rem;
+}
+
+.profile-checklist {
+  margin: 0.15rem 0 0.35rem;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--brand-deep);
+  font-size: 0.92rem;
+}
+
+.profile-reviews-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.profile-reviews-list li {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(248, 249, 250, 0.65);
+}
+
+.profile-reviews-list p {
+  margin: 0.35rem 0 0;
 }
 
 .profile-fee-note {

@@ -398,6 +398,17 @@ export function groupByLetter(names: string[]) {
   return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 }
 
+function countryForKnownCity(city: string) {
+  const cityLower = city.trim().toLowerCase();
+  if (!cityLower || cityLower === "online") return "";
+  for (const row of TOP_COUNTRIES) {
+    if (row.cities.some((item) => item.toLowerCase() === cityLower)) return row.name;
+    const extra = EXTRA_CITIES[row.name] || [];
+    if (extra.some((item) => item.toLowerCase() === cityLower)) return row.name;
+  }
+  return "";
+}
+
 export function formatTutorPlace(location?: string | null, country?: string | null) {
   const city = (location || "").trim();
   const nation = (country || "").trim();
@@ -409,6 +420,13 @@ export function formatTutorPlace(location?: string | null, country?: string | nu
     if (cityLower.includes(nationLower)) return city;
     // Avoid "Online, Online" style duplication when country is empty-ish and city is Online
     if (cityLower === "online" && (nationLower === "online" || !nation)) return "Online";
+    // Prefer city alone when it already looks like "City, Country"
+    if (city.includes(",")) return city;
+    // Fix mismatches like "Lahore, Germany" when the city is curated under another country
+    if (!cityBelongsToCountry(city, nation)) {
+      const inferred = countryForKnownCity(city);
+      if (inferred) return `${city}, ${inferred}`;
+    }
     return `${city}, ${nation}`;
   }
   return city || nation;

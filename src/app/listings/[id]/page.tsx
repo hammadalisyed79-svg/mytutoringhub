@@ -31,6 +31,7 @@ import { trackProductEvent } from "@/lib/product-events";
 import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { TrackTutorView } from "@/components/RecentAndSavedTutors";
 import { ReportButton, BlockUserButton } from "@/components/ReportButton";
+import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 
 export const dynamic = "force-dynamic";
 
@@ -244,6 +245,42 @@ export default async function SubjectListingPage({ params }: Params) {
   const tutorName = tutor.user.name?.trim() || "Tutor";
   const initial = tutorName.slice(0, 1).toUpperCase();
   const hourlyLabel = formatHourly(listing.rate, currency);
+  const listingTaxonomy = [
+    listing.board,
+    listing.qualification || (listing.level !== "All levels" ? listing.level : null),
+    listing.syllabusCode,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const listingModes = [listing.online ? "Online" : null, listing.inPerson ? "In person" : null]
+    .filter(Boolean)
+    .join(" · ");
+  const ownerCompletion = isOwner
+    ? getTutorProfileCompletion({
+        name: tutorName,
+        photoUrl: tutor.photoUrl,
+        headline: listing.headline || tutor.headline,
+        bio: listing.description || tutor.bio,
+        country: listing.country || tutor.country,
+        location: listing.location || tutor.location,
+        subjects: listing.subject || tutor.subjects,
+        hourlyRate: listing.rate,
+        online: listing.online,
+        inPerson: listing.inPerson,
+        qualifications: listing.qualification || tutor.qualifications,
+        subjectProfiles: [
+          {
+            status: listing.status,
+            subject: listing.subject,
+            rate: listing.rate,
+            online: listing.online,
+            inPerson: listing.inPerson,
+          },
+        ],
+      })
+    : null;
+  const showOwnerChecklist = Boolean(isOwner && ownerCompletion && !ownerCompletion.complete);
+  const firstName = tutorName.split(/\s+/)[0] || tutorName;
 
   const similar = await similarTutors({
     id: listing.id,
@@ -312,8 +349,8 @@ export default async function SubjectListingPage({ params }: Params) {
       />
       ) : null}
 
-      <div className="page">
-        <div className="container profile-page">
+      <div className="page profile-page">
+        <div className="container profile-shell">
           {(isOwner || isAdmin) && !isPublicListing ? (
             <p className="panel profile-notice" role="status">
               {isOwner ? (
@@ -432,24 +469,85 @@ export default async function SubjectListingPage({ params }: Params) {
               </div>
             </aside>
 
-            <div className="profile-main">
-              <section className="profile-section">
-                <h2 className="profile-section-title">{listing.subject}</h2>
-                <p className="muted">
-                  {[
-                    listing.board,
-                    listing.qualification || (listing.level !== "All levels" ? listing.level : null),
-                    listing.syllabusCode,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ") || listing.level}
+            <div className="profile-content stack">
+              {showOwnerChecklist && ownerCompletion ? (
+                <section className="profile-content-card profile-complete-banner" style={{ marginBottom: 0 }}>
+                  <strong>Finish this Teaching Profile</strong>
+                  <p className="muted">
+                    Students see a blank main panel when details are missing. Complete the items below
+                    so your listing looks professional.
+                  </p>
+                  <ul className="profile-checklist">
+                    {ownerCompletion.checks
+                      .filter((row) => row.required && !row.ok)
+                      .map((row) => (
+                        <li key={row.key}>{row.label}</li>
+                      ))}
+                  </ul>
+                  <Link href="/dashboard/tutor?tab=profile" className="btn btn-sm">
+                    Complete profile
+                  </Link>
+                </section>
+              ) : null}
+
+              <section className="profile-content-card">
+                <h2>{listing.subject}</h2>
+                <p className="muted" style={{ marginTop: 0 }}>
+                  {listingTaxonomy || listing.level}
+                  {listingModes ? ` · ${listingModes}` : ""}
                 </p>
-                {bio ? <p className="profile-bio">{bio}</p> : null}
-                {place && <p className="muted">{place}</p>}
+                {place ? <p className="muted">{place}</p> : null}
+                {bio ? (
+                  <p className="prose-block profile-bio">{bio}</p>
+                ) : isOwner ? (
+                  <p className="profile-placeholder">
+                    Add a clear description of how you teach {listing.subject} — what students will
+                    learn, your approach, and who these lessons are for.
+                  </p>
+                ) : (
+                  <p className="muted">
+                    {tutorName} offers {listing.subject} tutoring
+                    {place ? ` from ${place}` : ""}. Message to ask about lesson plans and availability.
+                  </p>
+                )}
               </section>
 
-              <section className="profile-section" id="message-tutor">
-                <h2 className="profile-section-title">Contact</h2>
+              {(tutor.qualifications || tutor.headline) && (
+                <section className="profile-content-card">
+                  <h2>About {firstName}</h2>
+                  {tutor.headline ? <p className="profile-headline">{tutor.headline}</p> : null}
+                  {tutor.qualifications ? (
+                    <p className="muted" style={{ marginBottom: 0 }}>
+                      Qualifications: {tutor.qualifications}
+                    </p>
+                  ) : null}
+                  <p style={{ marginBottom: 0 }}>
+                    <Link href={`/tutors/${tutor.id}`}>View full tutor profile →</Link>
+                  </p>
+                </section>
+              )}
+
+              {!tutor.qualifications && !tutor.headline && (
+                <section className="profile-content-card">
+                  <h2>About {firstName}</h2>
+                  {isOwner ? (
+                    <p className="profile-placeholder">
+                      Add a headline and qualifications on your dashboard so students can trust this
+                      listing at a glance.
+                    </p>
+                  ) : (
+                    <p className="muted" style={{ marginBottom: 0 }}>
+                      See more subjects, availability, and reviews on{" "}
+                      <Link href={`/tutors/${tutor.id}`}>{firstName}&apos;s full profile</Link>.
+                    </p>
+                  )}
+                </section>
+              )}
+
+              <section className="profile-content-card" id="message-tutor">
+                <h2>Contact {firstName}</h2>
+                <p className="profile-rate-lg profile-rate-inline">{hourlyLabel}</p>
+                {availability ? <p className="muted">{availability}</p> : null}
                 {canMessage ? (
                   <ContactTutorForm
                     recipientId={tutor.userId}
@@ -459,9 +557,22 @@ export default async function SubjectListingPage({ params }: Params) {
                     subjectProfileId={listing.id}
                   />
                 ) : !session ? (
+                  <div className="profile-book-cta">
+                    <p className="muted">
+                      <Link href="/register?role=student">Create a free student account</Link> to message{" "}
+                      {tutorName}.
+                    </p>
+                    <Link
+                      href={`/login?callbackUrl=${encodeURIComponent(listingPath(listing.id))}`}
+                      className="btn btn-secondary btn-block"
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                ) : isOwner ? (
                   <p className="muted">
-                    <Link href="/register?role=student">Create a free student account</Link> to message{" "}
-                    {tutorName}.
+                    Students message you from this page. Keep your Teaching Profile details up to date
+                    so enquiries convert.
                   </p>
                 ) : (
                   <p className="muted">
@@ -471,22 +582,30 @@ export default async function SubjectListingPage({ params }: Params) {
                 )}
               </section>
 
-              {tutor.reviews.length > 0 && (
-                <section className="profile-section">
-                  <h2 className="profile-section-title">Reviews</h2>
-                  <ul className="profile-reviews-list">
-                    {tutor.reviews.map((r, i) => (
-                      <li key={i}>
-                        <strong>{r.rating.toFixed(1)} ★</strong>
-                        {r.comment?.trim() ? <p>{r.comment.trim()}</p> : null}
-                      </li>
-                    ))}
-                  </ul>
-                  <p>
-                    <Link href={`/tutors/${tutor.id}`}>See full tutor profile →</Link>
+              <section className="profile-content-card" id="reviews">
+                <h2>Reviews</h2>
+                {tutor.reviews.length > 0 ? (
+                  <>
+                    <ul className="profile-reviews-list">
+                      {tutor.reviews.map((r, i) => (
+                        <li key={i}>
+                          <strong>{r.rating.toFixed(1)} ★</strong>
+                          {r.comment?.trim() ? <p>{r.comment.trim()}</p> : null}
+                        </li>
+                      ))}
+                    </ul>
+                    <p style={{ marginBottom: 0 }}>
+                      <Link href={`/tutors/${tutor.id}`}>See full tutor profile →</Link>
+                    </p>
+                  </>
+                ) : (
+                  <p className="muted" style={{ marginBottom: 0 }}>
+                    {isOwner
+                      ? "Reviews appear here after students rate lessons with you."
+                      : "No reviews yet — message the tutor to get started."}
                   </p>
-                </section>
-              )}
+                )}
+              </section>
             </div>
           </div>
 

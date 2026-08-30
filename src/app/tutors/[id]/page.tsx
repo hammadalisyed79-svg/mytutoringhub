@@ -63,44 +63,6 @@ function formatReviewDate(value: Date) {
   return value.toLocaleDateString(undefined, { month: "short", year: "numeric", day: "numeric" });
 }
 
-function isProfileIncomplete(
-  tutor: {
-    photoUrl?: string | null;
-    headline?: string | null;
-    bio: string;
-    subjects: string;
-    country?: string | null;
-    location: string;
-    hourlyRate: number;
-    online: boolean;
-    inPerson: boolean;
-    qualifications?: string | null;
-    subjectProfiles?: Array<{
-      status?: string | null;
-      subject?: string | null;
-      rate?: number | null;
-      online?: boolean | null;
-      inPerson?: boolean | null;
-    }> | null;
-  },
-  name: string,
-) {
-  return !getTutorProfileCompletion({
-    name,
-    photoUrl: tutor.photoUrl,
-    headline: tutor.headline,
-    bio: tutor.bio,
-    country: tutor.country,
-    location: tutor.location,
-    subjects: tutor.subjects,
-    hourlyRate: tutor.hourlyRate,
-    online: tutor.online,
-    inPerson: tutor.inPerson,
-    qualifications: tutor.qualifications,
-    subjectProfiles: tutor.subjectProfiles,
-  }).complete;
-}
-
 function ProfileCtaButtons({
   tutorId,
   tutorFirstName,
@@ -316,7 +278,23 @@ export default async function TutorProfilePage({ params }: Params) {
   const viewerEmailVerified = Boolean(viewer?.emailVerified);
   const initial = tutor.user.name.slice(0, 1).toUpperCase();
   const firstName = tutor.user.name.split(" ")[0];
-  const profileIncomplete = isOwner && isProfileIncomplete(tutor, tutor.user.name);
+  const profileCompletion = isOwner
+    ? getTutorProfileCompletion({
+        name: tutor.user.name,
+        photoUrl: tutor.photoUrl,
+        headline: tutor.headline,
+        bio: tutor.bio,
+        country: tutor.country,
+        location: tutor.location,
+        subjects: tutor.subjects,
+        hourlyRate: tutor.hourlyRate,
+        online: tutor.online,
+        inPerson: tutor.inPerson,
+        qualifications: tutor.qualifications,
+        subjectProfiles: tutor.subjectProfiles,
+      })
+    : null;
+  const profileIncomplete = Boolean(profileCompletion && !profileCompletion.complete);
   const hasStructuredAvailability = availabilitySlots.length > 0;
   const listingRates = tutor.subjectProfiles.map((l) => l.rate).filter((r) => Number.isFinite(r));
   const fromRate =
@@ -518,6 +496,25 @@ export default async function TutorProfilePage({ params }: Params) {
           </aside>
 
           <div className="profile-content stack">
+            {profileIncomplete && profileCompletion && (
+              <section className="profile-content-card profile-complete-banner" style={{ marginBottom: 0 }}>
+                <strong>Your main profile still looks unfinished</strong>
+                <p className="muted">
+                  Fill in the missing details below so students never land on an empty-looking page.
+                </p>
+                <ul className="profile-checklist">
+                  {profileCompletion.checks
+                    .filter((row) => row.required && !row.ok)
+                    .map((row) => (
+                      <li key={row.key}>{row.label}</li>
+                    ))}
+                </ul>
+                <Link href="/dashboard" className="btn btn-sm">
+                  Complete profile
+                </Link>
+              </section>
+            )}
+
             {videoSrc && (
               <section className="profile-content-card">
                 <h2>Introduction video</h2>
