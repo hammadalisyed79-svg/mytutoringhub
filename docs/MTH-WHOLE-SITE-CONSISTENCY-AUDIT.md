@@ -198,7 +198,7 @@ Per locked plan — **not** started in this task:
 
 | Item | Status |
 |------|--------|
-| Commit + push to `origin/main` | Performed after this report (named source files only) |
+| Commit + push to `origin/main` | **Done** — `5a3c57e` pushed to `origin/main` |
 | Prisma / DB | **Not changed** |
 | Vercel production | Auto-deploy expected from `main`; confirm Ready alias on www.mytutoringhub.com after push |
 | Authenticated dashboard UI | Residual — credentials required for full human click-through |
