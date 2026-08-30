@@ -286,7 +286,7 @@ ${checks.map((c) => `| ${c.name} | ${c.ok ? "yes" : "NO"} | ${mdCell(c.detail)} 
 
 ## Redirect notes
 
-Next.js \`permanentRedirect()\` on the listing page currently streams **HTTP 200** plus \`<meta http-equiv="refresh">\` and an RSC \`NEXT_REDIRECT;...;308;\` digest (not a classic \`Location\` header). That is enough for browsers. SEO 308s are also emitted from \`next.config.ts\` \`redirects()\` at build time once this commit is deployed. \`generateMetadata\` must not call \`permanentRedirect\`.
+After this deploy, merged listing URLs return a **classic HTTP 308** with \`Location\` (from \`next.config.ts\` \`redirects()\` loaded from \`TeachingProfileRedirect\`). \`generateMetadata\` must not call \`permanentRedirect\` (that made \`fetch\` see HTTP 200). Page-level \`permanentRedirect\` remains a fallback for client navigations and redirects added after the last build.
 `;
 
   writeFileSync(OUT, md, "utf8");

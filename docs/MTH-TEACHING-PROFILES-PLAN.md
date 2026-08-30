@@ -619,7 +619,7 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 
 ### Phase 10 — ops follow-up (not product)
 
-Login-gated wizard / dashboard / messaging / Boost checkout still need a real tutor+student session. No credentials were used. Merged listing URLs currently stream Next.js RSC 308 (`meta refresh`); this commit also emits build-time HTTP 308 via `next.config.ts`.
+Login-gated wizard / dashboard / messaging / Boost checkout still need a real tutor+student session. No credentials were used. Merged listing URLs now return HTTP 308 from `next.config.ts` (verified live after deploy).
 
 ---
 
@@ -692,5 +692,4 @@ TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 IMPLEMENTATION STATUS: PHASES 1–10 COMPLETE. UNIQUE INDEX APPLIED. FREE=3 / PRO=10 PERMANENT.
 
 NEXT STEP:
-None for product. Ops: re-check live HTTP 308 after this deploy; run wizard/dashboard/messaging
-when a tutor+student session is available.
+None for product. Ops: run wizard/dashboard/messaging when a tutor+student session is available.
