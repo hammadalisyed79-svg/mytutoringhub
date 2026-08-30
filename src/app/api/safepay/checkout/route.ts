@@ -136,8 +136,13 @@ export async function POST(req: Request) {
 
   // Annual amounts come from plans.ts (canonical PKR); geo conversion via currency helpers.
   const annualPricePkr = def.annualChargePricePkr;
-  const basePricePkr =
-    billing === "annual" && annualPricePkr != null ? annualPricePkr : def.chargePricePkr;
+  const canAnnualBoost =
+    plan === "AD_BOOST" && billing === "annual" && annualPricePkr != null;
+  const basePricePkr = canAnnualBoost
+    ? annualPricePkr
+    : billing === "annual" && !def.isAddOn && annualPricePkr != null
+      ? annualPricePkr
+      : def.chargePricePkr;
 
   const hubPointsBalance = await getHubPointsBalanceSafe(session.user.id);
   const pointsRedeemedPkr = useHubPoints
@@ -150,10 +155,14 @@ export async function POST(req: Request) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
   }
-  // Add-ons are one-shot Safepay payments — never store "monthly" on the subscription row.
-  const billingPeriod = def.isAddOn ? "once" : billing;
+  // Core add-ons are one-shot; annual Listing Boost stores "annual" for a 365-day window.
+  const billingPeriod = canAnnualBoost
+    ? "annual"
+    : def.isAddOn
+      ? "once"
+      : billing;
   const orderId = `${
-    def.isAddOn ? "once" : billing === "annual" ? "ann" : "mth"
+    canAnnualBoost ? "ann" : def.isAddOn ? "once" : billing === "annual" ? "ann" : "mth"
   }_${plan}_${Date.now()}`;
 
   try {

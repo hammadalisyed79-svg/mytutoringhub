@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ResolvedPlan } from "@/lib/plans";
-import { formatPromoUntil } from "@/lib/plans";
+import { ANNUAL_SAVE_FOOTNOTE, ANNUAL_SAVE_LABEL, formatPromoUntil } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
@@ -71,7 +71,9 @@ function PlanActions({
         oneTime={Boolean(plan.isAddOn)}
         label={
           plan.isAddOn
-            ? `Add ${plan.name}`
+            ? plan.id === "AD_BOOST" && billing === "annual"
+              ? `Add ${plan.name} (1 year · ~20% off)`
+              : `Add ${plan.name}`
             : plan.isComplimentary
               ? `Activate ${plan.name} free`
               : `Pay with Safepay · ${plan.name}`
@@ -129,11 +131,30 @@ function PlanPrice({
   }
   if (plan.isAddOn) {
     const kind = plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD" ? "boost" : "verification";
+    const showAnnualBoost =
+      kind === "boost" &&
+      billing === "annual" &&
+      plan.annualChargePricePkr != null &&
+      plan.id === "AD_BOOST";
     return (
       <div className="price-block">
-        <div className="price">{formatPlanPrice(plan.listPricePkr, currency, "once")}</div>
+        <div className="price">
+          {formatPlanPrice(
+            showAnnualBoost ? plan.annualChargePricePkr! : plan.listPricePkr,
+            currency,
+            "once",
+          )}
+        </div>
+        {showAnnualBoost ? (
+          <p className="price-was">{formatPlanPrice(plan.listPricePkr * 12, currency, "once")}</p>
+        ) : null}
         <p className="plan-billing muted">
-          {addOnBillingFootnote(currency, paidCheckoutLive, kind)}
+          {addOnBillingFootnote(
+            currency,
+            paidCheckoutLive,
+            kind,
+            showAnnualBoost ? "annual" : "once",
+          )}
         </p>
       </div>
     );
@@ -142,11 +163,11 @@ function PlanPrice({
     return (
       <div className="price-block">
         <div className="price">{formatPlanPrice(plan.annualChargePricePkr!, currency, "year")}</div>
-        <p className="price-was">{formatPlanPrice(plan.listPricePkr, currency)}</p>
+        <p className="price-was">{formatPlanPrice(plan.listPricePkr * 12, currency)}</p>
         <p className="plan-billing muted">
-          Billed annually · about {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)}{" "}
-          equivalent · shown in {currency} ·{" "}
-          {paidCheckoutLive ? "paid on Safepay" : "activate after payment"}
+          Billed annually · save ~20% vs monthly · about{" "}
+          {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)} equivalent · shown
+          in {currency} · {paidCheckoutLive ? "paid on Safepay" : "activate after payment"}
         </p>
       </div>
     );
@@ -189,7 +210,9 @@ export function PricingPlansClient({
   subjectProfileId?: string;
 }) {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-  const hasAnnual = corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null);
+  const hasAnnual =
+    corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null) ||
+    addOns.some((p) => p.id === "AD_BOOST" && p.annualChargePricePkr != null);
 
   return (
     <div id="plans">
@@ -201,7 +224,7 @@ export function PricingPlansClient({
             aria-pressed={billing === "monthly"}
             onClick={() => setBilling("monthly")}
           >
-            Monthly
+            Monthly / 30-day
           </button>
           <button
             type="button"
@@ -209,10 +232,11 @@ export function PricingPlansClient({
             aria-pressed={billing === "annual"}
             onClick={() => setBilling("annual")}
           >
-            Annual · save ~20%
+            {ANNUAL_SAVE_LABEL}
           </button>
         </div>
       )}
+      {hasAnnual ? <p className="muted pricing-addons-lead">{ANNUAL_SAVE_FOOTNOTE}</p> : null}
 
       <section>
         <h2 className="checkout-section-title">Start free</h2>
@@ -358,7 +382,7 @@ export function PricingPlansClient({
                   <PlanPrice
                     plan={plan}
                     currency={currency}
-                    billing="monthly"
+                    billing={plan.id === "AD_BOOST" ? billing : "monthly"}
                     paidCheckoutLive={paidCheckoutLive}
                   />
                   <ul>
@@ -373,7 +397,7 @@ export function PricingPlansClient({
                     currency={currency}
                     signedIn={signedIn}
                     featured={plan.id === "VERIFIED_TUTOR"}
-                    billing="monthly"
+                    billing={plan.id === "AD_BOOST" ? billing : "monthly"}
                     paidCheckoutLive={paidCheckoutLive}
                     hubPointsBalance={hubPointsBalance}
                     subjectProfileId={

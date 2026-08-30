@@ -46,10 +46,15 @@ export type ResolvedPlan = PlanDefinition & {
   savingsPercent: number;
 };
 
-/** ~2 months free vs paying monthly for a year. */
+/** ~2 months free vs paying monthly for a year (~20% off). */
 export function defaultAnnualPricePkr(monthlyPkr: number) {
   return Math.round(monthlyPkr * 9.6);
 }
+
+/** Public footnote for annual billing (~20% vs twelve separate charges). */
+export const ANNUAL_SAVE_LABEL = "Annual · save ~20%";
+export const ANNUAL_SAVE_FOOTNOTE =
+  "Annual billing is about 20% less than paying twelve separate monthly or 30-day charges.";
 
 export const DEFAULT_PLANS: PlanDefinition[] = [
   {
@@ -138,15 +143,17 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "AD_BOOST",
     name: "Listing Boost",
     description:
-      "Preferred promo: one-time 30-day boost on one Teaching Profile with stronger placement among relevant matches (never above strong subject fit). Does not increase Teaching Profile capacity.",
+      "Boost one Teaching Profile among relevant matches. Choose 30 days or annual (~20% off vs twelve separate 30-day boosts). Does not increase Teaching Profile capacity.",
     audience: "tutor",
     pricePkr: 999,
+    /** ~9.6× monthly 30-day price ≈ 20% off buying twelve separate boosts. */
+    annualPricePkr: defaultAnnualPricePkr(999),
     features: [
-      "One-time purchase (not a monthly subscription)",
-      "30-day boost window on one Teaching Profile",
-      "Stronger placement among relevant matches",
+      "30-day boost from PKR 999 · one-time (not a subscription)",
+      "Annual boost available — about 20% off vs 12 × 30-day boosts",
+      "Stronger placement among relevant matches for the purchase window",
       "Does not increase Teaching Profile capacity",
-      "Repurchase extends that profile’s window",
+      "Repurchase or annual renewal extends that profile’s window",
     ],
     envPriceId: "STRIPE_PRICE_AD_BOOST",
     isAddOn: true,
@@ -259,9 +266,12 @@ export function resolvePlan(plan: PlanDefinition, now = new Date()): ResolvedPla
     isPromoActive && plan.pricePkr > 0
       ? Math.round(((plan.pricePkr - chargePricePkr) / plan.pricePkr) * 100)
       : 0;
-  const annualList = plan.isAddOn
-    ? null
-    : plan.annualPricePkr ?? defaultAnnualPricePkr(plan.pricePkr);
+  const annualList =
+    plan.annualPricePkr != null
+      ? plan.annualPricePkr
+      : plan.isAddOn
+        ? null
+        : defaultAnnualPricePkr(plan.pricePkr);
   return {
     ...plan,
     annualPricePkr: annualList ?? undefined,

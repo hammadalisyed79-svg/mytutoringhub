@@ -59,14 +59,19 @@ export function planBillingFootnote(
   return `${period} · shown in ${currency} · ${payment}`;
 }
 
-/** Listing Boost / Priority Verification Review — never monthly. */
+/** Listing Boost / Priority Verification Review — never monthly subscription. */
 export function addOnBillingFootnote(
   currency: string,
   paidCheckoutLive: boolean,
   kind: "boost" | "verification" = "boost",
+  billing: "monthly" | "annual" | "once" = "once",
 ) {
   const detail =
-    kind === "boost" ? "30-day boost · one-time purchase" : "One-time purchase · queue priority only";
+    kind === "verification"
+      ? "One-time purchase · queue priority only"
+      : billing === "annual"
+        ? "365-day boost · one-time · about 20% off vs 12 × 30-day"
+        : "30-day boost · one-time purchase";
   const payment = paidCheckoutLive ? "paid on Safepay" : "activate after payment";
   return `${detail} · shown in ${currency} · ${payment}`;
 }

@@ -26,16 +26,20 @@ async function resolveAddOnPeriodEnd(
   plan: SubscriptionPlan,
   excludeSubId: string,
   subjectProfileId?: string | null,
+  billingPeriod?: string | null,
 ) {
   if (
     (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") &&
     subjectProfileId
   ) {
+    const durationDays =
+      plan === "AD_BOOST" && billingPeriod === "annual" ? 365 : 30;
     return resolveListingAddOnPeriodEnd({
       userId,
       plan,
       subjectProfileId,
       excludeSubId,
+      durationDays,
     });
   }
 
@@ -157,14 +161,27 @@ export async function activatePaidSafepaySubscription(opts: {
   const periodMs = billing === "annual" ? 365 * 86400000 : 30 * 86400000;
   const subjectProfileId = parseSubjectProfileIdFromNotes(existing.notes);
   const periodEnd = ADD_ON_PLANS.has(plan)
-    ? await resolveAddOnPeriodEnd(existing.userId, plan, existing.id, subjectProfileId)
+    ? await resolveAddOnPeriodEnd(
+        existing.userId,
+        plan,
+        existing.id,
+        subjectProfileId,
+        billing,
+      )
     : new Date(Date.now() + periodMs);
   const updated = await prisma.subscription.update({
     where: { id: existing.id },
     data: {
       status: "ACTIVE",
       currentPeriodEnd: periodEnd,
-      billingPeriod: ADD_ON_PLANS.has(plan) ? "once" : billing === "once" ? "monthly" : billing,
+      billingPeriod:
+        plan === "AD_BOOST" && billing === "annual"
+          ? "annual"
+          : ADD_ON_PLANS.has(plan)
+            ? "once"
+            : billing === "once"
+              ? "monthly"
+              : billing,
     },
   });
 

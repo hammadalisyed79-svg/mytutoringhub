@@ -94,14 +94,18 @@ assert.ok(!publicAddOns.some((p) => /extra profile|\+1|one more profile/i.test(p
 // 6. Listing Boost does not grant capacity
 const boost = DEFAULT_PLANS.find((p) => p.id === "AD_BOOST")!;
 assert.equal(boost.pricePkr, 999);
+assert.equal(boost.annualPricePkr, Math.round(999 * 9.6));
 assert.equal(boost.isAddOn, true);
 assert.ok(boost.features.some((f) => /does not increase Teaching Profile capacity/i.test(f)));
-assert.ok(boost.features.some((f) => /one-time/i.test(f)));
-assert.ok(/does not increase Teaching Profile capacity/i.test(boost.description));
+assert.ok(boost.features.some((f) => /annual/i.test(f)));
+assert.ok(boost.features.some((f) => /20%/i.test(f)));
+assert.ok(/20%|annual/i.test(boost.description));
+
+const boostResolved = resolvePlan(boost);
+assert.equal(boostResolved.annualChargePricePkr, Math.round(999 * 9.6));
 
 const boostRow = TUTOR_COMPARE_ROWS.find((r) => r.feature === "Listing Boost")!;
 assert.match(boostRow.detail, /does not increase Teaching Profile capacity/i);
-assert.match(boostRow.detail, /one-time/i);
 
 // 7. Student Free contacts = 3 unique tutors/month
 assert.equal(BUSINESS.studentFreeContactsPerMonth, 3);
@@ -150,10 +154,12 @@ assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);
 assert.match(planBillingFootnote("PKR", true, "monthly"), /Billed monthly/);
 assert.match(planBillingFootnote("PKR", true, "once"), /One-time purchase/);
 
-// PlanPrice path for add-ons must use once formatting helpers
-assert.match(pricingClient, /formatPlanPrice\(plan\.listPricePkr, currency, "once"\)/);
+// PlanPrice path for add-ons must use once formatting helpers (30-day or annual boost)
+assert.match(pricingClient, /formatPlanPrice\([\s\S]*?"once"/);
 assert.match(pricingClient, /addOnBillingFootnote/);
 assert.match(pricingClient, /oneTime=\{Boolean\(plan\.isAddOn\)\}/);
+assert.match(pricingClient, /ANNUAL_SAVE_LABEL/);
+assert.match(addOnBillingFootnote("PKR", true, "boost", "annual"), /365-day|20%/i);
 
 // Stale branding overrides stay mapped to public names
 const overridden = applyPlanOverrides({

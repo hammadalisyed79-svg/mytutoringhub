@@ -849,8 +849,18 @@ export function TutorAdsManager({
                     plan="AD_BOOST"
                     planLabel="Listing Boost"
                     currency={currency}
-                    label={boosted ? "Extend boost 30 days" : "Boost this Teaching Profile"}
+                    label={boosted ? "Extend boost 30 days" : "Boost 30 days"}
                     featured
+                    oneTime
+                    paidCheckoutLive={paidCheckoutLive}
+                    subjectProfileId={listing.id}
+                  />
+                  <SubscribeButton
+                    plan="AD_BOOST"
+                    planLabel="Listing Boost (annual)"
+                    currency={currency}
+                    billing="annual"
+                    label={boosted ? "Extend boost 1 year (~20% off)" : "Boost 1 year (~20% off)"}
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
                     subjectProfileId={listing.id}

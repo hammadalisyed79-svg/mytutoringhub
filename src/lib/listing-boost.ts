@@ -71,8 +71,11 @@ export async function resolveListingAddOnPeriodEnd(opts: {
   plan: Extract<SubscriptionPlan, "AD_BOOST" | "HIGHLIGHTED_AD">;
   subjectProfileId: string | null;
   excludeSubId: string;
+  /** 30 = standard boost; 365 = annual boost (~20% off vs 12×30-day). */
+  durationDays?: number;
 }): Promise<Date> {
   const now = new Date();
+  const days = opts.durationDays && opts.durationDays > 0 ? opts.durationDays : 30;
   const prior = await prisma.subscription.findFirst({
     where: {
       userId: opts.userId,
@@ -107,5 +110,5 @@ export async function resolveListingAddOnPeriodEnd(opts: {
     }
   }
 
-  return new Date(base.getTime() + 30 * 86400000);
+  return new Date(base.getTime() + days * 86400000);
 }
