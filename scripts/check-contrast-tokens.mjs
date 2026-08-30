@@ -62,6 +62,7 @@ const PAIRS = [
   ["faq answer --muted on white", "#3d524c", "#ffffff", 4.5],
   ["ai-support launcher text", "#ffffff", "#0a5c50", 4.5],
   ["--accent on --paper", "#9a4518", "#f3f1eb", 4.5],
+  ["welcome on beige hero", "#04352e", "#f7f5ef", 4.5],
 ];
 
 let fail = 0;
