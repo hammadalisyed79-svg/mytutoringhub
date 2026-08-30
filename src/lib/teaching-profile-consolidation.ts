@@ -8,6 +8,7 @@
 
 import {
   capabilitiesFromScalarRow,
+  displayScalarsFromCapabilities,
   isCapabilityKind,
   type SubjectProfileCapabilityKind,
   type SubjectProfileCapabilityRow,
@@ -255,4 +256,115 @@ export function leftoverCsvTagsNotExploded(
     });
   }
   return out.filter((row) => !row.alreadyHasTeachingProfile);
+}
+
+export function mergedVisibilityWindows(rows: ConsolidationListing[], now: Date = new Date()) {
+  const liveBoosts = rows
+    .map((row) => asDate(row.boostUntil))
+    .filter((d): d is Date => Boolean(d && d > now))
+    .sort((a, b) => b.getTime() - a.getTime());
+  const liveHighlights = rows
+    .map((row) => asDate(row.highlightedUntil))
+    .filter((d): d is Date => Boolean(d && d > now))
+    .sort((a, b) => b.getTime() - a.getTime());
+  return {
+    boostUntil: liveBoosts[0] || null,
+    highlightedUntil: liveHighlights[0] || null,
+  };
+}
+
+export type ConsolidationExecuteResult = {
+  execute: true;
+  tutorProfileId: string;
+  canonical: string;
+  survivorId: string;
+  pausedIds: string[];
+  redirectIds: string[];
+  capabilityCount: number;
+};
+
+type ConsolidationDb = {
+  $transaction: <T>(fn: (tx: ConsolidationDb) => Promise<T>) => Promise<T>;
+  $executeRaw: (query: TemplateStringsArray | unknown, ...values: unknown[]) => Promise<unknown>;
+  subjectProfile: {
+    update: (args: {
+      where: { id: string };
+      data: Record<string, unknown>;
+    }) => Promise<unknown>;
+  };
+  subjectProfileCapability: {
+    deleteMany: (args: { where: { subjectProfileId: string } }) => Promise<unknown>;
+    createMany: (args: { data: { subjectProfileId: string; kind: string; value: string }[] }) => Promise<unknown>;
+  };
+  conversation: {
+    updateMany: (args: { where: { relatedAdId: { in: string[] } }; data: { relatedAdId: string } }) => Promise<unknown>;
+  };
+};
+
+/**
+ * Pause non-survivors and 301 their `/listings/{id}` onto the survivor.
+ * Does not delete rows. Does not explode CSV. Unique index is applied separately
+ * after ACTIVE collisions are gone.
+ */
+export async function executeConsolidateGroup(
+  db: ConsolidationDb,
+  group: CanonicalSubjectGroup<ConsolidationListing>,
+  now: Date = new Date(),
+): Promise<ConsolidationExecuteResult> {
+  const dry = dryRunConsolidateGroup(group, now);
+  const windows = mergedVisibilityWindows(group.rows, now);
+  const scalars = displayScalarsFromCapabilities(dry.capabilityUnion);
+
+  await db.$transaction(async (tx) => {
+    await tx.subjectProfileCapability.deleteMany({ where: { subjectProfileId: dry.survivorId } });
+    if (dry.capabilityUnion.length) {
+      await tx.subjectProfileCapability.createMany({
+        data: dry.capabilityUnion.map((cap) => ({
+          subjectProfileId: dry.survivorId,
+          kind: cap.kind,
+          value: cap.value,
+        })),
+      });
+    }
+    await tx.subjectProfile.update({
+      where: { id: dry.survivorId },
+      data: {
+        ...scalars,
+        canonicalSubject: dry.canonical,
+        status: "ACTIVE",
+        ...(windows.boostUntil ? { boostUntil: windows.boostUntil } : {}),
+        ...(windows.highlightedUntil ? { highlightedUntil: windows.highlightedUntil } : {}),
+      },
+    });
+    for (const id of dry.redirectIds) {
+      await tx.subjectProfile.update({
+        where: { id },
+        data: { status: "PAUSED", canonicalSubject: dry.canonical },
+      });
+      await tx.$executeRaw`
+        INSERT INTO "TeachingProfileRedirect" ("fromId", "toId", "createdAt")
+        VALUES (${id}, ${dry.survivorId}, NOW())
+        ON CONFLICT ("fromId") DO UPDATE SET "toId" = EXCLUDED."toId"
+      `;
+    }
+    if (dry.redirectIds.length) {
+      await tx.conversation.updateMany({
+        where: { relatedAdId: { in: dry.redirectIds } },
+        data: { relatedAdId: dry.survivorId },
+      });
+    }
+  });
+
+  const { syncDerivedMasterSubjects } = await import("@/lib/teaching-profile-write");
+  await syncDerivedMasterSubjects(group.tutorProfileId);
+
+  return {
+    execute: true,
+    tutorProfileId: group.tutorProfileId,
+    canonical: dry.canonical,
+    survivorId: dry.survivorId,
+    pausedIds: dry.redirectIds,
+    redirectIds: dry.redirectIds,
+    capabilityCount: dry.capabilityUnion.length,
+  };
 }

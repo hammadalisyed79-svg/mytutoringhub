@@ -70,6 +70,9 @@ export function teachingProfilePersistFields(
   if (!subject) {
     throw new Error("Enter a subject");
   }
+  if (isGeneralTutoringFallback(subject) || subject.toLowerCase() === "general") {
+    throw new Error("Choose a specific subject — General tutoring is not a Teaching Profile.");
+  }
 
   const ident = canonicalTeachingSubject(subject);
   const canonicalSubject = ident.canonical || subject;
@@ -144,11 +147,43 @@ export function shouldSkipFirstTeachingProfileCreate(
 }
 
 export function mergeDerivedMasterSubjects(existingCsv: string | null | undefined, subject: string): string {
-  const parts = splitSubjectsCsv(existingCsv);
-  const next = normalizeSubjectLabel(subject);
-  if (!next) return parts.join(", ");
-  if (parts.some((part) => part.toLowerCase() === next.toLowerCase())) return parts.join(", ");
-  return [...parts, next].join(", ");
+  return derivedMasterSubjectsCsv([
+    ...splitSubjectsCsv(existingCsv).map((name) => ({ status: "ACTIVE", subject: name })),
+    { status: "ACTIVE", subject },
+  ]);
+}
+
+/** Distinct ACTIVE Teaching Profile subjects. Alias labels collapse to the canonical display name. */
+export function derivedMasterSubjectsCsv(
+  listings: { status?: string | null; subject?: string | null }[],
+): string {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const row of listings) {
+    if ((row.status || "ACTIVE").trim().toUpperCase() !== "ACTIVE") continue;
+    const ident = canonicalTeachingSubject(row.subject || "");
+    const name = ident.canonical || normalizeSubjectLabel(row.subject || "");
+    if (!name || isGeneralTutoringFallback(name) || name.toLowerCase() === "general") continue;
+    const key = ident.key || name.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(name);
+  }
+  return out.join(", ");
+}
+
+export async function syncDerivedMasterSubjects(tutorProfileId: string) {
+  const { prisma } = await import("@/lib/prisma");
+  const rows = await prisma.subjectProfile.findMany({
+    where: { tutorProfileId },
+    select: { status: true, subject: true },
+  });
+  const subjects = derivedMasterSubjectsCsv(rows);
+  await prisma.tutorProfile.update({
+    where: { id: tutorProfileId },
+    data: { subjects },
+  });
+  return subjects;
 }
 
 export async function listTeachingProfilesForUniqueness(tutorProfileId: string) {
@@ -222,10 +257,10 @@ export async function insertTeachingProfile(opts: {
   await prisma.tutorProfile.update({
     where: { id: opts.tutorProfileId },
     data: {
-      subjects: mergeDerivedMasterSubjects(opts.existingSubjectsCsv, fields.subject),
       ...(opts.syncMasterRate ? { hourlyRate: fields.rate } : {}),
     },
   });
+  await syncDerivedMasterSubjects(opts.tutorProfileId);
   return row;
 }
 

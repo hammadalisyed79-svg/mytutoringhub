@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { TutorAvatar } from "@/components/TutorAvatar";
@@ -12,6 +12,7 @@ import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { listingPath } from "@/lib/subject-profile";
+import { resolveTeachingProfileRedirect } from "@/lib/teaching-profile-redirect";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import {
   canViewTutorProfilePublicly,
@@ -79,6 +80,10 @@ function ListingCta({
 
 export async function generateMetadata({ params }: Params) {
   const { id } = await params;
+  const redirected = await resolveTeachingProfileRedirect(id);
+  if (redirected) {
+    permanentRedirect(listingPath(redirected));
+  }
   const session = await auth();
   const listing = await prisma.subjectProfile.findUnique({
     where: { id },
@@ -162,6 +167,10 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function SubjectListingPage({ params }: Params) {
   const { id } = await params;
+  const redirected = await resolveTeachingProfileRedirect(id);
+  if (redirected) {
+    permanentRedirect(listingPath(redirected));
+  }
   const session = await auth();
   const currency = await getVisitorCurrency();
   const now = new Date();

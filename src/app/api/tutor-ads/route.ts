@@ -25,10 +25,13 @@ import {
 import {
   insertTeachingProfile,
   listTeachingProfilesForUniqueness,
-  mergeDerivedMasterSubjects,
   replaceSubjectProfileCapabilities,
+  syncDerivedMasterSubjects,
   teachingProfilePersistFields,
 } from "@/lib/teaching-profile-write";
+import { leftoverCsvTagsNotExploded } from "@/lib/teaching-profile-consolidation";
+import { teachingProfileEditorValues } from "@/lib/teaching-profile-dashboard";
+import { isMissingCapabilitySchemaError } from "@/lib/search-capabilities";
 import { z } from "zod";
 
 const stringList = z.array(z.string()).optional();
@@ -75,7 +78,9 @@ function serializeListing(row: {
   description: string | null;
   boostUntil: Date | null;
   highlightedUntil: Date | null;
+  capabilities?: { kind: string; value: string }[] | null;
 }) {
+  const editor = teachingProfileEditorValues(row);
   return {
     id: row.id,
     subject: row.subject,
@@ -85,6 +90,10 @@ function serializeListing(row: {
     board: row.board,
     qualification: row.qualification,
     syllabusCode: row.syllabusCode,
+    levels: editor.levels,
+    boards: editor.boards,
+    qualifications: editor.qualifications,
+    syllabusCodes: editor.syllabusCodes,
     location: row.location,
     country: row.country,
     rate: row.rate,
@@ -128,6 +137,28 @@ const listingSelect = {
   highlightedUntil: true,
 } as const;
 
+const listingSelectWithCapabilities = {
+  ...listingSelect,
+  capabilities: { select: { kind: true, value: true } },
+} as const;
+
+async function loadTutorListings(tutorProfileId: string) {
+  try {
+    return await prisma.subjectProfile.findMany({
+      where: { tutorProfileId },
+      orderBy: { createdAt: "desc" },
+      select: listingSelectWithCapabilities,
+    });
+  } catch (err) {
+    if (!isMissingCapabilitySchemaError(err)) throw err;
+    return prisma.subjectProfile.findMany({
+      where: { tutorProfileId },
+      orderBy: { createdAt: "desc" },
+      select: listingSelect,
+    });
+  }
+}
+
 /** Teaching Listings API (Marketplace V2). Route kept as /api/tutor-ads for existing clients. */
 export async function GET() {
   const session = await auth();
@@ -153,11 +184,7 @@ export async function GET() {
   }
 
   const [rows, cap, gate] = await Promise.all([
-    prisma.subjectProfile.findMany({
-      where: { tutorProfileId: profile.id },
-      orderBy: { createdAt: "desc" },
-      select: listingSelect,
-    }),
+    loadTutorListings(profile.id),
     getSubjectProfileActiveCap(session.user.id),
     canCreateSubjectProfile(session.user.id),
   ]);
@@ -167,10 +194,13 @@ export async function GET() {
   const duplicateNotice = tutorCanonicalDuplicateNotice(uniquenessRows(rows));
 
 
+  const leftoverTags = leftoverCsvTagsNotExploded(profile.subjects, rows).map((row) => row.tag);
+
   return NextResponse.json({
     listings: rows.map(serializeListing),
     duplicateNotice: duplicateNotice?.message ?? null,
     canonicalDuplicates: duplicateNotice?.groups ?? [],
+    leftoverTags,
     entitlement: {
       activeCount,
       cap: unlimited ? null : cap,
@@ -420,11 +450,16 @@ export async function PATCH(req: Request) {
   }
 
   if (nextSubject) {
-    await prisma.tutorProfile.update({
-      where: { id: profile.id },
-      data: { subjects: mergeDerivedMasterSubjects(profile.subjects, nextSubject) },
+    listed = await prisma.subjectProfile.update({
+      where: { id },
+      data: {
+        canonicalSubject: canonicalTeachingSubject(nextSubject).canonical || nextSubject,
+      },
+      select: listingSelect,
     });
   }
+
+  await syncDerivedMasterSubjects(profile.id);
 
   await syncTutorBadges(session.user.id);
 

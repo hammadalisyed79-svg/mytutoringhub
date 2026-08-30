@@ -2,6 +2,7 @@ import Link from "next/link";
 import { groupCurriculumByBoard, CURRICULUM, splitCurriculumCountries } from "@/lib/curriculum";
 import { countryByName } from "@/lib/markets";
 import { MoreCountriesSelect } from "@/components/MoreCountriesSelect";
+import { pastPaperTutorSearchHref } from "@/lib/past-paper-tutor-search";
 
 function codesHref(name: string, query: string) {
   const params = new URLSearchParams({ tab: "codes", country: name });
@@ -99,9 +100,14 @@ export function CurriculumBrowser({
                 {group.entries.map((row) => (
                   <Link
                     key={row.code}
-                    href={`/search?subject=${encodeURIComponent(row.subject)}${
-                      city ? `&country=${encodeURIComponent(selected)}&location=${encodeURIComponent(city)}` : ""
-                    }&level=${encodeURIComponent(row.level)}`}
+                    href={pastPaperTutorSearchHref({
+                      subject: row.subject,
+                      board: group.board,
+                      level: row.level,
+                      syllabusCode: row.code,
+                      country: selected,
+                      location: city || null,
+                    })}
                     className="cb-chip"
                     title={`${row.code} · ${row.subject} · ${row.level} · ${row.exam}`}
                   >

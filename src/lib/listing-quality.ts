@@ -14,6 +14,10 @@ export type ListingQualityInput = {
   board?: string | null;
   qualification?: string | null;
   syllabusCode?: string | null;
+  levels?: string[] | null;
+  boards?: string[] | null;
+  qualifications?: string[] | null;
+  syllabusCodes?: string[] | null;
   location?: string | null;
   rate?: number | null;
   online?: boolean;
@@ -39,10 +43,10 @@ export function scoreListingQuality(listing: ListingQualityInput): ListingQualit
   const title = (listing.title || "").trim();
   const headline = (listing.headline || "").trim();
   const description = (listing.description || "").trim();
-  const level = (listing.level || "").trim();
-  const board = (listing.board || "").trim();
-  const qualification = (listing.qualification || "").trim();
-  const syllabusCode = (listing.syllabusCode || "").trim();
+  const level = (listing.levels?.find(Boolean) || listing.level || "").trim();
+  const board = (listing.boards?.find(Boolean) || listing.board || "").trim();
+  const qualification = (listing.qualifications?.find(Boolean) || listing.qualification || "").trim();
+  const syllabusCode = (listing.syllabusCodes?.find(Boolean) || listing.syllabusCode || "").trim();
   const location = (listing.location || "").trim();
   const rate = listing.rate ?? 0;
 

@@ -4383,6 +4383,20 @@ select:focus {
   padding: 0.5rem;
 }
 
+.thread-listing-context,
+.thread-listing-context-msg {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(15, 90, 70, 0.06);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.thread-listing-context-msg {
+  margin: 0;
+}
+
 .bubble {
   max-width: min(75%, 36rem);
   padding: 0.8rem 1rem;

@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { listingPath } from "@/lib/subject-profile";
-import { tutorLevelOptions } from "@/lib/tutor-catalog";
-import { curriculumBoards } from "@/lib/curriculum";
+import {
+  teachingProfileSubjectChoices,
+  teachingProfileTaxonomyLine,
+  type TeachingProfileEditorValues,
+} from "@/lib/teaching-profile-dashboard";
 import {
   formatHourly,
   hourlyRateInputStep,
@@ -19,6 +22,7 @@ import {
 } from "@/lib/currency";
 import { scoreListingQuality } from "@/lib/listing-quality";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
+import { TeachingProfileCapabilityFields } from "@/components/TeachingProfileCapabilityFields";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -68,6 +72,10 @@ type Listing = {
   board: string | null;
   qualification: string | null;
   syllabusCode: string | null;
+  levels?: string[];
+  boards?: string[];
+  qualifications?: string[];
+  syllabusCodes?: string[];
   location: string;
   rate: number;
   status: string;
@@ -90,6 +98,30 @@ type Entitlement = {
   createReason: string | null;
 };
 
+const EMPTY_CAPS: TeachingProfileEditorValues = {
+  levels: [],
+  boards: [],
+  qualifications: [],
+  syllabusCodes: [],
+};
+
+function listingEditorValues(listing: Listing): TeachingProfileEditorValues {
+  if (listing.levels || listing.boards || listing.qualifications || listing.syllabusCodes) {
+    return {
+      levels: listing.levels || [],
+      boards: listing.boards || [],
+      qualifications: listing.qualifications || [],
+      syllabusCodes: listing.syllabusCodes || [],
+    };
+  }
+  return {
+    levels: listing.level && listing.level !== "All levels" ? [listing.level] : [],
+    boards: listing.board ? [listing.board] : [],
+    qualifications: listing.qualification ? [listing.qualification] : [],
+    syllabusCodes: listing.syllabusCode ? [listing.syllabusCode] : [],
+  };
+}
+
 function formatUntil(value: string | null) {
   if (!value) return null;
   const d = new Date(value);
@@ -107,86 +139,84 @@ function listingHighlightActive(until: Date | null, now: Date) {
   return Boolean(until && until > now);
 }
 
-function ListingTaxonomyFields({
-  levels,
-  boards,
-  defaults,
-  compact = false,
+function EditTeachingProfileForm({
+  listing,
+  extraLevels,
+  currency,
+  rateMinLocal,
+  rateStep,
+  busy,
+  onSave,
 }: {
-  levels: string[];
-  boards: string[];
-  defaults?: {
-    level?: string;
-    board?: string | null;
-    qualification?: string | null;
-    syllabusCode?: string | null;
-  };
-  compact?: boolean;
+  listing: Listing;
+  extraLevels: string[];
+  currency: CurrencyCode;
+  rateMinLocal: number;
+  rateStep: number;
+  busy: boolean;
+  onSave: (e: React.FormEvent<HTMLFormElement>, caps: TeachingProfileEditorValues) => void;
 }) {
-  const core = (
-    <label>
-      Level
-      <select name="level" defaultValue={defaults?.level || "All levels"}>
-        {levels.map((name) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-
-  const extras = (
-    <>
-      <label>
-        Exam board <span className="muted">(optional)</span>
-        <select name="board" defaultValue={defaults?.board || ""}>
-          <option value="">Any / not specified</option>
-          {boards.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Qualification <span className="muted">(optional)</span>
-        <input
-          name="qualification"
-          placeholder="e.g. O Level, GCSE"
-          defaultValue={defaults?.qualification || ""}
-        />
-      </label>
-      <label>
-        Syllabus code <span className="muted">(optional)</span>
-        <input
-          name="syllabusCode"
-          placeholder="e.g. 5070"
-          defaultValue={defaults?.syllabusCode || ""}
-        />
-      </label>
-    </>
-  );
-
-  if (compact) {
-    return (
-      <>
-        {core}
-        <details className="profile-advanced-details">
-          <summary>Improve match — board &amp; syllabus (optional)</summary>
-          <div className="teaching-listing-grid profile-advanced-block">{extras}</div>
-        </details>
-      </>
-    );
-  }
-
+  const [caps, setCaps] = useState(() => listingEditorValues(listing));
   return (
-    <>
-      <div className="teaching-listing-grid">
-        {core}
-        {extras}
-      </div>
-    </>
+    <form
+      className="stack-form profile-form teaching-listing-form"
+      style={{ marginTop: "0.75rem" }}
+      onSubmit={(e) => onSave(e, caps)}
+    >
+      <label>
+        Listing title
+        <input name="title" required minLength={5} defaultValue={listing.title} />
+      </label>
+      <label>
+        Short headline
+        <input name="headline" defaultValue={listing.headline || ""} />
+      </label>
+      <TeachingProfileCapabilityFields
+        subject={listing.subject}
+        extraLevels={extraLevels}
+        values={caps}
+        onChange={setCaps}
+        compact
+      />
+      <label>
+        City / area
+        <input name="location" required defaultValue={listing.location} />
+      </label>
+      <label>
+        Hourly rate ({currency})
+        <input
+          name="rate"
+          type="number"
+          min={rateMinLocal}
+          step={rateStep}
+          inputMode="decimal"
+          required
+          defaultValue={hourlyRateInputValue(listing.rate, currency)}
+        />
+        <span className="field-hint">
+          Currently {formatHourly(listing.rate, currency)}. Minimum{" "}
+          {formatMoney(rateMinLocal, currency)} ({MIN_HOURLY_RATE_PKR} PKR base).
+        </span>
+      </label>
+      <label>
+        About this lesson
+        <textarea name="description" rows={3} defaultValue={listing.description || ""} />
+      </label>
+      <fieldset className="form-fieldset">
+        <legend>How you teach</legend>
+        <div className="checks">
+          <label className="radio">
+            <input name="online" type="checkbox" defaultChecked={listing.online} /> Online
+          </label>
+          <label className="radio">
+            <input name="inPerson" type="checkbox" defaultChecked={listing.inPerson} /> In person
+          </label>
+        </div>
+      </fieldset>
+      <button className="btn btn-sm" type="submit" disabled={busy}>
+        Save changes
+      </button>
+    </form>
   );
 }
 
@@ -206,11 +236,16 @@ export function TutorAdsManager({
   const [listings, setListings] = useState<Listing[]>([]);
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [duplicateNotice, setDuplicateNotice] = useState<string | null>(null);
+  const [leftoverTags, setLeftoverTags] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [createSubject, setCreateSubject] = useState("");
+  const [createCaps, setCreateCaps] = useState<TeachingProfileEditorValues>(EMPTY_CAPS);
+
+  const subjectChoices = useMemo(() => teachingProfileSubjectChoices(subjects), [subjects]);
 
   function load() {
     fetch("/api/tutor-ads")
@@ -219,12 +254,15 @@ export function TutorAdsManager({
         if (Array.isArray(d)) {
           setListings(d);
           setDuplicateNotice(null);
+          setLeftoverTags([]);
           return;
         }
         if (Array.isArray(d?.listings)) setListings(d.listings);
         if (d?.entitlement) setEntitlement(d.entitlement);
         if (typeof d?.duplicateNotice === "string") setDuplicateNotice(d.duplicateNotice);
         else setDuplicateNotice(null);
+        if (Array.isArray(d?.leftoverTags)) setLeftoverTags(d.leftoverTags.filter((t: unknown) => typeof t === "string"));
+        else setLeftoverTags([]);
       })
       .catch(() => undefined);
   }
@@ -276,10 +314,10 @@ export function TutorAdsManager({
       body: JSON.stringify({
         subject: String(fd.get("subjectCustom") || fd.get("subject") || "").trim(),
         title: String(fd.get("title")),
-        level: String(fd.get("level") || "All levels"),
-        board: String(fd.get("board") || ""),
-        qualification: String(fd.get("qualification") || ""),
-        syllabusCode: String(fd.get("syllabusCode") || ""),
+        levels: createCaps.levels,
+        boards: createCaps.boards,
+        qualifications: createCaps.qualifications,
+        syllabusCodes: createCaps.syllabusCodes,
         location: String(fd.get("location")),
         rate: rateFromForm(fd),
         online: fd.get("online") === "on",
@@ -294,13 +332,19 @@ export function TutorAdsManager({
       return;
     }
     e.currentTarget.reset();
+    setCreateSubject("");
+    setCreateCaps(EMPTY_CAPS);
     setShowCreate(false);
     flashSuccess("Teaching Profile published — students can find it in search.");
     load();
     router.refresh();
   }
 
-  async function saveEdit(e: React.FormEvent<HTMLFormElement>, id: string) {
+  async function saveEdit(
+    e: React.FormEvent<HTMLFormElement>,
+    id: string,
+    caps: TeachingProfileEditorValues,
+  ) {
     e.preventDefault();
     clearFeedback();
     setBusyId(id);
@@ -312,10 +356,10 @@ export function TutorAdsManager({
         id,
         title: String(fd.get("title")),
         headline: String(fd.get("headline") || ""),
-        level: String(fd.get("level") || "All levels"),
-        board: String(fd.get("board") || ""),
-        qualification: String(fd.get("qualification") || ""),
-        syllabusCode: String(fd.get("syllabusCode") || ""),
+        levels: caps.levels,
+        boards: caps.boards,
+        qualifications: caps.qualifications,
+        syllabusCodes: caps.syllabusCodes,
         location: String(fd.get("location")),
         rate: rateFromForm(fd),
         online: fd.get("online") === "on",
@@ -358,13 +402,6 @@ export function TutorAdsManager({
     router.refresh();
   }
 
-  const levels = useMemo(() => {
-    const catalog = tutorLevelOptions(extraLevels);
-    return ["All levels", ...catalog.core, ...catalog.more];
-  }, [extraLevels]);
-
-  const boards = useMemo(() => curriculumBoards(), []);
-
   const capLabel = entitlement?.unlimited
     ? "Unlimited"
     : entitlement?.cap != null
@@ -381,7 +418,7 @@ export function TutorAdsManager({
     <div className="teaching-listings-manager" id="teaching-listings">
       <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
-            {entitlement?.promoLabel ||
+          {entitlement?.promoLabel ||
             `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active Teaching Profiles. Tutor Pro unlocks up to ${entitlement?.paidCap ?? 10}. Legacy Unlimited Profiles holders keep unlimited profiles.`}
         </p>
         <p className="teaching-listings-meter">
@@ -398,14 +435,21 @@ export function TutorAdsManager({
 
       <TeachingProfileDuplicateNotice message={duplicateNotice} />
 
+      {leftoverTags.length > 0 && (
+        <p className="field-hint" role="status">
+          Leftover tags from your old profile ({leftoverTags.join(", ")}) are not Teaching Profiles.
+          Add one below if you still teach them — we will not create them automatically.
+        </p>
+      )}
+
       {listings.length > 0 && (
         <div className="listing-quality-tips">
           <p className="listing-quality-title">Make Teaching Profiles easier to find</p>
           <ul>
             <li>Use a clear title students would search for (e.g. “Cambridge O Level Chemistry 5070”).</li>
-            <li>Add exam board and syllabus code when relevant — Past Paper visitors match on these.</li>
-            <li>Set a listing-specific rate; different levels can charge different prices.</li>
-            <li>Boost only the listings you want at the top of search — payment never overrides subject relevance.</li>
+            <li>Add every board, level, and syllabus code this subject covers — they stay on this one profile.</li>
+            <li>Set a rate for this subject. Do not create a second Mathematics profile for A Level.</li>
+            <li>Boost this Teaching Profile when you want it higher in matching search — payment never overrides subject fit.</li>
           </ul>
         </div>
       )}
@@ -429,14 +473,7 @@ export function TutorAdsManager({
           const highlighted = listingHighlightActive(highlightUntil, now);
           const editing = editingId === listing.id;
           const quality = scoreListingQuality(listing);
-          const taxonomy = [
-            listing.subject,
-            listing.board,
-            listing.qualification || listing.level,
-            listing.syllabusCode,
-          ]
-            .filter(Boolean)
-            .join(" · ");
+          const taxonomy = teachingProfileTaxonomyLine(listing) || listing.subject;
           return (
             <article
               key={listing.id}
@@ -477,7 +514,7 @@ export function TutorAdsManager({
 
               <div className="teaching-listing-actions">
                 <Link className="btn btn-secondary btn-sm" href={listingPath(listing.id)} target="_blank">
-                  {listing.status === "ACTIVE" ? "View listing page" : "Preview listing"}
+                  {listing.status === "ACTIVE" ? "View Teaching Profile" : "Preview Teaching Profile"}
                 </Link>
                 {listing.status === "ACTIVE" ? (
                   <button
@@ -523,70 +560,16 @@ export function TutorAdsManager({
               )}
 
               {editing && (
-                <form
-                  className="stack-form profile-form teaching-listing-form"
-                  style={{ marginTop: "0.75rem" }}
-                  onSubmit={(e) => saveEdit(e, listing.id)}
-                >
-                  <label>
-                    Listing title
-                    <input name="title" required minLength={5} defaultValue={listing.title} />
-                  </label>
-                  <label>
-                    Short headline
-                    <input name="headline" defaultValue={listing.headline || ""} />
-                  </label>
-                  <ListingTaxonomyFields
-                    levels={levels}
-                    boards={boards}
-                    defaults={{
-                      level: listing.level,
-                      board: listing.board,
-                      qualification: listing.qualification,
-                      syllabusCode: listing.syllabusCode,
-                    }}
-                    compact
-                  />
-                  <label>
-                    City / area
-                    <input name="location" required defaultValue={listing.location} />
-                  </label>
-                  <label>
-                    Hourly rate ({currency})
-                    <input
-                      name="rate"
-                      type="number"
-                      min={rateMinLocal}
-                      step={rateStep}
-                      inputMode="decimal"
-                      required
-                      defaultValue={hourlyRateInputValue(listing.rate, currency)}
-                    />
-                    <span className="field-hint">
-                      Currently {formatHourly(listing.rate, currency)}. Minimum{" "}
-                      {formatMoney(rateMinLocal, currency)} ({MIN_HOURLY_RATE_PKR} PKR base).
-                    </span>
-                  </label>
-                  <label>
-                    About this lesson
-                    <textarea name="description" rows={3} defaultValue={listing.description || ""} />
-                  </label>
-                  <fieldset className="form-fieldset">
-                    <legend>How you teach</legend>
-                    <div className="checks">
-                      <label className="radio">
-                        <input name="online" type="checkbox" defaultChecked={listing.online} /> Online
-                      </label>
-                      <label className="radio">
-                        <input name="inPerson" type="checkbox" defaultChecked={listing.inPerson} />{" "}
-                        In person
-                      </label>
-                    </div>
-                  </fieldset>
-                  <button className="btn btn-sm" type="submit" disabled={busyId === listing.id}>
-                    Save changes
-                  </button>
-                </form>
+                <EditTeachingProfileForm
+                  key={listing.id}
+                  listing={listing}
+                  extraLevels={extraLevels}
+                  currency={currency}
+                  rateMinLocal={rateMinLocal}
+                  rateStep={rateStep}
+                  busy={busyId === listing.id}
+                  onSave={(e, caps) => saveEdit(e, listing.id, caps)}
+                />
               )}
             </article>
           );
@@ -614,19 +597,25 @@ export function TutorAdsManager({
         >
           <h3 style={{ marginTop: 0 }}>Create Teaching Profile</h3>
           <p className="field-hint">
-            One canonical subject per Teaching Profile. Levels and boards go inside this profile.
+            One canonical subject per Teaching Profile. Levels and boards go inside this profile —
+            not as extra Mathematics rows.
           </p>
           <label>
             <span>
-              Subject <abbr className="req" title="Required">
+              Subject{" "}
+              <abbr className="req" title="Required">
                 *
               </abbr>
             </span>
-            <select name="subject" defaultValue="">
+            <select
+              name="subject"
+              value={createSubject}
+              onChange={(e) => setCreateSubject(e.target.value)}
+            >
               <option value="" disabled>
                 What do you teach?
               </option>
-              {subjects.map((name) => (
+              {subjectChoices.map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
@@ -635,25 +624,33 @@ export function TutorAdsManager({
           </label>
           <label>
             Or type a subject
-            <input name="subjectCustom" placeholder="e.g. Further Mathematics" />
+            <input
+              name="subjectCustom"
+              placeholder="e.g. Further Mathematics"
+              onChange={(e) => {
+                if (e.target.value.trim()) setCreateSubject(e.target.value);
+              }}
+            />
           </label>
           <label>
             <span>
-              Listing title <abbr className="req" title="Required">
+              Listing title{" "}
+              <abbr className="req" title="Required">
                 *
               </abbr>
             </span>
-            <input
-              name="title"
-              required
-              minLength={5}
-              placeholder="e.g. GCSE Maths · exam prep"
-            />
+            <input name="title" required minLength={5} placeholder="e.g. GCSE Maths · exam prep" />
           </label>
-          <ListingTaxonomyFields levels={levels} boards={boards} compact />
+          <TeachingProfileCapabilityFields
+            subject={createSubject}
+            extraLevels={extraLevels}
+            values={createCaps}
+            onChange={setCreateCaps}
+          />
           <label>
             <span>
-              City / area <abbr className="req" title="Required">
+              City / area{" "}
+              <abbr className="req" title="Required">
                 *
               </abbr>
             </span>
@@ -675,9 +672,7 @@ export function TutorAdsManager({
               required
               placeholder={hourlyRateInputValue(1500, currency)}
             />
-            <span className="field-hint">
-              Minimum {formatMoney(rateMinLocal, currency)}.
-            </span>
+            <span className="field-hint">Minimum {formatMoney(rateMinLocal, currency)}.</span>
           </label>
           <fieldset className="form-fieldset">
             <legend>How you teach</legend>
@@ -699,11 +694,7 @@ export function TutorAdsManager({
               </label>
               <label>
                 About this lesson
-                <textarea
-                  name="description"
-                  rows={3}
-                  placeholder="Who it is for and how you teach…"
-                />
+                <textarea name="description" rows={3} placeholder="Who it is for and how you teach…" />
               </label>
             </div>
           </details>
@@ -714,7 +705,11 @@ export function TutorAdsManager({
             <button
               className="btn btn-secondary btn-sm"
               type="button"
-              onClick={() => setShowCreate(false)}
+              onClick={() => {
+                setShowCreate(false);
+                setCreateCaps(EMPTY_CAPS);
+                setCreateSubject("");
+              }}
             >
               Cancel
             </button>
@@ -730,16 +725,11 @@ export function TutorAdsManager({
               </Link>
             </div>
           ) : (
-            <button
-              className="btn btn-sm"
-              type="button"
-              onClick={() => setShowCreate(true)}
-              disabled={false}
-            >
+            <button className="btn btn-sm" type="button" onClick={() => setShowCreate(true)}>
               Add Teaching Profile
             </button>
           )}
-          {subjects.length === 0 && (
+          {subjectChoices.length === 0 && (
             <p className="muted" style={{ marginTop: "0.5rem" }}>
               Subject catalog is still loading. You can type a subject when you create a Teaching
               Profile.

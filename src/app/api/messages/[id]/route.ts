@@ -5,6 +5,8 @@ import { canReplyInConversation } from "@/lib/subscription";
 import { notifyNewMessage } from "@/lib/message-notify";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
+import { teachingProfileThreadContext, lastContextListingId, type ListingContextInput } from "@/lib/message-listing-context";
+import { isMissingCapabilitySchemaError } from "@/lib/search-capabilities";
 
 export const runtime = "nodejs";
 
@@ -79,7 +81,14 @@ export async function GET(_req: Request, { params }: Params) {
     }
   }
 
-  return NextResponse.json({ ...conversation, reviewRequest });
+  let listingContext = null as ReturnType<typeof teachingProfileThreadContext> | null;
+  const contextListingId =
+    lastContextListingId(conversation.messages) || conversation.relatedAdId || null;
+  if (contextListingId) {
+    listingContext = await loadConversationListingContext(contextListingId);
+  }
+
+  return NextResponse.json({ ...conversation, reviewRequest, listingContext });
 }
 
 export async function POST(req: Request, { params }: Params) {
@@ -149,4 +158,33 @@ export async function POST(req: Request, { params }: Params) {
     sender: { id: session.user.id, name: session.user.name },
     emailSent,
   });
+}
+
+async function loadConversationListingContext(listingId: string) {
+  const selectBase = {
+    id: true,
+    subject: true,
+    title: true,
+    rate: true,
+    level: true,
+    board: true,
+    qualification: true,
+    syllabusCode: true,
+  } as const;
+  try {
+    const row = await prisma.subjectProfile.findUnique({
+      where: { id: listingId },
+      select: { ...selectBase, capabilities: { select: { kind: true, value: true } } },
+    });
+    if (!row) return null;
+    return teachingProfileThreadContext(row as ListingContextInput);
+  } catch (err) {
+    if (!isMissingCapabilitySchemaError(err)) throw err;
+    const row = await prisma.subjectProfile.findUnique({
+      where: { id: listingId },
+      select: selectBase,
+    });
+    if (!row) return null;
+    return teachingProfileThreadContext(row);
+  }
 }

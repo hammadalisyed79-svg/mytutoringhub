@@ -127,3 +127,13 @@ BEGIN
     $sql$;
   END IF;
 END $$;
+
+CREATE TABLE IF NOT EXISTS "TeachingProfileRedirect" (
+  "fromId" TEXT NOT NULL,
+  "toId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "TeachingProfileRedirect_pkey" PRIMARY KEY ("fromId")
+);
+
+CREATE INDEX IF NOT EXISTS "TeachingProfileRedirect_toId_idx"
+  ON "TeachingProfileRedirect" ("toId");

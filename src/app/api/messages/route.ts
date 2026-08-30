@@ -9,6 +9,13 @@ import { tryAwardStudentReferralMilestone } from "@/lib/hub-points";
 import { trackProductEvent } from "@/lib/product-events";
 import type { Role } from "@/lib/types";
 import { z } from "zod";
+import {
+  encodeTeachingProfileContextMessage,
+  lastContextListingId,
+  teachingProfileThreadContext,
+  type ListingContextInput,
+} from "@/lib/message-listing-context";
+import { isMissingCapabilitySchemaError } from "@/lib/search-capabilities";
 
 export const runtime = "nodejs";
 
@@ -171,6 +178,7 @@ export async function POST(req: Request) {
   const [userAId, userBId] = orderedPair(session.user.id, recipientUserId);
   let conversation = await prisma.conversation.findUnique({
     where: { userAId_userBId: { userAId, userBId } },
+    include: { messages: { select: { body: true }, orderBy: { createdAt: "asc" } } },
   });
   const creatingNewConversation = !conversation;
   if (!conversation) {
@@ -180,8 +188,20 @@ export async function POST(req: Request) {
         userBId,
         relatedAdId: data.relatedAdId,
       },
+      include: { messages: { select: { body: true }, orderBy: { createdAt: "asc" } } },
     });
   }
+
+  let listingContext = null as ReturnType<typeof teachingProfileThreadContext> | null;
+  if (data.relatedAdId) {
+    listingContext = await loadTeachingProfileThreadContext(data.relatedAdId);
+  }
+  const previousListingId =
+    conversation.relatedAdId || lastContextListingId(conversation.messages);
+  const shouldAttachContext = Boolean(
+    listingContext &&
+      (creatingNewConversation || previousListingId !== listingContext.listingId),
+  );
 
   // Record usage event for the first message in a new conversation
   if (creatingNewConversation) {
@@ -203,6 +223,16 @@ export async function POST(req: Request) {
   }
 
   const text = data.body?.trim() || "";
+  if (shouldAttachContext && listingContext) {
+    await prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: session.user.id,
+        body: encodeTeachingProfileContextMessage(listingContext),
+      },
+    });
+  }
+
   const message = await prisma.message.create({
     data: {
       conversationId: conversation.id,
@@ -238,4 +268,36 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ conversationId: conversation.id, message, emailSent: mail.sent });
+}
+
+async function loadTeachingProfileThreadContext(listingId: string) {
+  const selectBase = {
+    id: true,
+    subject: true,
+    title: true,
+    rate: true,
+    level: true,
+    board: true,
+    qualification: true,
+    syllabusCode: true,
+  } as const;
+  try {
+    const row = await prisma.subjectProfile.findUnique({
+      where: { id: listingId },
+      select: {
+        ...selectBase,
+        capabilities: { select: { kind: true, value: true } },
+      },
+    });
+    if (!row) return null;
+    return teachingProfileThreadContext(row as ListingContextInput);
+  } catch (err) {
+    if (!isMissingCapabilitySchemaError(err)) throw err;
+    const row = await prisma.subjectProfile.findUnique({
+      where: { id: listingId },
+      select: selectBase,
+    });
+    if (!row) return null;
+    return teachingProfileThreadContext(row);
+  }
 }

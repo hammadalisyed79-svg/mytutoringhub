@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RequestReviewButton } from "@/components/RequestReviewButton";
 import { isImageAttachment } from "@/lib/media";
+import { parseTeachingProfileContextMessage } from "@/lib/message-listing-context";
+import Link from "next/link";
 
 type Msg = {
   id: string;
@@ -39,6 +41,14 @@ export function MessageThread({
   const [otherName, setOtherName] = useState("");
   const [otherRole, setOtherRole] = useState<string | null>(null);
   const [reviewMeta, setReviewMeta] = useState<ReviewMeta>(null);
+  const [listingContext, setListingContext] = useState<{
+    listingId: string;
+    subject: string;
+    title: string;
+    line: string;
+    href: string;
+    rate: number;
+  } | null>(null);
   const [body, setBody] = useState("");
   const [attachmentUrl, setAttachmentUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -60,6 +70,7 @@ export function MessageThread({
     setOtherName(other.name);
     setOtherRole(other.role || null);
     setReviewMeta(data.reviewRequest || null);
+    setListingContext(data.listingContext || null);
     if (opts?.refreshNav) routerRef.current.refresh();
   }
 
@@ -156,8 +167,9 @@ export function MessageThread({
     }
   }
 
-  const tutorReplied = messages.some((m) => m.senderId !== currentUserId);
-  const myMessages = messages.filter((m) => m.senderId === currentUserId);
+  const humanMessages = messages.filter((m) => !parseTeachingProfileContextMessage(m.body));
+  const tutorReplied = humanMessages.some((m) => m.senderId !== currentUserId);
+  const myMessages = humanMessages.filter((m) => m.senderId === currentUserId);
   const tutorHasSeen = myMessages.some((m) => m.readAt);
   const waitingOnTutor =
     viewerRole === "STUDENT" && otherRole === "TUTOR" && myMessages.length > 0 && !tutorReplied;
@@ -165,6 +177,14 @@ export function MessageThread({
   return (
     <div className="thread">
       <h2>Chat with {otherName || "…"}</h2>
+      {listingContext && (
+        <p className="thread-listing-context" role="note">
+          About{" "}
+          <Link href={listingContext.href}>{listingContext.title || listingContext.subject}</Link>
+          {listingContext.line ? ` — ${listingContext.line}` : ""}. Same inbox if you contact this
+          tutor about another Teaching Profile.
+        </p>
+      )}
       {waitingOnTutor && (
         <p
           className="muted"
@@ -191,7 +211,18 @@ export function MessageThread({
         {messages.length === 0 && (
           <p className="muted">No messages yet. Say hello or attach a document.</p>
         )}
-        {messages.map((m) => (
+        {messages.map((m) => {
+          const context = parseTeachingProfileContextMessage(m.body);
+          if (context) {
+            return (
+              <div key={m.id} className="thread-listing-context-msg" role="note">
+                Enquiry about{" "}
+                <Link href={context.href}>{context.title || context.subject}</Link>
+                {context.line ? ` — ${context.line}` : ""}
+              </div>
+            );
+          }
+          return (
           <div
             key={m.id}
             className={`bubble ${m.senderId === currentUserId ? "mine" : "theirs"}${
@@ -218,7 +249,8 @@ export function MessageThread({
               )}
             </time>
           </div>
-        ))}
+          );
+        })}
       </div>
       <form className="thread-compose" onSubmit={send}>
         <textarea

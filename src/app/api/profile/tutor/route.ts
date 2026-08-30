@@ -24,6 +24,7 @@ import { sendTutorProfileLiveEmail } from "@/lib/email-nurture";
 import {
   insertTeachingProfile,
   shouldSkipFirstTeachingProfileCreate,
+  syncDerivedMasterSubjects,
 } from "@/lib/teaching-profile-write";
 import { ActiveCanonicalSubjectConflictError } from "@/lib/teaching-profile-duplicates";
 
@@ -270,7 +271,6 @@ export async function PUT(req: Request) {
         const created = await insertTeachingProfile({
           tutorProfileId: profile.id,
           tutorName: parsedName.name,
-          existingSubjectsCsv: profile.subjects,
           syncMasterRate: true,
           input: {
             subject: data.firstTeachingProfile.subject,
@@ -313,6 +313,8 @@ export async function PUT(req: Request) {
         throw err;
       }
     }
+
+    await syncDerivedMasterSubjects(profile.id);
 
     const listable = isTutorProfileListable(
       { ...profilePayload, subjectProfiles: listings },

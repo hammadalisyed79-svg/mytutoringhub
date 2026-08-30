@@ -4,6 +4,7 @@ import {
   capabilitiesFromMultiValue,
 } from "@/lib/teaching-profile-capabilities";
 import {
+  derivedMasterSubjectsCsv,
   shouldSkipFirstTeachingProfileCreate,
   teachingProfilePersistFields,
 } from "@/lib/teaching-profile-write";
@@ -61,6 +62,18 @@ assert.throws(
       inPerson: false,
     }),
   /subject/i,
+);
+
+assert.throws(
+  () =>
+    teachingProfilePersistFields({
+      subject: "General tutoring",
+      rate: 2000,
+      description: "Weekly lessons for any school subject.",
+      online: true,
+      inPerson: false,
+    }),
+  /specific subject/i,
 );
 
 {
@@ -146,6 +159,17 @@ assert.equal(shouldSkipFirstTeachingProfileCreate([]), false);
     nextSubject: "Maths",
   });
   assert.equal(pausedOk, null, "PAUSED duplicate of Mathematics is allowed");
+}
+
+{
+  const csv = derivedMasterSubjectsCsv([
+    { status: "ACTIVE", subject: "Maths" },
+    { status: "ACTIVE", subject: "Mathematics" },
+    { status: "PAUSED", subject: "Physics" },
+    { status: "ACTIVE", subject: "Chemistry" },
+    { status: "ACTIVE", subject: "General tutoring" },
+  ]);
+  assert.equal(csv, "Mathematics, Chemistry");
 }
 
 console.log("teaching-profile-write.test.ts: ok");

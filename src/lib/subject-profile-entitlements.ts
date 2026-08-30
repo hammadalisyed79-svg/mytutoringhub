@@ -116,10 +116,10 @@ export async function canCreateSubjectProfile(
   if (!user) return { ok: false, reason: "Create your tutor profile first" };
   if (user.suspended) return { ok: false, reason: "Account suspended" };
   if (user.role !== "ADMIN" && user.role !== "TUTOR") {
-    return { ok: false, reason: "Switch to a tutor account to publish subject profiles" };
+    return { ok: false, reason: "Switch to a tutor account to publish Teaching Profiles" };
   }
   if (user.role !== "ADMIN" && !user.emailVerified) {
-    return { ok: false, reason: "Verify your email to publish subject profiles" };
+    return { ok: false, reason: "Verify your email to publish Teaching Profiles" };
   }
 
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
@@ -134,19 +134,19 @@ export async function canCreateSubjectProfile(
 
   if (activeCount >= cap) {
     if (!Number.isFinite(cap)) {
-      return { ok: false, reason: "Active teaching listing limit reached.", activeCount, cap };
+      return { ok: false, reason: "Active Teaching Profile limit reached.", activeCount, cap };
     }
     if (cap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
+        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost does not add a slot.`,
         activeCount,
         cap,
       };
     }
     return {
       ok: false,
-      reason: `Active teaching listing limit reached (${cap}). Legacy Unlimited Profiles holders keep unlimited listings.`,
+      reason: `Active Teaching Profile limit reached (${cap}). Legacy Unlimited Profiles holders keep unlimited profiles.`,
       activeCount,
       cap,
     };

@@ -119,6 +119,13 @@ export function capabilitiesFromListingInput(input: {
   });
 }
 
+export function capabilityValues(
+  rows: SubjectProfileCapabilityRow[],
+  kind: SubjectProfileCapabilityKind,
+): string[] {
+  return rows.filter((row) => row.kind === kind).map((row) => row.value);
+}
+
 export function joinCapabilityLabels(values: string[]): string {
   return values.filter(Boolean).join(" · ");
 }

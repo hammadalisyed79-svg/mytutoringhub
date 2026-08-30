@@ -3,6 +3,7 @@ import {
   capabilitiesFromScalarRow,
   capabilitiesFromListingInput,
   capabilityGroupKey,
+  capabilityValues,
   displayScalarsFromCapabilities,
   isCapabilityKind,
   joinCapabilityLabels,
@@ -97,5 +98,8 @@ assert.deepEqual(
 
 assert.equal(displayScalarsFromCapabilities([]).level, "All levels");
 assert.equal(joinCapabilityLabels(["GCSE", "A Level"]), "GCSE · A Level");
+assert.deepEqual(capabilityValues([{ kind: "LEVEL", value: "GCSE" }, { kind: "BOARD", value: "AQA" }], "LEVEL"), [
+  "GCSE",
+]);
 
 console.log("teaching-profile-capabilities.test.ts: ok");

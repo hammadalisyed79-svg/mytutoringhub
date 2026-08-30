@@ -3,6 +3,7 @@ import {
   CONSOLIDATION_EXECUTE,
   dryRunConsolidateGroup,
   leftoverCsvTagsNotExploded,
+  mergedVisibilityWindows,
   selectSurvivor,
   unionCapabilities,
 } from "./teaching-profile-consolidation";
@@ -107,6 +108,17 @@ assert.equal(CONSOLIDATION_EXECUTE, false, "dry-run must never flip execute to t
 {
   const leftover = leftoverCsvTagsNotExploded("Chemistry", [{ subject: "Chemistry" }]);
   assert.equal(leftover.length, 0);
+}
+
+{
+  const windows = mergedVisibilityWindows(
+    [
+      { ...older, boostUntil: new Date("2026-09-01T00:00:00.000Z") },
+      { ...boosted, boostUntil: new Date("2026-10-01T00:00:00.000Z") },
+    ],
+    now,
+  );
+  assert.equal(windows.boostUntil?.toISOString(), "2026-10-01T00:00:00.000Z");
 }
 
 console.log("teaching-profile-consolidation.test.ts: ok");

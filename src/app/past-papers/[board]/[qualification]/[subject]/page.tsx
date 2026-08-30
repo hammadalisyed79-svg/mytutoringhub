@@ -15,6 +15,7 @@ import { documentTypeShortLabel, groupPapersByYearSessionComponent } from "@/lib
 import { listPublicPastPapers } from "@/lib/past-papers/public-search";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/search-tutors";
+import { pastPaperTutorSearchHref } from "@/lib/past-paper-tutor-search";
 import { JsonLd } from "@/components/JsonLd";
 import {
   breadcrumbJsonLd,
@@ -175,7 +176,16 @@ export default async function PastPaperSeoPage({
           {" · "}
           <Link href={`/s/${slugify(titleSubject)}`}>{titleSubject} tutors</Link>
           {" · "}
-          <Link href={`/search?subject=${encodeURIComponent(titleSubject)}`}>Search</Link>
+          <Link
+            href={pastPaperTutorSearchHref({
+              subject: titleSubject,
+              board: entry?.board || (/cambridge/i.test(board) ? "Cambridge International" : undefined),
+              level: titleLevel,
+              syllabusCode: code || null,
+            })}
+          >
+            Search
+          </Link>
         </p>
 
         <form className="panel filters filters-wide" method="get">

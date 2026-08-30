@@ -217,6 +217,15 @@ model SubjectProfile {
   @@index([canonicalSubject, status])
 }
 
+/// Phase 9: surviving Teaching Profile for a merged `/listings/{id}`. Rows are paused, not deleted.
+model TeachingProfileRedirect {
+  fromId    String   @id
+  toId      String
+  createdAt DateTime @default(now())
+
+  @@index([toId])
+}
+
 /// Multi-value Teaching Profile capabilities (Option A). kind = LEVEL | BOARD | QUALIFICATION | SYLLABUS_CODE.
 model SubjectProfileCapability {
   id               String         @id @default(cuid())

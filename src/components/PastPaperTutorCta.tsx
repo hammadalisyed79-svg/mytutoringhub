@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { findTutorCtaCopy, NO_LESSON_COMMISSION_SHORT } from "@/lib/business-rules";
 import { slugify } from "@/lib/search-tutors";
+import { pastPaperTutorSearchHref } from "@/lib/past-paper-tutor-search";
 
 export function PastPaperTutorCta({
   subject,
@@ -16,11 +19,7 @@ export function PastPaperTutorCta({
   const label = subject.trim();
   if (!label) return null;
 
-  const search = new URLSearchParams();
-  search.set("subject", label);
-  if (board) search.set("board", board);
-  if (level) search.set("level", level);
-  if (syllabusCode) search.set("q", syllabusCode);
+  const searchHref = pastPaperTutorSearchHref({ subject: label, board, level, syllabusCode });
 
   const request = new URLSearchParams();
   request.set("subject", label);
@@ -38,7 +37,7 @@ export function PastPaperTutorCta({
         {taxonomy ? ` Matched for ${taxonomy}.` : ""} {NO_LESSON_COMMISSION_SHORT}.
       </p>
       <div className="hero-ctas">
-        <Link href={`/search?${search.toString()}`} className="btn btn-sm">
+        <Link href={searchHref} className="btn btn-sm">
           Find matching tutors
         </Link>
         <Link href={`/s/${slugify(label)}`} className="btn btn-secondary btn-sm">

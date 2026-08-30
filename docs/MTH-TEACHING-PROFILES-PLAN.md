@@ -1,6 +1,6 @@
 # Teaching Profiles — product plan
 
-**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). **PHASE 2 COMPLETE** (2026-08-30). **PHASE 3 COMPLETE** (2026-08-30). **PHASE 4 COMPLETE** (2026-08-30) — search unit is the Teaching Profile card; capability matching on join rows + scalar cache; broad search max 2 cards per tutor per page. Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Unique index SQL is still NOT applied** (7 live ACTIVE collisions). Do not change wizard, uniqueness-on-write, entitlements 3/10, Boost SKU, messaging, dashboard rewrite, or production listing rows.  
+**Status:** PRODUCT MODEL LOCKED. **PHASES 1–9 COMPLETE** (2026-08-30). Search unit is the Teaching Profile card. Dashboard My Teaching Profiles has multi-value capability editors. Messaging keeps one thread per student–tutor with listing context. Master `subjects` is derived from ACTIVE Teaching Profiles. Past Papers Find-a-tutor sends board/level/syllabusCode. Consolidation execute pauses non-survivors and 301s `/listings/{id}` (no deletes). Unique index applies only when ACTIVE collisions are gone.  
 **Date:** 2026-08-30  
 **Repo:** `C:\Tutor`  
 **Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
@@ -578,7 +578,7 @@ Removed/reduced: 3→1 commercial cliff, grandfathering vs hard pause on 1 Oct, 
 
 ## L. Implementation phases
 
-Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1, Phase 2, Phase 3, and Phase 4 are done.** Next is Phase 5 (dashboard: My Teaching Profiles).
+Gate: this document’s locked decisions (Phase 0, recorded here). **Phases 1–9 are done.** Next is Phase 10 (production verification).
 
 | Phase | Work |
 |-------|------|
@@ -587,11 +587,11 @@ Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1, Ph
 | **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. **Done 2026-08-30.** |
 | **3. Subject uniqueness** | One ACTIVE canonical subject per tutor. Duplicate detection replaces subject+level+board. Safe consolidation **tooling** (preview, not silent merge). **Done 2026-08-30.** |
 | **4. Search** | Teaching Profile cards. Capability matching (board/level/qual/code). Broad search max 2 cards per `TutorProfile` per page. Relevance-first; Boost subordinate. Also teaches = secondary only. Similar-rail still excludes the parent tutor; homepage featured strip stays one-per-tutor. **Done 2026-08-30.** |
-| **5. Dashboard** | My Teaching Profiles. Create/edit/pause/activate. Cap meter Free 3 / Pro 10. Boost per Teaching Profile. Multi-value capability editors. |
-| **6. Messaging context** | Keep one conversation per student–tutor. Retain subject/listing context in thread. |
-| **7. Derived master subjects** | Sync `TutorProfile.subjects` from ACTIVE Teaching Profiles. Remove remaining manual writes. |
-| **8. Past Papers integration verification** | Board/level/code capability matching from paper CTAs (e.g. Cambridge A Level Maths 9709). |
-| **9. Migration** | Consolidate existing production data **after preview**. Preserve URLs. No destructive merge without preview. |
+| **5. Dashboard** | My Teaching Profiles. Create/edit/pause/activate. Cap meter Free 3 / Pro 10. Boost per Teaching Profile. Multi-value capability editors. **Done 2026-08-30.** |
+| **6. Messaging context** | Keep one conversation per student–tutor. Retain subject/listing context in thread. **Done 2026-08-30.** |
+| **7. Derived master subjects** | Sync `TutorProfile.subjects` from ACTIVE Teaching Profiles. Remove remaining manual writes. **Done 2026-08-30.** |
+| **8. Past Papers integration verification** | Board/level/code capability matching from paper CTAs (e.g. Cambridge A Level Maths 9709). **Done 2026-08-30.** |
+| **9. Migration** | Consolidate existing production data **after preview**. Preserve URLs (pause + 301, no delete). Unique index when collisions are gone. **Done 2026-08-30** (`scripts/execute-teaching-profile-consolidation.ts --execute`). |
 | **10. Production verification** | Onboarding, create/edit profiles, search (broad + filtered), messaging, Boost, caps 3/10, Past Papers find-a-tutor, SEO `/listings/{id}` + hubs, regression (no 3→1 cliff, no +1 SKU). |
 
 **Out of scope until asked:** new public SKU name, +1 profile product, lesson escrow, splitting `Conversation` unique key, deleting `TutorAd`, renaming Prisma `SubjectProfile`, changing `/listings/{id}`, per-profile rating systems, date-dependent Free caps.
@@ -612,11 +612,14 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 
 5. **Exact broad-vs-specific search classification** — specific when resolved `subject`, `board`, `level`, or `syllabusCode` is present (`isSpecificTeachingProfileSearch`). Broad otherwise (location / keyword / country / mode / price). Broad pages apply max 2 cards per tutor; extras defer to later pages. Specific search is uncapped (the 7 live Maths collisions may still show as separate cards).
 
-### Still open (Phase 9)
+### Answered in Phase 9
 
-3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection is **documented and dry-run** (Boost → Highlight → most complete capabilities → oldest `/listings/{id}` → smallest id). Capability union is previewed. **No merge in Phase 4.**
-4. **How to preserve existing URLs during consolidation** — dry-run lists survivor vs would-redirect ids. Keep vs 301 vs Boost-window policy still executes only in Phase 9. **No redirects in Phase 4.**
-6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles — **answered in Phase 2:** yes. Step 4 collects default lesson type; the first Teaching Profile inherits it (tutor can override on that step). Master `hourlyRate` is a cache copied from the first listing rate; **listability uses the Teaching Profile rate**, not the master field.
+3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection: Boost → Highlight → most complete capabilities → oldest `/listings/{id}` → smallest id. Execute pauses non-survivors, unions capabilities onto the survivor, writes `TeachingProfileRedirect`, remaps `Conversation.relatedAdId`. **No deletes.**
+4. **How to preserve existing URLs during consolidation** — `/listings/{fromId}` permanently redirects to the survivor. Rows stay PAUSED.
+
+### Still open (Phase 10)
+
+Production verification of the full loop.
 
 ---
 
@@ -647,6 +650,11 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 | 2026-08-30 | **PHASE 2 COMPLETE:** Wizard is photo → about you → location → qualifications / lesson defaults → explicit first Teaching Profile. Master bulk subject picker removed. No CSV auto-create / no `"General tutoring"`. Listability = email + master identity + ≥1 ACTIVE Teaching Profile with valid rate. Unique index still not applied. | This revision |
 | 2026-08-30 | **PHASE 3 COMPLETE:** One ACTIVE Teaching Profile per canonical subject in create/update paths. Duplicate detection on tutor dashboard + `/admin/teaching-profiles`. Dry-run consolidation (no execute). Unique index still not applied. 7 live ACTIVE collisions left in place. | This revision |
 | 2026-08-30 | **PHASE 4 COMPLETE:** Search results are Teaching Profile cards. Capability filters match join rows + scalar cache (not master `TutorProfile.levels`). Broad search max 2 cards per tutor per page; specific search uncapped. Also teaches = subject-only cross-link. Featured badge stays off. Unique index still not applied. | This revision |
+| 2026-08-30 | **PHASE 5 COMPLETE:** My Teaching Profiles dashboard — multi-value capability editors, Free 3 / Pro 10 meter, Boost per profile, leftover CSV tags listed not exploded. | This revision |
+| 2026-08-30 | **PHASE 6 COMPLETE:** One conversation per student–tutor. Teaching Profile context line in thread; second subject does not open a new thread or consume another contact. | This revision |
+| 2026-08-30 | **PHASE 7 COMPLETE:** `TutorProfile.subjects` is derived from ACTIVE Teaching Profiles (`syncDerivedMasterSubjects`). Wizard no longer owns the CSV. | This revision |
+| 2026-08-30 | **PHASE 8 COMPLETE:** Past Papers Find-a-tutor and curriculum chips pass subject + board + level + syllabusCode into Teaching Profile search. | This revision |
+| 2026-08-30 | **PHASE 9 COMPLETE:** Consolidation execute pauses non-survivors, 301s old listing URLs, unions capabilities. Unique index created only when ACTIVE collisions are zero. No listing deletes. | This revision |
 
 ### 2026-08-30 — APPROVED PRODUCT DIRECTION
 
@@ -680,9 +688,9 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 
 TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 
-IMPLEMENTATION STATUS: PHASE 4 COMPLETE. UNIQUE INDEX STILL NOT APPLIED.
+IMPLEMENTATION STATUS: PHASES 1–9 COMPLETE. UNIQUE INDEX APPLIED ONLY WHEN ACTIVE COLLISIONS ARE ZERO.
 
 NEXT STEP:
-Phase 5 — dashboard My Teaching Profiles (create/edit/pause/activate,
-cap meter Free 3 / Pro 10, Boost per Teaching Profile, multi-value
-capability editors). Do not start Phase 6–10 from this Phase 4 change set.
+Phase 10 — production verification (onboarding, create/edit profiles, search,
+messaging context, Boost, caps 3/10, Past Papers find-a-tutor, SEO
+/listings/{id} + hubs, no 3→1 cliff, no +1 SKU).

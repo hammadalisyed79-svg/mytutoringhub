@@ -29,6 +29,22 @@ const strong = scoreListingQuality({
 assert.equal(strong.band, "Strong");
 assert.ok(strong.score >= 75);
 
+const fromCaps = scoreListingQuality({
+  subject: "Mathematics",
+  title: "GCSE and A Level Mathematics",
+  level: "All levels",
+  levels: ["GCSE", "A Level"],
+  boards: ["AQA", "Edexcel"],
+  syllabusCodes: ["8300"],
+  location: "Online",
+  rate: 2000,
+  online: true,
+  description:
+    "I teach GCSE and A Level Mathematics with weekly past-paper practice and exam technique for both AQA and Edexcel students.",
+});
+assert.ok(fromCaps.score > weak.score);
+assert.ok(fromCaps.strengths.some((s) => /board/i.test(s)));
+
 const dup = isNearDuplicateListing(
   { subject: "Mathematics", level: "GCSE", board: "AQA", title: "Maths GCSE" },
   { subject: "Mathematics", level: "GCSE", board: "AQA", title: "Maths GCSE" },

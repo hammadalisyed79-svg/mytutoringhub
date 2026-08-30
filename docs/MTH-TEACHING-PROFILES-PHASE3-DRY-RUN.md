@@ -1,7 +1,7 @@
 # Teaching Profiles Phase 3 — consolidation dry-run
 
 **Status:** PREVIEW ONLY (no writes)  
-**Generated:** 2026-08-30T08:10:43.399Z  
+**Generated:** 2026-08-30T08:49:20.950Z  
 **Execute:** `false`  
 **Rows scanned:** 106
 
@@ -39,8 +39,8 @@ Conflicts the dry-run **records** but does not resolve:
 |--------|------:|
 | Teaching Profiles | 106 |
 | Same-canonical groups (any status) | 9 |
-| ACTIVE collision groups | 7 |
-| Unique index safe to apply | NO — leave SQL gated |
+| ACTIVE collision groups | 0 |
+| Unique index safe to apply | yes |
 | Leftover CSV tutors (not exploded) | 0 |
 
 ## What WOULD merge
@@ -49,7 +49,7 @@ Conflicts the dry-run **records** but does not resolve:
 |---|---|---|---|---|---|---|---|---|
 | `cmsx3iyd20002hekfp2q2g9r7` | Mathematics | `cmtdgosh30005hyhjjaq0a9ns` | `cmtdgoszf000bhyhj4ogze411` `cmtdgot50000dhyhjeevgb760` | — | no | no | oldest public URL (earliest createdAt) | false |
 | `cmt49w2gc00021pm4lave66m1` | Chemistry | `cmtdgozsd002fhyhjs987otve` | `cmtdgp0eo002nhyhjmns50c8e` | — | no | no | oldest public URL (earliest createdAt) | false |
-| `cmt70uv8700021sde1s0hz66v` | Chemistry | `cmtdgp24s0037hyhjn3jteek9` | `cmtdgp2oc003dhyhjr1elgao5` | LEVEL:Primary; LEVEL:Matric / SSC; LEVEL:O Level; LEVEL:University; LEVEL:A Level; LEVEL:FSc / HSSC / Intermediate | no | no | most complete capabilities; oldest createdAt as tie-break among remaining rules | false |
+| `cmt70uv8700021sde1s0hz66v` | Chemistry | `cmtdgp24s0037hyhjn3jteek9` | `cmtdgp2oc003dhyhjr1elgao5` | LEVEL:Primary | no | no | most complete capabilities; oldest createdAt as tie-break among remaining rules | false |
 | `cmt5r6dh90002u88x7uptwuq2` | Islamic Studies | `cmtdgowm8001fhyhjkedrge3g` | `cmtdgowrt001hhyhj46ohwq0w` | — | no | no | oldest public URL (earliest createdAt) | false |
 | `cmt5s8mby000eglzbtqoibner` | Islamic Studies | `cmtdgp75g004vhyhju5kwbgbm` | `cmtdgp7m6004zhyhjp8u11vm1` | — | yes | no | oldest public URL (earliest createdAt) | false |
 | `cmswh5syz000fkusbev0xml1s` | Mathematics | `cmtdgotzl000lhyhjte0fhah0` | `cmtdgouaq000phyhj2i059nhe` | LEVEL:Secondary / O Level | no | no | live Highlight window; oldest createdAt as tie-break among remaining rules | false |
