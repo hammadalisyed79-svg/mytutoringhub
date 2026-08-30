@@ -84,9 +84,9 @@ export default async function HowItWorksPage() {
                 cards
               </li>
               <li>
-                Free tutors get up to 3 active Teaching Profiles in search; Tutor Pro unlocks up to
-                10 plus relevance-first ranking and unlimited enquiry reveals (complimentary until
-                30 September 2026)
+                Free tutors get up to 3 active Teaching Profiles for different subjects in search;
+                Tutor Pro unlocks up to 10 plus relevance-first ranking and unlimited enquiry reveals
+                (complimentary until 30 September 2026)
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is

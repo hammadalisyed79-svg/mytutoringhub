@@ -45,7 +45,7 @@ const FAQS = [
   },
   {
     q: "Is Tutor Pro free?",
-    a: "Complete tutor profiles appear in search for free with up to 3 active Teaching Profiles. Tutor Pro unlocks up to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is optional per Teaching Profile. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue. Free students keep 3 new tutor contacts/month.",
+    a: "Complete tutor profiles appear in search for free with up to 3 active Teaching Profiles for different subjects. Tutor Pro unlocks up to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is optional per Teaching Profile. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue. Free students keep 3 new tutor contacts/month.",
   },
   {
     q: "Why do I need to verify my email?",

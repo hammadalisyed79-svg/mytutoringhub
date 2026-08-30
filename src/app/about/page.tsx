@@ -35,8 +35,8 @@ export default function AboutPage() {
           <h2>Launch offer</h2>
           <p>
             Tutor Pro (relevance-first ranking and unlimited enquiry reveals) is complimentary until
-            30 September 2026. Free tutors already get up to 3 active Teaching Profiles with organic
-            search visibility; Tutor Pro unlocks up to 10. Listing Boost and Priority Verification
+            30 September 2026. Free tutors already get up to 3 active Teaching Profiles for different
+            subjects with organic search visibility; Tutor Pro unlocks up to 10. Listing Boost and Priority Verification
             Review stay optional paid products. Identity Verified is earned after review — not
             purchased.
           </p>

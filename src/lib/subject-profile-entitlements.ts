@@ -56,7 +56,7 @@ export function isSubjectProfilePromoActive(_now = new Date()): boolean {
 }
 
 export function subjectProfilePromoLabel(_now = new Date()): string {
-  return `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`;
+  return `Free plan includes up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects. More subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Legacy Unlimited Profiles holders keep unlimited profiles.`;
 }
 
 /**
@@ -139,7 +139,7 @@ export async function canCreateSubjectProfile(
     if (cap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost does not add a slot.`,
+        reason: `Free plan includes up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost does not add a slot.`,
         activeCount,
         cap,
       };

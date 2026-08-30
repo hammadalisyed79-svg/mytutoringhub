@@ -508,7 +508,7 @@ export function TutorAdsManager({
       <div className="teaching-listings-summary">
         <p className="muted" style={{ marginBottom: 0 }}>
           {entitlement?.promoLabel ||
-            `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active Teaching Profiles. Tutor Pro unlocks up to ${entitlement?.paidCap ?? 10}. Legacy Unlimited Profiles holders keep unlimited profiles.`}
+            `Free plan includes up to ${entitlement?.freeCapAfterPromo ?? 3} active Teaching Profiles for different subjects. More subjects require Tutor Pro (up to ${entitlement?.paidCap ?? 10}). Legacy Unlimited Profiles holders keep unlimited profiles.`}
         </p>
         <p className="teaching-listings-meter">
           Active{" "}
@@ -686,8 +686,8 @@ export function TutorAdsManager({
         >
           <h3 style={{ marginTop: 0 }}>Create Teaching Profile</h3>
           <p className="field-hint">
-            One canonical subject per Teaching Profile. Levels and boards go inside this profile —
-            not as extra Mathematics rows.
+            Free allotment: up to 3 active profiles for different subjects. One subject per profile —
+            put levels and boards inside this profile, not as extra Mathematics rows.
           </p>
           <label>
             <span>
