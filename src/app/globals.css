@@ -13202,6 +13202,18 @@ html {
   margin-bottom: 0;
 }
 
+@media (min-width: 720px) {
+  .home-page .home-subject-chips {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-page .home-subject-chips {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .home-page {
     --home-section-y: clamp(2.25rem, 6vw, 3rem);

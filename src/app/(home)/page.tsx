@@ -178,9 +178,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="popular-subjects-title">
+      <section className="section home-popular-subjects" aria-labelledby="popular-subjects-title">
         <div className="container">
-          <h2 id="popular-subjects-title">Popular subjects</h2>
+          <p className="eyebrow">Start with a subject</p>
+          <div className="home-popular-subjects-head">
+            <h2 id="popular-subjects-title">Popular subjects</h2>
+            <Link href="/subjects" className="home-popular-subjects-all">
+              Browse all subjects <span aria-hidden="true">→</span>
+            </Link>
+          </div>
           <p className="section-lead">High-demand subjects across school, exams, and university.</p>
           <div className="subject-chips home-subject-chips">
             {POPULAR_SUBJECTS.map((s) => (
@@ -189,11 +195,6 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-          <p className="section-actions">
-            <Link href="/subjects" className="btn btn-secondary">
-              Browse all subjects
-            </Link>
-          </p>
         </div>
       </section>
 
