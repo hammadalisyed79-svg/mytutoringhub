@@ -39,7 +39,7 @@ const p = new PrismaClient();
     planPrices.AD_BOOST = {
       ...planPrices.AD_BOOST,
       name: "Listing Boost",
-      description: "30-day boost window on one teaching listing among relevant matches.",
+      description: "30-day boost window on one Teaching Profile among relevant matches.",
     };
   }
 

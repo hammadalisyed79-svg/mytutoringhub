@@ -671,7 +671,7 @@ export default async function TutorProfilePage({ params }: Params) {
               <section className="profile-content-card" id="lessons-offered">
                 <h2>Lessons offered</h2>
                 <p className="muted" style={{ marginTop: 0 }}>
-                  Teaching listings from this tutor. Rates apply to each service.
+                  Teaching Profiles from this tutor. Rates apply to each subject.
                 </p>
                 <div className="lessons-offered">
                   {tutor.subjectProfiles.map((listing) => {

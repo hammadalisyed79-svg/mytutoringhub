@@ -1,6 +1,6 @@
 # Teaching Profiles Phase 10 — production verification
 
-**Generated:** 2026-08-30T09:11:14.740Z  
+**Generated:** 2026-08-30T10:24:15.357Z  
 **Live origin:** https://www.mytutoringhub.com  
 **Result:** PASS
 
@@ -25,11 +25,11 @@ Sign-in is required to message or save from public search (already observed on `
 | Unique index safe | yes | canApply=true |
 | Partial unique index present | yes | SubjectProfile_active_tutor_canonical_uidx=true |
 | Redirect rows exist (paused URLs preserved) | yes | 10 TeachingProfileRedirect rows |
-| Live Homepage HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=145680 |
+| Live Homepage HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=144895 |
 | Live Pricing HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=49704 |
 | Live Become a tutor HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=37223 |
 | Live Help HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=53032 |
-| Live Login HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=false len=31479 |
+| Live Login HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=false len=31574 |
 | Live Search browse HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=181935 |
 | Live Search Mathematics HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=171461 |
 | Live Search Cambridge A Level Maths 9709 HTTP | yes | status=200 cliffCopy=false extraSkuCopy=false teachingProfileCopy=true len=172054 |
@@ -42,14 +42,13 @@ Sign-in is required to message or save from public search (already observed on `
 
 ## Redirect notes
 
-After deploy, merged listing URLs return a **classic HTTP 308** with `Location` (from `next.config.ts` `redirects()` loaded from `TeachingProfileRedirect`). Example: `cmtdgoszf000bhyhj4ogze411` → `/listings/cmtdgosh30005hyhjjaq0a9ns`. `generateMetadata` does not call `permanentRedirect`. Page-level `permanentRedirect` remains a fallback.
+After this deploy, merged listing URLs return a **classic HTTP 308** with `Location` (from `next.config.ts` `redirects()` loaded from `TeachingProfileRedirect`). Example: `cmtdgoszf000bhyhj4ogze411` → `/listings/cmtdgosh30005hyhjjaq0a9ns`. `generateMetadata` does not call `permanentRedirect`. Page-level `permanentRedirect` remains a fallback.
 
 ## Other public curl notes
 
 - `/past-papers/cambridge/a-level/mathematics-9709` → 200; Find-a-tutor href includes `subject=Mathematics`, `board=Cambridge AS/A Level`, `level=A Level`, `syllabusCode=9709`
 - `/s/mathematics` → 200
 - `/become-a-tutor` → 200, Teaching Profile copy
-- `/login` → 200, email + password fields (dashboard remains behind this)
+- `/login` → 200; `/dashboard/tutor` unauthenticated → meta refresh to `/login?next=/dashboard/tutor`
 - Homepage / pricing / help use Teaching Profile; no 3→1 cliff; Extra Profile Ads is not sold as a +1 SKU
-
-cursor-ide-browser MCP could not keep a tab open in this session; public checks used `curl` / `fetch`.
+- Live browse search (2026-08-30 re-audit): 2 Teaching Profiles (one tutor, max 2 on broad search). Mathematics / 9709 search: 0 public matches with working zero-result CTA.
