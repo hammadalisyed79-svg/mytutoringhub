@@ -114,7 +114,7 @@ export default async function PricingPage({
             </>
           ) : (
             <>
-              <span>Free tutor listings</span>
+              <span>Free Teaching Profiles</span>
               <span>Complimentary Tutor Pro</span>
               <span>Bank transfer accepted</span>
               <span>Plans activated within 24h</span>

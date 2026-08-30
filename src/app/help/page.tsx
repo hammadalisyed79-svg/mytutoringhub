@@ -41,7 +41,7 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Pro, Priority Verification Review, Listing Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Pro and free listings work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Pro, Priority Verification Review, Listing Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Pro and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
   },
   {
     q: "Is Tutor Pro free?",

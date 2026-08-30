@@ -166,7 +166,7 @@ export async function generateMetadata({ params }: Params) {
   if (!tutor) {
     return pageMetadata({
       title: "Tutor not found",
-      description: "This tutor listing is not available on My Tutoring Hub.",
+      description: "This tutor profile is not available on My Tutoring Hub.",
       path: `/tutors/${id}`,
       noIndex: true,
     });
@@ -179,7 +179,7 @@ export async function generateMetadata({ params }: Params) {
   if (!isPublic && !isOwner && !isAdmin) {
     return pageMetadata({
       title: "Tutor not found",
-      description: "This tutor listing is not available on My Tutoring Hub.",
+      description: "This tutor profile is not available on My Tutoring Hub.",
       path: `/tutors/${id}`,
       noIndex: true,
     });
@@ -188,7 +188,7 @@ export async function generateMetadata({ params }: Params) {
   if (isOwner && !isPublic) {
     return pageMetadata({
       title: `${tutor.user.name} – profile preview`,
-      description: "Your tutor listing preview on My Tutoring Hub. Complete your profile to go live in search.",
+      description: "Your tutor profile preview on My Tutoring Hub. Complete your profile to go live in search.",
       path: `/tutors/${id}`,
       noIndex: true,
     });
@@ -542,7 +542,7 @@ export default async function TutorProfilePage({ params }: Params) {
                     Your video link could not be embedded. Check the URL in your dashboard.
                   </p>
                 ) : (
-                  <p className="muted">This tutor has shared an intro video on their listing.</p>
+                  <p className="muted">This tutor has shared an intro video on their profile.</p>
                 )}
               </section>
             )}

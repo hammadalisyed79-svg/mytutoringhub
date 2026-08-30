@@ -8,7 +8,7 @@ export default function NotFound() {
           <p className="eyebrow">404</p>
           <h1 className="page-title">Page not found</h1>
           <p className="muted">
-            That link may be outdated, or the tutor listing is not public yet. You can search for
+            That link may be outdated, or the Teaching Profile is not public yet. You can search for
             tutors, browse past papers, or return home.
           </p>
           <div className="hero-ctas not-found-ctas">

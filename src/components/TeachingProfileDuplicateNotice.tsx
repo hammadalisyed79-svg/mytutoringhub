@@ -14,7 +14,7 @@ export function TeachingProfileDuplicateNotice({
 
   return (
     <div className="tutor-profile-hidden-note teaching-profile-duplicate-notice" role="status">
-      <strong>Duplicate Teaching Profiles.</strong> {text}. Existing listings stay as they are —
+      <strong>Duplicate Teaching Profiles.</strong> {text}. Existing Teaching Profiles stay as they are —
       nothing is merged or removed yet.
     </div>
   );

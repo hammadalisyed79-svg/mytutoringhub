@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
-  title: "Become a Tutor – Free Listing & Tutor Pro Priority",
+  title: "Become a Tutor – Free Teaching Profiles & Tutor Pro Priority",
   description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Pro growth tools complimentary until 30 September 2026.`,
   path: "/become-a-tutor",
 });
@@ -45,11 +45,11 @@ export default async function BecomeATutorPage({
         <ul className="become-tutor-benefits">
           <li>
             <strong>Same login</strong> — add a tutor profile without creating a second account. Switch
-            between student and tutor mode anytime; your tutor listing stays saved.
+            between student and tutor mode anytime; your tutor profile stays saved.
           </li>
           <li>
-            <strong>Free public listing</strong> when your profile meets the eligibility requirements
-            (photo, subjects, bio, rate, and more).
+            <strong>Free Teaching Profiles</strong> in search when your profile meets the eligibility
+            requirements (photo, subjects, bio, rate, and more).
           </li>
           <li>
             <strong>Set your own rate</strong> — online, in person, or both.

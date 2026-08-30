@@ -119,8 +119,8 @@ export default async function StudentDashboardPage({
             <h2>{user.tutorProfile ? "Your tutor profile" : "Want to teach?"}</h2>
             <p className="muted section-lead-tight">
               {user.tutorProfile
-                ? "You already have a tutor profile on this login. Switch to tutor mode anytime — your listing stays saved."
-                : "Keep this login and create a free tutor listing. You can switch back to student mode anytime without losing your tutor profile."}
+                ? "You already have a tutor profile on this login. Switch to tutor mode anytime — your Teaching Profiles stay saved."
+                : "Keep this login and create a free tutor profile. You can switch back to student mode anytime without losing your tutor profile."}
             </p>
             {user.tutorProfile ? (
               <SwitchProfileButton

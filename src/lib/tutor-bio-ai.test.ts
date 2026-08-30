@@ -62,9 +62,12 @@ const facts = formatTutorBioFacts({
   subjects: ["Mathematics"],
   location: "Lahore",
   country: "Pakistan",
+  listings: "Chemistry · O Level",
 });
 assert.match(facts, /Name: Mark Elison/);
 assert.match(facts, /Subjects: Mathematics/);
+assert.match(facts, /Teaching Profiles: Chemistry · O Level/);
+assert.doesNotMatch(facts, /Teaching listings/i);
 assert.doesNotMatch(facts, /10\+|hundreds|reviews/i);
 assert.doesNotMatch(facts, /Years of experience/);
 

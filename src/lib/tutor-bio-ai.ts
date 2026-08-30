@@ -336,7 +336,7 @@ export function formatTutorBioFacts(facts: TutorBioFacts, purpose: TutorBioAiPur
     factLine("Name", facts.name),
     factLine("Headline", facts.headline),
     factLine("Subjects", subjects),
-    factLine("Teaching listings", facts.listings),
+    factLine("Teaching Profiles", facts.listings),
     factLine("Levels", asList(facts.levels).join(", ")),
     factLine("Location", [facts.location, facts.country].filter((v) => v?.trim()).join(", ")),
     factLine("Qualifications (only if listed)", facts.qualifications),

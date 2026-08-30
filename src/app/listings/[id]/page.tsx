@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
-import { listingPath } from "@/lib/subject-profile";
+import { listingPath, teachingProfileDocumentTitle } from "@/lib/subject-profile";
 import { resolveTeachingProfileRedirect } from "@/lib/teaching-profile-redirect";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import {
@@ -162,7 +162,7 @@ export async function generateMetadata({ params }: Params) {
   }
 
   return pageMetadata({
-    title: `${listing.title} · ${listing.subject}`,
+    title: teachingProfileDocumentTitle(listing.title, listing.subject),
     description: truncateDescription(
       `${desc} ${listing.location ? `Based in ${listing.location}.` : ""} Book on My Tutoring Hub.`,
       155,

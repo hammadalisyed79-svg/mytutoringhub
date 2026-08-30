@@ -217,7 +217,7 @@ function EditTeachingProfileForm({
       onSubmit={(e) => onSave(e, caps)}
     >
       <label>
-        Listing title
+        Profile title
         <input name="title" required minLength={5} defaultValue={listing.title} />
       </label>
       <label>
@@ -723,7 +723,7 @@ export function TutorAdsManager({
           </label>
           <label>
             <span>
-              Listing title{" "}
+              Profile title{" "}
               <abbr className="req" title="Required">
                 *
               </abbr>
