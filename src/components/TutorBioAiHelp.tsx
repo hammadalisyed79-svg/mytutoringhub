@@ -117,6 +117,15 @@ export function TutorBioAiHelp({
     setNote("Restored your previous text.");
   }
 
+  const hint =
+    purpose === "teachingDescription"
+      ? placeholder
+        ? "Select subject, rate, lesson mode, and the capability chips first. We will mention what you picked, grouped if there are many, not a raw list of codes."
+        : "Uses this form: subject, rate, online or in-person, levels, boards, awards, and codes. It will not invent experience, degrees, or reviews."
+      : placeholder
+        ? "The placeholder text is ignored. We will start from your name and any subjects you have added, not that default line."
+        : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews.";
+
   return (
     <div className="tutor-bio-ai">
       <div className="tutor-bio-ai-actions">
@@ -146,15 +155,7 @@ export function TutorBioAiHelp({
           </button>
         ) : null}
       </div>
-      <p className="field-hint tutor-bio-ai-hint">
-        {purpose === "teachingDescription"
-          ? placeholder
-            ? "Select subject, rate, lesson mode, and the capability chips first. We’ll mention what you picked — grouped if there are many, not a raw list of codes."
-            : "Uses this form: subject, rate, online/in-person, levels, boards, awards, and codes. It will not invent experience, degrees, or reviews."}
-          : placeholder
-            ? "The placeholder text is ignored — we will start from your name and any subjects you have added, not that default line."
-            : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews."}
-      </p>
+      <p className="field-hint tutor-bio-ai-hint">{hint}</p>
       <details className="tutor-bio-ai-notes">
         <summary>Optional notes for the draft</summary>
         <label>
