@@ -124,8 +124,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     subjects.map((s) => s.name),
     catalogSubjectNames(),
   );
-  const { tutors, total, page, pages, resolved, locationRelaxed, keptCountry, tutorCapApplied } =
-    await searchTutors(sp, {
+  const {
+    tutors,
+    total,
+    page,
+    pages,
+    resolved,
+    locationRelaxed,
+    keptCountry,
+    tutorCapApplied,
+    maxPerTutor,
+  } = await searchTutors(sp, {
     currency,
     subjectNames,
   });
@@ -249,8 +258,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             <p className="muted search-summary">{summary}</p>
             {tutorCapApplied && (
               <p className="search-note muted">
-                Up to 2 Teaching Profiles per tutor are shown on each page. Extra profiles appear on
-                later pages or on the tutor’s own listings.
+                {maxPerTutor === 1
+                  ? "One Teaching Profile per tutor is shown for this subject. Other matching profiles appear under Also teaches or on the tutor’s listings."
+                  : "Up to 2 Teaching Profiles per tutor are shown on each page. Extra profiles appear on later pages or on the tutor’s own listings."}
               </p>
             )}
             <RecentAndSavedTutors />

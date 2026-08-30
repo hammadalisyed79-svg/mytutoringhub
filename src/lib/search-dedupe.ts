@@ -1,7 +1,9 @@
 /**
- * Teaching Profile search display (Phase 4).
+ * Teaching Profile search display (Phase 4 / Marketplace UX).
  *
- * Specific search (resolved subject and/or board / level / syllabus code):
+ * Subject-filtered search (resolved subject query):
+ *   at most 1 card per TutorProfile — best score / newest wins; siblings via alsoTeaches.
+ * Other specific filters (board / level / syllabus only, no subject):
  *   one card per matching Teaching Profile — no per-tutor collapse.
  * Broad search (location / keyword / empty):
  *   max 2 cards from the same TutorProfile per result page.
@@ -9,6 +11,8 @@
  */
 
 export const BROAD_SEARCH_MAX_CARDS_PER_TUTOR = 2;
+/** Subject family search: one best Teaching Profile card per tutor. */
+export const SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR = 1;
 
 export type DedupeListingInput = {
   tutorProfileId: string;
@@ -42,6 +46,26 @@ export function isSpecificTeachingProfileSearch(filters: {
       (filters.level || "").trim() ||
       (filters.syllabusCode || "").trim(),
   );
+}
+
+/** True when search is scoped to a subject (Maths, Biology, …) — not board/level-only. */
+export function isSubjectFilteredSearch(filters: { subject?: string | null }): boolean {
+  return Boolean((filters.subject || "").trim());
+}
+
+/**
+ * Per-tutor card cap for the current search mode.
+ * Subject query → 1 (avoid near-duplicate Maths cards); broad → 2; other specific → uncapped.
+ */
+export function maxCardsPerTutorForSearch(filters: {
+  subject?: string | null;
+  board?: string | null;
+  level?: string | null;
+  syllabusCode?: string | null;
+}): number {
+  if (isSubjectFilteredSearch(filters)) return SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR;
+  if (isSpecificTeachingProfileSearch(filters)) return Number.POSITIVE_INFINITY;
+  return BROAD_SEARCH_MAX_CARDS_PER_TUTOR;
 }
 
 /**

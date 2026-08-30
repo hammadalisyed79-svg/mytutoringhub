@@ -4,6 +4,9 @@ import {
   BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
   dedupeSearchByTutor,
   isSpecificTeachingProfileSearch,
+  isSubjectFilteredSearch,
+  maxCardsPerTutorForSearch,
+  SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR,
   paginateWithTutorCap,
   tutorHasMoreThanCap,
 } from "./search-dedupe";
@@ -15,6 +18,11 @@ import {
   assert.equal(isSpecificTeachingProfileSearch({ syllabusCode: "9709" }), true);
   assert.equal(isSpecificTeachingProfileSearch({ subject: "  " }), false);
   assert.equal(isSpecificTeachingProfileSearch({}), false);
+  assert.equal(isSubjectFilteredSearch({ subject: "Mathematics" }), true);
+  assert.equal(isSubjectFilteredSearch({ subject: "  " }), false);
+  assert.equal(maxCardsPerTutorForSearch({ subject: "Mathematics" }), SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR);
+  assert.equal(maxCardsPerTutorForSearch({ board: "AQA" }), Number.POSITIVE_INFINITY);
+  assert.equal(maxCardsPerTutorForSearch({}), BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
 }
 
 function listing(
@@ -106,6 +114,27 @@ function listing(
   assert.equal(rows.length, 2);
   assert.equal(rows[0]!.listingId, "l2");
   assert.equal(rows[0]!.alsoTeaches.length, 1);
+}
+
+// Subject search: Madhu-style four Maths variants → one best card + alsoTeaches
+{
+  const scored = [
+    listing("madhu", "olevel", "O Level Maths", 60),
+    listing("madhu", "psle", "PSLE Maths", 55),
+    listing("madhu", "addmaths", "Additional Mathematics", 50),
+    listing("madhu", "further", "Further Mathematics", 45),
+    listing("other", "maths", "Mathematics", 40),
+  ];
+  const page1 = paginateWithTutorCap(scored, 1, 12, SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR);
+  const madhuCards = page1.items.filter((row) => row.tutorProfileId === "madhu");
+  assert.equal(madhuCards.length, 1);
+  assert.equal(madhuCards[0]!.listingId, "olevel");
+  assert.equal(page1.items.length, 2);
+  const withAlso = attachAlsoTeaches(page1.items, scored);
+  assert.deepEqual(
+    withAlso[0]!.alsoTeaches.map((row) => row.subject),
+    ["PSLE Maths", "Additional Mathematics", "Further Mathematics"],
+  );
 }
 
 console.log("search-dedupe.test.ts: ok");

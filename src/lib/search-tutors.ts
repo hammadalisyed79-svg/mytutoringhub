@@ -19,8 +19,8 @@ import {
 import { listingPath } from "@/lib/subject-profile";
 import {
   attachAlsoTeaches,
-  BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
   isSpecificTeachingProfileSearch,
+  maxCardsPerTutorForSearch,
   paginateWithTutorCap,
   tutorHasMoreThanCap,
   type AlsoTeachesItem,
@@ -476,14 +476,11 @@ export async function searchTutors(
           : scored;
 
   const specific = isSpecificTeachingProfileSearch({ subject, board, level, syllabusCode });
-  const paged = paginateWithTutorCap(
-    ordered,
-    page,
-    PAGE_SIZE,
-    specific ? Number.POSITIVE_INFINITY : BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
-  );
+  const maxPerTutor = maxCardsPerTutorForSearch({ subject, board, level, syllabusCode });
+  const paged = paginateWithTutorCap(ordered, page, PAGE_SIZE, maxPerTutor);
+  // Flag when page layout collapsed extra tutor cards (broad or subject-family dedupe).
   const tutorCapApplied =
-    !specific && tutorHasMoreThanCap(ordered, BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
+    Number.isFinite(maxPerTutor) && tutorHasMoreThanCap(ordered, maxPerTutor);
 
   const withAlso = attachAlsoTeaches(paged.items, ordered);
   const slice = withAlso.map((s) => ({
@@ -501,6 +498,7 @@ export async function searchTutors(
     keptCountry,
     specific,
     tutorCapApplied,
+    maxPerTutor: Number.isFinite(maxPerTutor) ? maxPerTutor : null,
   };
 }
 
