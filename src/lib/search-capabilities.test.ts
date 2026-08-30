@@ -4,6 +4,7 @@ import {
   listingHasCapability,
   listingMatchesCapabilityFilters,
   listingMatchesCanonicalSubject,
+  listingMatchesExpandedSubject,
   teachingProfileCapabilityWhere,
 } from "./search-capabilities";
 
@@ -63,6 +64,25 @@ const emptyListing = {
 {
   assert.equal(listingMatchesCanonicalSubject({ subject: "O Level Maths" }, "Mathematics"), true);
   assert.equal(listingMatchesCanonicalSubject({ subject: "Physics" }, "Mathematics"), false);
+}
+
+// Subject search must stay listing-scoped (Madhu / Biology regression)
+{
+  const biology = { subject: "Biology", canonicalSubject: "Biology", title: "Madhu · Biology" };
+  const maths = { subject: "O Level Maths", canonicalSubject: "Mathematics", title: "Madhu · O Level Maths" };
+  const neet = { subject: "NEET Prep", canonicalSubject: "NEET Prep", title: "Madhu · NEET Prep" };
+  const psle = {
+    subject: "PSLE Maths",
+    canonicalSubject: "PSLE Maths",
+    title: "Experienced tutor teaching Maths, Science, Biology, Chemistry",
+  };
+  assert.equal(listingMatchesExpandedSubject(biology, "Biology"), true);
+  assert.equal(listingMatchesExpandedSubject(maths, "Biology"), false);
+  assert.equal(listingMatchesExpandedSubject(neet, "Biology"), false);
+  assert.equal(listingMatchesExpandedSubject(psle, "Biology"), false);
+  assert.equal(listingMatchesExpandedSubject(maths, "Mathematics"), true);
+  assert.equal(listingMatchesExpandedSubject({ subject: "Commerce" }, "Business"), true);
+  assert.equal(listingMatchesExpandedSubject({ subject: "Business Studies" }, "Business"), true);
 }
 
 {

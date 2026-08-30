@@ -10,6 +10,7 @@ import {
   type SubjectProfileCapabilityKind,
   type SubjectProfileCapabilityRow,
 } from "@/lib/teaching-profile-capabilities";
+import { expandSubjectTerms } from "@/lib/search-smart";
 import { sameCanonicalSubject } from "@/lib/teaching-profile-subject";
 
 export type SearchCapabilityListing = {
@@ -110,6 +111,26 @@ export function listingMatchesCanonicalSubject(
     sameCanonicalSubject(listing.canonicalSubject, want) ||
     sameCanonicalSubject(listing.title, want)
   );
+}
+
+/**
+ * Subject-scoped Teaching Profile match (search filter).
+ * Uses listing subject / canonicalSubject only — not parent expertise or free-text titles
+ * (those previously pulled every listing for a multi-subject tutor into Biology, etc.).
+ */
+export function listingMatchesExpandedSubject(
+  listing: SearchCapabilityListing,
+  subject: string | null | undefined,
+): boolean {
+  const want = (subject || "").trim();
+  if (!want) return true;
+  return expandSubjectTerms(want).some((term) => {
+    if (sameCanonicalSubject(listing.subject, term)) return true;
+    if (sameCanonicalSubject(listing.canonicalSubject, term)) return true;
+    if (containsInsensitive(listing.subject, term)) return true;
+    if (containsInsensitive(listing.canonicalSubject, term)) return true;
+    return false;
+  });
 }
 
 function containsClause(value: string) {

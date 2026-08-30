@@ -28,7 +28,7 @@ import {
 import {
   isMissingCapabilitySchemaError,
   listingHasCapability,
-  listingMatchesCanonicalSubject,
+  listingMatchesExpandedSubject,
   teachingProfileCapabilityWhere,
 } from "@/lib/search-capabilities";
 
@@ -135,6 +135,7 @@ const LISTING_PARENT_SELECT = {
 type ListingRow = {
   id: string;
   subject: string;
+  canonicalSubject?: string | null;
   title: string;
   headline: string | null;
   description: string | null;
@@ -305,10 +306,10 @@ export async function searchTutors(
         ...(capabilityFilters.length ? { AND: capabilityFilters } : {}),
         ...(subject
           ? {
+              // Listing fields only — parent expertise/subjects would match every card for that tutor.
               OR: expandSubjectTerms(subject).flatMap((term) => [
                 { subject: contains(term) },
-                { title: contains(term) },
-                { tutorProfile: { expertise: contains(term) } },
+                ...(includeJoinTable ? [{ canonicalSubject: contains(term) }] : []),
               ]),
             }
           : {}),
@@ -363,11 +364,18 @@ export async function searchTutors(
         status: true,
         highlightedUntil: true,
         boostUntil: true,
-        ...(includeJoinTable ? { capabilities: { select: { kind: true, value: true } } } : {}),
+        ...(includeJoinTable
+          ? {
+              canonicalSubject: true,
+              capabilities: { select: { kind: true, value: true } },
+            }
+          : {}),
         tutorProfile: { select: LISTING_PARENT_SELECT },
       },
     });
-    return (rows as ListingRow[]).filter(isPublicListing);
+    return (rows as ListingRow[])
+      .filter(isPublicListing)
+      .filter((row) => !subject || listingMatchesExpandedSubject(row, subject));
   };
 
   const querySafe = async (useLocation: boolean, useCountry: boolean) => {
@@ -415,16 +423,7 @@ export async function searchTutors(
         location && (card.location || "").toLowerCase().includes(location.toLowerCase()) ? 8 : 0;
       const countryBoost =
         country && (card.country || "").toLowerCase().includes(country.toLowerCase()) ? 3 : 0;
-      const subjectFieldMatch = subject
-        ? listingMatchesCanonicalSubject(row, subject) ||
-          expandSubjectTerms(subject).some(
-            (term) =>
-              card.subject.toLowerCase().includes(term.toLowerCase()) ||
-              (card.expertise || "").toLowerCase().includes(term.toLowerCase()),
-          )
-          ? 50
-          : 0
-        : 0;
+      const subjectFieldMatch = subject && listingMatchesExpandedSubject(row, subject) ? 50 : 0;
       const levelFieldMatch = level && listingHasCapability(row, "LEVEL", level) ? 30 : 0;
       const boardMatch = board && listingHasCapability(row, "BOARD", board) ? 40 : 0;
       const codeMatchScore =
