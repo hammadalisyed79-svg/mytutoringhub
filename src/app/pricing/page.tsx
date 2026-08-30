@@ -25,7 +25,13 @@ export const metadata = pageMetadata({
 export default async function PricingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string; state?: string; verify?: string; plan?: string }>;
+  searchParams: Promise<{
+    checkout?: string;
+    state?: string;
+    verify?: string;
+    plan?: string;
+    subjectProfileId?: string;
+  }>;
 }) {
   const session = await auth();
   const role = session?.user?.role;
@@ -155,6 +161,7 @@ export default async function PricingPage({
           signedIn={Boolean(session?.user)}
           paidCheckoutLive={paidCheckoutLive}
           hubPointsBalance={hubPointsBalance}
+          subjectProfileId={sp.subjectProfileId}
         />
       </div>
     </div>

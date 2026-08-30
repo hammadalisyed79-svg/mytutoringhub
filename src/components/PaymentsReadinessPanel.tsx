@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   getPaymentsReadiness,
   paymentsModeLabel,
-  PAYMENTS_SUPPORT_EMAIL,
 } from "@/lib/payments-status";
 import { PaymentsReadinessTestButton } from "@/components/PaymentsReadinessTestButton";
 import { ResendReadinessTestButton } from "@/components/ResendReadinessTestButton";
@@ -87,9 +86,9 @@ export function PaymentsReadinessPanel() {
         <Link href="/pricing" className="btn btn-secondary btn-sm">
           Open Pricing
         </Link>
-        <a href={`mailto:${PAYMENTS_SUPPORT_EMAIL}`} className="btn btn-secondary btn-sm">
+        <Link href="/contact" className="btn btn-secondary btn-sm">
           Billing support
-        </a>
+        </Link>
       </div>
 
       <PaymentsReadinessTestButton />

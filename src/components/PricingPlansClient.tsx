@@ -19,6 +19,7 @@ function PlanActions({
   billing,
   paidCheckoutLive,
   hubPointsBalance = 0,
+  subjectProfileId,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
@@ -27,9 +28,12 @@ function PlanActions({
   billing: "monthly" | "annual";
   paidCheckoutLive: boolean;
   hubPointsBalance?: number;
+  /** When set (deep link), Boost/Highlight can checkout for that Teaching Profile. */
+  subjectProfileId?: string;
 }) {
   if (signedIn) {
-    if (plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD") {
+    const listingBound = plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD";
+    if (listingBound && !subjectProfileId) {
       return (
         <Link
           href="/dashboard/tutor?tab=profile#teaching-listings"
@@ -43,9 +47,12 @@ function PlanActions({
     if (!paidCheckoutLive && !plan.isComplimentary) {
       return (
         <ManualPlanActivationButton
+          plan={plan.id}
           planName={plan.name}
           label={manualActivationCtaLabel(plan.name)}
           featured={featured || plan.id === "VERIFIED_TUTOR"}
+          oneTime={Boolean(plan.isAddOn)}
+          subjectProfileId={subjectProfileId}
         />
       );
     }
@@ -71,6 +78,7 @@ function PlanActions({
         }
         featured={featured}
         complimentary={plan.isComplimentary}
+        subjectProfileId={subjectProfileId}
       />
     );
   }
@@ -170,6 +178,7 @@ export function PricingPlansClient({
   signedIn,
   paidCheckoutLive,
   hubPointsBalance = 0,
+  subjectProfileId,
 }: {
   corePlans: ResolvedPlan[];
   addOns: ResolvedPlan[];
@@ -177,6 +186,7 @@ export function PricingPlansClient({
   signedIn: boolean;
   paidCheckoutLive: boolean;
   hubPointsBalance?: number;
+  subjectProfileId?: string;
 }) {
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const hasAnnual = corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null);
@@ -313,6 +323,7 @@ export function PricingPlansClient({
                   billing={billing}
                   paidCheckoutLive={paidCheckoutLive}
                   hubPointsBalance={hubPointsBalance}
+                  subjectProfileId={subjectProfileId}
                 />
               </div>
             </article>
@@ -365,6 +376,11 @@ export function PricingPlansClient({
                     billing="monthly"
                     paidCheckoutLive={paidCheckoutLive}
                     hubPointsBalance={hubPointsBalance}
+                    subjectProfileId={
+                      plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD"
+                        ? subjectProfileId
+                        : undefined
+                    }
                   />
                 </div>
               </article>

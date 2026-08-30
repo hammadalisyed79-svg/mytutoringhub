@@ -31,8 +31,17 @@ export function manualActivationCtaLabel(planName: string) {
 
 export function manualActivationNote(oneTime = false) {
   return oneTime
-    ? "Bank transfer accepted · Boosts activated within 24 hours"
-    : "Bank transfer accepted · Plans activated within 24 hours";
+    ? "Card checkout launching soon · Boosts activated within 24 hours after payment"
+    : "Card checkout launching soon · Plans activated within 24 hours after payment";
+}
+
+/** In-app pricing deep link for offline activation (never mailto). */
+export function manualActivationPricingHref(plan?: string, subjectProfileId?: string) {
+  const params = new URLSearchParams();
+  if (plan) params.set("plan", plan);
+  if (subjectProfileId) params.set("subjectProfileId", subjectProfileId);
+  const qs = params.toString();
+  return qs ? `/pricing?${qs}` : "/pricing";
 }
 
 export function planBillingFootnote(
@@ -62,6 +71,11 @@ export function addOnBillingFootnote(
   return `${detail} · shown in ${currency} · ${payment}`;
 }
 
+/**
+ * Kept for rare support templates — do not use as a primary payment CTA
+ * (mailto opens the OS mail-app picker on Windows). Prefer
+ * ManualPlanActivationButton → /pricing or /contact.
+ */
 export function manualPlanActivationMailto(planName?: string, accountEmail?: string) {
   const subject = planName
     ? `Activate ${planName} on My Tutoring Hub`

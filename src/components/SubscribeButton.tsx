@@ -41,11 +41,13 @@ export function SubscribeButton({
   if (!paidCheckoutLive && !complimentary) {
     return (
       <ManualPlanActivationButton
+        plan={plan}
         planName={displayName}
         label={label.startsWith("Pay with") ? manualActivationCtaLabel(displayName) : label}
         featured={featured}
         note={manualActivationNote(oneTime)}
         oneTime={oneTime}
+        subjectProfileId={subjectProfileId}
       />
     );
   }

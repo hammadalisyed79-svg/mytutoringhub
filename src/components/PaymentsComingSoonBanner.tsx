@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { manualPlanActivationMailto, PAYMENTS_SUPPORT_EMAIL } from "@/lib/payments-status";
+import { PAYMENTS_SUPPORT_EMAIL } from "@/lib/payments-status";
 
 export function PaymentsComingSoonBanner() {
   return (
@@ -7,15 +7,14 @@ export function PaymentsComingSoonBanner() {
       <strong>Secure checkout launching soon</strong>
       <p>
         Free Teaching Profiles and complimentary Tutor Pro are available now with no payment. For
-        Student Pass and paid tutor upgrades, contact us at{" "}
-        <a href={`mailto:${PAYMENTS_SUPPORT_EMAIL}`}>{PAYMENTS_SUPPORT_EMAIL}</a> — we activate plans
-        within 24 hours after payment.
+        Student Pass and paid tutor upgrades, use Contact billing after you pay — we activate plans
+        within 24 hours. Support: {PAYMENTS_SUPPORT_EMAIL}.
       </p>
       <p className="payments-soon-banner-actions">
-        <a className="btn btn-sm" href={manualPlanActivationMailto()}>
-          Request plan activation
-        </a>
-        <Link href="/contact" className="muted">
+        <Link className="btn btn-sm" href="/pricing">
+          View plans &amp; pricing
+        </Link>
+        <Link href="/contact" className="btn btn-sm btn-secondary">
           Contact billing
         </Link>
         <Link href="/help" className="muted">
