@@ -19,6 +19,7 @@ import {
 import { listingPath } from "@/lib/subject-profile";
 import {
   attachAlsoTeaches,
+  dedupeByTutorProfileId,
   isSpecificTeachingProfileSearch,
   maxCardsPerTutorForSearch,
   paginateWithTutorCap,
@@ -635,6 +636,8 @@ export async function similarTutors(opts: {
   const where = similarTutorsWhereClause(opts);
   if (!where) return [];
 
+  const take = opts.take ?? 4;
+  // Over-fetch so per-tutor dedupe still fills the rail when one tutor has many listings.
   const rows = await prisma.subjectProfile.findMany({
     where,
     select: {
@@ -654,14 +657,15 @@ export async function similarTutors(opts: {
       boostUntil: true,
       tutorProfile: { select: LISTING_PARENT_SELECT },
     },
-    take: (opts.take ?? 4) * 3,
+    take: Math.max(take * 6, 24),
     orderBy: [{ rate: "asc" }],
   });
 
-  return (rows as ListingRow[])
+  const cards = (rows as ListingRow[])
     .filter(isPublicListing)
-    .slice(0, opts.take ?? 4)
     .map((row) => toSearchCard(row));
+  // Similar rails: never show the same teacher twice (even for distinct subject listings).
+  return dedupeByTutorProfileId(cards, take);
 }
 
 export function slugify(input: string) {

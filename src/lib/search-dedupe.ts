@@ -13,6 +13,8 @@
 export const BROAD_SEARCH_MAX_CARDS_PER_TUTOR = 2;
 /** Subject family search: one best Teaching Profile card per tutor. */
 export const SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR = 1;
+/** Similar / related / recommended rails: one card per tutor. */
+export const SIMILAR_RAIL_MAX_CARDS_PER_TUTOR = 1;
 
 export type DedupeListingInput = {
   tutorProfileId: string;
@@ -22,6 +24,27 @@ export type DedupeListingInput = {
   level: string;
   score: number;
 };
+
+/**
+ * Keep the first occurrence of each tutorProfileId (caller sorts preference first).
+ * Used by similar rails, featured homepage, and any “one card per teacher” surface.
+ */
+export function dedupeByTutorProfileId<T extends { tutorProfileId: string }>(
+  rows: T[],
+  limit = Number.POSITIVE_INFINITY,
+): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  const cap = Number.isFinite(limit) ? Math.max(0, limit) : Number.POSITIVE_INFINITY;
+  for (const row of rows) {
+    const id = (row.tutorProfileId || "").trim();
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(row);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
 
 export type AlsoTeachesItem = {
   listingId: string;

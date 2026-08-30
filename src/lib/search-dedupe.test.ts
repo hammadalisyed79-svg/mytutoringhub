@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   attachAlsoTeaches,
   BROAD_SEARCH_MAX_CARDS_PER_TUTOR,
+  dedupeByTutorProfileId,
   dedupeSearchByTutor,
   isSpecificTeachingProfileSearch,
   isSubjectFilteredSearch,
@@ -23,6 +24,28 @@ import {
   assert.equal(maxCardsPerTutorForSearch({ subject: "Mathematics" }), SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR);
   assert.equal(maxCardsPerTutorForSearch({ board: "AQA" }), Number.POSITIVE_INFINITY);
   assert.equal(maxCardsPerTutorForSearch({}), BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
+}
+
+{
+  // Similar rail / Shahroz-style: three listings from one tutor → one card
+  const rows = dedupeByTutorProfileId(
+    [
+      { tutorProfileId: "shahroz", listingId: "a", subject: "Physics" },
+      { tutorProfileId: "shahroz", listingId: "b", subject: "Natural Sciences" },
+      { tutorProfileId: "shahroz", listingId: "c", subject: "Life Sciences" },
+      { tutorProfileId: "sana", listingId: "d", subject: "English" },
+      { tutorProfileId: "shahroz", listingId: "e", subject: "Biology" },
+    ],
+    4,
+  );
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0]!.tutorProfileId, "shahroz");
+  assert.equal(rows[0]!.listingId, "a");
+  assert.equal(rows[1]!.tutorProfileId, "sana");
+  assert.deepEqual(
+    dedupeByTutorProfileId([{ tutorProfileId: "", listingId: "x" }], 4),
+    [],
+  );
 }
 
 function listing(

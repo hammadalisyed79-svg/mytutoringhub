@@ -3,6 +3,8 @@
  * Listings are assumed pre-sorted strongest-first (highlight → boost → recency).
  */
 
+import { dedupeByTutorProfileId } from "@/lib/search-dedupe";
+
 export type FeaturedListingInput = {
   listingId: string;
   tutorProfileId: string;
@@ -45,16 +47,7 @@ export function dedupeFeaturedListingsByTutor<T extends FeaturedListingInput>(
   listings: T[],
   limit = 4,
 ): T[] {
-  const seen = new Set<string>();
-  const out: T[] = [];
-  for (const row of listings) {
-    const id = row.tutorProfileId?.trim();
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    out.push(row);
-    if (out.length >= limit) break;
-  }
-  return out;
+  return dedupeByTutorProfileId(listings, limit);
 }
 
 /** Short context line from qualification / board / level fields. */

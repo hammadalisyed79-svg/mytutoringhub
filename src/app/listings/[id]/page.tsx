@@ -501,7 +501,7 @@ export default async function SubjectListingPage({ params }: Params) {
                       ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
                       : null;
                   return (
-                    <div key={t.id} className="tc-card">
+                    <div key={t.tutorProfileId} className="tc-card">
                       <div className="tc-left">
                         <TutorAvatar
                           className="tc-avatar"

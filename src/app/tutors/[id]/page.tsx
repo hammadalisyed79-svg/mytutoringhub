@@ -878,7 +878,7 @@ export default async function TutorProfilePage({ params }: Params) {
                     : null;
                 const tSubjects = splitList(t.subjects).slice(0, 3);
                 return (
-                  <div key={t.id} className="tc-card">
+                  <div key={t.tutorProfileId} className="tc-card">
                     <div className="tc-left">
                       <TutorAvatar
                         className="tc-avatar"
