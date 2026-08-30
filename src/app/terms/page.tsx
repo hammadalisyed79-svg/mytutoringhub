@@ -35,11 +35,11 @@ export default function TermsPage() {
             contacts and student request ads; Student Pro adds unlimited past-paper downloads and
             the AI study assistant where offered. Tutors with a complete profile may appear in
             search without a paid plan. Tutor Pro and optional upgrades (Priority Verification
-            Review, Listing Boost per teaching listing, legacy listing packs) improve ranking and
+            Review, Listing Boost per Teaching Profile, legacy listing packs) improve ranking and
             visibility tools. Subscriptions renew
             according to the plan you purchase unless cancelled. Limited-time offers (for example
             complimentary Tutor Pro until a stated date) end
-            automatically; free tutors keep up to 3 active teaching listings with ordinary search
+            automatically; free tutors keep up to 3 active Teaching Profiles with ordinary search
             visibility, and Tutor Pro unlocks up to 10. Paid add-ons such as
             Listing Boost are never included unless purchased. The Identity Verified badge is
             granted only after successful identity review. Platform

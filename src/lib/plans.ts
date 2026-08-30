@@ -88,14 +88,14 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "TUTOR_BASIC",
     name: "Tutor Pro",
     description:
-      "Paid growth plan: relevance-first ranking boost, unlimited enquiry reveals, enhanced student-request access, analytics, and up to 10 active teaching listings. Free complete profiles already appear in search with up to 3 listings.",
+      "Paid growth plan: relevance-first ranking boost, unlimited enquiry reveals, enhanced student-request access, analytics, and up to 10 active Teaching Profiles. Free complete profiles already appear in search with up to 3 Teaching Profiles.",
     audience: "tutor",
     pricePkr: 1499,
     annualPricePkr: defaultAnnualPricePkr(1499),
     features: [
       "Ranking enhancement among relevant matches (never overrides subject fit)",
       "Unlimited enquiry reveals when you message students first",
-      "Up to 10 active teaching listings",
+      "Up to 10 active Teaching Profiles",
       "Enhanced student-request access and analytics",
       "Keep 100% of lesson fees — no commission",
     ],
@@ -105,7 +105,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Pro is complimentary until 30 September 2026. Free tutors keep up to 3 active teaching listings with organic search visibility. Identity Verified is earned via review (not purchased). Listing Boost remains an optional paid add-on.",
+      "Tutor Pro is complimentary until 30 September 2026. Free tutors keep up to 3 active Teaching Profiles with organic search visibility. Identity Verified is earned via review (not purchased). Listing Boost remains an optional paid add-on.",
   },
   {
     id: "VERIFIED_TUTOR",
@@ -126,7 +126,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "HIGHLIGHTED_AD",
     name: "Listing Highlight (legacy)",
     description:
-      "Legacy 30-day highlight on one teaching listing. Prefer Listing Boost for new purchases. Existing holders keep entitlement.",
+      "Legacy 30-day highlight on one Teaching Profile. Prefer Listing Boost for new purchases. Existing holders keep entitlement.",
     audience: "tutor",
     pricePkr: 1299,
     features: ["Highlighted badge on that listing", "Stronger placement among relevant matches for 30 days"],
@@ -137,11 +137,11 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "AD_BOOST",
     name: "Listing Boost",
     description:
-      "Preferred promo: boost one teaching listing for 30 days with stronger placement among relevant matches (never above strong subject fit).",
+      "Preferred promo: boost one Teaching Profile for 30 days with stronger placement among relevant matches (never above strong subject fit).",
     audience: "tutor",
     pricePkr: 999,
     features: [
-      "30-day boost window on one teaching listing",
+      "30-day boost window on one Teaching Profile",
       "Stronger placement among relevant matches",
       "Repurchase extends that listing’s window",
     ],
@@ -152,11 +152,11 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "EXTRA_PROFILE_ADS",
     name: "Extra Profile Ads (legacy)",
     description:
-      "Legacy listing pack — no longer sold as a primary product. Grandfathered holders keep Tutor Pro–equivalent listing capacity (up to 10) and unlimited enquiry reveals.",
+      "Legacy listing pack — no longer sold as a primary product. Grandfathered holders keep Tutor Pro–equivalent Teaching Profile capacity (up to 10) and unlimited enquiry reveals.",
     audience: "tutor",
     pricePkr: 999,
     features: [
-      "Up to 10 active teaching listings (V2 Pro-equivalent)",
+      "Up to 10 active Teaching Profiles (V2 Pro-equivalent)",
       "Unlimited enquiry reveals while active",
     ],
     envPriceId: "STRIPE_PRICE_EXTRA_PROFILE_ADS",
@@ -166,11 +166,11 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "UNLIMITED_ADS",
     name: "Unlimited Profiles (legacy)",
     description:
-      "Legacy pack — no longer sold as a primary product. Grandfathered holders keep unlimited active teaching listings and unlimited enquiry reveals.",
+      "Legacy pack — no longer sold as a primary product. Grandfathered holders keep unlimited active Teaching Profiles and unlimited enquiry reveals.",
     audience: "tutor",
     pricePkr: 1999,
     features: [
-      "Unlimited active teaching listings",
+      "Unlimited active Teaching Profiles",
       "Unlimited enquiry reveals while active",
     ],
     envPriceId: "STRIPE_PRICE_UNLIMITED_ADS",

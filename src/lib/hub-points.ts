@@ -116,13 +116,13 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
     return [
       {
         title: "Tutor Pro",
-        description: "Ranking boost, analytics, and up to 10 teaching listings",
+        description: "Ranking boost, analytics, and up to 10 Teaching Profiles",
         href: "/pricing?plan=TUTOR_BASIC",
         badge: "Popular",
       },
       {
         title: "Listing Boost",
-        description: "Boost one teaching listing for 30 days",
+        description: "Boost one Teaching Profile for 30 days",
         href: "/dashboard/tutor?tab=profile#teaching-listings",
       },
       {

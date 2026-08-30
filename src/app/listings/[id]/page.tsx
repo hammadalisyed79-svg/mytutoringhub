@@ -82,7 +82,13 @@ export async function generateMetadata({ params }: Params) {
   const { id } = await params;
   const redirected = await resolveTeachingProfileRedirect(id);
   if (redirected) {
-    permanentRedirect(listingPath(redirected));
+    return pageMetadata({
+      title: "Teaching Profile moved",
+      description: "This Teaching Profile has moved to a new URL.",
+      path: listingPath(id),
+      canonicalPath: listingPath(redirected),
+      noIndex: true,
+    });
   }
   const session = await auth();
   const listing = await prisma.subjectProfile.findUnique({
@@ -116,8 +122,8 @@ export async function generateMetadata({ params }: Params) {
   });
   if (!listing) {
     return pageMetadata({
-      title: "Listing not found",
-      description: "This subject listing is unavailable.",
+      title: "Teaching Profile not found",
+      description: "This Teaching Profile is unavailable.",
       path: listingPath(id),
       noIndex: true,
     });
@@ -131,8 +137,8 @@ export async function generateMetadata({ params }: Params) {
 
   if (!isPublicListing && !isOwner && !isAdmin) {
     return pageMetadata({
-      title: "Listing not found",
-      description: "This subject listing is unavailable.",
+      title: "Teaching Profile not found",
+      description: "This Teaching Profile is unavailable.",
       path: listingPath(id),
       noIndex: true,
     });
@@ -149,7 +155,7 @@ export async function generateMetadata({ params }: Params) {
   if (!isPublicListing) {
     return pageMetadata({
       title: `${listing.title} · preview`,
-      description: "Your teaching listing preview on My Tutoring Hub.",
+      description: "Your Teaching Profile preview on My Tutoring Hub.",
       path: listingPath(id),
       noIndex: true,
     });
@@ -314,9 +320,9 @@ export default async function SubjectListingPage({ params }: Params) {
                 <>
                   This is a private preview
                   {listing.status !== "ACTIVE" ? ` (${listing.status.toLowerCase()})` : ""}. Students
-                  can’t see it in search until your master profile is complete and this listing is
-                  active.{" "}
-                  <Link href="/dashboard/tutor?tab=profile">Finish profile &amp; listings</Link>
+                  can’t see it in search until your master profile is complete and this Teaching
+                  Profile is active.{" "}
+                  <Link href="/dashboard/tutor?tab=profile">Finish profile &amp; Teaching Profiles</Link>
                 </>
               ) : (
                 <>Admin preview — this listing is not publicly searchable yet.</>
@@ -326,8 +332,8 @@ export default async function SubjectListingPage({ params }: Params) {
 
           {isOwner && isPublicListing ? (
             <p className="panel profile-notice" role="status">
-              This is your public teaching listing.{" "}
-              <Link href="/dashboard/tutor?tab=profile#teaching-listings">Edit listings</Link>
+              This is your public Teaching Profile.{" "}
+              <Link href="/dashboard/tutor?tab=profile#teaching-listings">Edit Teaching Profiles</Link>
             </p>
           ) : null}
 
@@ -486,7 +492,7 @@ export default async function SubjectListingPage({ params }: Params) {
 
           {similar.length > 0 && (
             <section className="profile-similar">
-              <h2 className="profile-section-title">Similar listings</h2>
+              <h2 className="profile-section-title">Similar Teaching Profiles</h2>
               <p className="muted">More {listing.subject} tutors nearby.</p>
               <div className="tutor-grid similar-tutors">
                 {similar.map((t) => {
@@ -536,7 +542,7 @@ export default async function SubjectListingPage({ params }: Params) {
                           </span>
                           <div className="tc-actions">
                             <Link href={listingPath(t.id)} className="btn btn-sm">
-                              View listing
+                              View Teaching Profile
                             </Link>
                           </div>
                         </div>

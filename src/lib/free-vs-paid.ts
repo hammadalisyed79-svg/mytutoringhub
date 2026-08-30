@@ -91,10 +91,10 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     detail: "Tutors can reply to inbound messages even before email verification.",
   },
   {
-    feature: "Active teaching listings",
+    feature: "Active Teaching Profiles",
     free: `Up to ${FREE_SUBJECT_PROFILES}`,
     paid: `Up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
-    detail: `Free tutors get up to ${FREE_SUBJECT_PROFILES} active teaching listings with organic search visibility. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Legacy Unlimited Profiles holders keep unlimited listings.`,
+    detail: `Free tutors get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles with organic search visibility. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Legacy Unlimited Profiles holders keep unlimited Teaching Profiles.`,
   },
   {
     feature: "Priority search ranking",
@@ -125,9 +125,9 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
   {
     feature: "Listing Boost",
     free: "no",
-    paid: "Per teaching listing",
+    paid: "Per Teaching Profile",
     detail:
-      "Optional 30-day Listing Boost (legacy Highlight still honourable for existing customers). Buy from each listing on your dashboard. Boost stays subordinate to subject relevance.",
+      "Optional 30-day Listing Boost (legacy Highlight still honourable for existing customers). Buy from each Teaching Profile on your dashboard. Boost stays subordinate to subject relevance.",
   },
   {
     feature: "Commission on lessons",
@@ -151,8 +151,8 @@ export const STUDENT_PAID_HIGHLIGHTS = [
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  `Tutor Pro — relevance-first ranking, unlimited reveals, up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} teaching listings (complimentary until 30 Sept 2026)`,
-  "Optional — Listing Boost per teaching listing; Priority Verification Review (badge only after approval)",
+  `Tutor Pro — relevance-first ranking, unlimited reveals, up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} Teaching Profiles (complimentary until 30 Sept 2026)`,
+  "Optional — Listing Boost per Teaching Profile; Priority Verification Review (badge only after approval)",
 ] as const;
 
 export const FREE_VS_PAID_FAQS = [
@@ -170,11 +170,11 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active teaching listings with ordinary search visibility; Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles with ordinary search visibility; Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
   },
   {
-    q: "What is a teaching listing?",
-    a: "Each subject you teach (Maths, Physics, …) can be its own search listing with its own rate, city, and boost. Students see separate cards; your photo, verification, and reviews stay shared on your master profile.",
+    q: "What is a Teaching Profile?",
+    a: "Each canonical subject you teach (Maths, Physics, …) is one Teaching Profile, with boards, levels, qualifications, and syllabus codes as capabilities. Students see separate search cards; your photo, verification, and reviews stay shared on your master profile.",
   },
   {
     q: "Does My Tutoring Hub take a cut of lessons?",
@@ -190,7 +190,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each teaching listing on your tutor dashboard. Extra Profile Ads and Unlimited Profiles are legacy products — existing holders keep their entitlements.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each Teaching Profile on your tutor dashboard. Extra Profile Ads and Unlimited Profiles are legacy products — existing holders keep their entitlements.",
   },
 ] as const;
 

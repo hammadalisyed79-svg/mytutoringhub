@@ -80,11 +80,11 @@ export default async function HowItWorksPage() {
                 Complete your account profile (photo, headline, bio) to appear in search for free
               </li>
               <li>
-                Publish a subject profile for each subject you teach — students see separate search
+                Publish a Teaching Profile for each subject you teach — students see separate search
                 cards
               </li>
               <li>
-                Free tutors get up to 3 active teaching listings in search; Tutor Pro unlocks up to
+                Free tutors get up to 3 active Teaching Profiles in search; Tutor Pro unlocks up to
                 10 plus relevance-first ranking and unlimited enquiry reveals (complimentary until
                 30 September 2026)
               </li>
@@ -93,7 +93,7 @@ export default async function HowItWorksPage() {
                 recommended — the badge is earned after review
               </li>
               <li>
-                Optional Listing Boost on each teaching listing from your dashboard — paid on Safepay
+                Optional Listing Boost on each Teaching Profile from your dashboard — paid on Safepay
               </li>
             </ul>
             <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>

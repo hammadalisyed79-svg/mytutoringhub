@@ -237,7 +237,7 @@ export default async function HomePage() {
             <div>
               <h3>Tutors</h3>
               <p className="muted">
-                Create a profile and up to {BUSINESS.tutorFreeActiveListings} active Teaching Listings
+                Create a profile and up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles
                 free. Tutor Pro supports up to {BUSINESS.tutorProActiveListings} and growth tools.
               </p>
             </div>
@@ -256,8 +256,8 @@ export default async function HomePage() {
             <h2 id="home-tutor-recruit-title">Teach students worldwide</h2>
             <p className="section-lead">
               Create your tutor profile free and reach students internationally. Keep 100% of lesson
-              fees — 0% commission on lessons. Up to {BUSINESS.tutorFreeActiveListings} free teaching
-              listings; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}.
+              fees — 0% commission on lessons. Up to {BUSINESS.tutorFreeActiveListings} free Teaching
+              Profiles; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}.
             </p>
           </div>
           <div className="hero-ctas">

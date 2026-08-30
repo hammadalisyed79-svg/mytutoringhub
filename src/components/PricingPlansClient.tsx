@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import { manualActivationCtaLabel, planBillingFootnote } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACT_LIMIT } from "@/lib/plan-limits";
+import { BUSINESS } from "@/lib/business-rules";
 
 function PlanActions({
   plan,
@@ -34,7 +35,7 @@ function PlanActions({
           href="/dashboard/tutor?tab=profile#teaching-listings"
           className="btn btn-block btn-secondary"
         >
-          Choose a subject profile
+          Choose a Teaching Profile
         </Link>
       );
     }
@@ -234,6 +235,7 @@ export function PricingPlansClient({
               </div>
               <ul>
                 <li>Appear in search when profile is complete</li>
+                <li>Up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles</li>
                 <li>Receive &amp; reply to student messages</li>
                 <li>Monthly enquiry allowance when you message first</li>
                 <li>Keep 100% of lesson fees</li>
@@ -311,7 +313,7 @@ export function PricingPlansClient({
           <h2 className="checkout-section-title">Optional tutor boosts</h2>
           <p className="muted pricing-addons-lead">
             Optional visibility upgrades — Priority Verification Review and Listing Boost
-            {paidCheckoutLive ? " on Safepay" : " after payment"}. Listing capacity is included in
+            {paidCheckoutLive ? " on Safepay" : " after payment"}. Teaching Profile capacity is included in
             Free (3) and Tutor Pro (10); legacy Extra/Unlimited packs are not sold as primary
             products. These do not replace a complete free listing.
           </p>
@@ -362,8 +364,8 @@ export function PricingPlansClient({
         <h2 className="checkout-section-title">Coming soon</h2>
         <p className="muted">
           One-time booking fees, group class listings, and resource uploads are not sold yet. Listing
-          Boost is available now — open your tutor dashboard, pick a teaching listing, and boost that
-          listing.
+          Boost is available now — open your tutor dashboard, pick a Teaching Profile, and boost that
+          profile.
         </p>
       </aside>
     </>

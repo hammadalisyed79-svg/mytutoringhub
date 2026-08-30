@@ -158,7 +158,7 @@ export default async function AdsPage() {
         <p className="muted ads-board-note">
           {VALUE_PROPOSITION}
           {tutorMatch && tutorMatch.subjects.length > 0
-            ? " Requests matching your teaching listings appear first."
+            ? " Requests matching your Teaching Profiles appear first."
             : ""}
         </p>
 

@@ -1,6 +1,6 @@
 # Teaching Profiles — product plan
 
-**Status:** PRODUCT MODEL LOCKED. **PHASES 1–9 COMPLETE** (2026-08-30). Search unit is the Teaching Profile card. Dashboard My Teaching Profiles has multi-value capability editors. Messaging keeps one thread per student–tutor with listing context. Master `subjects` is derived from ACTIVE Teaching Profiles. Past Papers Find-a-tutor sends board/level/syllabusCode. Consolidation execute pauses non-survivors and 301s `/listings/{id}` (no deletes). Unique index applies only when ACTIVE collisions are gone.  
+**Status:** PRODUCT MODEL LOCKED. **PHASES 1–10 COMPLETE** (2026-08-30). Search unit is the Teaching Profile card. Dashboard My Teaching Profiles has multi-value capability editors. Messaging keeps one thread per student–tutor with listing context. Master `subjects` is derived from ACTIVE Teaching Profiles. Past Papers Find-a-tutor sends board/level/syllabusCode. Consolidation execute pauses non-survivors and 301s `/listings/{id}` (no deletes). Unique index is live (0 ACTIVE collisions). Phase 10 verify: [`docs/MTH-TEACHING-PROFILES-PHASE10-VERIFY.md`](./MTH-TEACHING-PROFILES-PHASE10-VERIFY.md).  
 **Date:** 2026-08-30  
 **Repo:** `C:\Tutor`  
 **Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
@@ -578,7 +578,7 @@ Removed/reduced: 3→1 commercial cliff, grandfathering vs hard pause on 1 Oct, 
 
 ## L. Implementation phases
 
-Gate: this document’s locked decisions (Phase 0, recorded here). **Phases 1–9 are done.** Next is Phase 10 (production verification).
+Gate: this document’s locked decisions (Phase 0, recorded here). **Phases 1–10 are done.**
 
 | Phase | Work |
 |-------|------|
@@ -592,7 +592,7 @@ Gate: this document’s locked decisions (Phase 0, recorded here). **Phases 1–
 | **7. Derived master subjects** | Sync `TutorProfile.subjects` from ACTIVE Teaching Profiles. Remove remaining manual writes. **Done 2026-08-30.** |
 | **8. Past Papers integration verification** | Board/level/code capability matching from paper CTAs (e.g. Cambridge A Level Maths 9709). **Done 2026-08-30.** |
 | **9. Migration** | Consolidate existing production data **after preview**. Preserve URLs (pause + 301, no delete). Unique index when collisions are gone. **Done 2026-08-30** (`scripts/execute-teaching-profile-consolidation.ts --execute`). |
-| **10. Production verification** | Onboarding, create/edit profiles, search (broad + filtered), messaging, Boost, caps 3/10, Past Papers find-a-tutor, SEO `/listings/{id}` + hubs, regression (no 3→1 cliff, no +1 SKU). |
+| **10. Production verification** | Onboarding, create/edit profiles, search (broad + filtered), messaging, Boost, caps 3/10, Past Papers find-a-tutor, SEO `/listings/{id}` + hubs, regression (no 3→1 cliff, no +1 SKU). **Done 2026-08-30** — see `docs/MTH-TEACHING-PROFILES-PHASE10-VERIFY.md`. |
 
 **Out of scope until asked:** new public SKU name, +1 profile product, lesson escrow, splitting `Conversation` unique key, deleting `TutorAd`, renaming Prisma `SubjectProfile`, changing `/listings/{id}`, per-profile rating systems, date-dependent Free caps.
 
@@ -617,9 +617,9 @@ Product questions are **answered** (see Decision log). Do not reopen them.
 3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection: Boost → Highlight → most complete capabilities → oldest `/listings/{id}` → smallest id. Execute pauses non-survivors, unions capabilities onto the survivor, writes `TeachingProfileRedirect`, remaps `Conversation.relatedAdId`. **No deletes.**
 4. **How to preserve existing URLs during consolidation** — `/listings/{fromId}` permanently redirects to the survivor. Rows stay PAUSED.
 
-### Still open (Phase 10)
+### Phase 10 — ops follow-up (not product)
 
-Production verification of the full loop.
+Login-gated wizard / dashboard / messaging / Boost checkout still need a real tutor+student session. No credentials were used. Merged listing URLs currently stream Next.js RSC 308 (`meta refresh`); this commit also emits build-time HTTP 308 via `next.config.ts`.
 
 ---
 
@@ -655,6 +655,7 @@ Production verification of the full loop.
 | 2026-08-30 | **PHASE 7 COMPLETE:** `TutorProfile.subjects` is derived from ACTIVE Teaching Profiles (`syncDerivedMasterSubjects`). Wizard no longer owns the CSV. | This revision |
 | 2026-08-30 | **PHASE 8 COMPLETE:** Past Papers Find-a-tutor and curriculum chips pass subject + board + level + syllabusCode into Teaching Profile search. | This revision |
 | 2026-08-30 | **PHASE 9 COMPLETE:** Consolidation execute pauses non-survivors, 301s old listing URLs, unions capabilities. Unique index created only when ACTIVE collisions are zero. No listing deletes. | This revision |
+| 2026-08-30 | **PHASE 10 COMPLETE:** Live public search, hubs, Past Papers Find-a-tutor params, caps 3/10, unique index, 0 ACTIVE collisions. Listing merge redirect verified (Next RSC 308 + config 308). Public copy pass to Teaching Profile. Wizard/dashboard/messaging remain session-gated. | This revision |
 
 ### 2026-08-30 — APPROVED PRODUCT DIRECTION
 
@@ -688,9 +689,8 @@ Production verification of the full loop.
 
 TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 
-IMPLEMENTATION STATUS: PHASES 1–9 COMPLETE. UNIQUE INDEX APPLIED ONLY WHEN ACTIVE COLLISIONS ARE ZERO.
+IMPLEMENTATION STATUS: PHASES 1–10 COMPLETE. UNIQUE INDEX APPLIED. FREE=3 / PRO=10 PERMANENT.
 
 NEXT STEP:
-Phase 10 — production verification (onboarding, create/edit profiles, search,
-messaging context, Boost, caps 3/10, Past Papers find-a-tutor, SEO
-/listings/{id} + hubs, no 3→1 cliff, no +1 SKU).
+None for product. Ops: re-check live HTTP 308 after this deploy; run wizard/dashboard/messaging
+when a tutor+student session is available.
