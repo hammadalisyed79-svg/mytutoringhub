@@ -19,7 +19,7 @@ const p = new PrismaClient();
       ...planPrices.TUTOR_BASIC,
       name: "Tutor Pro",
       description:
-        "Relevance-first ranking, unlimited enquiry reveals, and up to 10 active teaching listings. Free tutors keep up to 3 listings with organic search visibility.",
+        "Relevance-first ranking, unlimited enquiry reveals, and up to 10 active Teaching Profiles. Free tutors keep up to 3 Teaching Profiles with organic search visibility.",
       promoNote:
         "Tutor Pro is complimentary until 30 September 2026. Identity Verified is earned via review (not purchased). Listing Boost remains an optional paid add-on.",
     };

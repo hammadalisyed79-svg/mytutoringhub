@@ -228,7 +228,7 @@ export async function getPlanDashboardSummary(
     usageLabel: "student contacts this month",
     renewsOn: hasBasic ? renewsOn : null,
     upgradeHint: hasBasic
-      ? "Unlimited student contact when you initiate. Tutor Pro includes up to 10 active teaching listings and growth tools."
-      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to 3 active teaching listings. Tutor Pro unlocks up to 10.`,
+      ? "Unlimited student contact when you initiate. Tutor Pro includes up to 10 active Teaching Profiles and growth tools."
+      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to 3 active Teaching Profiles. Tutor Pro unlocks up to 10.`,
   };
 }

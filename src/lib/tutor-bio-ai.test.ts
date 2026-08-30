@@ -10,8 +10,10 @@ import {
   mergeTutorBioFacts,
   resolveTutorBioAiMode,
   sanitizeGeneratedBio,
+  summarizeTeachingCapabilities,
   tutorCopyAiSystemPrompt,
 } from "./tutor-bio-ai";
+import { tutorQualificationOptions } from "./tutor-catalog";
 
 assert.equal(isDefaultTutorBio(""), true);
 assert.equal(isDefaultTutorBio(DEFAULT_TUTOR_BIO), true);
@@ -108,16 +110,78 @@ assert.equal(tutorCopyAiSystemPrompt("bio"), AI_TUTOR_BIO_SYSTEM);
 assert.equal(tutorCopyAiSystemPrompt("teachingDescription"), AI_TEACHING_DESCRIPTION_SYSTEM);
 assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /THIS subject/);
 assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /Stay between 20 and 4000/);
+assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /NEVER dump a raw list of syllabus codes/);
+
+const fewCaps = summarizeTeachingCapabilities({
+  subject: "Business",
+  hourlyRateLabel: "25 GBP/hr",
+  online: true,
+  inPerson: false,
+  levels: ["GCSE", "A Level"],
+  boards: ["Cambridge", "Edexcel"],
+  qualificationStages: ["IGCSE", "A Level"],
+  syllabusCodes: ["CAIE-IGCSE-BUS", "9709"],
+});
+assert.match(fewCaps, /Subject: Business/);
+assert.match(fewCaps, /25 GBP\/hr/);
+assert.match(fewCaps, /Online/);
+assert.match(fewCaps, /mention each.*GCSE, A Level/);
+assert.match(fewCaps, /mention each.*Cambridge, Edexcel/);
+assert.match(fewCaps, /IGCSE/);
+assert.match(fewCaps, /CAIE-IGCSE-BUS/);
+
+const slashLevel = summarizeTeachingCapabilities({
+  subject: "Mathematics",
+  levels: ["FSc / HSSC / Intermediate", "A Level"],
+});
+assert.match(slashLevel, /FSc \/ HSSC \/ Intermediate/);
+assert.doesNotMatch(slashLevel, /^Levels \(mention each\): FSc$/m);
+
+const manyCodes = Array.from({ length: 40 }, (_, i) =>
+  i < 20 ? `CAIE-IGCSE-BUS${i}` : `EDX-AL-BUS${i}`,
+);
+const manyCaps = summarizeTeachingCapabilities({
+  subject: "Business",
+  boards: ["Cambridge", "Edexcel", "AQA", "OCR", "IB", "CBSE", "FBISE"],
+  syllabusCodes: manyCodes,
+});
+assert.match(manyCaps, /group — do not list every chip/);
+assert.match(manyCaps, /40 selected — group, do not dump/);
+assert.match(manyCaps, /Cambridge/);
+assert.match(manyCaps, /Edexcel/);
+assert.match(manyCaps, /Distinctive codes you may name \(max 4\)/);
+assert.doesNotMatch(manyCaps, /CAIE-IGCSE-BUS19/);
+assert.ok(!manyCodes.every((code) => manyCaps.includes(code)));
 
 const teachingPrompt = buildTutorBioUserMessage({
   mode: "generate",
   purpose: "teachingDescription",
-  facts: { name: "Zain Ali", subjects: ["Mathematics"], listings: "Mathematics · A Level · Cambridge · 9709" },
+  facts: {
+    name: "Zain Ali",
+    subjects: ["Mathematics"],
+    hourlyRateLabel: "40 GBP/hr",
+    online: true,
+    levels: "A Level",
+    boards: "Cambridge",
+    syllabusCodes: "9709",
+  },
   existingBio: "",
 });
 assert.match(teachingPrompt, /Teaching Profile description/);
-assert.match(teachingPrompt, /Mathematics · A Level · Cambridge · 9709/);
+assert.match(teachingPrompt, /Capability summary/);
+assert.match(teachingPrompt, /Mathematics/);
+assert.match(teachingPrompt, /Cambridge/);
+assert.match(teachingPrompt, /9709/);
 assert.doesNotMatch(teachingPrompt, /Field: About you/);
+assert.doesNotMatch(teachingPrompt, /Qualifications \(only if listed\)/);
+
+const quals = tutorQualificationOptions(["Primary", "IB Diploma", "HSC"]);
+assert.ok(quals.core.includes("IB Diploma"));
+assert.ok(quals.core.includes("SAT"));
+assert.ok(!quals.core.includes("Primary"));
+assert.ok(!quals.core.includes("Adult learners"));
+assert.ok(!quals.more.some((item) => item.toLowerCase() === "primary"));
+assert.ok(!quals.more.some((item) => item.toLowerCase() === "university"));
 
 assert.equal(
   sanitizeGeneratedBio('Here is a draft:\n"I teach Maths with clear weekly plans and past-paper practice for exam students."'),

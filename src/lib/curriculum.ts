@@ -146,12 +146,26 @@ export function curriculumBoards(): string[] {
   return [...new Set(CURRICULUM.map((row) => row.board))].sort((a, b) => a.localeCompare(b));
 }
 
+/** Named awards / certificates (not school-stage levels). */
+export function curriculumExams(): string[] {
+  return [...new Set(CURRICULUM.map((row) => row.exam).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
 /** Levels / qualifications that appear under a board (or all if board empty). */
 export function curriculumLevelsForBoard(board?: string | null): string[] {
   const rows = board
     ? CURRICULUM.filter((row) => row.board.toLowerCase() === board.trim().toLowerCase())
     : CURRICULUM;
   return [...new Set(rows.map((row) => row.level))].sort((a, b) => a.localeCompare(b));
+}
+
+function tokenMatches(hay: string, needle: string) {
+  const h = hay.toLowerCase();
+  const n = needle.trim().toLowerCase();
+  if (!n) return false;
+  return h === n || h.includes(n) || n.includes(h);
 }
 
 /** Syllabus codes for subject (+ optional board). */
@@ -168,4 +182,24 @@ export function curriculumCodesForSubject(
     if (brd && row.board.toLowerCase() !== brd) return false;
     return Boolean(row.code);
   });
+}
+
+/** Codes for a Teaching Profile: subject, then selected boards/levels when those still match. */
+export function curriculumCodesForCapabilities(
+  subject?: string | null,
+  boards?: string[],
+  levels?: string[],
+): CurriculumCodeOption[] {
+  let rows = curriculumCodesForSubject(subject);
+  const boardNeedles = (boards || []).map((item) => item.trim()).filter(Boolean);
+  if (boardNeedles.length) {
+    const filtered = rows.filter((row) => boardNeedles.some((needle) => tokenMatches(row.board, needle)));
+    if (filtered.length) rows = filtered;
+  }
+  const levelNeedles = (levels || []).map((item) => item.trim()).filter(Boolean);
+  if (levelNeedles.length) {
+    const filtered = rows.filter((row) => levelNeedles.some((needle) => tokenMatches(row.level, needle)));
+    if (filtered.length) rows = filtered;
+  }
+  return rows;
 }

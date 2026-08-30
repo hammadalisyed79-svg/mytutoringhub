@@ -14,11 +14,17 @@ import {
   mergeTutorBioFacts,
   resolveTutorBioAiMode,
   sanitizeGeneratedBio,
+  summarizeTeachingCapabilities,
   tutorCopyAiSystemPrompt,
 } from "@/lib/tutor-bio-ai";
 import type { Role } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+const stringList = z.union([
+  z.string().max(2000),
+  z.array(z.string().trim().max(80)).max(48),
+]);
 
 const schema = z.object({
   mode: z.enum(["generate", "improve"]).optional().default("generate"),
@@ -33,11 +39,26 @@ const schema = z.object({
   experienceYears: z.number().int().min(0).max(40).nullable().optional(),
   teachingMethod: z.string().trim().max(2000).optional(),
   languages: z.string().trim().max(500).optional(),
-  levels: z.string().trim().max(500).optional(),
+  levels: stringList.optional(),
   expertise: z.string().trim().max(1000).optional(),
-  listings: z.string().trim().max(500).optional(),
+  listings: z.string().trim().max(2000).optional(),
   notes: z.string().trim().max(500).optional(),
+  hourlyRateLabel: z.string().trim().max(80).optional(),
+  online: z.boolean().optional(),
+  inPerson: z.boolean().optional(),
+  boards: stringList.optional(),
+  qualificationStages: stringList.optional(),
+  syllabusCodes: stringList.optional(),
 });
+
+function asStringList(value?: string | string[] | null) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => item.trim()).filter(Boolean);
+  return value
+    .split(/[,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -124,6 +145,7 @@ export async function POST(req: Request) {
   const stored = user.tutorProfile;
   const purpose = draft.purpose;
   const listings = draft.listings?.trim() || formatTeachingListingFacts(stored.subjectProfiles);
+  const thisSubject = asStringList(draft.subjects);
   const facts = mergeTutorBioFacts(
     {
       name: draft.name,
@@ -131,7 +153,7 @@ export async function POST(req: Request) {
       subjects: draft.subjects,
       location: draft.location,
       country: draft.country,
-      qualifications: draft.qualifications,
+      qualifications: purpose === "teachingDescription" ? undefined : draft.qualifications,
       experienceYears: draft.experienceYears,
       teachingMethod: draft.teachingMethod,
       languages: draft.languages,
@@ -139,14 +161,20 @@ export async function POST(req: Request) {
       expertise: draft.expertise,
       listings: draft.listings,
       notes: draft.notes,
+      hourlyRateLabel: draft.hourlyRateLabel,
+      online: draft.online,
+      inPerson: draft.inPerson,
+      boards: draft.boards,
+      qualificationStages: draft.qualificationStages,
+      syllabusCodes: draft.syllabusCodes,
     },
     {
       name: user.name,
       headline: stored.headline,
-      subjects: purpose === "teachingDescription" ? draft.subjects : splitCsv(stored.subjects),
+      subjects: purpose === "teachingDescription" ? thisSubject : splitCsv(stored.subjects),
       location: stored.location,
       country: stored.country,
-      qualifications: stored.qualifications,
+      qualifications: purpose === "teachingDescription" ? "" : stored.qualifications,
       experienceYears: stored.experienceYears,
       teachingMethod: stored.teachingMethod,
       languages: stored.languages,
@@ -156,13 +184,17 @@ export async function POST(req: Request) {
     },
   );
   if (purpose === "teachingDescription") {
-    const thisSubject = Array.isArray(draft.subjects)
-      ? draft.subjects.map((s) => s.trim()).filter(Boolean)
-      : draft.subjects
-        ? [draft.subjects.trim()]
-        : [];
     if (thisSubject.length) facts.subjects = thisSubject;
-    if (draft.listings?.trim()) facts.listings = draft.listings.trim();
+    facts.capabilitySummary = summarizeTeachingCapabilities({
+      subject: thisSubject[0] || asStringList(facts.subjects)[0] || "",
+      hourlyRateLabel: draft.hourlyRateLabel,
+      online: draft.online,
+      inPerson: draft.inPerson,
+      levels: asStringList(draft.levels),
+      boards: asStringList(draft.boards),
+      qualificationStages: asStringList(draft.qualificationStages),
+      syllabusCodes: asStringList(draft.syllabusCodes),
+    });
   }
 
   const existingBio = draft.bio ?? (purpose === "teachingDescription" ? "" : stored.bio);

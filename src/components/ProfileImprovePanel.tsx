@@ -78,7 +78,7 @@ export function ProfileImprovePanel({
         <article className="profile-improve-card">
           <strong>5. Optional Listing Boost</strong>
           <p className="muted">
-            Boost one teaching listing for 30 days among relevant matches — never above strong
+            Boost one Teaching Profile for 30 days among relevant matches — never above strong
             subject fit. Priority Verification Review is separate from the badge.
           </p>
           <Link href="/dashboard/tutor?tab=growth" className="btn btn-secondary btn-sm">

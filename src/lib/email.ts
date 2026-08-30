@@ -389,7 +389,7 @@ export function postVerifyTutorEmailHtml(opts: {
     title: "Welcome to My Tutoring Hub",
     body: `<p>Hi ${opts.name},</p>
 <p>Your email is confirmed — welcome aboard. Complete your tutor profile (photo, about you, location, and subjects) to appear in search.</p>
-<p>When you're ready to grow, Tutor Pro adds priority placement. Listing Boost lifts one teaching listing among relevant matches for 30 days.</p>`,
+<p>When you're ready to grow, Tutor Pro adds priority placement. Listing Boost lifts one Teaching Profile among relevant matches for 30 days.</p>`,
     cta: { label: "Open tutor dashboard", href: opts.dashboardUrl },
   });
 }
@@ -537,7 +537,7 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     title: "Grow with Tutor Pro",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Your profile is live. <strong>Tutor Pro</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
-<p>Free tutors get up to <strong>3 active teaching listings</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
+<p>Free tutors get up to <strong>3 active Teaching Profiles</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
 <p>Complimentary Tutor Pro may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
   });
@@ -556,7 +556,7 @@ export function tutorSecondProfileEmailHtml(opts: {
     title: "Add a second subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
-<p>Create another teaching listing from your dashboard — free tutors can run up to 3 active listings; Tutor Pro unlocks up to 10.</p>`,
+<p>Create another Teaching Profile from your dashboard — free tutors can run up to 3 active profiles; Tutor Pro unlocks up to 10.</p>`,
     cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });
 }
@@ -573,7 +573,7 @@ export function tutorBoostNudgeEmailHtml(opts: {
     preheader: "Boost one subject listing for 30 days of extra visibility.",
     title: "Boost a subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Listing Boost lifts a single teaching listing among relevant matches for 30 days — Maths and Physics can be boosted independently.${listingHint}</p>
+<p>Listing Boost lifts a single Teaching Profile among relevant matches for 30 days — Maths and Physics can be boosted independently.${listingHint}</p>
 <p>Open your subject profiles and choose Boost on the listing you want students to see first.</p>`,
     cta: { label: "Boost a listing", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });

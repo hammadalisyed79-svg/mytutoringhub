@@ -24,7 +24,6 @@ import { scoreListingQuality } from "@/lib/listing-quality";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TeachingProfileCapabilityFields } from "@/components/TeachingProfileCapabilityFields";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
-import { formatTeachingListingFacts } from "@/lib/tutor-bio-ai";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -113,6 +112,9 @@ function TeachingDescriptionAiHelp({
   caps,
   location = "",
   headline = "",
+  hourlyRateLabel,
+  online,
+  inPerson,
   onApply,
 }: {
   description: string;
@@ -120,6 +122,9 @@ function TeachingDescriptionAiHelp({
   caps: TeachingProfileEditorValues;
   location?: string;
   headline?: string;
+  hourlyRateLabel?: string;
+  online?: boolean;
+  inPerson?: boolean;
   onApply: (text: string) => void;
 }) {
   return (
@@ -135,17 +140,14 @@ function TeachingDescriptionAiHelp({
       experienceYears={null}
       teachingMethod=""
       languages=""
-      levels={caps.levels.join(", ")}
+      levels={caps.levels}
       expertise=""
-      listings={formatTeachingListingFacts([
-        {
-          subject,
-          level: caps.levels.join(" / "),
-          board: caps.boards.join(" / "),
-          qualification: caps.qualifications.join(" / "),
-          syllabusCode: caps.syllabusCodes.join(" / "),
-        },
-      ])}
+      hourlyRateLabel={hourlyRateLabel}
+      online={online}
+      inPerson={inPerson}
+      boards={caps.boards}
+      qualificationStages={caps.qualifications}
+      syllabusCodes={caps.syllabusCodes}
       onApply={onApply}
     />
   );
@@ -204,6 +206,10 @@ function EditTeachingProfileForm({
 }) {
   const [caps, setCaps] = useState(() => listingEditorValues(listing));
   const [description, setDescription] = useState(listing.description || "");
+  const [rate, setRate] = useState(hourlyRateInputValue(listing.rate, currency));
+  const [location, setLocation] = useState(listing.location);
+  const [online, setOnline] = useState(listing.online);
+  const [inPerson, setInPerson] = useState(listing.inPerson);
   return (
     <form
       className="stack-form profile-form teaching-listing-form"
@@ -227,7 +233,7 @@ function EditTeachingProfileForm({
       />
       <label>
         City / area
-        <input name="location" required defaultValue={listing.location} />
+        <input name="location" required value={location} onChange={(e) => setLocation(e.target.value)} />
       </label>
       <label>
         Hourly rate ({currency})
@@ -238,13 +244,37 @@ function EditTeachingProfileForm({
           step={rateStep}
           inputMode="decimal"
           required
-          defaultValue={hourlyRateInputValue(listing.rate, currency)}
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
         />
         <span className="field-hint">
           Currently {formatHourly(listing.rate, currency)}. Minimum{" "}
           {formatMoney(rateMinLocal, currency)} ({MIN_HOURLY_RATE_PKR} PKR base).
         </span>
       </label>
+      <fieldset className="form-fieldset">
+        <legend>How you teach</legend>
+        <div className="checks">
+          <label className="radio">
+            <input
+              name="online"
+              type="checkbox"
+              checked={online}
+              onChange={(e) => setOnline(e.target.checked)}
+            />{" "}
+            Online
+          </label>
+          <label className="radio">
+            <input
+              name="inPerson"
+              type="checkbox"
+              checked={inPerson}
+              onChange={(e) => setInPerson(e.target.checked)}
+            />{" "}
+            In person
+          </label>
+        </div>
+      </fieldset>
       <div className="tutor-bio-field">
         <label>
           Teaching description
@@ -259,22 +289,14 @@ function EditTeachingProfileForm({
           description={description}
           subject={listing.subject}
           caps={caps}
-          location={listing.location}
+          location={location}
           headline={listing.headline || ""}
+          hourlyRateLabel={rate.trim() ? `${rate} ${currency}/hr` : formatHourly(listing.rate, currency)}
+          online={online}
+          inPerson={inPerson}
           onApply={setDescription}
         />
       </div>
-      <fieldset className="form-fieldset">
-        <legend>How you teach</legend>
-        <div className="checks">
-          <label className="radio">
-            <input name="online" type="checkbox" defaultChecked={listing.online} /> Online
-          </label>
-          <label className="radio">
-            <input name="inPerson" type="checkbox" defaultChecked={listing.inPerson} /> In person
-          </label>
-        </div>
-      </fieldset>
       <button className="btn btn-sm" type="submit" disabled={busy}>
         Save changes
       </button>
@@ -307,6 +329,10 @@ export function TutorAdsManager({
   const [createSubject, setCreateSubject] = useState("");
   const [createCaps, setCreateCaps] = useState<TeachingProfileEditorValues>(EMPTY_CAPS);
   const [createDescription, setCreateDescription] = useState("");
+  const [createRate, setCreateRate] = useState("");
+  const [createLocation, setCreateLocation] = useState("");
+  const [createOnline, setCreateOnline] = useState(true);
+  const [createInPerson, setCreateInPerson] = useState(false);
 
   const subjectChoices = useMemo(() => teachingProfileSubjectChoices(subjects), [subjects]);
 
@@ -717,7 +743,13 @@ export function TutorAdsManager({
                 *
               </abbr>
             </span>
-            <input name="location" required placeholder="City or Online" />
+            <input
+              name="location"
+              required
+              placeholder="City or Online"
+              value={createLocation}
+              onChange={(e) => setCreateLocation(e.target.value)}
+            />
           </label>
           <label>
             <span>
@@ -734,6 +766,8 @@ export function TutorAdsManager({
               inputMode="decimal"
               required
               placeholder={hourlyRateInputValue(1500, currency)}
+              value={createRate}
+              onChange={(e) => setCreateRate(e.target.value)}
             />
             <span className="field-hint">Minimum {formatMoney(rateMinLocal, currency)}.</span>
           </label>
@@ -741,38 +775,54 @@ export function TutorAdsManager({
             <legend>How you teach</legend>
             <div className="checks">
               <label className="radio">
-                <input name="online" type="checkbox" defaultChecked /> Online
+                <input
+                  name="online"
+                  type="checkbox"
+                  checked={createOnline}
+                  onChange={(e) => setCreateOnline(e.target.checked)}
+                />{" "}
+                Online
               </label>
               <label className="radio">
-                <input name="inPerson" type="checkbox" /> In person
+                <input
+                  name="inPerson"
+                  type="checkbox"
+                  checked={createInPerson}
+                  onChange={(e) => setCreateInPerson(e.target.checked)}
+                />{" "}
+                In person
               </label>
             </div>
           </fieldset>
+          <div className="tutor-bio-field">
+            <label>
+              Teaching description
+              <textarea
+                name="description"
+                rows={3}
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                placeholder="Who this subject is for, how you teach it, and what results students can expect."
+              />
+            </label>
+            <TeachingDescriptionAiHelp
+              description={createDescription}
+              subject={createSubject}
+              caps={createCaps}
+              location={createLocation}
+              hourlyRateLabel={createRate.trim() ? `${createRate} ${currency}/hr` : undefined}
+              online={createOnline}
+              inPerson={createInPerson}
+              onApply={setCreateDescription}
+            />
+          </div>
           <details className="profile-advanced-details">
-            <summary>Optional — headline &amp; description</summary>
+            <summary>Optional — short headline</summary>
             <div className="profile-advanced-block">
               <label>
                 Short headline
                 <input name="headline" placeholder="Shown on search cards" />
               </label>
-              <div className="tutor-bio-field">
-                <label>
-                  Teaching description
-                  <textarea
-                    name="description"
-                    rows={3}
-                    value={createDescription}
-                    onChange={(e) => setCreateDescription(e.target.value)}
-                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
-                  />
-                </label>
-                <TeachingDescriptionAiHelp
-                  description={createDescription}
-                  subject={createSubject}
-                  caps={createCaps}
-                  onApply={setCreateDescription}
-                />
-              </div>
             </div>
           </details>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -787,6 +837,10 @@ export function TutorAdsManager({
                 setCreateCaps(EMPTY_CAPS);
                 setCreateSubject("");
                 setCreateDescription("");
+                setCreateRate("");
+                setCreateLocation("");
+                setCreateOnline(true);
+                setCreateInPerson(false);
               }}
             >
               Cancel
@@ -799,7 +853,7 @@ export function TutorAdsManager({
             <div className="panel teaching-listings-upgrade" style={{ marginTop: 0 }}>
               <p style={{ marginTop: 0 }}>{entitlement.createReason}</p>
               <Link className="btn btn-sm" href="/pricing">
-                View plans for more listings
+                View plans for more Teaching Profiles
               </Link>
             </div>
           ) : (

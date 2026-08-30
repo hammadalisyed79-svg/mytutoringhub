@@ -19,6 +19,12 @@ export function TutorBioAiHelp({
   expertise,
   listings,
   purpose = "bio",
+  hourlyRateLabel,
+  online,
+  inPerson,
+  boards,
+  qualificationStages,
+  syllabusCodes,
   onApply,
 }: {
   bio: string;
@@ -31,10 +37,16 @@ export function TutorBioAiHelp({
   experienceYears: number | null;
   teachingMethod: string;
   languages: string;
-  levels: string;
+  levels: string | string[];
   expertise: string;
   listings?: string;
   purpose?: TutorBioAiPurpose;
+  hourlyRateLabel?: string;
+  online?: boolean;
+  inPerson?: boolean;
+  boards?: string[];
+  qualificationStages?: string[];
+  syllabusCodes?: string[];
   onApply: (bio: string) => void;
 }) {
   const [loading, setLoading] = useState<"generate" | "improve" | null>(null);
@@ -70,6 +82,12 @@ export function TutorBioAiHelp({
           expertise,
           listings: listings?.trim() || undefined,
           notes: extra.trim() || undefined,
+          hourlyRateLabel: hourlyRateLabel?.trim() || undefined,
+          online,
+          inPerson,
+          boards,
+          qualificationStages,
+          syllabusCodes,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { bio?: string; error?: string };
@@ -131,8 +149,8 @@ export function TutorBioAiHelp({
       <p className="field-hint tutor-bio-ai-hint">
         {purpose === "teachingDescription"
           ? placeholder
-            ? "We’ll write from this subject and any levels or boards you selected. The placeholder line is ignored."
-            : "Uses this Teaching Profile’s subject and capabilities. It will not invent experience, qualifications, or reviews."
+            ? "Select subject, rate, lesson mode, and the capability chips first. We’ll mention what you picked — grouped if there are many, not a raw list of codes."
+            : "Uses this form: subject, rate, online/in-person, levels, boards, awards, and codes. It will not invent experience, degrees, or reviews."}
           : placeholder
             ? "The placeholder text is ignored — we will start from your name and any subjects you have added, not that default line."
             : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews."}

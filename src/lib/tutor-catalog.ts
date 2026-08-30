@@ -1,5 +1,6 @@
 import { TOP_COUNTRIES } from "@/lib/markets";
 import { SEARCH_LANGUAGES, SEARCH_LEVELS } from "@/lib/search-smart";
+import { curriculumExams } from "@/lib/curriculum";
 
 export const TUTOR_CORE_LEVELS = [
   "Primary",
@@ -307,6 +308,62 @@ export function tutorLevelOptions(extraLevels: string[] = []) {
       (level) => !TUTOR_CORE_LEVELS.some((core) => core.toLowerCase() === level.toLowerCase()),
     ),
   };
+}
+
+/** School-stage chips that must not appear as Qualification stages. */
+const LEVEL_ONLY_QUALIFICATION_LABELS = new Set(
+  [
+    "Primary",
+    "Middle / lower secondary",
+    "University",
+    "Adult learners",
+    "Exam prep",
+    "Elementary",
+    "Middle School",
+    "High School",
+    "Secondary",
+    "KS1",
+    "KS2",
+    "KS3",
+  ].map((label) => label.toLowerCase()),
+);
+
+/** Named awards / certificates for Teaching Profile qualification capabilities. */
+export const TUTOR_CORE_QUALIFICATIONS = [
+  "O Level",
+  "IGCSE",
+  "International GCSE",
+  "GCSE",
+  "AS Level",
+  "A Level",
+  "IB Diploma",
+  "AP",
+  "Matric",
+  "SSC",
+  "HSSC",
+  "Intermediate",
+  "SAT",
+  "ACT",
+  "HSC",
+  "NCEA",
+  "SPM",
+  "HKDSE",
+  "CBSE",
+  "ICSE",
+  "ISC",
+] as const;
+
+export function tutorQualificationOptions(extraQualifications: string[] = []) {
+  const exams = curriculumExams().filter(
+    (exam) => !LEVEL_ONLY_QUALIFICATION_LABELS.has(exam.toLowerCase()),
+  );
+  const core = [...TUTOR_CORE_QUALIFICATIONS];
+  const more = uniqueSorted([...exams, ...extraQualifications]).filter(
+    (exam) =>
+      !core.some((item) => item.toLowerCase() === exam.toLowerCase()) &&
+      !LEVEL_ONLY_QUALIFICATION_LABELS.has(exam.toLowerCase()),
+  );
+  return { core, more };
 }
 
 export function tutorLanguageOptions() {

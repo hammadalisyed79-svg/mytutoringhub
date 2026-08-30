@@ -17,8 +17,9 @@ import {
   tutorCountries,
   tutorLanguageOptions,
   tutorLevelOptions,
+  tutorQualificationOptions,
 } from "@/lib/tutor-catalog";
-import { curriculumBoards, curriculumCodesForSubject } from "@/lib/curriculum";
+import { curriculumBoards, curriculumCodesForCapabilities } from "@/lib/curriculum";
 import {
   availabilityTimeOptions,
   emptyAvailabilitySlot,
@@ -31,7 +32,6 @@ import {
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
-import { formatTeachingListingFacts } from "@/lib/tutor-bio-ai";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
@@ -249,6 +249,7 @@ export function TutorProfileForm({
   const [teachingBoards, setTeachingBoards] = useState<string[]>([]);
   const [teachingQuals, setTeachingQuals] = useState<string[]>([]);
   const [teachingCodes, setTeachingCodes] = useState<string[]>([]);
+  const qualificationCatalog = useMemo(() => tutorQualificationOptions(teachingQuals), [teachingQuals]);
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
   const [levelList, setLevelList] = useState(splitCsv(initial.levels));
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
@@ -297,14 +298,14 @@ export function TutorProfileForm({
   const syllabusCodeOptions = useMemo(() => {
     const seen = new Set<string>();
     const out: string[] = [];
-    for (const row of curriculumCodesForSubject(firstSubject)) {
+    for (const row of curriculumCodesForCapabilities(firstSubject, teachingBoards, teachingLevels)) {
       const code = row.code?.trim();
       if (!code || seen.has(code)) continue;
       seen.add(code);
       out.push(code);
     }
     return out;
-  }, [firstSubject]);
+  }, [firstSubject, teachingBoards, teachingLevels]);
 
   const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
 
@@ -1202,53 +1203,6 @@ export function TutorProfileForm({
                 </span>
               </label>
 
-              <div className="tutor-bio-field">
-                <label>
-                  <span>
-                    Teaching description <abbr className="req" title="Required">*</abbr>
-                  </span>
-                  <textarea
-                    name="teachingDescription"
-                    minLength={20}
-                    maxLength={4000}
-                    rows={4}
-                    value={teachingDescription}
-                    onChange={(e) => setTeachingDescription(e.target.value)}
-                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
-                  />
-                </label>
-                <span className="field-hint">{teachingDescription.trim().length}/4000 · at least 20 characters</span>
-                <TutorBioAiHelp
-                  purpose="teachingDescription"
-                  bio={teachingDescription}
-                  name={name}
-                  headline={headline}
-                  subjects={firstSubject ? [firstSubject] : []}
-                  location={location}
-                  country={country}
-                  qualifications={qualifications}
-                  experienceYears={
-                    experienceYears === "" || Number.isNaN(Number(experienceYears))
-                      ? null
-                      : Number(experienceYears)
-                  }
-                  teachingMethod={teachingMethod}
-                  languages={joinCsv(languageList)}
-                  levels={joinCsv(teachingLevels)}
-                  expertise={joinCsv(expertiseList)}
-                  listings={formatTeachingListingFacts([
-                    {
-                      subject: firstSubject,
-                      level: teachingLevels.join(" / "),
-                      board: teachingBoards.join(" / "),
-                      qualification: teachingQuals.join(" / "),
-                      syllabusCode: teachingCodes.join(" / "),
-                    },
-                  ])}
-                  onApply={setTeachingDescription}
-                />
-              </div>
-
               <fieldset className="form-fieldset">
                 <legend>
                   How you teach this subject <abbr className="req" title="Required">*</abbr>
@@ -1276,37 +1230,86 @@ export function TutorProfileForm({
                 extraOptions={levelCatalog.more}
                 max={12}
                 addLabel="Add level"
-                hint="Select every level this subject covers (GCSE and A Level can live on the same Mathematics profile)."
+                hint="Who you teach — school stage or typical cohort. Pick only what you actually cover. GCSE and A Level can share one Mathematics profile."
               />
               <CatalogMultiSelect
                 label="Exam boards / curricula"
                 selected={teachingBoards}
                 onChange={setTeachingBoards}
                 options={boardOptions}
-                max={12}
+                max={20}
                 addLabel="Add board"
-                hint="Optional. Cambridge, Edexcel, and others belong inside this subject profile."
+                hint="Optional. Which boards you prepare for. You do not need every chip."
               />
               <CatalogMultiSelect
                 label="Qualification stages"
                 selected={teachingQuals}
                 onChange={setTeachingQuals}
-                options={levelCatalog.core}
-                extraOptions={levelCatalog.more}
-                max={12}
+                options={qualificationCatalog.core}
+                extraOptions={[...qualificationCatalog.more, ...teachingQuals]}
+                max={16}
                 addLabel="Add qualification"
-                hint="Optional. O Level, GCSE, A Level, IB, and similar."
+                hint="Optional. Named awards or certificates (IGCSE, IB Diploma, HSC, SAT) — not the same as Levels. Skip chips you already covered above."
               />
               <CatalogMultiSelect
                 label="Syllabus / subject codes"
                 selected={teachingCodes}
                 onChange={setTeachingCodes}
                 options={syllabusCodeOptions}
+                extraOptions={teachingCodes}
                 searchable
-                max={16}
+                max={40}
                 addLabel="Add code"
-                hint="Optional. e.g. 0580, 9709 — helps Past Papers visitors find you."
+                hint="Optional. Codes students use on Past Papers (0580, 9709). Narrows when you pick boards or levels. A long list is grouped in AI Help."
               />
+
+              <div className="tutor-bio-field">
+                <label>
+                  <span>
+                    Teaching description <abbr className="req" title="Required">*</abbr>
+                  </span>
+                  <textarea
+                    name="teachingDescription"
+                    minLength={20}
+                    maxLength={4000}
+                    rows={4}
+                    value={teachingDescription}
+                    onChange={(e) => setTeachingDescription(e.target.value)}
+                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
+                  />
+                </label>
+                <span className="field-hint">{teachingDescription.trim().length}/4000 · at least 20 characters</span>
+                <TutorBioAiHelp
+                  purpose="teachingDescription"
+                  bio={teachingDescription}
+                  name={name}
+                  headline={headline}
+                  subjects={firstSubject ? [firstSubject] : []}
+                  location={location}
+                  country={country}
+                  qualifications=""
+                  experienceYears={
+                    experienceYears === "" || Number.isNaN(Number(experienceYears))
+                      ? null
+                      : Number(experienceYears)
+                  }
+                  teachingMethod={teachingMethod}
+                  languages={joinCsv(languageList)}
+                  levels={teachingLevels}
+                  expertise={joinCsv(expertiseList)}
+                  hourlyRateLabel={
+                    hourlyRate
+                      ? `${hourlyRate} ${rateCurrency}/hr`
+                      : undefined
+                  }
+                  online={online}
+                  inPerson={inPerson}
+                  boards={teachingBoards}
+                  qualificationStages={teachingQuals}
+                  syllabusCodes={teachingCodes}
+                  onApply={setTeachingDescription}
+                />
+              </div>
             </section>
           )}
           <details className="profile-advanced-details" id="get-verified" open={startStep === "verify"}>
