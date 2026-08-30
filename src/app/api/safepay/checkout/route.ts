@@ -150,7 +150,11 @@ export async function POST(req: Request) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
   }
-  const orderId = `${billing === "annual" ? "ann" : "mth"}_${plan}_${Date.now()}`;
+  // Add-ons are one-shot Safepay payments — never store "monthly" on the subscription row.
+  const billingPeriod = def.isAddOn ? "once" : billing;
+  const orderId = `${
+    def.isAddOn ? "once" : billing === "annual" ? "ann" : "mth"
+  }_${plan}_${Date.now()}`;
 
   try {
     const listingQs = body.subjectProfileId
@@ -182,7 +186,7 @@ export async function POST(req: Request) {
         plan,
         status: "INCOMPLETE",
         stripePriceId: `safepay_${currency}_${amount}`,
-        billingPeriod: billing,
+        billingPeriod,
         pointsRedeemedPkr,
         ...(subjectProfileNote ? { notes: subjectProfileNote } : {}),
       },
@@ -192,7 +196,7 @@ export async function POST(req: Request) {
         status: "INCOMPLETE",
         stripeSubscriptionId: tracker,
         stripePriceId: `safepay_${currency}_${amount}`,
-        billingPeriod: billing,
+        billingPeriod,
         pointsRedeemedPkr,
         notes: subjectProfileNote,
       },

@@ -106,7 +106,7 @@ export function SubscribeButton({
       >
         {loading
           ? complimentary
-            ? "Activating complimentary listing…"
+            ? "Activating complimentary offer…"
             : "Opening secure checkout…"
           : label}
       </button>

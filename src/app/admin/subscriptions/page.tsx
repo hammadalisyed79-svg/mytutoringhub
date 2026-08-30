@@ -124,6 +124,7 @@ export default function SubscriptionsPage() {
   ).length;
   const mrr = subs.filter(active).reduce((acc, s) => {
     const amount = s.priceAmount || 0;
+    if (s.billingPeriod === "once") return acc;
     return acc + (s.billingPeriod === "annual" ? amount / 12 : amount);
   }, 0);
 

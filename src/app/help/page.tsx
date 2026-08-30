@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
+import { BUSINESS } from "@/lib/business-rules";
 import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
 import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
 
@@ -45,7 +46,7 @@ const FAQS = [
   },
   {
     q: "Is Tutor Pro free?",
-    a: "Complete tutor profiles appear in search for free with up to 3 active Teaching Profiles for different subjects — permanently, not a temporary promo. Tutor Pro unlocks up to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (Tutor Pro growth tools are complimentary until 30 September 2026). Listing Boost is an optional one-time 30-day boost per Teaching Profile and does not increase capacity. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue and never auto-awards the badge. Free students keep 3 new tutor contacts/month.",
+    a: `Complete tutor profiles appear in search for free with up to ${BUSINESS.tutorFreeActiveListings} active Teaching Profiles for different subjects — permanently, not a temporary promo. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (Tutor Pro growth tools are complimentary until 30 September 2026). Listing Boost is an optional one-time 30-day boost per Teaching Profile and does not increase capacity. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue and never auto-awards the badge. Free students keep ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month.`,
   },
   {
     q: "Why do I need to verify my email?",

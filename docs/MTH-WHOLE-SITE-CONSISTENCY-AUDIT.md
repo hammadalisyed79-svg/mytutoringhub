@@ -212,3 +212,13 @@ Per locked plan — **not** started in this task:
 3. Locked Teaching Profiles plan: **NOT reopened**  
 4. Homepage visual design: **NOT redesigned** (wording only)  
 5. Stop condition: safe consistency defects fixed; no Phase-1 schema/onboarding rewrite continued  
+
+---
+
+## Q. Follow-up — plan/price contradiction check (2026-08-31)
+
+Full matrix: [`MTH-PLAN-PRICE-CONTRADICTION-CHECK.md`](./MTH-PLAN-PRICE-CONTRADICTION-CHECK.md).
+
+**Verdict: CONTRADICTIONS FIXED** — commercial **numbers and public prices already matched** the locked plan after the earlier consistency pass. This follow-up fixed residual stale copy (admin “complimentary listing” placeholder, SubscribeButton loading text), wired Help/Terms/dashboard hints to `BUSINESS` / entitlement constants, clarified How-it-works Boost as one-time/no-capacity, and stopped Safepay add-ons from storing `billingPeriod: "monthly"` (now `"once"`, excluded from admin MRR).
+
+No price invention. No Free-cap cliff. No plan reopen.

@@ -5,6 +5,10 @@ import {
   hasPaidTutorPlan,
   hasStudentMessagingPass,
 } from "@/lib/subscription";
+import {
+  FREE_SUBJECT_PROFILES,
+  TUTOR_PRO_SUBJECT_PROFILE_CAP,
+} from "@/lib/subject-profile-entitlements";
 import type { Role, SubscriptionPlan } from "@/lib/types";
 
 export const TUTOR_FREE_REVEAL_LIMIT = 3;
@@ -228,9 +232,9 @@ export async function getPlanDashboardSummary(
     usageLabel: "student contacts this month",
     renewsOn: hasTutorPro ? renewsOn : null,
     upgradeHint: hasTutorPro
-      ? "Unlimited student contact when you initiate. Tutor Pro includes up to 10 active Teaching Profiles and growth tools."
+      ? `Unlimited student contact when you initiate. Tutor Pro includes up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles and growth tools.`
       : hasElite
-        ? "Priority Verification Review jumps the identity queue only — it does not grant Tutor Pro or Teaching Profile capacity. Free tutors keep up to 3 Teaching Profiles."
-        : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to 3 active Teaching Profiles for different subjects. Tutor Pro unlocks up to 10.`,
+        ? `Priority Verification Review jumps the identity queue only — it does not grant Tutor Pro or Teaching Profile capacity. Free tutors keep up to ${FREE_SUBJECT_PROFILES} Teaching Profiles.`
+        : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
   };
 }

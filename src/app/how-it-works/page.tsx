@@ -95,7 +95,8 @@ export default async function HowItWorksPage() {
                 recommended — the badge is earned after review
               </li>
               <li>
-                Optional Listing Boost on each Teaching Profile from your dashboard — paid on Safepay
+                Optional one-time 30-day Listing Boost on each Teaching Profile from your dashboard
+                (does not increase capacity) — paid on Safepay when checkout is live
               </li>
             </ul>
             <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>

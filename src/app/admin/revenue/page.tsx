@@ -24,6 +24,8 @@ function isActiveStatus(status: string) {
 function monthlyAmount(priceAmount: number | null, billingPeriod: string | null) {
   const amount = priceAmount ?? 0;
   if (!amount) return 0;
+  // One-time add-ons are not recurring MRR.
+  if (billingPeriod === "once") return 0;
   return billingPeriod === "annual" ? amount / 12 : amount;
 }
 

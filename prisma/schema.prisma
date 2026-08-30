@@ -274,7 +274,7 @@ model Subscription {
   currentPeriodEnd     DateTime?
   // Extended fields for admin plan management
   role                 String?   // "tutor" | "student"
-  billingPeriod        String?   // "monthly" | "annual"
+  billingPeriod        String?   // "monthly" | "annual" | "once" (add-ons)
   pointsRedeemedPkr    Int       @default(0)
   currency             String?   @default("GBP")
   priceAmount          Float?

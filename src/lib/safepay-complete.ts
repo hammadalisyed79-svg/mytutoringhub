@@ -148,8 +148,12 @@ export async function activatePaidSafepaySubscription(opts: {
     return { ok: true as const, subscription: existing, alreadyActive: true };
   }
 
-  // Use billingPeriod stored on the record, or fall back to the hint, then monthly.
-  const billing = (existing.billingPeriod as "monthly" | "annual" | null) ?? opts.billingHint ?? "monthly";
+  // Prefer stored period; add-ons may be "once". Core plans default monthly.
+  const storedPeriod = existing.billingPeriod;
+  const billing =
+    storedPeriod === "once" || storedPeriod === "annual" || storedPeriod === "monthly"
+      ? storedPeriod
+      : opts.billingHint ?? "monthly";
   const periodMs = billing === "annual" ? 365 * 86400000 : 30 * 86400000;
   const subjectProfileId = parseSubjectProfileIdFromNotes(existing.notes);
   const periodEnd = ADD_ON_PLANS.has(plan)
@@ -160,7 +164,7 @@ export async function activatePaidSafepaySubscription(opts: {
     data: {
       status: "ACTIVE",
       currentPeriodEnd: periodEnd,
-      billingPeriod: billing,
+      billingPeriod: ADD_ON_PLANS.has(plan) ? "once" : billing === "once" ? "monthly" : billing,
     },
   });
 
