@@ -3,11 +3,11 @@ import type { SubscriptionPlan } from "@/lib/types";
 
 /**
  * Marketplace V2 teaching-listing caps (canonical).
- * Free = 3 active listings; Tutor Pro (TUTOR_BASIC) = 10.
+ * Free = 1 active listing; Tutor Pro (TUTOR_BASIC) = 10.
  * Legacy EXTRA_PROFILE_ADS maps to Pro cap (grandfather).
  * Legacy UNLIMITED_ADS keeps unlimited (grandfather).
  */
-export const FREE_SUBJECT_PROFILES = 3;
+export const FREE_SUBJECT_PROFILES = 1;
 export const TUTOR_PRO_SUBJECT_PROFILE_CAP = 10;
 
 /** @deprecated Use FREE_SUBJECT_PROFILES — V2 has no promo sunset on free listings. */
@@ -56,7 +56,7 @@ export function isSubjectProfilePromoActive(_now = new Date()): boolean {
 }
 
 export function subjectProfilePromoLabel(_now = new Date()): string {
-  return `Free: up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles · Tutor Pro: up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} · Legacy Unlimited keeps unlimited. Boost does not add capacity.`;
+  return `Free: ${FREE_SUBJECT_PROFILES} active Teaching Profile · Tutor Pro: up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} · Legacy Unlimited keeps unlimited. Boost does not add capacity.`;
 }
 
 /**
@@ -103,7 +103,7 @@ export type SubjectProfileGate =
 
 /**
  * Gate for creating/reactivating a SubjectProfile.
- * Free → 3; Tutor Pro / Extra Profile Ads (legacy) → 10; Unlimited Profiles (legacy) → ∞.
+ * Free → 1; Tutor Pro / Extra Profile Ads (legacy) → 10; Unlimited Profiles (legacy) → ∞.
  */
 export async function canCreateSubjectProfile(
   userId: string,
@@ -139,7 +139,7 @@ export async function canCreateSubjectProfile(
     if (cap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason: `Free plan includes up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Boost does not add capacity.`,
+        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profile. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Boost does not add capacity.`,
         activeCount,
         cap,
       };

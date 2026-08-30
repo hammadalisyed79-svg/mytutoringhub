@@ -537,7 +537,7 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     title: "Grow with Tutor Pro",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Your profile is live. <strong>Tutor Pro</strong> adds priority ranking in search and unlimited enquiry reveals when you message students first.</p>
-<p>Free tutors get up to <strong>3 active Teaching Profiles</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
+<p>Free tutors get <strong>1 active Teaching Profile</strong>. Tutor Pro unlocks up to 10, plus relevance-first ranking and unlimited enquiry reveals.</p>
 <p>Complimentary Tutor Pro may still be available — check Pricing for current offers.</p>`,
     cta: { label: "View tutor plans", href: opts.pricingUrl },
   });
@@ -556,7 +556,7 @@ export function tutorSecondProfileEmailHtml(opts: {
     title: "Add a second subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
-<p>Create another Teaching Profile from your dashboard — free tutors can run up to 3 active profiles; Tutor Pro unlocks up to 10.</p>`,
+<p>Create another Teaching Profile from your dashboard — free tutors run 1 active profile; Tutor Pro unlocks up to 10.</p>`,
     cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
   });
 }

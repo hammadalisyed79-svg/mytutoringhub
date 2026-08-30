@@ -41,8 +41,8 @@ export default function TermsPage() {
             Automatic renewal is not assumed: if a plan renews automatically we will say so clearly
             at checkout; otherwise email us before the next billing date to stop further charges.
             Limited-time offers (for example complimentary Tutor Pro until a stated date) end
-            automatically; free tutors keep up to {BUSINESS.tutorFreeActiveListings} active Teaching
-            Profiles for different subjects with ordinary search visibility, and Tutor Pro unlocks up
+            automatically; free tutors keep {BUSINESS.tutorFreeActiveListings} active Teaching
+            Profile with ordinary search visibility, and Tutor Pro unlocks up
             to {BUSINESS.tutorProActiveListings}. Paid add-ons such as Listing Boost are one-time
             purchases for a stated visibility window and never increase Teaching Profile capacity
             unless the product description says otherwise. The Identity Verified badge is granted only

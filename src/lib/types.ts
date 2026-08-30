@@ -21,4 +21,4 @@ export type ReviewStatus = "PENDING" | "PUBLISHED" | "HIDDEN";
 export type ReportStatus = "OPEN" | "RESOLVED" | "DISMISSED";
 
 /** @deprecated Use PAID_SUBJECT_PROFILE_CAP from subject-profile-entitlements. */
-export const FREE_TUTOR_AD_CAP = 3;
+export const FREE_TUTOR_AD_CAP = 1;

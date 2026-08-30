@@ -34,12 +34,12 @@ function readSrc(rel: string) {
   return readFileSync(join(root, rel), "utf8");
 }
 
-// 1–2. Free = 3, Pro = 10
-assert.equal(BUSINESS.tutorFreeActiveListings, 3);
+// 1–2. Free = 1, Pro = 10
+assert.equal(BUSINESS.tutorFreeActiveListings, 1);
 assert.equal(BUSINESS.tutorProActiveListings, 10);
-assert.equal(FREE_SUBJECT_PROFILES, 3);
+assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
-assert.match(TUTOR_FREE_LISTING_LINE, /up to 3 active Teaching Profiles/);
+assert.match(TUTOR_FREE_LISTING_LINE, /1 active Teaching Profile/);
 assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 active Teaching Profiles/);
 
 // 3–4. No retired listing-cap cliffs in public app sources
@@ -82,9 +82,9 @@ for (const rel of publicSurfaces) {
   }
 }
 
-// Listing-cap promo retired; Free stays 3 after promo constant too
+// Listing-cap promo retired; Free stays 1 after promo constant too
 assert.equal(isSubjectProfilePromoActive(), false);
-assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 3);
+assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
 
 // 5. No current public +1 Teaching Profile SKU
 assert.deepEqual(PUBLIC_ADDON_PLAN_IDS, ["VERIFIED_TUTOR", "AD_BOOST"]);
@@ -138,7 +138,7 @@ assert.match(pricingClient, /legacy Extra\/Unlimited/);
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
 assert.equal(tutorPro.promoUntil, "2026-09-30");
 assert.ok(tutorPro.isComplimentary || tutorPro.promoEnabled);
-assert.equal(FREE_SUBJECT_PROFILES, 3);
+assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(isSubjectProfilePromoActive(), false);
 
 // One-time add-on price formatting (no /mo)
@@ -179,7 +179,7 @@ assert.doesNotMatch(terms, /Subscriptions renew\s+according to the plan you purc
 // Free-vs-paid FAQ keeps Free permanent + Pro promo separate
 const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free right now?");
 assert.ok(proFaq);
-assert.match(proFaq!.a, new RegExp(`up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles`));
+assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
 assert.match(proFaq!.a, /30 September 2026/);
 
 console.log("public-commercial-consistency.test.ts: ok");

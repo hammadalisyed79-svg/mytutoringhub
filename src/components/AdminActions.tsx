@@ -567,7 +567,7 @@ export function AdminPlanPricesForm({
                   rows={2}
                   defaultValue={plan.promoNote || ""}
                   maxLength={280}
-                  placeholder="Tutor Pro complimentary until 30 September 2026. Free tutors keep up to 3 Teaching Profiles permanently. Badges and boosts remain paid."
+                  placeholder="Tutor Pro complimentary until 30 September 2026. Free tutors keep 1 Teaching Profile permanently. Badges and boosts remain paid."
                 />
               </label>
             </div>

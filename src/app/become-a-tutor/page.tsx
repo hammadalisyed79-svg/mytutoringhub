@@ -81,7 +81,7 @@ export default async function BecomeATutorPage({
             <h3>Create and manage Teaching Profiles</h3>
             <p className="muted">
               Eligible tutors appear in search with Teaching Profiles for the subjects they teach.
-              Free tutors get up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles
+              Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile
               permanently with ordinary search visibility. Tutor Pro unlocks up to{" "}
               {BUSINESS.tutorProActiveListings} Teaching Profiles plus relevance-first ranking and
               unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is an

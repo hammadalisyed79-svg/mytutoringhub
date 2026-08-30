@@ -281,7 +281,7 @@ export function PricingPlansClient({
               </div>
               <ul>
                 <li>Appear in search when profile is complete</li>
-                <li>Up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles</li>
+                <li>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</li>
                 <li>Receive &amp; reply to student messages</li>
                 <li>Monthly enquiry allowance when you message first</li>
                 <li>Keep 100% of lesson fees</li>

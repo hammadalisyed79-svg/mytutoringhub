@@ -7,8 +7,8 @@ import {
   resolveSubjectProfileActiveCap,
 } from "@/lib/subject-profile-entitlements";
 
-assert.equal(FREE_SUBJECT_PROFILES, 3);
-assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 3);
+assert.equal(FREE_SUBJECT_PROFILES, 1);
+assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
 assert.equal(isSubjectProfilePromoActive(), false);
 

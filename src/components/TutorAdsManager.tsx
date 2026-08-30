@@ -489,7 +489,7 @@ export function TutorAdsManager({
     router.refresh();
   }
 
-  const freeCap = entitlement?.freeCapAfterPromo ?? 3;
+  const freeCap = entitlement?.freeCapAfterPromo ?? 1;
   const paidCap = entitlement?.paidCap ?? 10;
   const capLabel = entitlement?.unlimited
     ? "Unlimited"
@@ -500,7 +500,7 @@ export function TutorAdsManager({
     entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length;
   const capacityLine = entitlement?.unlimited
     ? "Legacy Unlimited — no active Teaching Profile limit. Boost does not add capacity."
-    : `Free: up to ${freeCap} active Teaching Profiles · Tutor Pro: up to ${paidCap} · Boost does not add capacity.`;
+    : `Free: ${freeCap} active Teaching Profile · Tutor Pro: up to ${paidCap} · Boost does not add capacity.`;
   const rateMinLocal = minHourlyRateInput(currency);
   const rateStep = hourlyRateInputStep(currency);
 

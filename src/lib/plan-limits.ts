@@ -234,7 +234,7 @@ export async function getPlanDashboardSummary(
     upgradeHint: hasTutorPro
       ? `Unlimited student contact when you initiate. Tutor Pro includes up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles and growth tools.`
       : hasElite
-        ? `Priority Verification Review jumps the identity queue only — it does not grant Tutor Pro or Teaching Profile capacity. Free tutors keep up to ${FREE_SUBJECT_PROFILES} Teaching Profiles.`
-        : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
+        ? `Priority Verification Review jumps the identity queue only — it does not grant Tutor Pro or Teaching Profile capacity. Free tutors keep ${FREE_SUBJECT_PROFILES} Teaching Profile.`
+        : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and ${FREE_SUBJECT_PROFILES} active Teaching Profile. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}.`,
   };
 }

@@ -88,8 +88,8 @@ async function main() {
   const prisma = url ? new PrismaClient() : null;
 
   checks.push({
-    name: "Caps locked 3 / 10",
-    ok: FREE_SUBJECT_PROFILES === 3 && TUTOR_PRO_SUBJECT_PROFILE_CAP === 10 && BUSINESS.tutorFreeActiveListings === 3,
+    name: "Caps locked 1 / 10",
+    ok: FREE_SUBJECT_PROFILES === 1 && TUTOR_PRO_SUBJECT_PROFILE_CAP === 10 && BUSINESS.tutorFreeActiveListings === 1,
     detail: `FREE=${FREE_SUBJECT_PROFILES} PRO=${TUTOR_PRO_SUBJECT_PROFILE_CAP} BUSINESS.free=${BUSINESS.tutorFreeActiveListings}`,
   });
   checks.push({

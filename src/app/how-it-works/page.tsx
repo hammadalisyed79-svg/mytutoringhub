@@ -85,8 +85,8 @@ export default async function HowItWorksPage() {
                 cards
               </li>
               <li>
-                Free tutors get up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles for
-                different subjects in search; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}{" "}
+                Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile in
+                search; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}{" "}
                 plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30
                 September 2026)
               </li>

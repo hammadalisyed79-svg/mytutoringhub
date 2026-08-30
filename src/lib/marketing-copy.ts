@@ -26,7 +26,7 @@ export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.stud
 export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited eligible downloads. Anyone can browse the library; individual papers can also be purchased separately when offered.`;
 
 export const TUTOR_FREE_LISTING_LINE =
-  `Complete your profile to appear in search for free. Free tutors get up to ${BUSINESS.tutorFreeActiveListings} active Teaching Profiles for different subjects, enquiries, and 100% of lesson fees — no subscription required for ordinary search visibility. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} Teaching Profiles plus growth tools.`;
+  `Complete your profile to appear in search for free. Free tutors get ${BUSINESS.tutorFreeActiveListings} active Teaching Profile, enquiries, and 100% of lesson fees — no subscription required for ordinary search visibility. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} Teaching Profiles plus growth tools.`;
 
 export const TUTOR_PRO_LISTING_LINE =
   `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking enhancement, unlimited enquiry reveals, enhanced student-request access, and analytics.`;

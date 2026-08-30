@@ -92,9 +92,9 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
   },
   {
     feature: "Active Teaching Profiles",
-    free: `Up to ${FREE_SUBJECT_PROFILES}`,
+    free: `${FREE_SUBJECT_PROFILES}`,
     paid: `Up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
-    detail: `Free tutors get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects with organic search visibility. More subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Legacy Unlimited Profiles holders keep unlimited Teaching Profiles.`,
+    detail: `Free tutors get ${FREE_SUBJECT_PROFILES} active Teaching Profile with organic search visibility. More subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Legacy Unlimited Profiles holders keep unlimited Teaching Profiles.`,
   },
   {
     feature: "Priority search ranking",
@@ -170,7 +170,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects with ordinary search visibility; more subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Listing Boost is optional (30-day or annual with about 20% off) and does not increase Teaching Profile capacity. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get ${FREE_SUBJECT_PROFILES} active Teaching Profile with ordinary search visibility; more subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Listing Boost is optional (30-day or annual with about 20% off) and does not increase Teaching Profile capacity. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a Teaching Profile?",
