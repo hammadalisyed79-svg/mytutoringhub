@@ -64,7 +64,8 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Sea
         <h1 className="page-title">Ads &amp; listings</h1>
         <p className="muted">
           Moderate student requests and tutor subject profiles. Hide, pause, or delete inappropriate
-          listings.
+          listings. Canonical-subject duplicates:{" "}
+          <Link href="/admin/teaching-profiles">Teaching Profile report</Link> (read-only).
         </p>
       </div>
 

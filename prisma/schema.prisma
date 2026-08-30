@@ -182,7 +182,8 @@ model SubjectProfile {
   tutorProfile     TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
   subject          String
   /// Alias-aware canonical subject (see canonicalTeachingSubject). Empty until backfilled.
-  /// Display and current search still use `subject` until Phase 3 writers.
+  /// Display and current search still use `subject`. Phase 3 writers store alias-aware values.
+  /// Unique index on this column is still NOT applied while ACTIVE collisions exist.
   canonicalSubject String       @default("")
   title            String
   headline         String?

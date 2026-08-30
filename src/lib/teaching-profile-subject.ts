@@ -1,11 +1,11 @@
 /**
  * Canonical subject identity for Teaching Profiles (SubjectProfile).
  *
- * Uniqueness (later phases): one ACTIVE row per TutorProfile + canonical key.
+ * Uniqueness (product rule, Phase 3): one ACTIVE row per TutorProfile + canonical key.
  * Display `SubjectProfile.subject` may keep the tutor's original label.
  *
- * Does not change wizard UX, search, or listing APIs. Preview/migration tooling
- * and future writers should call this instead of unique-on-raw-subject.
+ * Create/update APIs call `shouldRejectActiveCanonicalWrite`. Existing duplicate
+ * ACTIVE rows are detected, not merged. The SQL unique index is still not applied.
  */
 
 import { catalogSubjectNames } from "@/lib/subject-catalog";

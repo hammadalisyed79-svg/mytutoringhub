@@ -120,7 +120,10 @@ export function scoreListingQuality(listing: ListingQualityInput): ListingQualit
   };
 }
 
-/** Near-duplicate: same tutor, same subject, similar level/board (not GCSE vs A Level). */
+/** Near-duplicate: same tutor, same subject, similar level/board (not GCSE vs A Level).
+ * Create/update uniqueness is canonical subject (`teaching-profile-duplicates`) — this helper
+ * is not the product gate. Distinct levels of the same subject are one Teaching Profile.
+ */
 export function isNearDuplicateListing(
   a: { subject: string; level?: string | null; board?: string | null; title?: string | null },
   b: { subject: string; level?: string | null; board?: string | null; title?: string | null },

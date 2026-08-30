@@ -18,6 +18,7 @@ import {
   type CurrencyCode,
 } from "@/lib/currency";
 import { scoreListingQuality } from "@/lib/listing-quality";
+import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -204,6 +205,7 @@ export function TutorAdsManager({
   const feedbackRef = useRef<HTMLDivElement>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
+  const [duplicateNotice, setDuplicateNotice] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -216,10 +218,13 @@ export function TutorAdsManager({
       .then((d) => {
         if (Array.isArray(d)) {
           setListings(d);
+          setDuplicateNotice(null);
           return;
         }
         if (Array.isArray(d?.listings)) setListings(d.listings);
         if (d?.entitlement) setEntitlement(d.entitlement);
+        if (typeof d?.duplicateNotice === "string") setDuplicateNotice(d.duplicateNotice);
+        else setDuplicateNotice(null);
       })
       .catch(() => undefined);
   }
@@ -390,6 +395,8 @@ export function TutorAdsManager({
           students worldwide see their own currency.
         </p>
       </div>
+
+      <TeachingProfileDuplicateNotice message={duplicateNotice} />
 
       {listings.length > 0 && (
         <div className="listing-quality-tips">

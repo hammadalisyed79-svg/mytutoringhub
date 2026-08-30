@@ -7,6 +7,7 @@ import {
   shouldSkipFirstTeachingProfileCreate,
   teachingProfilePersistFields,
 } from "@/lib/teaching-profile-write";
+import { shouldRejectActiveCanonicalWrite } from "@/lib/teaching-profile-duplicates";
 
 {
   const fields = teachingProfilePersistFields(
@@ -120,5 +121,31 @@ assert.equal(
   false,
 );
 assert.equal(shouldSkipFirstTeachingProfileCreate([]), false);
+
+{
+  const fields = teachingProfilePersistFields({
+    subject: "Maths",
+    rate: 2000,
+    description: "GCSE Mathematics",
+    online: true,
+    inPerson: false,
+  });
+  const clash = shouldRejectActiveCanonicalWrite({
+    existing: [{ id: "existing-maths", status: "ACTIVE", subject: "Mathematics" }],
+    nextStatus: "ACTIVE",
+    nextSubject: fields.subject,
+  });
+  assert.ok(clash, "wizard/listing create must reject second ACTIVE Maths/Mathematics");
+  assert.equal(clash.canonical, "Mathematics");
+}
+
+{
+  const pausedOk = shouldRejectActiveCanonicalWrite({
+    existing: [{ id: "existing-maths", status: "ACTIVE", subject: "Mathematics" }],
+    nextStatus: "PAUSED",
+    nextSubject: "Maths",
+  });
+  assert.equal(pausedOk, null, "PAUSED duplicate of Mathematics is allowed");
+}
 
 console.log("teaching-profile-write.test.ts: ok");

@@ -11,7 +11,7 @@ import { config } from "dotenv";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { PrismaClient } from "@prisma/client";
-import { canonicalTeachingSubject } from "../src/lib/teaching-profile-subject";
+import { groupByCanonicalSubject } from "../src/lib/teaching-profile-duplicates";
 import {
   capabilitiesFromScalarRow,
   capabilityGroupKey,
@@ -358,26 +358,7 @@ async function main() {
       orderBy: [{ tutorProfileId: "asc" }, { updatedAt: "desc" }],
     });
 
-    const groupMap = new Map<string, Group>();
-    for (const row of rows) {
-      const canon = canonicalTeachingSubject(row.subject);
-      const mapKey = `${row.tutorProfileId}::${canon.key || foldFallback(row.subject)}`;
-      const existing = groupMap.get(mapKey);
-      if (existing) {
-        existing.rows.push(row);
-        continue;
-      }
-      groupMap.set(mapKey, {
-        tutorProfileId: row.tutorProfileId,
-        canonical: canon.canonical || row.subject,
-        key: canon.key,
-        matched: canon.matched,
-        source: canon.source,
-        rows: [row],
-      });
-    }
-
-    const groups = [...groupMap.values()].sort((a, b) => b.rows.length - a.rows.length || a.canonical.localeCompare(b.canonical));
+    const groups = groupByCanonicalSubject(rows);
     writeFileSync(OUT, reportDoc({ rows, groups, now: new Date() }), "utf8");
 
     const multi = groups.filter((g) => g.rows.length >= 2);
@@ -412,10 +393,6 @@ async function main() {
   } finally {
     await prisma.$disconnect();
   }
-}
-
-function foldFallback(subject: string) {
-  return subject.trim().toLowerCase() || "_empty";
 }
 
 main();

@@ -3416,6 +3416,10 @@ select:focus {
   color: var(--brand-deep);
 }
 
+.teaching-profile-duplicate-notice {
+  margin: 0.75rem 0 1rem;
+}
+
 .tutor-profile-live-banner {
   margin: 0 0 0.85rem;
 }

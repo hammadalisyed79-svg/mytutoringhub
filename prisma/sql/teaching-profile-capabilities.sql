@@ -13,8 +13,8 @@
 --
 -- Canonical-subject SQL backfill is a first-pass copy of `subject` (trim only).
 -- Alias-aware keys (Maths → Mathematics, GCSE Maths → Mathematics) are computed by
--- src/lib/teaching-profile-subject.ts; re-backfill with that helper in Phase 3/9 before
--- treating the unique index as the product invariant.
+-- src/lib/teaching-profile-subject.ts. Phase 3 dry-run lists would-backfill values;
+-- do not UPDATE production rows here. Do not CREATE the unique index while collisions exist.
 
 ALTER TABLE "SubjectProfile"
   ADD COLUMN IF NOT EXISTS "canonicalSubject" TEXT NOT NULL DEFAULT '';

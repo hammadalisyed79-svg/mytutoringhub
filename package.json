@@ -11,13 +11,15 @@
     "test:pdf-watermark": "tsx src/lib/past-papers/pdf-watermark.test.ts",
     "test:safepay": "tsx src/lib/safepay.test.ts",
     "test:quality": "tsx src/lib/past-papers/quality-normalize.test.ts && tsx src/lib/listing-quality.test.ts && tsx src/lib/search-benchmark.test.ts && tsx src/lib/search-smart.test.ts",
-    "db:normalize-pp-sessions": "tsx scripts/normalize-past-paper-sessions.ts",
+    "test:teaching-profiles": "tsx src/lib/teaching-profile-subject.test.ts && tsx src/lib/teaching-profile-capabilities.test.ts && tsx src/lib/teaching-profile-write.test.ts && tsx src/lib/teaching-profile-duplicates.test.ts && tsx src/lib/teaching-profile-consolidation.test.ts && tsx src/lib/tutor-wizard.test.ts",
     "db:push": "prisma db push",
+    "db:normalize-pp-sessions": "tsx scripts/normalize-past-paper-sessions.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",
     "db:sync-tutor-visibility": "tsx scripts/sync-tutor-public-visibility.ts",
     "db:migrate-subject-profiles": "tsx scripts/migrate-subject-profiles.ts",
     "db:preview-teaching-profiles": "tsx scripts/preview-teaching-profile-migration.ts",
+    "db:dry-run-teaching-profiles": "tsx scripts/dry-run-teaching-profile-consolidation.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

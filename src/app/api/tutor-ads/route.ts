@@ -17,7 +17,14 @@ import {
 } from "@/lib/teaching-profile-capabilities";
 import { canonicalTeachingSubject } from "@/lib/teaching-profile-subject";
 import {
+  ActiveCanonicalSubjectConflictError,
+  activeCanonicalConflictPayload,
+  shouldRejectActiveCanonicalWrite,
+  tutorCanonicalDuplicateNotice,
+} from "@/lib/teaching-profile-duplicates";
+import {
   insertTeachingProfile,
+  listTeachingProfilesForUniqueness,
   mergeDerivedMasterSubjects,
   replaceSubjectProfileCapabilities,
   teachingProfilePersistFields,
@@ -90,26 +97,36 @@ function serializeListing(row: {
   };
 }
 
-async function findDuplicateListing(opts: {
-  tutorProfileId: string;
-  subject: string;
-  level: string;
-  board: string | null;
-  excludeId?: string;
-}) {
-  const board = opts.board;
-  return prisma.subjectProfile.findFirst({
-    where: {
-      tutorProfileId: opts.tutorProfileId,
-      subject: { equals: opts.subject, mode: "insensitive" },
-      level: { equals: opts.level, mode: "insensitive" },
-      ...(board
-        ? { board: { equals: board, mode: "insensitive" } }
-        : { OR: [{ board: null }, { board: "" }] }),
-      ...(opts.excludeId ? { id: { not: opts.excludeId } } : {}),
-    },
-  });
+function uniquenessRows(
+  rows: { id: string; status: string; subject: string; canonicalSubject?: string | null }[],
+) {
+  return rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    subject: row.subject,
+    canonicalSubject: row.canonicalSubject,
+  }));
 }
+
+const listingSelect = {
+  id: true,
+  subject: true,
+  title: true,
+  headline: true,
+  level: true,
+  board: true,
+  qualification: true,
+  syllabusCode: true,
+  location: true,
+  country: true,
+  rate: true,
+  status: true,
+  online: true,
+  inPerson: true,
+  description: true,
+  boostUntil: true,
+  highlightedUntil: true,
+} as const;
 
 /** Teaching Listings API (Marketplace V2). Route kept as /api/tutor-ads for existing clients. */
 export async function GET() {
@@ -119,6 +136,8 @@ export async function GET() {
   if (!profile) {
     return NextResponse.json({
       listings: [],
+      duplicateNotice: null,
+      canonicalDuplicates: [],
       entitlement: {
         activeCount: 0,
         cap: null as number | null,
@@ -137,6 +156,7 @@ export async function GET() {
     prisma.subjectProfile.findMany({
       where: { tutorProfileId: profile.id },
       orderBy: { createdAt: "desc" },
+      select: listingSelect,
     }),
     getSubjectProfileActiveCap(session.user.id),
     canCreateSubjectProfile(session.user.id),
@@ -144,9 +164,13 @@ export async function GET() {
 
   const activeCount = rows.filter((r) => r.status === "ACTIVE").length;
   const unlimited = !Number.isFinite(cap);
+  const duplicateNotice = tutorCanonicalDuplicateNotice(uniquenessRows(rows));
+
 
   return NextResponse.json({
     listings: rows.map(serializeListing),
+    duplicateNotice: duplicateNotice?.message ?? null,
+    canonicalDuplicates: duplicateNotice?.groups ?? [],
     entitlement: {
       activeCount,
       cap: unlimited ? null : cap,
@@ -205,68 +229,56 @@ export async function POST(req: Request) {
     );
   }
 
-  const duplicate = await findDuplicateListing({
-    tutorProfileId: gate.profile.id,
-    subject: persist.subject,
-    level: persist.level,
-    board: persist.board,
+  const existing = await listTeachingProfilesForUniqueness(gate.profile.id);
+  const clash = shouldRejectActiveCanonicalWrite({
+    existing,
+    nextStatus: "ACTIVE",
+    nextSubject: persist.subject,
   });
-  if (duplicate) {
-    return NextResponse.json(
-      {
-        error: `You already have a teaching listing for ${persist.subject} (${persist.level}${persist.board ? ` · ${persist.board}` : ""}). Edit or reactivate it instead.`,
-      },
-      { status: 409 },
-    );
+  if (clash) {
+    return NextResponse.json(activeCanonicalConflictPayload(clash), { status: 409 });
   }
 
-  // Near-duplicate warn→block: same subject with vague level/board and near-identical title.
-  const existingActive = await prisma.subjectProfile.findMany({
-    where: { tutorProfileId: gate.profile.id, status: "ACTIVE" },
-    select: { subject: true, level: true, board: true, title: true },
-  });
-  const { isNearDuplicateListing } = await import("@/lib/listing-quality");
-  for (const other of existingActive) {
-    const near = isNearDuplicateListing(
-      { subject: persist.subject, level: persist.level, board: persist.board, title: persist.title },
-      other,
-    );
-    if (near.nearDup && near.confidence === "high") {
+  let row;
+  try {
+    row = await insertTeachingProfile({
+      tutorProfileId: gate.profile.id,
+      tutorName: tutor?.user.name,
+      existingSubjectsCsv: tutor?.subjects,
+      input: {
+        subject: persist.subject,
+        title: persist.title,
+        headline: persist.headline,
+        description: persist.description,
+        rate: persist.rate,
+        online: persist.online,
+        inPerson: persist.inPerson,
+        location: persist.location,
+        country: persist.country,
+        levels: data.levels,
+        boards: data.boards,
+        qualifications: data.qualifications,
+        syllabusCodes: data.syllabusCodes,
+        level: persist.level,
+        board: persist.board || undefined,
+        qualification: persist.qualification || undefined,
+        syllabusCode: persist.syllabusCode || undefined,
+      },
+    });
+  } catch (err) {
+    if (err instanceof ActiveCanonicalSubjectConflictError) {
       return NextResponse.json(
         {
-          error:
-            "This looks like a duplicate of an existing listing for the same subject and level. Edit the existing listing, or use a distinct level/board (e.g. GCSE vs A Level).",
-          code: "near_duplicate_listing",
+          error: err.message,
+          code: err.code,
+          canonical: err.canonical,
+          existingId: err.existingId,
         },
         { status: 409 },
       );
     }
+    throw err;
   }
-
-  const row = await insertTeachingProfile({
-    tutorProfileId: gate.profile.id,
-    tutorName: tutor?.user.name,
-    existingSubjectsCsv: tutor?.subjects,
-    input: {
-      subject: persist.subject,
-      title: persist.title,
-      headline: persist.headline,
-      description: persist.description,
-      rate: persist.rate,
-      online: persist.online,
-      inPerson: persist.inPerson,
-      location: persist.location,
-      country: persist.country,
-      levels: data.levels,
-      boards: data.boards,
-      qualifications: data.qualifications,
-      syllabusCodes: data.syllabusCodes,
-      level: persist.level,
-      board: persist.board || undefined,
-      qualification: persist.qualification || undefined,
-      syllabusCode: persist.syllabusCode || undefined,
-    },
-  });
 
   await syncTutorBadges(session.user.id);
 
@@ -283,7 +295,10 @@ export async function PATCH(req: Request) {
   const status = z.enum(["ACTIVE", "PAUSED", "HIDDEN"]).optional().parse(body.status);
   const profile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
   if (!profile) return NextResponse.json({ error: "No profile" }, { status: 404 });
-  const row = await prisma.subjectProfile.findFirst({ where: { id, tutorProfileId: profile.id } });
+  const row = await prisma.subjectProfile.findFirst({
+    where: { id, tutorProfileId: profile.id },
+    select: listingSelect,
+  });
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (status === "ACTIVE" && row.status !== "ACTIVE") {
@@ -296,20 +311,17 @@ export async function PATCH(req: Request) {
   const nextBoard =
     body.board !== undefined ? normalizeOptional(String(body.board || "")) : row.board;
 
-  if (nextSubject || body.level != null || body.board !== undefined) {
-    const clash = await findDuplicateListing({
-      tutorProfileId: profile.id,
-      subject: nextSubject || row.subject,
-      level: nextLevel,
-      board: nextBoard,
-      excludeId: id,
-    });
-    if (clash) {
-      return NextResponse.json(
-        { error: `You already have a teaching listing for that subject, level, and board.` },
-        { status: 409 },
-      );
-    }
+  const existing = await listTeachingProfilesForUniqueness(profile.id);
+  const uniquenessClash = shouldRejectActiveCanonicalWrite({
+    existing,
+    excludeId: id,
+    nextStatus: status || row.status,
+    nextSubject: nextSubject || row.subject,
+    previousStatus: row.status,
+    previousSubject: row.subject,
+  });
+  if (uniquenessClash) {
+    return NextResponse.json(activeCanonicalConflictPayload(uniquenessClash), { status: 409 });
   }
 
   const updated = await prisma.subjectProfile.update({
@@ -339,6 +351,7 @@ export async function PATCH(req: Request) {
       ...(typeof body.online === "boolean" ? { online: body.online } : {}),
       ...(typeof body.inPerson === "boolean" ? { inPerson: body.inPerson } : {}),
     },
+    select: listingSelect,
   });
 
   await prisma.tutorAd
@@ -394,6 +407,7 @@ export async function PATCH(req: Request) {
         ...scalars,
         ...(canonical ? { canonicalSubject: canonical } : {}),
       },
+      select: listingSelect,
     });
   } else if (nextSubject) {
     listed = await prisma.subjectProfile.update({
@@ -401,6 +415,7 @@ export async function PATCH(req: Request) {
       data: {
         canonicalSubject: canonicalTeachingSubject(nextSubject).canonical || nextSubject,
       },
+      select: listingSelect,
     });
   }
 

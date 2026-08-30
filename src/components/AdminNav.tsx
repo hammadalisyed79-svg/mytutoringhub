@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/demand", label: "Demand" },
   { href: "/admin/tutor-supply", label: "Tutor supply" },
   { href: "/admin/ads", label: "Ads" },
+  { href: "/admin/teaching-profiles", label: "Teaching Profiles" },
   { href: "/admin/payments", label: "Payments" },
   { href: "/admin/plans", label: "Plans & prices" },
   { href: "/admin/subscriptions", label: "Subscriptions" },

@@ -9,8 +9,18 @@ import {
   type SubjectProfileCapabilityRow,
 } from "@/lib/teaching-profile-capabilities";
 import { canonicalTeachingSubject } from "@/lib/teaching-profile-subject";
+import {
+  ActiveCanonicalSubjectConflictError,
+  shouldRejectActiveCanonicalWrite,
+} from "@/lib/teaching-profile-duplicates";
 import { defaultSubjectProfileTitle, normalizeSubjectLabel, splitSubjectsCsv } from "@/lib/subject-profile";
 import { MIN_HOURLY_RATE_PKR } from "@/lib/currency";
+
+export const TEACHING_PROFILE_UNIQUENESS_SELECT = {
+  id: true,
+  status: true,
+  subject: true,
+} as const;
 
 export const GENERAL_TUTORING_LABEL = "General tutoring";
 
@@ -141,6 +151,14 @@ export function mergeDerivedMasterSubjects(existingCsv: string | null | undefine
   return [...parts, next].join(", ");
 }
 
+export async function listTeachingProfilesForUniqueness(tutorProfileId: string) {
+  const { prisma } = await import("@/lib/prisma");
+  return prisma.subjectProfile.findMany({
+    where: { tutorProfileId },
+    select: TEACHING_PROFILE_UNIQUENESS_SELECT,
+  });
+}
+
 export async function insertTeachingProfile(opts: {
   tutorProfileId: string;
   tutorName?: string | null;
@@ -150,6 +168,18 @@ export async function insertTeachingProfile(opts: {
 }) {
   const { prisma } = await import("@/lib/prisma");
   const fields = teachingProfilePersistFields(opts.input, { tutorName: opts.tutorName });
+  const existing = await prisma.subjectProfile.findMany({
+    where: { tutorProfileId: opts.tutorProfileId },
+    select: TEACHING_PROFILE_UNIQUENESS_SELECT,
+  });
+  const clash = shouldRejectActiveCanonicalWrite({
+    existing,
+    nextStatus: "ACTIVE",
+    nextSubject: fields.subject,
+  });
+  if (clash) {
+    throw new ActiveCanonicalSubjectConflictError(clash.canonical, clash.listing.id);
+  }
   const row = await prisma.subjectProfile.create({
     data: {
       tutorProfileId: opts.tutorProfileId,

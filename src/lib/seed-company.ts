@@ -2,6 +2,7 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { catalogSubjectNames } from "@/lib/subject-catalog";
 import { slugify } from "@/lib/search-tutors";
+import { canonicalTeachingSubject, canonicalTeachingSubjectKey } from "@/lib/teaching-profile-subject";
 
 const subjects = catalogSubjectNames().map((name) => [name, slugify(name)] as const);
 
@@ -118,11 +119,21 @@ export async function seedCompanyData() {
   const tutorProfile = await prisma.tutorProfile.findUniqueOrThrow({ where: { userId: tutor.id } });
   const existingSubjects = await prisma.subjectProfile.count({ where: { tutorProfileId: tutorProfile.id } });
   if (existingSubjects === 0) {
+    const seedSubjects: string[] = [];
+    const seenCanonical = new Set<string>();
     for (const subject of ["Mathematics", "Physics", "O Level Maths"]) {
+      const key = canonicalTeachingSubjectKey(subject);
+      if (!key || seenCanonical.has(key)) continue;
+      seenCanonical.add(key);
+      seedSubjects.push(subject === "O Level Maths" ? "Mathematics" : subject);
+    }
+    for (const subject of seedSubjects) {
+      const canonical = canonicalTeachingSubject(subject).canonical || subject;
       await prisma.subjectProfile.create({
         data: {
           tutorProfileId: tutorProfile.id,
           subject,
+          canonicalSubject: canonical,
           title: `${tutor.name} · ${subject}`,
           level: "Secondary / O Level",
           location: "Lahore / Online",
@@ -233,44 +244,52 @@ export async function seedCompanyData() {
       .split(/[,;/|]/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const unique = [...new Set(subjectList)];
-    if (!unique.length) continue;
-    for (const subject of unique.slice(0, 3)) {
-      await prisma.subjectProfile.create({
-        data: {
-          tutorProfileId: profile.id,
-          subject,
-          title: `${profile.user.name} · ${subject}`,
-          level: profile.levels || "All levels",
-          location: profile.location,
-          country: profile.country,
-          online: profile.online,
-          inPerson: profile.inPerson,
-          rate: profile.hourlyRate,
-          description: profile.headline || profile.bio.slice(0, 280),
-          status: "ACTIVE",
-          highlightedUntil: profile.highlightedUntil,
-          boostUntil: profile.boostUntil,
-          headline: profile.headline,
-        },
-      });
-      await prisma.tutorAd.create({
-        data: {
-          tutorProfileId: profile.id,
-          subject,
-          title: `${subject} private lessons`,
-          level: profile.levels || "All levels",
-          location: profile.location,
-          online: profile.online,
-          inPerson: profile.inPerson,
-          rate: profile.hourlyRate,
-          description: profile.headline || profile.bio.slice(0, 280),
-          status: "ACTIVE",
-          highlightedUntil: profile.highlightedUntil,
-          boostUntil: profile.boostUntil,
-        },
-      });
+    const uniqueCanonical: string[] = [];
+    const seenCanonical = new Set<string>();
+    for (const subject of subjectList) {
+      const key = canonicalTeachingSubjectKey(subject);
+      if (!key || seenCanonical.has(key)) continue;
+      seenCanonical.add(key);
+      uniqueCanonical.push(subject);
     }
+    if (!uniqueCanonical.length) continue;
+    const subject = uniqueCanonical[0]!;
+    const canonical = canonicalTeachingSubject(subject).canonical || subject;
+    await prisma.subjectProfile.create({
+      data: {
+        tutorProfileId: profile.id,
+        subject,
+        canonicalSubject: canonical,
+        title: `${profile.user.name} · ${subject}`,
+        level: profile.levels || "All levels",
+        location: profile.location,
+        country: profile.country,
+        online: profile.online,
+        inPerson: profile.inPerson,
+        rate: profile.hourlyRate,
+        description: profile.headline || profile.bio.slice(0, 280),
+        status: "ACTIVE",
+        highlightedUntil: profile.highlightedUntil,
+        boostUntil: profile.boostUntil,
+        headline: profile.headline,
+      },
+    });
+    await prisma.tutorAd.create({
+      data: {
+        tutorProfileId: profile.id,
+        subject,
+        title: `${subject} private lessons`,
+        level: profile.levels || "All levels",
+        location: profile.location,
+        online: profile.online,
+        inPerson: profile.inPerson,
+        rate: profile.hourlyRate,
+        description: profile.headline || profile.bio.slice(0, 280),
+        status: "ACTIVE",
+        highlightedUntil: profile.highlightedUntil,
+        boostUntil: profile.boostUntil,
+      },
+    });
   }
 
   // Existing accounts created before email verification: keep them usable.

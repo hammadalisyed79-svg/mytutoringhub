@@ -25,6 +25,8 @@ import {
 } from "@/lib/dashboard-home";
 import { resolveTutorWizardResumeStep } from "@/lib/tutor-wizard";
 import { isValidActiveTeachingProfile } from "@/lib/teaching-profile-write";
+import { tutorCanonicalDuplicateNotice } from "@/lib/teaching-profile-duplicates";
+import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
@@ -86,6 +88,9 @@ export default async function TutorDashboardPage({
       })
     : null;
   const justWentLive = sp.live === "1" && statusView?.status === "LIVE";
+  const teachingProfileDuplicate = user.tutorProfile
+    ? tutorCanonicalDuplicateNotice(user.tutorProfile.subjectProfiles)
+    : null;
 
   return (
     <div className="page tutor-dashboard-page">
@@ -213,6 +218,7 @@ export default async function TutorDashboardPage({
             {user.tutorProfile ? (
               <section className="panel" id="add-listing-cta">
                 <h2>Reach more students</h2>
+                <TeachingProfileDuplicateNotice message={teachingProfileDuplicate?.message} />
                 <p className="muted">
                   Add a Teaching Profile for each subject you offer — then boost the ones that matter
                   most. Students search by subject, level, and board.

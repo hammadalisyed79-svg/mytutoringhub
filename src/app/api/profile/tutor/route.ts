@@ -25,6 +25,7 @@ import {
   insertTeachingProfile,
   shouldSkipFirstTeachingProfileCreate,
 } from "@/lib/teaching-profile-write";
+import { ActiveCanonicalSubjectConflictError } from "@/lib/teaching-profile-duplicates";
 
 const schema = z
   .object({
@@ -265,37 +266,52 @@ export async function PUT(req: Request) {
           { status: 403 },
         );
       }
-      const created = await insertTeachingProfile({
-        tutorProfileId: profile.id,
-        tutorName: parsedName.name,
-        existingSubjectsCsv: profile.subjects,
-        syncMasterRate: true,
-        input: {
-          subject: data.firstTeachingProfile.subject,
-          title: data.firstTeachingProfile.title,
-          headline: data.headline,
-          description: data.firstTeachingProfile.description,
-          rate: data.firstTeachingProfile.rate,
-          online: data.firstTeachingProfile.online,
-          inPerson: data.firstTeachingProfile.inPerson,
-          location,
-          country: data.country,
-          levels: data.firstTeachingProfile.levels,
-          boards: data.firstTeachingProfile.boards,
-          qualifications: data.firstTeachingProfile.qualifications,
-          syllabusCodes: data.firstTeachingProfile.syllabusCodes,
-        },
-      });
-      listings = [
-        ...listings,
-        {
-          status: created.status,
-          subject: created.subject,
-          rate: created.rate,
-          online: created.online,
-          inPerson: created.inPerson,
-        },
-      ];
+      try {
+        const created = await insertTeachingProfile({
+          tutorProfileId: profile.id,
+          tutorName: parsedName.name,
+          existingSubjectsCsv: profile.subjects,
+          syncMasterRate: true,
+          input: {
+            subject: data.firstTeachingProfile.subject,
+            title: data.firstTeachingProfile.title,
+            headline: data.headline,
+            description: data.firstTeachingProfile.description,
+            rate: data.firstTeachingProfile.rate,
+            online: data.firstTeachingProfile.online,
+            inPerson: data.firstTeachingProfile.inPerson,
+            location,
+            country: data.country,
+            levels: data.firstTeachingProfile.levels,
+            boards: data.firstTeachingProfile.boards,
+            qualifications: data.firstTeachingProfile.qualifications,
+            syllabusCodes: data.firstTeachingProfile.syllabusCodes,
+          },
+        });
+        listings = [
+          ...listings,
+          {
+            status: created.status,
+            subject: created.subject,
+            rate: created.rate,
+            online: created.online,
+            inPerson: created.inPerson,
+          },
+        ];
+      } catch (err) {
+        if (err instanceof ActiveCanonicalSubjectConflictError) {
+          return NextResponse.json(
+            {
+              error: err.message,
+              code: err.code,
+              canonical: err.canonical,
+              existingId: err.existingId,
+            },
+            { status: 409 },
+          );
+        }
+        throw err;
+      }
     }
 
     const listable = isTutorProfileListable(
