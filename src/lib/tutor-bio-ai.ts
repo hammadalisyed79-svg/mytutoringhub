@@ -16,7 +16,7 @@ export type TutorBioFacts = {
   experienceYears?: number | null;
   teachingMethod?: string | null;
   languages?: string | null;
-  levels?: string | null;
+  levels?: string | string[] | null;
   expertise?: string | null;
   listings?: string | null;
   notes?: string | null;
@@ -282,7 +282,10 @@ export function mergeTutorBioFacts(draft: TutorBioFacts, stored: TutorBioFacts):
     experienceYears: years != null && years > 0 ? years : null,
     teachingMethod: pick(draft.teachingMethod, stored.teachingMethod),
     languages: pick(draft.languages, stored.languages),
-    levels: pick(draft.levels, stored.levels),
+    levels: pick(
+      typeof draft.levels === "string" ? draft.levels : asList(draft.levels).join(", "),
+      typeof stored.levels === "string" ? stored.levels : asList(stored.levels).join(", "),
+    ),
     expertise: pick(draft.expertise, stored.expertise),
     listings: pick(draft.listings, stored.listings),
     notes: pick(draft.notes, stored.notes),
@@ -334,7 +337,7 @@ export function formatTutorBioFacts(facts: TutorBioFacts, purpose: TutorBioAiPur
     factLine("Headline", facts.headline),
     factLine("Subjects", subjects),
     factLine("Teaching listings", facts.listings),
-    factLine("Levels", facts.levels),
+    factLine("Levels", asList(facts.levels).join(", ")),
     factLine("Location", [facts.location, facts.country].filter((v) => v?.trim()).join(", ")),
     factLine("Qualifications (only if listed)", facts.qualifications),
     factLine("Years of experience (only if listed)", years),
