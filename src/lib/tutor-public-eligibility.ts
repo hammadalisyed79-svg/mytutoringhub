@@ -75,12 +75,31 @@ export function publicListedTutorWhere() {
   } as const;
 }
 
+/**
+ * True when callers did not load Teaching Profile rows / flags.
+ * Search, sitemap, and listing pages often select parent fields only; without this
+ * guard, recomputing listability always fails teaching completion and hides every
+ * non-forceActive tutor (synced `active` is still trustworthy for that gate).
+ */
+function teachingListabilityUnknown(input: TutorVisibilityInput): boolean {
+  return (
+    input.hasValidTeachingProfile === undefined &&
+    input.hasValidListingRate === undefined &&
+    input.subjectProfiles == null
+  );
+}
+
 /** Whether a tutor profile should be visible to the public (not owner/admin preview). */
 export function canViewTutorProfilePublicly(
   input: TutorVisibilityInput & { active: boolean },
 ): boolean {
   if (!input.active || input.suspended) return false;
-  return computeDesiredTutorPublicActive(input).desiredActive;
+  // Trust synced `active` for teaching completion when listings were not selected;
+  // still re-check email, display name, photo, bio, and other loaded fields.
+  const forAssessment = teachingListabilityUnknown(input)
+    ? { ...input, hasValidTeachingProfile: true, hasValidListingRate: true }
+    : input;
+  return computeDesiredTutorPublicActive(forAssessment).desiredActive;
 }
 
 type ProfileWithUser = TutorVisibilityInput & {

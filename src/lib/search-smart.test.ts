@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  expandSubjectTerms,
   parseSearchQuery,
   resolveCity,
   resolveCountry,
+  resolveSubjectName,
   suggestCities,
   suggestCountries,
 } from "./search-smart";
@@ -39,5 +41,16 @@ assert.equal(cityBelongsToCountry("Online", "Pakistan"), true);
 const parsed = parseSearchQuery("Physics New York");
 assert.equal(parsed.subject, "Physics");
 assert.equal(parsed.location, "New York");
+
+assert.equal(resolveSubjectName("Business").value, "Business");
+assert.equal(resolveSubjectName("Business Studies").value, "Business Studies");
+{
+  const terms = expandSubjectTerms("Business").map((t) => t.toLowerCase());
+  assert.ok(terms.includes("business"));
+  assert.ok(terms.includes("business studies"));
+  assert.ok(terms.includes("commerce"));
+  const studies = expandSubjectTerms("Business Studies").map((t) => t.toLowerCase());
+  assert.ok(studies.includes("business"));
+}
 
 console.log("search-smart country/city tests passed");

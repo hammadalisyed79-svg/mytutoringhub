@@ -126,6 +126,13 @@ const SUBJECT_ALIASES: Record<string, string> = {
   german: "German",
 };
 
+/** Extra search terms for close subject neighbours (not write-path aliases). */
+const SUBJECT_SEARCH_EXPANSIONS: Record<string, string[]> = {
+  business: ["Business Studies", "Commerce"],
+  "business studies": ["Business", "Commerce"],
+  commerce: ["Business", "Business Studies"],
+};
+
 function norm(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -268,6 +275,10 @@ export function expandSubjectTerms(subject: string) {
     if (name.toLowerCase() === canonical.toLowerCase() && alias.length >= 4 && alias !== canonical.toLowerCase()) {
       terms.add(alias);
     }
+  }
+  // Close catalogue neighbours for search only (does not change Teaching Profile identity).
+  for (const extra of SUBJECT_SEARCH_EXPANSIONS[norm(canonical)] || []) {
+    terms.add(extra);
   }
   return [...terms];
 }

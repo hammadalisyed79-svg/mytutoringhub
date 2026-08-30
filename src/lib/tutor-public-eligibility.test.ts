@@ -140,4 +140,22 @@ for (const name of ["王小明", "山田太郎", "김민수", "Иван Петр
   );
 }
 
+// Search/sitemap select parents without subjectProfiles — must not zero out catalogue
+{
+  const { hasValidTeachingProfile: _tp, hasValidListingRate: _lr, ...withoutTeachingFlags } = base;
+  assert.equal(
+    canViewTutorProfilePublicly({ ...withoutTeachingFlags, active: true }),
+    true,
+  );
+  assert.equal(
+    canViewTutorProfilePublicly({
+      ...withoutTeachingFlags,
+      active: true,
+      hasValidTeachingProfile: false,
+      hasValidListingRate: false,
+    }),
+    false,
+  );
+}
+
 console.log("tutor-public-eligibility.test.ts: ok");
