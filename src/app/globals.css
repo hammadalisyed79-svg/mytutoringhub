@@ -1822,7 +1822,7 @@ body.auth-modal-open .nav-backdrop {
 }
 
 .checkout-trust-bar span::before {
-  content: "âœ“ ";
+  content: "✓ ";
   color: var(--brand);
   font-weight: 700;
 }
@@ -2000,9 +2000,17 @@ body.auth-modal-open .nav-backdrop {
   line-height: 1.55;
 }
 
-.payments-soon-banner a {
+.payments-soon-banner a:not(.btn) {
   color: var(--brand-deep);
   font-weight: 600;
+}
+
+.payments-soon-banner a.btn:not(.btn-secondary) {
+  color: var(--white);
+}
+
+.payments-soon-banner a.btn-secondary {
+  color: var(--brand-deep);
 }
 
 .payments-soon-banner-actions {
@@ -4152,7 +4160,7 @@ select:focus {
 }
 
 .pricing-feature-list li::before {
-  content: "âœ“";
+  content: "✓";
   display: inline-flex;
   align-items: center;
   justify-content: center;

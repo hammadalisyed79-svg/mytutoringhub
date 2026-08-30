@@ -192,7 +192,7 @@ export function PricingPlansClient({
   const hasAnnual = corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null);
 
   return (
-    <>
+    <div id="plans">
       {hasAnnual && (
         <div className="billing-toggle" role="group" aria-label="Billing period">
           <button
@@ -397,6 +397,6 @@ export function PricingPlansClient({
           profile.
         </p>
       </aside>
-    </>
+    </div>
   );
 }

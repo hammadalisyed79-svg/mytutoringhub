@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   manualActivationCtaLabel,
   manualActivationNote,
@@ -30,7 +31,10 @@ export function ManualPlanActivationButton({
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
-  const pricingHref = manualActivationPricingHref(plan, subjectProfileId);
+  const pathname = usePathname();
+  const onPricing = pathname === "/pricing";
+  const pricingHref = onPricing ? "#plans" : manualActivationPricingHref(plan, subjectProfileId);
+  const pricingLabel = onPricing ? "See plans below" : "View pricing";
   const cta = label || manualActivationCtaLabel(planName);
 
   useEffect(() => {
@@ -87,9 +91,15 @@ export function ManualPlanActivationButton({
               billing after you pay — we activate within 24 hours.
             </p>
             <div className="manual-activation-dialog-actions">
-              <Link href={pricingHref} className="btn btn-block" onClick={() => setOpen(false)}>
-                View pricing
-              </Link>
+              {onPricing ? (
+                <a href={pricingHref} className="btn btn-block" onClick={() => setOpen(false)}>
+                  {pricingLabel}
+                </a>
+              ) : (
+                <Link href={pricingHref} className="btn btn-block" onClick={() => setOpen(false)}>
+                  {pricingLabel}
+                </Link>
+              )}
               <Link
                 href="/contact"
                 className="btn btn-block btn-secondary"
