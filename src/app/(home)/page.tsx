@@ -73,14 +73,17 @@ export default async function HomePage() {
                 sign in to contact a tutor.
               </p>
             </div>
-            <div className="hero-clean-motif" aria-hidden="true">
-              <span className="hero-motif-orb" />
-              <ul className="hero-motif-list">
-                <li>Find a tutor</li>
-                <li>Browse past papers</li>
-                <li>Study with tools</li>
-              </ul>
-            </div>
+            <nav className="hero-bookmarks" aria-label="Start here">
+              <Link href="/search" className="hero-bookmark">
+                Find a tutor
+              </Link>
+              <Link href="/past-papers" className="hero-bookmark">
+                Browse past papers
+              </Link>
+              <Link href="/assistant" className="hero-bookmark">
+                Study with tools
+              </Link>
+            </nav>
           </div>
 
           <div className="hero-search-shell">
