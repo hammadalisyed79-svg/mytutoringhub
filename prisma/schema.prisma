@@ -171,22 +171,29 @@ model TutorRecommendation {
   @@index([status, createdAt])
 }
 
-// Teaching Listing (Marketplace V2). Canonical searchable service under one TutorProfile.
-// Model name kept as SubjectProfile for migration safety; UX calls these Teaching Listings.
+// Teaching Profile (product name). Prisma model kept as SubjectProfile for URL/migration safety.
+// One canonical subject per row. Multi-value boards/levels/qualifications/codes live on
+// SubjectProfileCapability. ACTIVE uniqueness is tutorProfileId + canonicalSubject via a
+// partial unique index in prisma/sql/teaching-profile-capabilities.sql — not @@unique
+// (@@unique would also block paused duplicates of the same subject).
 model SubjectProfile {
   id               String       @id @default(cuid())
   tutorProfileId   String
   tutorProfile     TutorProfile @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
   subject          String
+  /// Alias-aware canonical subject (see canonicalTeachingSubject). Empty until backfilled.
+  /// Display and current search still use `subject` until Phase 3 writers.
+  canonicalSubject String       @default("")
   title            String
   headline         String?
   description      String?
+  /// Display/compatibility cache. Join table is the multi-value source of truth after dual-write.
   level            String       @default("All levels")
-  /// Curriculum / exam board (e.g. Cambridge International). Optional.
+  /// Curriculum / exam board (e.g. Cambridge International). Optional. Display cache.
   board            String?
-  /// Qualification band when distinct from level (e.g. O Level, GCSE). Optional.
+  /// Qualification band when distinct from level (e.g. O Level, GCSE). Optional. Display cache.
   qualification    String?
-  /// Syllabus / subject code (e.g. 5070). Optional; aligns with Past Papers.
+  /// Syllabus / subject code (e.g. 5070). Optional; aligns with Past Papers. Display cache.
   syllabusCode     String?
   location         String
   country          String?
@@ -198,12 +205,29 @@ model SubjectProfile {
   boostUntil       DateTime?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+  capabilities     SubjectProfileCapability[]
 
   @@index([status, subject])
   @@index([boostUntil, highlightedUntil])
   @@index([tutorProfileId, status])
   @@index([board, subject])
   @@index([syllabusCode])
+  @@index([tutorProfileId, canonicalSubject])
+  @@index([canonicalSubject, status])
+}
+
+/// Multi-value Teaching Profile capabilities (Option A). kind = LEVEL | BOARD | QUALIFICATION | SYLLABUS_CODE.
+model SubjectProfileCapability {
+  id               String         @id @default(cuid())
+  subjectProfileId String
+  subjectProfile   SubjectProfile @relation(fields: [subjectProfileId], references: [id], onDelete: Cascade)
+  kind             String
+  value            String
+  createdAt        DateTime       @default(now())
+
+  @@unique([subjectProfileId, kind, value])
+  @@index([kind, value])
+  @@index([subjectProfileId, kind])
 }
 
 // Deprecated: prefer SubjectProfile. Kept for admin history during transition.

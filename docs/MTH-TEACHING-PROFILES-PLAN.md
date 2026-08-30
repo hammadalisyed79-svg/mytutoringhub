@@ -1,8 +1,9 @@
-# Teaching Profiles — product plan (pre-implementation)
+# Teaching Profiles — product plan
 
-**Status:** PRODUCT MODEL LOCKED. Implementation **NOT STARTED**. Do not change schema, production, or Marketplace V2 code until Phase 1 design is approved.  
+**Status:** PRODUCT MODEL LOCKED. **PHASE 1 COMPLETE** (2026-08-30). Schema + join table + ACTIVE-only unique-index SQL + read-only preview are in the repo. **Phase 2 (wizard) has not started.** Do not change wizard, search-dedupe, entitlements, Boost, messaging, or production listing rows.  
 **Date:** 2026-08-30  
-**Repo:** `C:\Tutor`
+**Repo:** `C:\Tutor`  
+**Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
 
 **Trigger:** Tutor onboarding wizard step 3 (“What you teach”) on `/dashboard/tutor` is still a bulk subject picker on the **main tutor profile**. Approved direction: teaching lives only on **subject-based Teaching Profiles** (one canonical subject each, with multi-value board/level/qualification/syllabus capabilities inside that profile). Listed and searched as Teaching Profiles. **Commercial caps stay Marketplace V2** (Free 3 / Pro 10, permanent).
 
@@ -406,7 +407,7 @@ Available taxonomy today:
 
 **C cannot store multi-value capabilities** (no listing↔board join exists). **C should be reused for canonical subject identity and Past Papers alignment:** normalize `SubjectProfile.subject` through existing aliases; optionally FK to `Subject` when a row exists. Custom tutor subjects outside the catalog must still be allowed (today’s CatalogMultiSelect “Add subject”).
 
-### G.4 Recommendation (Phase 1 starting point)
+### G.4 Recommendation (implemented in Phase 1 — see §G.5)
 
 | Concern | Approach |
 |---------|----------|
@@ -427,7 +428,57 @@ Available taxonomy today:
 7. **`TutorAd` dual-write** still keys off subject string. Search ignores it; admin history does not. Consolidation must not assume ads rows match 1:1.
 8. **Quality and titles** assume one syllabus (e.g. “Cambridge O Level Chemistry 5070”). Multi-value UI must not require one code in the title.
 
-Phase 1 produces a migration **preview** only. No production schema change in this planning task.
+Phase 1 produced the migration **preview** and checked in additive DDL. Production listing **rows** were not merged or paused. The SQL unique index is **gated** and will skip while ACTIVE collisions exist (see preview).
+
+### G.5 Phase 1 implemented design (2026-08-30)
+
+**Audit (writers of `SubjectProfile` level/board/qualification/syllabusCode):**
+
+| Writer | Fields | Notes |
+|--------|--------|-------|
+| `src/app/api/tutor-ads/route.ts` | all four + `subject` | Create/update; duplicate guard is still **subject + level + board**. **Unchanged in Phase 1.** |
+| `src/app/api/profile/tutor/route.ts` | `level` from master CSV first token | Auto-creates first listing. **Unchanged** (Phase 2 stops this). |
+| `src/lib/seed-company.ts` | `level` | Seed. Unchanged. |
+| `scripts/migrate-subject-profiles.ts` | `level` | Legacy TutorAd → listing. Unchanged. |
+
+Boost/cap/admin writers (`listing-boost.ts`, `subject-profile-entitlements.ts`, `admin-actions.ts`) touch status/Boost only, not taxonomy scalars.
+
+**Audit (readers of those scalars on listings):** `src/lib/search-tutors.ts` (contains/equals filters + rank), `src/lib/listing-quality.ts` (score + near-dup), `src/components/TutorAdsManager.tsx`, `src/app/listings/[id]/page.tsx` (chips + JSON-LD via `subjectListingJsonLd`), `src/app/tutors/[id]/page.tsx`, `src/app/ads/page.tsx`, `src/lib/tutor-bio-ai.ts` / `src/app/api/ai/tutor-bio/route.ts`, `src/lib/featured-tutors.ts`. Search still uses **scalars**; join tables are not queried yet (Phase 4).
+
+**Schema (Option A — implemented):**
+
+```
+SubjectProfile  (name kept; /listings/{id} kept)
+  canonicalSubject String @default("")     // uniqueness key; display remains `subject`
+  level, board, qualification, syllabusCode  // display cache; NOT dropped
+  capabilities SubjectProfileCapability[]
+
+SubjectProfileCapability
+  kind   String   // LEVEL | BOARD | QUALIFICATION | SYLLABUS_CODE
+  value  String
+  @@unique([subjectProfileId, kind, value])
+  @@index([kind, value])
+```
+
+No Prisma `@@unique` on `(tutorProfileId, subject)` or `(tutorProfileId, canonicalSubject)` — that would also block **paused** duplicates.
+
+**Unique index (SQL only):** `prisma/sql/teaching-profile-capabilities.sql`
+
+```sql
+CREATE UNIQUE INDEX "SubjectProfile_active_tutor_canonical_uidx"
+  ON "SubjectProfile" ("tutorProfileId", (lower(btrim("canonicalSubject"))))
+  WHERE status = 'ACTIVE' AND btrim("canonicalSubject") <> '';
+```
+
+Created only when the `DO $$` block finds **zero** ACTIVE collisions. Preview says **do not apply yet**.
+
+**Canonical helper:** `canonicalTeachingSubject()` — `src/lib/teaching-profile-subject.ts`. Not wired to the wizard.
+
+**Preview:** `npx tsx scripts/preview-teaching-profile-migration.ts` → `docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`. Read-only.
+
+Live snapshot (2026-08-30, this database): **106** listings, **77** ACTIVE, **33** tutors; **9** same-canonical groups (all alias/exam-family label pairs); **7** ACTIVE collision groups / **5** tutors (index **not** safe); **1** group with multiple levels to union (CSV stuffed into scalar `level`); **0** board/qual/code unions; **0** dual Boost windows; **1** dual Highlight window; **1** rate disagreement.
+
+**Not done in Phase 1:** `prisma db push` / applying SQL to production; wizard; search-dedupe; entitlements 3/10; Boost; messaging; merging or pausing rows.
 
 ---
 
@@ -510,15 +561,15 @@ Removed/reduced: 3→1 commercial cliff, grandfathering vs hard pause on 1 Oct, 
 
 ---
 
-## L. Implementation phases (**do not start code**)
+## L. Implementation phases
 
-Gate: this document’s locked decisions (Phase 0, recorded here). Schema/migration design is next, not shipping.
+Gate: this document’s locked decisions (Phase 0, recorded here). **Phase 1 is done.** Next is Phase 2 (wizard) — do not start it from this Phase 1 work.
 
 | Phase | Work |
 |-------|------|
 | **0. Product lock** | Record all approved decisions from 2026-08-30 (this revision). **Done in this file.** No code. |
-| **1. Schema / migration design** | Audit `SubjectProfile` (this file §G). Design multi-value capabilities (recommend Option A). Canonical subject key. Unique-active strategy (partial index vs app-level). **Migration preview only.** No production schema change until preview is accepted. |
-| **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. |
+| **1. Schema / migration design** | Audit `SubjectProfile`. Option A join table. Canonical subject helper. Partial unique index (ACTIVE only, SQL, collision-gated). Read-only preview. **Done 2026-08-30** — see §G.5. |
+| **2. Wizard / completion** | Remove master subject picker. Explicit first Teaching Profile. Listability from ACTIVE Teaching Profile + rate. Resume step. Stop blob auto-create and `"General tutoring"`. **Not started.** |
 | **3. Subject uniqueness** | One ACTIVE canonical subject per tutor. Duplicate detection replaces subject+level+board. Safe consolidation **tooling** (preview, not silent merge). |
 | **4. Search** | Teaching Profile cards. Capability matching (board/level/qual/code). Broad search max 2 cards per `TutorProfile` per page. Relevance-first; Boost subordinate. Also teaches = secondary only. Review similar-rail and featured dedupe. |
 | **5. Dashboard** | My Teaching Profiles. Create/edit/pause/activate. Cap meter Free 3 / Pro 10. Boost per Teaching Profile. Multi-value capability editors. |
@@ -532,16 +583,22 @@ Gate: this document’s locked decisions (Phase 0, recorded here). Schema/migrat
 
 ---
 
-## M. Remaining technical open questions
+## M. Technical questions — answered in Phase 1 vs still open
 
-Product questions below are **answered** (see Decision log). Do not reopen them in implementation. Remaining questions are **technical** only:
+Product questions are **answered** (see Decision log). Do not reopen them.
 
-1. **Safest physical schema** for multi-value boards / levels / qualifications / syllabus codes (join-table shapes, whether to keep scalar display columns, exact Prisma models) — starting recommendation is Option A (§G); Phase 1 locks the DDL.
-2. **Canonical subject normalization rules** — when to apply `resolveSubjectName` / `SUBJECT_ALIASES` / `Subject.name`; how custom tutor-entered labels map; Maths vs Mathematics uniqueness.
-3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection (quality, recency, Boost, traffic); capability union; conflict when two rows disagree.
-4. **How to preserve existing URLs during consolidation** — keep vs 301 vs canonical; what happens to Boost windows on the retired id.
-5. **Exact broad-vs-specific search classification** — which query/filter combinations lift the per-tutor card cap from 2 to “show the matching profile”; behaviour for keyword-only queries that mention a subject in `q` but not `subject=`.
-6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles or become fully listing-specific with master fields unused for search.
+### Answered in Phase 1
+
+1. **Physical schema** — Option A implemented as one join table `SubjectProfileCapability` (`kind` + `value`), unique `(subjectProfileId, kind, value)`. Scalar `level` / `board` / `qualification` / `syllabusCode` **kept** as display/compatibility cache. Prisma model remains `SubjectProfile`. No `TeachingProfile` table. Optional FK to Prisma `Subject` **deferred** (Past Papers catalog is not the teaching uniqueness key).
+2. **Canonical subject rules** — `canonicalTeachingSubject()` in `src/lib/teaching-profile-subject.ts`. Reuses `resolveSubjectName` + `catalogSubjectNames()` / `SUBJECT_ALIASES` / `SUBJECT_CODES`. Exam-family prefixes (`GCSE Maths`, `A Level Physics`) collapse to the core subject. Trailing syllabus codes on a matched subject (`Chemistry 5070`) collapse. Custom unmatched labels stay verbatim; uniqueness is case-insensitive via `key`. Exam-prep products (SAT Prep, IELTS, CSS Prep) stay distinct. Stored on `SubjectProfile.canonicalSubject` (SQL first-pass copies trimmed `subject`; alias-aware backfill is Phase 3/9). Wizard UX unchanged.
+3. **ACTIVE uniqueness mechanism** — **not** Prisma `@@unique([tutorProfileId, subject])` and **not** `@@unique` on all statuses. Raw SQL partial unique index `SubjectProfile_active_tutor_canonical_uidx` on `(tutorProfileId, lower(btrim(canonicalSubject))) WHERE status = 'ACTIVE' AND canonicalSubject <> ''`. DDL **skips** creating the index when ACTIVE collisions exist. Preview (2026-08-30): **7** ACTIVE collision groups / **5** tutors — **do not apply the index until Phase 9**. Pause-then-recreate must reuse the paused row (Phase 2/3 writers).
+
+### Still open (Phase 2+ / 9)
+
+3. **Migration of tutors who already hold several same-subject `SubjectProfile` rows** — survivor selection (quality, recency, Boost, traffic); capability union; conflict when two rows disagree. Preview inventory exists; **no merge**.
+4. **How to preserve existing URLs during consolidation** — keep vs 301 vs canonical; what happens to Boost windows on the retired id. **No redirects in Phase 1.**
+5. **Exact broad-vs-specific search classification** — Phase 4.
+6. **Whether master teaching-mode fields** (`TutorProfile.online` / `inPerson`, and master `hourlyRate`) **remain defaults** inherited by new Teaching Profiles — Phase 2.
 
 ---
 
@@ -549,7 +606,7 @@ Product questions below are **answered** (see Decision log). Do not reopen them 
 
 | Area | Files |
 |------|--------|
-| Schema | `prisma/schema.prisma` (+ migration); possibly raw SQL partial unique index |
+| Schema | `prisma/schema.prisma`, `prisma/sql/teaching-profile-capabilities.sql` — **Phase 1 done.** Production apply of SQL is operator-led; unique index skips while collisions exist. |
 | Caps | `src/lib/subject-profile-entitlements.ts` (+ tests), `src/lib/business-rules.ts`, `src/lib/subscription.ts` — **copy/terminology only; do not change 3/10 numbers or revive promo** |
 | Wizard | `src/components/TutorProfileForm.tsx`, `src/lib/tutor-wizard.ts`, `src/lib/tutor-profile-completion.ts`, `src/app/api/profile/tutor/route.ts` |
 | Manager / ads | `src/components/TutorAdsManager.tsx`, `src/app/api/tutor-ads/route.ts`, `src/lib/listing-quality.ts`, `src/app/dashboard/tutor/page.tsx` |
@@ -569,6 +626,7 @@ Product questions below are **answered** (see Decision log). Do not reopen them 
 | 2026-08-29 | V2: Free **3** permanent, Pro **10**; retire 2→0 listing-cap promo | Tracker + final implementation report |
 | 2026-08-30 | **Rejected:** Free 3 until 30 Sep 2026 then 1 + paid extras; no grandfathering work for that cliff | This plan revision |
 | 2026-08-30 | **APPROVED PRODUCT DIRECTION** (see box below) | User lock-in, this plan |
+| 2026-08-30 | **PHASE 1 COMPLETE:** Option A join table `SubjectProfileCapability`; `canonicalSubject` + alias helper; partial unique index SQL (ACTIVE only, collision-gated); read-only preview. Phase 2 not started. | This revision |
 
 ### 2026-08-30 — APPROVED PRODUCT DIRECTION
 
@@ -602,8 +660,8 @@ Product questions below are **answered** (see Decision log). Do not reopen them 
 
 TEACHING PROFILES PRODUCT MODEL — DECISIONS LOCKED
 
-IMPLEMENTATION STATUS: NOT STARTED
+IMPLEMENTATION STATUS: PHASE 1 COMPLETE. PHASE 2 NOT STARTED.
 
 NEXT STEP:
-Schema + migration design for subject-based Teaching Profiles with multi-value
-board/level/qualification/syllabus capabilities.
+Phase 2 — wizard / completion (explicit first Teaching Profile; stop bulk
+picker and auto-create). Do not start Phase 2 from this Phase 1 change set.

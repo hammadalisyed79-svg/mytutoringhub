@@ -17,6 +17,7 @@
     "db:sync-past-papers": "tsx scripts/sync-past-papers-from-r2.ts",
     "db:sync-tutor-visibility": "tsx scripts/sync-tutor-public-visibility.ts",
     "db:migrate-subject-profiles": "tsx scripts/migrate-subject-profiles.ts",
+    "db:preview-teaching-profiles": "tsx scripts/preview-teaching-profile-migration.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
