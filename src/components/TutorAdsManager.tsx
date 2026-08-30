@@ -23,6 +23,8 @@ import {
 import { scoreListingQuality } from "@/lib/listing-quality";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TeachingProfileCapabilityFields } from "@/components/TeachingProfileCapabilityFields";
+import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
+import { formatTeachingListingFacts } from "@/lib/tutor-bio-ai";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -105,6 +107,50 @@ const EMPTY_CAPS: TeachingProfileEditorValues = {
   syllabusCodes: [],
 };
 
+function TeachingDescriptionAiHelp({
+  description,
+  subject,
+  caps,
+  location = "",
+  headline = "",
+  onApply,
+}: {
+  description: string;
+  subject: string;
+  caps: TeachingProfileEditorValues;
+  location?: string;
+  headline?: string;
+  onApply: (text: string) => void;
+}) {
+  return (
+    <TutorBioAiHelp
+      purpose="teachingDescription"
+      bio={description}
+      name=""
+      headline={headline}
+      subjects={subject ? [subject] : []}
+      location={location}
+      country=""
+      qualifications=""
+      experienceYears={null}
+      teachingMethod=""
+      languages=""
+      levels={caps.levels.join(", ")}
+      expertise=""
+      listings={formatTeachingListingFacts([
+        {
+          subject,
+          level: caps.levels.join(" / "),
+          board: caps.boards.join(" / "),
+          qualification: caps.qualifications.join(" / "),
+          syllabusCode: caps.syllabusCodes.join(" / "),
+        },
+      ])}
+      onApply={onApply}
+    />
+  );
+}
+
 function listingEditorValues(listing: Listing): TeachingProfileEditorValues {
   if (listing.levels || listing.boards || listing.qualifications || listing.syllabusCodes) {
     return {
@@ -157,6 +203,7 @@ function EditTeachingProfileForm({
   onSave: (e: React.FormEvent<HTMLFormElement>, caps: TeachingProfileEditorValues) => void;
 }) {
   const [caps, setCaps] = useState(() => listingEditorValues(listing));
+  const [description, setDescription] = useState(listing.description || "");
   return (
     <form
       className="stack-form profile-form teaching-listing-form"
@@ -198,10 +245,25 @@ function EditTeachingProfileForm({
           {formatMoney(rateMinLocal, currency)} ({MIN_HOURLY_RATE_PKR} PKR base).
         </span>
       </label>
-      <label>
-        About this lesson
-        <textarea name="description" rows={3} defaultValue={listing.description || ""} />
-      </label>
+      <div className="tutor-bio-field">
+        <label>
+          Teaching description
+          <textarea
+            name="description"
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </label>
+        <TeachingDescriptionAiHelp
+          description={description}
+          subject={listing.subject}
+          caps={caps}
+          location={listing.location}
+          headline={listing.headline || ""}
+          onApply={setDescription}
+        />
+      </div>
       <fieldset className="form-fieldset">
         <legend>How you teach</legend>
         <div className="checks">
@@ -244,6 +306,7 @@ export function TutorAdsManager({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [createSubject, setCreateSubject] = useState("");
   const [createCaps, setCreateCaps] = useState<TeachingProfileEditorValues>(EMPTY_CAPS);
+  const [createDescription, setCreateDescription] = useState("");
 
   const subjectChoices = useMemo(() => teachingProfileSubjectChoices(subjects), [subjects]);
 
@@ -692,10 +755,24 @@ export function TutorAdsManager({
                 Short headline
                 <input name="headline" placeholder="Shown on search cards" />
               </label>
-              <label>
-                About this lesson
-                <textarea name="description" rows={3} placeholder="Who it is for and how you teach…" />
-              </label>
+              <div className="tutor-bio-field">
+                <label>
+                  Teaching description
+                  <textarea
+                    name="description"
+                    rows={3}
+                    value={createDescription}
+                    onChange={(e) => setCreateDescription(e.target.value)}
+                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
+                  />
+                </label>
+                <TeachingDescriptionAiHelp
+                  description={createDescription}
+                  subject={createSubject}
+                  caps={createCaps}
+                  onApply={setCreateDescription}
+                />
+              </div>
             </div>
           </details>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -709,6 +786,7 @@ export function TutorAdsManager({
                 setShowCreate(false);
                 setCreateCaps(EMPTY_CAPS);
                 setCreateSubject("");
+                setCreateDescription("");
               }}
             >
               Cancel

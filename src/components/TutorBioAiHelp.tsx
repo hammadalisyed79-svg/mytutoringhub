@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { isDefaultTutorBio } from "@/lib/tutor-listing-copy";
+import type { TutorBioAiPurpose } from "@/lib/tutor-bio-ai";
 
 export function TutorBioAiHelp({
   bio,
@@ -16,6 +17,8 @@ export function TutorBioAiHelp({
   languages,
   levels,
   expertise,
+  listings,
+  purpose = "bio",
   onApply,
 }: {
   bio: string;
@@ -30,6 +33,8 @@ export function TutorBioAiHelp({
   languages: string;
   levels: string;
   expertise: string;
+  listings?: string;
+  purpose?: TutorBioAiPurpose;
   onApply: (bio: string) => void;
 }) {
   const [loading, setLoading] = useState<"generate" | "improve" | null>(null);
@@ -50,6 +55,7 @@ export function TutorBioAiHelp({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
+          purpose,
           name,
           bio,
           headline,
@@ -62,12 +68,18 @@ export function TutorBioAiHelp({
           languages,
           levels,
           expertise,
+          listings: listings?.trim() || undefined,
           notes: extra.trim() || undefined,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { bio?: string; error?: string };
       if (!res.ok || !data.bio) {
-        setError(data.error || "Could not draft the introduction. Try again.");
+        setError(
+          data.error ||
+            (purpose === "teachingDescription"
+              ? "Could not draft the teaching description. Try again."
+              : "Could not draft the introduction. Try again."),
+        );
         return;
       }
       setUndoBio(bio);
@@ -117,9 +129,13 @@ export function TutorBioAiHelp({
         ) : null}
       </div>
       <p className="field-hint tutor-bio-ai-hint">
-        {placeholder
-          ? "The placeholder text is ignored — we will start from your name and any subjects you have added, not that default line."
-          : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews."}
+        {purpose === "teachingDescription"
+          ? placeholder
+            ? "We’ll write from this subject and any levels or boards you selected. The placeholder line is ignored."
+            : "Uses this Teaching Profile’s subject and capabilities. It will not invent experience, qualifications, or reviews."
+          : placeholder
+            ? "The placeholder text is ignored — we will start from your name and any subjects you have added, not that default line."
+            : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews."}
       </p>
       <details className="tutor-bio-ai-notes">
         <summary>Optional notes for the draft</summary>

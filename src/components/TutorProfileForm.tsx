@@ -31,6 +31,7 @@ import {
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
+import { formatTeachingListingFacts } from "@/lib/tutor-bio-ai";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
@@ -1201,21 +1202,52 @@ export function TutorProfileForm({
                 </span>
               </label>
 
-              <label>
-                <span>
-                  Teaching description <abbr className="req" title="Required">*</abbr>
-                </span>
-                <textarea
-                  name="teachingDescription"
-                  minLength={20}
-                  maxLength={4000}
-                  rows={4}
-                  value={teachingDescription}
-                  onChange={(e) => setTeachingDescription(e.target.value)}
-                  placeholder="Who this subject is for, how you teach it, and what results students can expect."
-                />
+              <div className="tutor-bio-field">
+                <label>
+                  <span>
+                    Teaching description <abbr className="req" title="Required">*</abbr>
+                  </span>
+                  <textarea
+                    name="teachingDescription"
+                    minLength={20}
+                    maxLength={4000}
+                    rows={4}
+                    value={teachingDescription}
+                    onChange={(e) => setTeachingDescription(e.target.value)}
+                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
+                  />
+                </label>
                 <span className="field-hint">{teachingDescription.trim().length}/4000 · at least 20 characters</span>
-              </label>
+                <TutorBioAiHelp
+                  purpose="teachingDescription"
+                  bio={teachingDescription}
+                  name={name}
+                  headline={headline}
+                  subjects={firstSubject ? [firstSubject] : []}
+                  location={location}
+                  country={country}
+                  qualifications={qualifications}
+                  experienceYears={
+                    experienceYears === "" || Number.isNaN(Number(experienceYears))
+                      ? null
+                      : Number(experienceYears)
+                  }
+                  teachingMethod={teachingMethod}
+                  languages={joinCsv(languageList)}
+                  levels={joinCsv(teachingLevels)}
+                  expertise={joinCsv(expertiseList)}
+                  listings={formatTeachingListingFacts([
+                    {
+                      subject: firstSubject,
+                      level: teachingLevels.join(" / "),
+                      board: teachingBoards.join(" / "),
+                      qualification: teachingQuals.join(" / "),
+                      syllabusCode: teachingCodes.join(" / "),
+                    },
+                  ])}
+                  onApply={setTeachingDescription}
+                />
+              </div>
 
               <fieldset className="form-fieldset">
                 <legend>

@@ -9,12 +9,12 @@ import { splitCsv } from "@/lib/tutor-catalog";
 import {
   AI_TUTOR_BIO_KIND,
   AI_TUTOR_BIO_RATE_LIMIT,
-  AI_TUTOR_BIO_SYSTEM,
   buildTutorBioUserMessage,
   formatTeachingListingFacts,
   mergeTutorBioFacts,
   resolveTutorBioAiMode,
   sanitizeGeneratedBio,
+  tutorCopyAiSystemPrompt,
 } from "@/lib/tutor-bio-ai";
 import type { Role } from "@/lib/types";
 
@@ -22,6 +22,7 @@ export const runtime = "nodejs";
 
 const schema = z.object({
   mode: z.enum(["generate", "improve"]).optional().default("generate"),
+  purpose: z.enum(["bio", "teachingDescription"]).optional().default("bio"),
   name: z.string().trim().max(80).optional(),
   bio: z.string().max(4000).optional(),
   headline: z.string().trim().max(120).optional(),
@@ -34,6 +35,7 @@ const schema = z.object({
   languages: z.string().trim().max(500).optional(),
   levels: z.string().trim().max(500).optional(),
   expertise: z.string().trim().max(1000).optional(),
+  listings: z.string().trim().max(500).optional(),
   notes: z.string().trim().max(500).optional(),
 });
 
@@ -120,7 +122,8 @@ export async function POST(req: Request) {
 
   const draft = parsed.data;
   const stored = user.tutorProfile;
-  const listings = formatTeachingListingFacts(stored.subjectProfiles);
+  const purpose = draft.purpose;
+  const listings = draft.listings?.trim() || formatTeachingListingFacts(stored.subjectProfiles);
   const facts = mergeTutorBioFacts(
     {
       name: draft.name,
@@ -134,44 +137,57 @@ export async function POST(req: Request) {
       languages: draft.languages,
       levels: draft.levels,
       expertise: draft.expertise,
+      listings: draft.listings,
       notes: draft.notes,
     },
     {
       name: user.name,
       headline: stored.headline,
-      subjects: splitCsv(stored.subjects),
+      subjects: purpose === "teachingDescription" ? draft.subjects : splitCsv(stored.subjects),
       location: stored.location,
       country: stored.country,
       qualifications: stored.qualifications,
       experienceYears: stored.experienceYears,
       teachingMethod: stored.teachingMethod,
       languages: stored.languages,
-      levels: stored.levels,
+      levels: purpose === "teachingDescription" ? draft.levels : stored.levels,
       expertise: stored.expertise,
       listings,
     },
   );
+  if (purpose === "teachingDescription") {
+    const thisSubject = Array.isArray(draft.subjects)
+      ? draft.subjects.map((s) => s.trim()).filter(Boolean)
+      : draft.subjects
+        ? [draft.subjects.trim()]
+        : [];
+    if (thisSubject.length) facts.subjects = thisSubject;
+    if (draft.listings?.trim()) facts.listings = draft.listings.trim();
+  }
 
-  const existingBio = draft.bio ?? stored.bio;
+  const existingBio = draft.bio ?? (purpose === "teachingDescription" ? "" : stored.bio);
   const mode = resolveTutorBioAiMode(draft.mode, existingBio);
   const userContent = buildTutorBioUserMessage({
     mode,
     facts,
     existingBio,
+    purpose,
   });
 
   const result = await completeAiOneShot({
     userId: session.user.id,
     kind: AI_TUTOR_BIO_KIND,
     userContent,
-    systemPrompt: AI_TUTOR_BIO_SYSTEM,
+    systemPrompt: tutorCopyAiSystemPrompt(purpose),
     rateLimit: AI_TUTOR_BIO_RATE_LIMIT,
   });
 
   if (!result.ok) {
     const error =
       result.status === 503
-        ? "The writing helper isn't configured right now. You can still write the introduction yourself."
+        ? purpose === "teachingDescription"
+          ? "The writing helper isn't configured right now. You can still write the teaching description yourself."
+          : "The writing helper isn't configured right now. You can still write the introduction yourself."
         : result.error;
     return NextResponse.json(
       { error, ...(result.code ? { code: result.code } : {}) },
@@ -180,9 +196,15 @@ export async function POST(req: Request) {
   }
 
   const bio = sanitizeGeneratedBio(result.text);
-  if (bio.length < 40) {
+  const minChars = purpose === "teachingDescription" ? 20 : 40;
+  if (bio.length < minChars) {
     return NextResponse.json(
-      { error: "Could not draft a usable introduction. Add a subject or a short note and try again." },
+      {
+        error:
+          purpose === "teachingDescription"
+            ? "Could not draft a usable teaching description. Add the subject or a short note and try again."
+            : "Could not draft a usable introduction. Add a subject or a short note and try again.",
+      },
       { status: 502 },
     );
   }

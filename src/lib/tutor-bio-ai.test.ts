@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { DEFAULT_TUTOR_BIO, isDefaultTutorBio } from "./tutor-listing-copy";
 import {
   AI_TUTOR_BIO_SYSTEM,
+  AI_TEACHING_DESCRIPTION_SYSTEM,
   buildTutorBioUserMessage,
   effectiveTutorBioForAi,
   formatTeachingListingFacts,
@@ -9,6 +10,7 @@ import {
   mergeTutorBioFacts,
   resolveTutorBioAiMode,
   sanitizeGeneratedBio,
+  tutorCopyAiSystemPrompt,
 } from "./tutor-bio-ai";
 
 assert.equal(isDefaultTutorBio(""), true);
@@ -101,6 +103,21 @@ assert.match(AI_TUTOR_BIO_SYSTEM, /NEVER invent/i);
 assert.match(AI_TUTOR_BIO_SYSTEM, /reviews/);
 assert.match(AI_TUTOR_BIO_SYSTEM, /student counts/);
 assert.match(AI_TUTOR_BIO_SYSTEM, /qualifications/);
+
+assert.equal(tutorCopyAiSystemPrompt("bio"), AI_TUTOR_BIO_SYSTEM);
+assert.equal(tutorCopyAiSystemPrompt("teachingDescription"), AI_TEACHING_DESCRIPTION_SYSTEM);
+assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /THIS subject/);
+assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /Stay between 20 and 4000/);
+
+const teachingPrompt = buildTutorBioUserMessage({
+  mode: "generate",
+  purpose: "teachingDescription",
+  facts: { name: "Zain Ali", subjects: ["Mathematics"], listings: "Mathematics · A Level · Cambridge · 9709" },
+  existingBio: "",
+});
+assert.match(teachingPrompt, /Teaching Profile description/);
+assert.match(teachingPrompt, /Mathematics · A Level · Cambridge · 9709/);
+assert.doesNotMatch(teachingPrompt, /Field: About you/);
 
 assert.equal(
   sanitizeGeneratedBio('Here is a draft:\n"I teach Maths with clear weekly plans and past-paper practice for exam students."'),

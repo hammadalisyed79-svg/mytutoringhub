@@ -4,6 +4,7 @@ export const AI_TUTOR_BIO_KIND = "tutor-bio";
 export const AI_TUTOR_BIO_RATE_LIMIT = 20;
 
 export type TutorBioAiMode = "generate" | "improve";
+export type TutorBioAiPurpose = "bio" | "teachingDescription";
 
 export type TutorBioFacts = {
   name?: string | null;
@@ -33,6 +34,24 @@ Hard rules:
 - Write in first person. Be specific about how lessons run when the facts allow (subjects, levels, location, teaching method).
 - Aim for about 90–180 words. Stay between 80 and 4000 characters.
 - Output the bio only — no title, quotes, markdown, or preamble.`;
+
+export const AI_TEACHING_DESCRIPTION_SYSTEM = `You write first-person Teaching Profile descriptions for one subject on My Tutoring Hub.
+
+Your job: say who this subject is for, how the tutor teaches it, and what students can expect.
+
+Hard rules:
+- Use ONLY facts listed under "Known profile details" and, when improving, the tutor's existing draft plus their optional notes.
+- Stay on THIS subject (and the boards, levels, qualifications, or syllabus codes listed). Do not write a general “About you” life story or list other subjects they did not name for this profile.
+- NEVER invent years of experience, qualifications, degrees, certificates, schools, exam results, student counts, ratings, reviews, awards, or job titles.
+- If a detail is missing, omit it. Do not guess or pad with typical tutor clichés that imply credentials ("10+ years", "hundreds of students", "top-rated").
+- Do not mention My Tutoring Hub, AI, or that this text was generated.
+- Write in first person.
+- Aim for about 70–160 words. Stay between 20 and 4000 characters.
+- Output the description only — no title, quotes, markdown, or preamble.`;
+
+export function tutorCopyAiSystemPrompt(purpose: TutorBioAiPurpose = "bio") {
+  return purpose === "teachingDescription" ? AI_TEACHING_DESCRIPTION_SYSTEM : AI_TUTOR_BIO_SYSTEM;
+}
 
 export function effectiveTutorBioForAi(bio?: string | null) {
   if (isDefaultTutorBio(bio)) return "";
@@ -159,21 +178,29 @@ export function buildTutorBioUserMessage({
   mode,
   facts,
   existingBio,
+  purpose = "bio",
 }: {
   mode: TutorBioAiMode;
   facts: TutorBioFacts;
   existingBio?: string | null;
+  purpose?: TutorBioAiPurpose;
 }) {
   const incoming = effectiveTutorBioForAi(existingBio);
   const resolved = resolveTutorBioAiMode(mode, incoming);
   const draft = resolved === "improve" ? incoming : "";
+  const teaching = purpose === "teachingDescription";
   const task =
     resolved === "improve"
-      ? "Improve the existing draft: clearer, warmer, and easier for students to scan. Keep the tutor's meaning. Do not add credentials, results, or stats they did not mention."
-      : "Write a new starter bio from the known details only. Ignore any placeholder seed text. If details are sparse, keep it modest and invite students to message — still no invented background.";
+      ? teaching
+        ? "Improve the existing Teaching Profile description: clearer and easier for students to scan. Keep the tutor's meaning. Stay on this subject. Do not add credentials, results, or stats they did not mention."
+        : "Improve the existing draft: clearer, warmer, and easier for students to scan. Keep the tutor's meaning. Do not add credentials, results, or stats they did not mention."
+      : teaching
+        ? "Write a new Teaching Profile description from the known details only. Ignore any placeholder seed text. Focus on this subject and listed boards/levels/codes. If details are sparse, keep it modest and invite students to message — still no invented background."
+        : "Write a new starter bio from the known details only. Ignore any placeholder seed text. If details are sparse, keep it modest and invite students to message — still no invented background.";
 
   return [
     `Mode: ${resolved}.`,
+    teaching ? "Field: Teaching Profile description (one subject)." : "Field: About you.",
     task,
     "",
     "Known profile details:",
