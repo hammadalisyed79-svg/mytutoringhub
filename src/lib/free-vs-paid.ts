@@ -127,7 +127,7 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     free: "no",
     paid: "Per Teaching Profile",
     detail:
-      "Optional 30-day Listing Boost (legacy Highlight still honourable for existing customers). Buy from each Teaching Profile on your dashboard. Boost stays subordinate to subject relevance.",
+      "Optional one-time 30-day Listing Boost (does not increase Teaching Profile capacity). Legacy Highlight still honourable for existing customers. Buy from each Teaching Profile on your dashboard. Boost stays subordinate to subject relevance.",
   },
   {
     feature: "Commission on lessons",
@@ -170,7 +170,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects with ordinary search visibility; more subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Listing Boost is optional. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get up to ${FREE_SUBJECT_PROFILES} active Teaching Profiles for different subjects with ordinary search visibility; more subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Listing Boost is an optional one-time 30-day add-on and does not increase Teaching Profile capacity. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a Teaching Profile?",

@@ -115,7 +115,7 @@ export function SubscribeButton({
           ? "No payment required for this offer · Badges and boosts remain paid"
           : oneTime
             ? "One-time payment · Receipt emailed · Boost extends if already active"
-            : "Encrypted checkout · Receipt emailed · Cancel anytime before renewal"}
+            : "Encrypted checkout · Receipt emailed · Access lasts for the period you purchase (no auto-renew unless stated at checkout)"}
       </p>
       {error && <p className="form-error">{error}</p>}
     </div>

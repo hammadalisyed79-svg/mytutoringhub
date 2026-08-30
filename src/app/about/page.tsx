@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
-import { NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
+import { BUSINESS, NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
 import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
@@ -35,10 +35,11 @@ export default function AboutPage() {
           <h2>Launch offer</h2>
           <p>
             Tutor Pro (relevance-first ranking and unlimited enquiry reveals) is complimentary until
-            30 September 2026. Free tutors already get up to 3 active Teaching Profiles for different
-            subjects with organic search visibility; Tutor Pro unlocks up to 10. Listing Boost and Priority Verification
-            Review stay optional paid products. Identity Verified is earned after review — not
-            purchased.
+            30 September 2026. Free tutors already get up to {BUSINESS.tutorFreeActiveListings} active
+            Teaching Profiles permanently with organic search visibility; Tutor Pro unlocks up to{" "}
+            {BUSINESS.tutorProActiveListings}. Listing Boost is a one-time 30-day visibility add-on and
+            does not increase capacity. Priority Verification Review stays optional. Identity Verified
+            is earned after review — not purchased.
           </p>
           <h2>Trust &amp; safety</h2>
           <p>

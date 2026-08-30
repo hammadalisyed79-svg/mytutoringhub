@@ -3,8 +3,8 @@ import { getLivePlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 
 /**
- * Growth-tab tip: Listing Boost is bought per teaching listing (Marketplace V2).
- * Checkout lives on each row in the Teaching listings manager.
+ * Growth-tab tip: Listing Boost is bought per Teaching Profile (Marketplace V2).
+ * Checkout lives on each row in My Teaching Profiles.
  */
 export async function ProfileBoostPanel({
   currency,
@@ -14,7 +14,7 @@ export async function ProfileBoostPanel({
   compact?: boolean;
 }) {
   const plan = await getLivePlan("AD_BOOST");
-  const priceLabel = plan ? formatPlanPrice(plan.chargePricePkr, currency) : null;
+  const priceLabel = plan ? formatPlanPrice(plan.chargePricePkr, currency, "once") : null;
 
   return (
     <section

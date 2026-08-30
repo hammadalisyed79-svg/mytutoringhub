@@ -36,13 +36,16 @@ export default function TermsPage() {
             the AI study assistant where offered. Tutors with a complete profile may appear in
             search without a paid plan. Tutor Pro and optional upgrades (Priority Verification
             Review, Listing Boost per Teaching Profile, legacy listing packs) improve ranking and
-            visibility tools. Subscriptions renew
-            according to the plan you purchase unless cancelled. Limited-time offers (for example
-            complimentary Tutor Pro until a stated date) end
+            visibility tools. Monthly and annual plans are billed for the period you purchase.
+            Automatic renewal is not assumed: if a plan renews automatically we will say so clearly
+            at checkout; otherwise email us before the next billing date to stop further charges.
+            Limited-time offers (for example complimentary Tutor Pro until a stated date) end
             automatically; free tutors keep up to 3 active Teaching Profiles for different subjects
             with ordinary search visibility, and Tutor Pro unlocks up to 10. Paid add-ons such as
-            Listing Boost are never included unless purchased. The Identity Verified badge is
-            granted only after successful identity review. Platform
+            Listing Boost are one-time purchases for a stated visibility window and never increase
+            Teaching Profile capacity unless the product description says otherwise. The Identity
+            Verified badge is granted only after successful identity review — Priority Verification
+            Review only prioritises the queue and never auto-awards the badge. Platform
             subscriptions are processed by Safepay when card checkout is live; until then paid
             plans are activated manually after payment confirmation. Lesson fees stay
             off-platform and are never collected by My Tutoring Hub.

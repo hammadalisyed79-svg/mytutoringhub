@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
 import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE } from "@/lib/marketing-copy";
+import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
 import { getDbUserRole } from "@/lib/dashboard-home";
@@ -72,18 +73,20 @@ export default async function BecomeATutorPage({
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Complete your profile</h3>
+            <h3>Add your teaching information</h3>
             <p className="muted">{TUTOR_FREE_LISTING_LINE}</p>
           </div>
           <div className="step">
             <span>3</span>
-            <h3>Go live automatically</h3>
+            <h3>Create and manage Teaching Profiles</h3>
             <p className="muted">
-              Eligible profiles appear in search with no manual approval queue. Free tutors get up
-              to 3 active Teaching Profiles with ordinary search visibility. Tutor Pro unlocks up
-              to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals
-              (complimentary until 30 September 2026). Listing Boost is optional. Identity Verified
-              is earned after review — Priority Verification Review only jumps the queue.
+              Eligible tutors appear in search with Teaching Profiles for the subjects they teach.
+              Free tutors get up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles
+              permanently with ordinary search visibility. Tutor Pro unlocks up to{" "}
+              {BUSINESS.tutorProActiveListings} Teaching Profiles plus relevance-first ranking and
+              unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is an
+              optional one-time 30-day boost and does not increase capacity. Identity Verified is
+              earned after review — Priority Verification Review only jumps the queue.
             </p>
           </div>
         </div>

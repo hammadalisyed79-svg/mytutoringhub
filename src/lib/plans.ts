@@ -111,12 +111,13 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "VERIFIED_TUTOR",
     name: "Priority Verification Review",
     description:
-      "Jump the identity-verification queue. The Identity Verified badge is earned only after a successful admin review — not purchased — and stays on your profile after payment ends.",
+      "One-time jump of the identity-verification queue. The Identity Verified badge is earned only after a successful admin review — not purchased — and stays on your profile after review approval.",
     audience: "tutor",
     pricePkr: 2999,
     features: [
+      "One-time purchase (not a monthly subscription)",
       "Priority place in the identity-verification review queue",
-      "Identity Verified badge only if review is approved",
+      "Identity Verified badge only if review is approved — payment never auto-awards verification",
       "Badge persists after Priority Review payment ends",
     ],
     envPriceId: "STRIPE_PRICE_VERIFIED_TUTOR",
@@ -137,13 +138,15 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "AD_BOOST",
     name: "Listing Boost",
     description:
-      "Preferred promo: boost one Teaching Profile for 30 days with stronger placement among relevant matches (never above strong subject fit).",
+      "Preferred promo: one-time 30-day boost on one Teaching Profile with stronger placement among relevant matches (never above strong subject fit). Does not increase Teaching Profile capacity.",
     audience: "tutor",
     pricePkr: 999,
     features: [
+      "One-time purchase (not a monthly subscription)",
       "30-day boost window on one Teaching Profile",
       "Stronger placement among relevant matches",
-      "Repurchase extends that listing’s window",
+      "Does not increase Teaching Profile capacity",
+      "Repurchase extends that profile’s window",
     ],
     envPriceId: "STRIPE_PRICE_AD_BOOST",
     isAddOn: true,

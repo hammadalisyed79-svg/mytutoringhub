@@ -23,9 +23,9 @@ export function AuthLayout({
           </Link>
           <h1 className="auth-aside-title">Private tutors worldwide</h1>
           <p className="auth-aside-copy">
-            Connect with verified tutors online or in person. Free accounts get a monthly contact
-            allowance; Student Pass unlocks unlimited messaging.
-            lesson fees stay between you and the other party.
+            Connect with Identity Verified tutors online or in person. Free accounts get a monthly
+            contact allowance; Student Pass unlocks unlimited messaging. Lesson fees stay between
+            you and the other party.
           </p>
           <ul className="auth-trust-list">
             <li>Gmail, Hotmail, Outlook, Yahoo, or any email</li>

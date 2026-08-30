@@ -211,24 +211,26 @@ export async function getPlanDashboardSummary(
 
   const check = await canPerformAction(userId, "enquiry_reveal");
   const hasElite = await hasActivePlan(userId, "VERIFIED_TUTOR");
-  const hasBasic =
-    hasElite ||
-    (await hasAnyActivePlan(userId, [
-      "TUTOR_BASIC",
-      "HIGHLIGHTED_AD",
-      "AD_BOOST",
-      "EXTRA_PROFILE_ADS",
-      "UNLIMITED_ADS",
-    ] as SubscriptionPlan[]));
+  const hasTutorPro = await hasAnyActivePlan(userId, [
+    "TUTOR_BASIC",
+    "EXTRA_PROFILE_ADS",
+    "UNLIMITED_ADS",
+  ] as SubscriptionPlan[]);
   return {
-    planName: hasElite ? "Priority Verification" : hasBasic ? "Tutor Pro" : "Free listing",
-    planTier: hasElite ? "elite" : hasBasic ? "pro" : "free",
+    planName: hasTutorPro
+      ? "Tutor Pro"
+      : hasElite
+        ? "Priority Verification Review"
+        : "Tutor Free",
+    planTier: hasTutorPro ? "pro" : hasElite ? "elite" : "free",
     usageUsed: check.used,
     usageLimit: check.limit,
     usageLabel: "student contacts this month",
-    renewsOn: hasBasic ? renewsOn : null,
-    upgradeHint: hasBasic
+    renewsOn: hasTutorPro ? renewsOn : null,
+    upgradeHint: hasTutorPro
       ? "Unlimited student contact when you initiate. Tutor Pro includes up to 10 active Teaching Profiles and growth tools."
-      : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to 3 active Teaching Profiles for different subjects. Tutor Pro unlocks up to 10.`,
+      : hasElite
+        ? "Priority Verification Review jumps the identity queue only — it does not grant Tutor Pro or Teaching Profile capacity. Free tutors keep up to 3 Teaching Profiles."
+        : `Complete your profile to appear in search for free. Free listed tutors receive messages anytime, get ${TUTOR_FREE_REVEAL_LIMIT} student contacts/month when messaging first, and up to 3 active Teaching Profiles for different subjects. Tutor Pro unlocks up to 10.`,
   };
 }

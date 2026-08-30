@@ -124,7 +124,7 @@ export function FreeVsPaidComparison({ showFaq = true }: { showFaq?: boolean }) 
         </p>
         <CompareTable
           caption="Tutor free vs paid features"
-          freeLabel="Free listing"
+          freeLabel="Tutor Free"
           paidLabel="Tutor Pro & add-ons"
           rows={TUTOR_COMPARE_ROWS}
         />

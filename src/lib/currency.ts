@@ -274,9 +274,10 @@ export function hourlyRateInputStep(currency: CurrencyCode): number {
 export function formatPlanPrice(
   amountPkr: number,
   currency: CurrencyCode,
-  period: "month" | "year" = "month",
+  period: "month" | "year" | "once" = "month",
 ) {
   const local = pkrToCurrency(amountPkr, currency);
+  if (period === "once") return formatMoney(local, currency);
   const suffix = period === "year" ? "/yr" : "/mo";
   return `${formatMoney(local, currency)}${suffix}`;
 }

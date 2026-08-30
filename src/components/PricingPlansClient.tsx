@@ -7,7 +7,7 @@ import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
-import { manualActivationCtaLabel, planBillingFootnote } from "@/lib/payments-status";
+import { manualActivationCtaLabel, addOnBillingFootnote, planBillingFootnote } from "@/lib/payments-status";
 import { STUDENT_FREE_CONTACT_LIMIT } from "@/lib/plan-limits";
 import { BUSINESS } from "@/lib/business-rules";
 
@@ -61,6 +61,7 @@ function PlanActions({
             ? plan.annualChargePricePkr
             : plan.chargePricePkr
         }
+        oneTime={Boolean(plan.isAddOn)}
         label={
           plan.isAddOn
             ? `Add ${plan.name}`
@@ -118,6 +119,17 @@ function PlanPrice({
       </div>
     );
   }
+  if (plan.isAddOn) {
+    const kind = plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD" ? "boost" : "verification";
+    return (
+      <div className="price-block">
+        <div className="price">{formatPlanPrice(plan.listPricePkr, currency, "once")}</div>
+        <p className="plan-billing muted">
+          {addOnBillingFootnote(currency, paidCheckoutLive, kind)}
+        </p>
+      </div>
+    );
+  }
   if (showAnnual) {
     return (
       <div className="price-block">
@@ -146,7 +158,7 @@ function PlanPrice({
   return (
     <div className="price-block">
       <div className="price">{formatPlanPrice(plan.listPricePkr, currency)}</div>
-      <p className="plan-billing muted">{planBillingFootnote(currency, paidCheckoutLive)}</p>
+      <p className="plan-billing muted">{planBillingFootnote(currency, paidCheckoutLive, billing)}</p>
     </div>
   );
 }
@@ -314,8 +326,9 @@ export function PricingPlansClient({
           <p className="muted pricing-addons-lead">
             Optional visibility upgrades — Priority Verification Review and Listing Boost
             {paidCheckoutLive ? " on Safepay" : " after payment"}. Teaching Profile capacity is included in
-            Free (3) and Tutor Pro (10); legacy Extra/Unlimited packs are not sold as primary
-            products. These do not replace a complete free listing.
+            Free ({BUSINESS.tutorFreeActiveListings}) and Tutor Pro ({BUSINESS.tutorProActiveListings});
+            legacy Extra/Unlimited packs are not sold as primary products. Listing Boost does not
+            increase Teaching Profile capacity.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (

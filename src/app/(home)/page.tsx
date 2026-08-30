@@ -127,7 +127,9 @@ export default async function HomePage() {
                 01
               </span>
               <strong>Find tutors</strong>
-              <span className="muted">Browse free · 3 new contacts/month included</span>
+              <span className="muted">
+                Browse free · {BUSINESS.studentFreeContactsPerMonth} new contacts/month included
+              </span>
             </Link>
             <Link href="/past-papers" className="product-trio-card product-trio-card--open">
               <span className="product-trio-index" aria-hidden="true">

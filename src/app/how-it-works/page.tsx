@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { VALUE_PROPOSITION, studentFreeContactsShort } from "@/lib/marketing-copy";
+import { BUSINESS } from "@/lib/business-rules";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -34,7 +35,7 @@ export default async function HowItWorksPage() {
             <span>1</span>
             <h3>Search</h3>
             <p className="muted">
-              Filter by subject, country, city, level, language, and verified tutors.
+              Filter by subject, country, city, level, language, and Identity Verified tutors.
             </p>
           </div>
           <div className="step">
@@ -60,7 +61,7 @@ export default async function HowItWorksPage() {
           <section className="panel" style={{ marginBottom: "1.5rem" }}>
             <h2>For students & parents</h2>
             <ul className="check-list">
-              <li>Browse verified, highlighted, and boosted tutors</li>
+              <li>Browse Identity Verified, featured, and boosted Teaching Profiles</li>
               <li>Message tutors free ({studentFreeContactsShort()}) or unlimited with Student Pass</li>
               <li>Student Pro unlocks the AI study assistant</li>
               <li>Download past papers by subject</li>
@@ -84,9 +85,10 @@ export default async function HowItWorksPage() {
                 cards
               </li>
               <li>
-                Free tutors get up to 3 active Teaching Profiles for different subjects in search;
-                Tutor Pro unlocks up to 10 plus relevance-first ranking and unlimited enquiry reveals
-                (complimentary until 30 September 2026)
+                Free tutors get up to {BUSINESS.tutorFreeActiveListings} active Teaching Profiles for
+                different subjects in search; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}{" "}
+                plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30
+                September 2026)
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is
@@ -111,7 +113,7 @@ export default async function HowItWorksPage() {
         {role === "TUTOR" && (
           <p className="muted" style={{ marginTop: "1.5rem" }}>
             Also looking for a tutor? Use <strong>Student mode</strong> in the header — your tutor
-            listing stays saved.
+            profile and Teaching Profiles stay saved.
           </p>
         )}
       </div>

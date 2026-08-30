@@ -50,7 +50,7 @@ export function PointsWalletPanel({
             <p className="points-wallet-meta">
               <strong>{summary.pointValueLabel}</strong>
               <span className="points-wallet-meta-sep">·</span>
-              Redeem up to <strong>50% off</strong> plans &amp; tutor ads
+              Redeem up to <strong>50% off</strong> plans &amp; tutor add-ons
             </p>
             {expiryNote ? (
               <p className="points-wallet-expiry">

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
-import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE, studentFreeContactsShort } from "@/lib/marketing-copy";
+import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
   title: "Help & FAQ – Contacting Tutors, Plans & Payments",
@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
 const FAQS = [
   {
     q: "What are Hub Points?",
-    a: "Hub Points are platform credit — each point converts to your local currency on Pricing. Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor ads on Pricing.",
+    a: "Hub Points are platform credit — each point converts to your local currency on Pricing. Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor add-ons on Pricing.",
   },
   {
     q: "What is free vs paid on My Tutoring Hub?",
@@ -41,19 +41,19 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Pro, Priority Verification Review, Listing Boost) are billed through Safepay when live. Until card checkout is activated, complimentary Tutor Pro and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Pro) are billed for the period you purchase through Safepay when live. Listing Boost and Priority Verification Review are one-time purchases. Until card checkout is activated, complimentary Tutor Pro and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
   },
   {
     q: "Is Tutor Pro free?",
-    a: "Complete tutor profiles appear in search for free with up to 3 active Teaching Profiles for different subjects. Tutor Pro unlocks up to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is optional per Teaching Profile. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue. Free students keep 3 new tutor contacts/month.",
+    a: "Complete tutor profiles appear in search for free with up to 3 active Teaching Profiles for different subjects — permanently, not a temporary promo. Tutor Pro unlocks up to 10 Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (Tutor Pro growth tools are complimentary until 30 September 2026). Listing Boost is an optional one-time 30-day boost per Teaching Profile and does not increase capacity. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue and never auto-awards the badge. Free students keep 3 new tutor contacts/month.",
   },
   {
     q: "Why do I need to verify my email?",
     a: "After signup we send a confirmation link from admin@mytutoringhub.com. You can use your dashboard immediately, but messaging and student requests stay locked until you confirm. The AI study assistant also needs Student Pro. Resend the link from Pricing, Dashboard, or Settings.",
   },
   {
-    q: "What is a Verified tutor?",
-    a: "Verified tutors upload a government photo ID (passport, national ID / CNIC, or driving licence). A qualification certificate is recommended. Admins review the files privately and then approve the badge. You cannot buy the badge; Priority Verification Review only prioritises the queue.",
+    q: "What does Identity Verified mean?",
+    a: "Identity Verified tutors upload a government photo ID (passport, national ID / CNIC, or driving licence). A qualification certificate is recommended but Identity Verified does not mean qualification verified, degree verified, background checked, or quality approved. Admins review the files privately and then approve the badge. You cannot buy the badge; Priority Verification Review only prioritises the queue.",
   },
   {
     q: "How do reviews work?",

@@ -38,11 +38,28 @@ export function manualActivationNote(oneTime = false) {
 export function planBillingFootnote(
   currency: string,
   paidCheckoutLive: boolean,
-  billing: "monthly" | "annual" = "monthly",
+  billing: "monthly" | "annual" | "once" = "monthly",
 ) {
-  const period = billing === "annual" ? "Billed annually" : "Billed monthly";
+  const period =
+    billing === "once"
+      ? "One-time purchase"
+      : billing === "annual"
+        ? "Billed annually"
+        : "Billed monthly";
   const payment = paidCheckoutLive ? "paid on Safepay" : "activate after payment";
   return `${period} · shown in ${currency} · ${payment}`;
+}
+
+/** Listing Boost / Priority Verification Review — never monthly. */
+export function addOnBillingFootnote(
+  currency: string,
+  paidCheckoutLive: boolean,
+  kind: "boost" | "verification" = "boost",
+) {
+  const detail =
+    kind === "boost" ? "30-day boost · one-time purchase" : "One-time purchase · queue priority only";
+  const payment = paidCheckoutLive ? "paid on Safepay" : "activate after payment";
+  return `${detail} · shown in ${currency} · ${payment}`;
 }
 
 export function manualPlanActivationMailto(planName?: string, accountEmail?: string) {

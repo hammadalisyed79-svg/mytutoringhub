@@ -23,7 +23,7 @@ export function HubPointsShareActions({
 
   const whatsAppHref = `https://wa.me/?text=${encodeURIComponent(
     role === "TUTOR"
-      ? `Join me on My Tutoring Hub — free tutor listing, earn Hub Points when you complete your profile.\n\n${referralLink}`
+      ? `Join me on My Tutoring Hub — free Teaching Profiles, earn Hub Points when you complete your profile.\n\n${referralLink}`
       : `Find tutors on My Tutoring Hub — I'll earn Hub Points when you join and message a tutor.\n\n${referralLink}`,
   )}`;
 

@@ -24,11 +24,22 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
   const livePlan = await getLivePlan(sub.plan);
   const planName = livePlan?.name || getPlan(sub.plan as never)?.name || sub.plan;
+  const isOneTimeAddOn = Boolean(livePlan?.isAddOn || getPlan(sub.plan as never)?.isAddOn);
   const amount = formatSafepayPriceId(sub.stripePriceId) || "Paid via Safepay";
   const paidAt = sub.updatedAt;
   const orderRef = sub.stripeSubscriptionId?.startsWith("track_")
     ? sub.stripeSubscriptionId
     : sub.id;
+
+  const billingDescription = isOneTimeAddOn
+    ? sub.plan === "AD_BOOST" || sub.plan === "HIGHLIGHTED_AD"
+      ? "One-time purchase — 30-day visibility window"
+      : sub.plan === "VERIFIED_TUTOR"
+        ? "One-time purchase — identity review queue priority"
+        : "One-time purchase"
+    : sub.billingPeriod === "annual"
+      ? "Annual plan — billed for the period purchased"
+      : "Monthly plan — billed for the period purchased";
 
   return (
     <div className="page">
@@ -98,10 +109,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             <tbody>
               <tr>
                 <td>
-                  {planName} —{" "}
-                  {sub.billingPeriod === "annual"
-                    ? "Annual subscription — billed yearly"
-                    : "Monthly subscription — billed monthly"}
+                  {planName} — {billingDescription}
                   {sub.currentPeriodEnd
                     ? ` (until ${sub.currentPeriodEnd.toLocaleDateString()})`
                     : ""}
