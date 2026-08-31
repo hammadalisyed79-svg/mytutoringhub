@@ -1,23 +1,27 @@
 import { prisma } from "@/lib/prisma";
 import type { SubscriptionPlan } from "@/lib/types";
+import {
+  UPGRADE_FOR_MORE_PROFILES_MESSAGE,
+  resolveCreateTeachingProfileCap,
+  resolvePlanTeachingProfileCap,
+} from "@/lib/teaching-profile-cap";
 
 /**
- * Marketplace V2 teaching-listing caps (canonical).
- * Free = 1 active listing; Tutor Pro (TUTOR_BASIC) = 10.
- * Legacy EXTRA_PROFILE_ADS maps to Pro cap (grandfather).
- * Legacy UNLIMITED_ADS keeps unlimited (grandfather).
+ * Marketplace teaching-listing caps (canonical FINAL commercial model).
+ * Free = 1 ACTIVE Teaching Profile (new capacity).
+ * Tutor Pro (TUTOR_BASIC) = 10.
+ * Legacy EXTRA_PROFILE_ADS → Pro cap; UNLIMITED_ADS → ∞.
  *
- * NEW creates use FREE_SUBJECT_PROFILES (=1).
- * Auto-pause of already-ACTIVE Free listings above 1 is OFF until an approved
- * transition (set ENFORCE_FREE_TEACHING_PROFILE_CAP=1). See
- * docs/MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md.
+ * Existing Free tutors with >1 ACTIVE profiles are grandfathered via
+ * resolveCreateTeachingProfileCap (ratchet down only). They are never
+ * auto-paused by enforceSubjectProfileCap.
  */
 export const FREE_SUBJECT_PROFILES = 1;
 export const TUTOR_PRO_SUBJECT_PROFILE_CAP = 10;
 
-/** When false, Free tutors over Free=1 are not auto-paused (create gate still enforces 1). */
+/** @deprecated Free listings are never auto-paused; kept for env compatibility. */
 export function shouldEnforceFreeTeachingProfilePause() {
-  return process.env.ENFORCE_FREE_TEACHING_PROFILE_CAP === "1";
+  return false;
 }
 
 /** @deprecated Use FREE_SUBJECT_PROFILES — V2 has no promo sunset on free listings. */
@@ -80,9 +84,7 @@ export function resolveSubjectProfileActiveCap(opts: {
   /** @deprecated Alias for hasTutorPro (legacy Extra Profile Ads). */
   hasProfilePack?: boolean;
 }): number {
-  if (opts.unlimitedProfiles) return Number.POSITIVE_INFINITY;
-  if (opts.hasTutorPro || opts.hasProfilePack) return TUTOR_PRO_SUBJECT_PROFILE_CAP;
-  return FREE_SUBJECT_PROFILES;
+  return resolvePlanTeachingProfileCap(opts);
 }
 
 export async function getSubjectProfileActiveCap(userId: string, _now = new Date()): Promise<number> {
@@ -113,7 +115,8 @@ export type SubjectProfileGate =
 
 /**
  * Gate for creating/reactivating a SubjectProfile.
- * Free → 1; Tutor Pro / Extra Profile Ads (legacy) → 10; Unlimited Profiles (legacy) → ∞.
+ * Free plan entitlement = 1; grandfathered Free tutors keep existing ACTIVE rows
+ * but cannot grow; Pro = 10; Unlimited = ∞.
  */
 export async function canCreateSubjectProfile(
   userId: string,
@@ -135,34 +138,36 @@ export async function canCreateSubjectProfile(
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (!profile) return { ok: false, reason: "Create your tutor profile first" };
 
-  const [cap, activeCount] = await Promise.all([
+  const [planCap, activeCount] = await Promise.all([
     getSubjectProfileActiveCap(userId, now),
     prisma.subjectProfile.count({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },
     }),
   ]);
 
+  const cap = resolveCreateTeachingProfileCap({ planCap, activeCount });
+
   if (activeCount >= cap) {
     if (!Number.isFinite(cap)) {
       return { ok: false, reason: "Active Teaching Profile limit reached.", activeCount, cap };
     }
-    if (cap <= FREE_SUBJECT_PROFILES) {
+    if (planCap <= FREE_SUBJECT_PROFILES) {
       return {
         ok: false,
-        reason: `Free plan includes ${FREE_SUBJECT_PROFILES} active Teaching Profile. Upgrade to Tutor Pro for up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Boost does not add capacity.`,
+        reason: UPGRADE_FOR_MORE_PROFILES_MESSAGE,
         activeCount,
-        cap,
+        cap: planCap,
       };
     }
     return {
       ok: false,
-      reason: `Active Teaching Profile limit reached (${cap}). Legacy Unlimited Profiles holders keep unlimited profiles.`,
+      reason: `Active Teaching Profile limit reached (${planCap}). Legacy Unlimited Profiles holders keep unlimited profiles.`,
       activeCount,
-      cap,
+      cap: planCap,
     };
   }
 
-  return { ok: true, profile: { id: profile.id }, activeCount, cap };
+  return { ok: true, profile: { id: profile.id }, activeCount, cap: planCap };
 }
 
 /**
@@ -182,9 +187,9 @@ export async function enforceSubjectProfileCap(
   const cap = await getSubjectProfileActiveCap(userId, now);
   if (!Number.isFinite(cap)) return { paused: 0, kept: 0, cap };
 
-  // Free=1 create gate is live; do not silently pause grandfathered Free listings
-  // that were created under the prior Free=3 rule until migration is approved.
-  if (cap <= FREE_SUBJECT_PROFILES && !shouldEnforceFreeTeachingProfilePause()) {
+  // Never auto-pause Free tutors — grandfather existing ACTIVE Teaching Profiles.
+  // Create/reactivate gate still blocks growth above the Free ratchet.
+  if (cap <= FREE_SUBJECT_PROFILES) {
     const activeCount = await prisma.subjectProfile.count({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },
     });

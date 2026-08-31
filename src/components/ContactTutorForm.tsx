@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 type ContactError = {
   error?: string;
@@ -74,7 +75,10 @@ export function ContactTutorForm({
         ...(related ? { relatedAdId: related } : {}),
       }),
     });
-    const data = (await res.json()) as ContactError & { conversationId?: string };
+    const data = (await res.json()) as ContactError & {
+      conversationId?: string;
+      isNewContact?: boolean;
+    };
     setLoading(false);
     if (!res.ok) {
       if (data.error === "email_unverified") {
@@ -99,6 +103,18 @@ export function ContactTutorForm({
         limit: data.limit,
       });
       return;
+    }
+    if (data.conversationId) {
+      fireConversionEvent(
+        "student_tutor_contact",
+        { listingId: related || undefined },
+        `contact_${data.conversationId}`,
+      );
+      fireConversionEvent(
+        "tutor_enquiry_received",
+        { listingId: related || undefined },
+        `enquiry_${data.conversationId}`,
+      );
     }
     router.push(`/messages/${data.conversationId}`);
   }

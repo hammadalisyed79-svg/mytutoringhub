@@ -6,6 +6,8 @@ import { getPlan, getLivePlan } from "@/lib/plans";
 import { formatSafepayPriceId } from "@/lib/currency";
 import { Logo } from "@/components/Logo";
 import { PrintButton } from "@/components/PrintButton";
+import { ConversionBeacon } from "@/components/ConversionBeacon";
+import { purchaseEventForPlan } from "@/lib/analytics-conversions";
 
 export const metadata = { title: "Payment receipt" };
 
@@ -31,6 +33,20 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     ? sub.stripeSubscriptionId
     : sub.id;
 
+  const priceMatch = /^safepay_([A-Z]{3})_(\d+)$/.exec(sub.stripePriceId || "");
+  const currency = priceMatch?.[1] || "PKR";
+  const minor = priceMatch ? Number(priceMatch[2]) : 0;
+  const major =
+    currency === "PKR" || currency === "JPY" || currency === "KRW" ? minor : minor / 100;
+  const complimentary =
+    major === 0 ||
+    Boolean(livePlan?.isComplimentary) ||
+    /complimentary|promo|manual/i.test(sub.stripeSubscriptionId || "");
+  const purchase = purchaseEventForPlan(sub.plan, {
+    complimentary,
+    value: complimentary ? 0 : major,
+  });
+
   const boostWindowDays =
     sub.plan === "AD_BOOST" && sub.billingPeriod === "annual" ? 365 : 30;
   const billingDescription = isOneTimeAddOn
@@ -48,6 +64,21 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   return (
     <div className="page">
       <div className="container">
+        {purchase ? (
+          <ConversionBeacon
+            event={purchase.event}
+            dedupeKey={`purchase_${sub.id}`}
+            params={{
+              product: planName,
+              planId: sub.plan,
+              billingPeriod: sub.billingPeriod || (isOneTimeAddOn ? "once" : "monthly"),
+              value: purchase.value,
+              currency,
+              transactionId: sub.id,
+              payment_source: complimentary ? "complimentary" : "safepay",
+            }}
+          />
+        ) : null}
         <div className="receipt-actions no-print">
           <p className="success" style={{ margin: 0 }}>
             Payment successful. Save or print this slip for your records.

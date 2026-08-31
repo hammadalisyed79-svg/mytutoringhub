@@ -44,11 +44,12 @@ import { slugify } from "@/lib/search-tutors";
 import { getUserCountry } from "@/lib/geo";
 import { reconcileUserSafepayPaperPurchases } from "@/lib/safepay-complete";
 import { pageMetadata } from "@/lib/seo";
+import { PageConversion } from "@/components/PageConversion";
 
 export const metadata = pageMetadata({
-  title: "Past Papers – GCSE, A-Level, IGCSE & IB Free Download",
+  title: "Past Papers – GCSE, A-Level, IGCSE & IB",
   description:
-    "Browse and download GCSE, A-Level, IGCSE, IB, and Matric past papers. Filter by board, subject, year, and session. Student Pass includes monthly downloads.",
+    "Browse past papers free. Download with Student Pass (10/month), Student Pro (unlimited), or pay per paper (default PKR 100).",
   path: "/past-papers",
 });
 
@@ -244,26 +245,40 @@ export default async function PastPapersPage({
         <SubjectHubTabs active="papers" />
 
         {sp.checkout === "success" && (
-          <p className="success panel">
-            Payment received.{" "}
-            {sp.key ? (
-              <a
-                href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
-                  sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
-                }`}
-              >
-                Download your paper
-              </a>
-            ) : (
-              "Your paper is unlocked."
-            )}
-            {sp.token && !session?.user ? (
-              <>
-                {" "}
-                <span className="muted">We also emailed your download link.</span>
-              </>
-            ) : null}
-          </p>
+          <>
+            <PageConversion
+              event="past_paper_purchase"
+              dedupeKey={`paper_${sp.key || sp.token || "ok"}`}
+              params={{
+                paperId: sp.key || undefined,
+                subject: subject || undefined,
+                board: board || undefined,
+                value: feePkr,
+                currency: "PKR",
+                payment_source: "safepay",
+              }}
+            />
+            <p className="success panel">
+              Payment received.{" "}
+              {sp.key ? (
+                <a
+                  href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
+                    sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
+                  }`}
+                >
+                  Download your paper
+                </a>
+              ) : (
+                "Your paper is unlocked."
+              )}
+              {sp.token && !session?.user ? (
+                <>
+                  {" "}
+                  <span className="muted">We also emailed your download link.</span>
+                </>
+              ) : null}
+            </p>
+          </>
         )}
         {sp.checkout === "cancel" && <p className="panel">Checkout cancelled. No charge was made.</p>}
         {sp.checkout === "error" && (

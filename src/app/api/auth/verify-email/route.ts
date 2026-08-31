@@ -20,16 +20,20 @@ function wantsJson(req: Request) {
 }
 
 /** Form POST → 303 + absolute URL from request; JSON clients get a relative path. */
-function finish(req: Request, pathWithQuery: string) {
+function finish(
+  req: Request,
+  pathWithQuery: string,
+  extra?: { role?: string; userId?: string },
+) {
   const path = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
   if (wantsJson(req)) {
-    return NextResponse.json({ ok: true, redirectTo: path });
+    return NextResponse.json({ ok: true, redirectTo: path, ...extra });
   }
   return redirectTo(req, path, 303);
 }
 
 async function consumeVerificationToken(token: string): Promise<
-  | { ok: true; already: boolean }
+  | { ok: true; already: boolean; userId: string; role: string }
   | { ok: false; reason: "invalid" | "expired" }
 > {
   const tokenHash = hashEmailToken(token);
@@ -47,7 +51,9 @@ async function consumeVerificationToken(token: string): Promise<
 
   // Token already used (we set expiresAt to the past on first success).
   if (record.expiresAt < now) {
-    if (alreadyVerified) return { ok: true, already: true };
+    if (alreadyVerified) {
+      return { ok: true, already: true, userId: record.userId, role: record.user.role };
+    }
     return { ok: false, reason: "expired" };
   }
 
@@ -56,7 +62,7 @@ async function consumeVerificationToken(token: string): Promise<
       where: { id: record.id },
       data: { expiresAt: new Date(0) },
     });
-    return { ok: true, already: true };
+    return { ok: true, already: true, userId: record.userId, role: record.user.role };
   }
 
   await prisma.user.update({
@@ -87,7 +93,7 @@ async function consumeVerificationToken(token: string): Promise<
     console.error("[verify-email] onboarding sequence failed", record.userId, err);
   });
 
-  return { ok: true, already: false };
+  return { ok: true, already: false, userId: record.userId, role: record.user.role };
 }
 
 /** Old email links hit GET — send them to the confirm page (avoids scanner auto-consume). */
@@ -125,8 +131,9 @@ export async function POST(req: Request) {
   }
 
   const session = await auth();
+  const extra = { role: result.role, userId: result.userId };
   if (session?.user) {
-    return finish(req, "/dashboard?verified=1");
+    return finish(req, "/dashboard?verified=1", extra);
   }
-  return finish(req, "/login?verified=1");
+  return finish(req, "/login?verified=1", extra);
 }

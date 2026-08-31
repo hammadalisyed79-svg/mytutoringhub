@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatHourly, type CurrencyCode } from "@/lib/currency";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 export type NewAdFormInitial = {
   subject?: string;
@@ -74,6 +75,19 @@ export function NewAdForm({
     if (!res.ok) {
       setError(data.error || "Could not create request");
       return;
+    }
+    if (data.id) {
+      fireConversionEvent(
+        "student_request_created",
+        {
+          subject: payload.subject,
+          level: payload.level || undefined,
+          board: payload.board || undefined,
+          syllabusCode: payload.syllabusCode || undefined,
+          city: payload.location || undefined,
+        },
+        `request_${data.id}`,
+      );
     }
     router.push("/ads");
     router.refresh();

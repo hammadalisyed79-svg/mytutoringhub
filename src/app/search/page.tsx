@@ -25,6 +25,7 @@ import { VALUE_PROPOSITION, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-c
 import { pageMetadata, truncateDescription } from "@/lib/seo";
 import { searchResultsShouldNoIndex } from "@/lib/seo-indexation";
 import { trackProductEvent } from "@/lib/product-events";
+import { PageConversion } from "@/components/PageConversion";
 
 export const dynamic = "force-dynamic";
 
@@ -203,6 +204,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   return (
     <div className="page">
       <div className="container">
+        {hasSearchIntent && !showGuided ? (
+          <PageConversion
+            event="tutor_search"
+            dedupeKey={`search_${resolved.subject || ""}_${resolved.board || ""}_${resolved.level || ""}_${page}_${total}`}
+            params={{
+              subject: resolved.subject || undefined,
+              board: resolved.board || undefined,
+              level: resolved.level || undefined,
+              syllabusCode: resolved.syllabusCode || undefined,
+              country: resolved.country || undefined,
+              city: resolved.location || undefined,
+              resultCount: total,
+            }}
+          />
+        ) : null}
         <h1 className="page-title">Find private tutors</h1>
         <p className="section-lead">{VALUE_PROPOSITION}</p>
         <ValuePropStrip />

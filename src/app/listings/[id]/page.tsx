@@ -28,6 +28,7 @@ import {
   truncateDescription,
 } from "@/lib/seo";
 import { trackProductEvent } from "@/lib/product-events";
+import { PageConversion } from "@/components/PageConversion";
 import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { TrackTutorView } from "@/components/RecentAndSavedTutors";
 import { ReportButton, BlockUserButton } from "@/components/ReportButton";
@@ -302,6 +303,21 @@ export default async function SubjectListingPage({ params }: Params) {
 
   return (
     <>
+      {isPublicListing ? (
+        <PageConversion
+          event="teaching_profile_view"
+          dedupeKey={`tp_view_${listing.id}`}
+          params={{
+            listingId: listing.id,
+            subject: listing.subject,
+            board: listing.board || undefined,
+            level: listing.level || undefined,
+            syllabusCode: listing.syllabusCode || undefined,
+            country: listing.country || tutor.country || undefined,
+            city: listing.location || tutor.location || undefined,
+          }}
+        />
+      ) : null}
       {isPublicListing ? (
         <TrackTutorView
           tutor={{

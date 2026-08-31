@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TrustRibbon } from "@/components/TrustRibbon";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -102,6 +103,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SiteFooter />
           <AiSupportWidgetLazy configured={Boolean(process.env.OPENAI_API_KEY?.trim())} />
           <ServiceWorkerRegister />
+          <GoogleAnalytics />
           <Analytics />
         </Providers>
       </body>

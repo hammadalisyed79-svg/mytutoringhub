@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 function toRelativePath(redirectTo: string): string {
   try {
@@ -48,7 +49,18 @@ export function VerifyEmailConfirm({ token }: { token: string }) {
         body: new URLSearchParams({ token }),
       });
 
-      const data = (await res.json().catch(() => null)) as { redirectTo?: string } | null;
+      const data = (await res.json().catch(() => null)) as {
+        redirectTo?: string;
+        role?: string;
+        userId?: string;
+      } | null;
+      if (res.ok && data?.role === "TUTOR") {
+        fireConversionEvent(
+          "tutor_email_verified",
+          {},
+          `tutor_email_${data.userId || token.slice(0, 12)}`,
+        );
+      }
       const next = toRelativePath(data?.redirectTo || "/login?verify=invalid");
       window.location.assign(next);
     } catch {

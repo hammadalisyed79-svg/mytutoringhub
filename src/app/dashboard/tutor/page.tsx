@@ -28,6 +28,7 @@ import { isValidActiveTeachingProfile } from "@/lib/teaching-profile-write";
 import { tutorCanonicalDuplicateNotice } from "@/lib/teaching-profile-duplicates";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
+import { PageConversion } from "@/components/PageConversion";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
 import { PostVerifyTutorChecklist } from "@/components/PostVerifyChecklist";
@@ -95,6 +96,13 @@ export default async function TutorDashboardPage({
   return (
     <div className="page tutor-dashboard-page">
       <div className="container">
+        {justWentLive ? (
+          <PageConversion
+            event="tutor_profile_completed"
+            dedupeKey={`tutor_live_${user.id}`}
+            params={{}}
+          />
+        ) : null}
         <header className="panel page-hero tutor-dashboard-hero">
           <div className="page-hero-copy">
             <h1 className="page-title">Hi, {user.name}</h1>

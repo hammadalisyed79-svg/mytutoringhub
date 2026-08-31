@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { PasswordField } from "@/components/PasswordField";
 import { registerRoleFromParams, type RegisterRole } from "@/lib/register-intent";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 function RegisterFormInner({
   googleEnabled = true,
@@ -49,6 +50,12 @@ function RegisterFormInner({
       setLoading(false);
       return;
     }
+    const userId = typeof data.id === "string" ? data.id : `pending_${Date.now()}`;
+    fireConversionEvent(
+      role === "TUTOR" ? "tutor_registration" : "student_registration",
+      { role },
+      `reg_${userId}`,
+    );
     // Do not auto-login — email must be verified first.
     window.location.href = `/login?verify=sent&email=${encodeURIComponent(payload.email)}`;
   }

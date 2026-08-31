@@ -11,6 +11,7 @@ export function AdminVerificationQueueItem({
   docUrls,
   notes,
   showActions = status === "PENDING",
+  priorityReview = false,
 }: {
   id: string;
   status: string;
@@ -20,12 +21,19 @@ export function AdminVerificationQueueItem({
   docUrls: string;
   notes?: string | null;
   showActions?: boolean;
+  priorityReview?: boolean;
 }) {
   return (
     <article className="admin-verify-queue-card">
       <header className="admin-verify-queue-head">
         <div>
           <p className="admin-verify-queue-kicker">
+            {priorityReview && status === "PENDING" ? (
+              <>
+                <strong>Priority queue</strong>
+                <span> · </span>
+              </>
+            ) : null}
             {status === "PENDING" ? "Awaiting review" : status}
             <span> · </span>
             {createdAt.toLocaleString("en-GB", {

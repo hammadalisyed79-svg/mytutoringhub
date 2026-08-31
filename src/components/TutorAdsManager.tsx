@@ -23,6 +23,8 @@ import { scoreListingQuality } from "@/lib/listing-quality";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TeachingProfileCapabilityFields } from "@/components/TeachingProfileCapabilityFields";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
+import { UPGRADE_FOR_MORE_PROFILES_MESSAGE } from "@/lib/teaching-profile-cap";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -415,13 +417,20 @@ export function TutorAdsManager({
     });
     const data = await res.json();
     if (!res.ok) {
-      flashError(data.error || "Could not create Teaching Profile");
+      flashError(data.error || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
       return;
     }
     e.currentTarget.reset();
     setCreateSubject("");
     setCreateCaps(EMPTY_CAPS);
     setShowCreate(false);
+    if (data.id) {
+      fireConversionEvent(
+        "teaching_profile_activated",
+        { listingId: data.id, subject: String(fd.get("subject") || "") },
+        `tp_active_${data.id}`,
+      );
+    }
     flashSuccess("Teaching Profile published — students can find it in search.");
     load();
     router.refresh();
