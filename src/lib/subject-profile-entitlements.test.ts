@@ -11,7 +11,6 @@ assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
 assert.equal(isSubjectProfilePromoActive(), false);
-
 assert.equal(
   resolveSubjectProfileActiveCap({
     unlimitedProfiles: false,

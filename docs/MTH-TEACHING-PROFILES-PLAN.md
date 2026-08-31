@@ -5,13 +5,16 @@
 **Repo:** `C:\Tutor`  
 **Preview:** [`docs/MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md`](./MTH-TEACHING-PROFILES-PHASE1-PREVIEW.md)
 
-**Trigger:** Tutor onboarding wizard step 3 (“What you teach”) on `/dashboard/tutor` is still a bulk subject picker on the **main tutor profile**. Approved direction: teaching lives only on **subject-based Teaching Profiles** (one canonical subject each, with multi-value board/level/qualification/syllabus capabilities inside that profile). Listed and searched as Teaching Profiles. **Commercial caps stay Marketplace V2** (Free 3 / Pro 10, permanent).
+**Commercial caps (FINAL 2026-08-31):** Free **1** ACTIVE Teaching Profile permanently; Tutor Pro **10**. Boost: 30-Day and 365-Day one-time (no capacity). See [`docs/MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md`](./MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md).
 
-**Related docs (do not treat as still-current commercial law without reading this plan):**
+**Trigger:** Tutor onboarding wizard step 3 (“What you teach”) on `/dashboard/tutor` is still a bulk subject picker on the **main tutor profile**. Approved direction: teaching lives only on **subject-based Teaching Profiles** (one canonical subject each, with multi-value board/level/qualification/syllabus capabilities inside that profile). Listed and searched as Teaching Profiles.
 
-- [`docs/MTH-MARKETPLACE-V2-TRACKER.md`](./MTH-MARKETPLACE-V2-TRACKER.md) — **approved live model, KEPT:** Tutor Free = **3** active Teaching Profiles **permanently**; Tutor Pro = **10**.
+**Related docs (do not treat as still-current commercial law without reading the Final Commercial Model audit):**
+
+- [`docs/MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md`](./MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md) — **canonical commercial law** (Free=1 / Pro=10).
+- [`docs/MTH-MARKETPLACE-V2-TRACKER.md`](./MTH-MARKETPLACE-V2-TRACKER.md) — historically said Free=3; **superseded** for Free cap.
 - [`docs/MTH-MARKETPLACE-V2-FINAL-IMPLEMENTATION-REPORT.md`](./MTH-MARKETPLACE-V2-FINAL-IMPLEMENTATION-REPORT.md) — production verified 2026-08-29 (`b2b978e`).
-- [`docs/MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md`](./MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md) — **stale on listing caps** (still describes the retired “2 free until 30 Sep then 0” model). Code and tracker superseded that. **Do not revive that cliff, and do not invent a new 3→1 Oct 2026 cliff.**
+- [`docs/MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md`](./MTH-MARKETPLACE-V2-COMMERCIAL-AUDIT.md) — **stale** on listing caps. **Do not revive October cliffs or Free=3.**
 
 ---
 
@@ -140,18 +143,18 @@ Source of truth: `src/lib/subject-profile-entitlements.ts` + `BUSINESS` in `src/
 
 | Constant | Value | Meaning |
 |----------|-------|---------|
-| `FREE_SUBJECT_PROFILES` | **3** | Tutor Free active Teaching Profile cap — **permanent** |
+| `FREE_SUBJECT_PROFILES` | **1** | Tutor Free active Teaching Profile cap — **permanent** (FINAL 2026-08-31) |
 | `TUTOR_PRO_SUBJECT_PROFILE_CAP` | **10** | Tutor Pro (`TUTOR_BASIC`) and grandfathered `EXTRA_PROFILE_ADS` |
-| `BUSINESS.tutorFreeActiveListings` | 3 | Marketing consumes this |
+| `BUSINESS.tutorFreeActiveListings` | 1 | Marketing consumes this |
 | `BUSINESS.tutorProActiveListings` | 10 | Marketing consumes this |
 | `isSubjectProfilePromoActive()` | **always `false`** | Listing-cap promo window **retired** — **do not revive** |
 | `SUBJECT_PROFILE_PROMO_UNTIL` | `"2026-09-30"` | **Dead constant** for listing caps; kept for email/compat |
 
 `resolveSubjectProfileActiveCap`: Unlimited (`UNLIMITED_ADS`) → ∞; Tutor Pro or Extra Profile Ads → 10; else → **3**. **No date branch. Do not add one.**
 
-Over-cap: `enforceSubjectProfileCap` pauses oldest-updated ACTIVE rows. Called from `syncTutorBadges` and digest cron. **Do not add a 1 Oct job that pauses Free tutors from 3 down to 1.**
+Over-cap auto-pause for Free tutors is **gated** (`ENFORCE_FREE_TEACHING_PROFILE_CAP=1`) until an approved transition for grandfathered Free>1 listings. Create gate already enforces Free=1 for new ACTIVE profiles. **Do not add a 1 Oct job that pauses Free tutors.**
 
-Public copy already says complete profile lists free; **up to 3** active teaching listings; Tutor Pro **up to 10**.
+Public copy: Free **1** active Teaching Profile; Tutor Pro **up to 10**.
 
 | Plan ID | Public name | Sold on `/pricing`? | List price | Listing entitlement |
 |---------|-------------|---------------------|------------|---------------------|
@@ -164,7 +167,7 @@ Public copy already says complete profile lists free; **up to 3** active teachin
 
 **No +1 Teaching Profile SKU.** Extra slots on Free are sold by upgrading to Tutor Pro (10). Do not resurrect Extra Profile Ads on `/pricing`.
 
-**Separate 30 Sep 2026 promo (must not be confused with caps):** Tutor Pro itself is complimentary until 30 September 2026 (`promoUntil: "2026-09-30"`). That **price** promo may still end on the approved date. **Free Teaching Profile cap remains 3** before and after that date.
+**Separate 30 Sep 2026 promo (must not be confused with caps):** Tutor Pro itself is complimentary until 30 September 2026 (`promoUntil: "2026-09-30"`). That **price** promo may still end on the approved date. **Free Teaching Profile cap remains 1** before and after that date.
 
 ### A.7 Messaging / contacts (identity is the account) — **KEPT**
 
@@ -195,7 +198,7 @@ Student free contacts: **3 new tutors / month** (`BUSINESS.studentFreeContactsPe
 2. **Do not add subjects on the master profile as an editable concept.** `TutorProfile.subjects` may remain temporarily as a **derived compatibility cache** of distinct ACTIVE Teaching Profile subjects. Tutors must not manually maintain it.
 3. **Tutors create Teaching Profiles separately** — dedicated create/manage UI; wizard ends with an **explicit** first Teaching Profile (not a bulk picker, not `split(",")[0]`, not `"General tutoring"`).
 4. **1 Teaching Profile = 1 canonical subject.** Board, curriculum, qualification, level, and syllabus code are **multi-value capabilities inside** that profile. Specializations/topics if already supported may live there too.
-5. **Caps (LOCKED — live V2):** Free = **3** ACTIVE Teaching Profiles **permanently**; Tutor Pro = **10**. No date-dependent Free cap. No +1 SKU. Boost is visibility, not capacity.
+5. **Caps (LOCKED — FINAL 2026-08-31):** Free = **1** ACTIVE Teaching Profile **permanently**; Tutor Pro = **10**. No date-dependent Free cap. No +1 SKU. Boost is visibility (30-Day / 365-Day), not capacity.
 6. **Each profile ads/lists separately** — keep per-profile Boost; search card must be the Teaching Profile so Boost on profile B can surface B.
 7. **Search unit = Teaching Profile.** Capability matching (e.g. Cambridge + A Level + Mathematics + 9709) happens **inside** the subject profile, not by spawning extra Maths rows.
 8. **Search display:** own card per matching Teaching Profile; **broad search max 2 cards per `TutorProfile` per page**; filtered search shows the matching profile; relevance-first ranking; Boost subordinate to subject/board/level/code fit.
@@ -351,15 +354,15 @@ V2 already retired the older “2 free until 30 Sep then 0” model. A new 3→1
 
 | | **Locked (live Marketplace V2)** |
 |--|----------------------------------|
-| Tutor Free active Teaching Profiles | **3, permanent** |
+| Tutor Free active Teaching Profiles | **1, permanent** |
 | Tutor Pro Teaching Profiles | **10** |
-| After 30 Sep 2026 (Free caps) | Still **3** |
-| After 30 Sep 2026 (Tutor Pro **price**) | Complimentary Tutor Pro may end → PKR 1,499/mo **if** they want to keep Pro ranking/10 slots/unlimited reveals; Free tutors who never had Pro **keep 3** |
+| After 30 Sep 2026 (Free caps) | Still **1** |
+| After 30 Sep 2026 (Tutor Pro **price**) | Complimentary Tutor Pro may end → PKR 1,499/mo **if** they want to keep Pro ranking/10 slots/unlimited reveals; Free tutors who never had Pro **keep 1** |
 | +1 Teaching Profile SKU | **None** — upgrade to Tutor Pro |
-| Listing Boost | Per Teaching Profile; does not add capacity |
+| Listing Boost | 30-Day / 365-Day per Teaching Profile; does not add capacity |
 | Extra Profile Ads / Unlimited Ads | Grandfather only; not sold on `/pricing` |
 
-Need more than 3? **Upgrade to Tutor Pro.**
+Need more than 1? **Upgrade to Tutor Pro.**
 
 ---
 
@@ -369,7 +372,7 @@ Need more than 3? **Upgrade to Tutor Pro.**
 
 | Tutor | Active Teaching Profile cap |
 |-------|-----------------------------|
-| Free (no Tutor Pro / Extra / Unlimited) | **3** |
+| Free (no Tutor Pro / Extra / Unlimited) | **1** |
 | Tutor Pro (`TUTOR_BASIC`) | **10** |
 | Grandfather `EXTRA_PROFILE_ADS` | **10** while subscription active |
 | Grandfather `UNLIMITED_ADS` | Unlimited |
@@ -667,7 +670,7 @@ Login-gated wizard / dashboard / messaging / Boost checkout still need a real tu
 - Broad search **max 2 cards per tutor per page**.
 - Student contacts remain **per unique tutor**.
 - Conversations remain **tutor-level** with listing context.
-- Free = **3** Teaching Profiles **permanently**.
+- Free = **1** Teaching Profile **permanently**.
 - Tutor Pro = **10**.
 - **No +1** profile SKU.
 - Listing Boost remains **per Teaching Profile** (does not add capacity).

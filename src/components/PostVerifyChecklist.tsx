@@ -11,8 +11,8 @@ export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusVie
       </p>
       <h2 id="post-verify-tutor-title">Next: get your tutor profile live</h2>
       <p className="muted">
-        Complete profiles appear in search for free. Paid plans add priority and ads — not basic
-        visibility.
+        Complete profiles appear in search for free. Tutor Pro adds ranking and unlimited enquiry
+        reveals — not basic visibility.
       </p>
       <ol className="post-verify-checklist-steps">
         <li className="is-done">

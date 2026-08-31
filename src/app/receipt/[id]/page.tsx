@@ -31,9 +31,13 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     ? sub.stripeSubscriptionId
     : sub.id;
 
+  const boostWindowDays =
+    sub.plan === "AD_BOOST" && sub.billingPeriod === "annual" ? 365 : 30;
   const billingDescription = isOneTimeAddOn
-    ? sub.plan === "AD_BOOST" || sub.plan === "HIGHLIGHTED_AD"
-      ? "One-time purchase — 30-day visibility window"
+    ? sub.plan === "AD_BOOST"
+      ? `One-time purchase — ${boostWindowDays}-day Listing Boost window`
+      : sub.plan === "HIGHLIGHTED_AD"
+        ? "One-time purchase — 30-day visibility window (legacy Highlight)"
       : sub.plan === "VERIFIED_TUTOR"
         ? "One-time purchase — identity review queue priority"
         : "One-time purchase"

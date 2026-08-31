@@ -70,8 +70,8 @@ export function addOnBillingFootnote(
     kind === "verification"
       ? "One-time purchase · queue priority only"
       : billing === "annual"
-        ? "365-day boost · one-time · about 20% off vs 12 × 30-day"
-        : "30-day boost · one-time purchase";
+        ? "365-Day Listing Boost · one-time · save about 20% vs 12 × 30-day"
+        : "30-Day Listing Boost · one-time purchase";
   const payment = paidCheckoutLive ? "paid on Safepay" : "activate after payment";
   return `${detail} · shown in ${currency} · ${payment}`;
 }

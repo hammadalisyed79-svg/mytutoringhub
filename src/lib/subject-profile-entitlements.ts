@@ -6,9 +6,19 @@ import type { SubscriptionPlan } from "@/lib/types";
  * Free = 1 active listing; Tutor Pro (TUTOR_BASIC) = 10.
  * Legacy EXTRA_PROFILE_ADS maps to Pro cap (grandfather).
  * Legacy UNLIMITED_ADS keeps unlimited (grandfather).
+ *
+ * NEW creates use FREE_SUBJECT_PROFILES (=1).
+ * Auto-pause of already-ACTIVE Free listings above 1 is OFF until an approved
+ * transition (set ENFORCE_FREE_TEACHING_PROFILE_CAP=1). See
+ * docs/MTH-FINAL-COMMERCIAL-MODEL-AUDIT.md.
  */
 export const FREE_SUBJECT_PROFILES = 1;
 export const TUTOR_PRO_SUBJECT_PROFILE_CAP = 10;
+
+/** When false, Free tutors over Free=1 are not auto-paused (create gate still enforces 1). */
+export function shouldEnforceFreeTeachingProfilePause() {
+  return process.env.ENFORCE_FREE_TEACHING_PROFILE_CAP === "1";
+}
 
 /** @deprecated Use FREE_SUBJECT_PROFILES — V2 has no promo sunset on free listings. */
 export const FREE_SUBJECT_PROFILES_DURING_PROMO = FREE_SUBJECT_PROFILES;
@@ -171,6 +181,15 @@ export async function enforceSubjectProfileCap(
 
   const cap = await getSubjectProfileActiveCap(userId, now);
   if (!Number.isFinite(cap)) return { paused: 0, kept: 0, cap };
+
+  // Free=1 create gate is live; do not silently pause grandfathered Free listings
+  // that were created under the prior Free=3 rule until migration is approved.
+  if (cap <= FREE_SUBJECT_PROFILES && !shouldEnforceFreeTeachingProfilePause()) {
+    const activeCount = await prisma.subjectProfile.count({
+      where: { tutorProfileId: profile.id, status: "ACTIVE" },
+    });
+    return { paused: 0, kept: activeCount, cap };
+  }
 
   const active = await prisma.subjectProfile.findMany({
     where: { tutorProfileId: profile.id, status: "ACTIVE" },

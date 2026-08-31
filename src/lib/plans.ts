@@ -9,9 +9,9 @@ export type PlanDefinition = {
   /** Monthly list price stored in PKR base units (converted at display/checkout). */
   pricePkr: number;
   /**
-   * Annual list price in PKR (~9.6× monthly = ~2 months free).
-   * Add-ons are one-time and omit this.
-   */
+ * Annual list price in PKR (~9.6× monthly ≈ 20% off twelve charges).
+ * Add-ons are one-time and omit this unless they offer a 365-day variant.
+ */
   annualPricePkr?: number;
   features: string[];
   envPriceId: string;
@@ -46,15 +46,15 @@ export type ResolvedPlan = PlanDefinition & {
   savingsPercent: number;
 };
 
-/** ~2 months free vs paying monthly for a year (~20% off). */
+/** ~20% off vs paying twelve separate monthly/30-day charges (×9.6). */
 export function defaultAnnualPricePkr(monthlyPkr: number) {
   return Math.round(monthlyPkr * 9.6);
 }
 
-/** Public footnote for annual billing (~20% vs twelve separate charges). */
-export const ANNUAL_SAVE_LABEL = "Annual · save ~20%";
+/** Preferred public annual wording. */
+export const ANNUAL_SAVE_LABEL = "Save 20% with annual billing";
 export const ANNUAL_SAVE_FOOTNOTE =
-  "Annual billing is about 20% less than paying twelve separate monthly or 30-day charges.";
+  "Annual billing saves about 20% versus twelve separate monthly or 30-day charges.";
 
 export const DEFAULT_PLANS: PlanDefinition[] = [
   {
@@ -143,17 +143,17 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     id: "AD_BOOST",
     name: "Listing Boost",
     description:
-      "Boost one Teaching Profile among relevant matches. Choose 30 days or annual (~20% off vs twelve separate 30-day boosts). Does not increase Teaching Profile capacity.",
+      "Boost one Teaching Profile among relevant matches. Choose 30-Day Listing Boost or 365-Day Listing Boost (save about 20% vs twelve 30-day purchases). Does not increase Teaching Profile capacity.",
     audience: "tutor",
     pricePkr: 999,
-    /** ~9.6× monthly 30-day price ≈ 20% off buying twelve separate boosts. */
+    /** ~9.6× 30-day price ≈ 20% off buying twelve separate boosts. */
     annualPricePkr: defaultAnnualPricePkr(999),
     features: [
-      "30-day boost from PKR 999 · one-time (not a subscription)",
-      "Annual boost available — about 20% off vs 12 × 30-day boosts",
+      "30-Day Listing Boost from PKR 999 · one-time (not a subscription)",
+      "365-Day Listing Boost available — about 20% off vs 12 × 30-day boosts",
       "Stronger placement among relevant matches for the purchase window",
       "Does not increase Teaching Profile capacity",
-      "Repurchase or annual renewal extends that profile’s window",
+      "Repurchase or 365-day renewal extends that profile’s window",
     ],
     envPriceId: "STRIPE_PRICE_AD_BOOST",
     isAddOn: true,

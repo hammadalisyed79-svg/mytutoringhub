@@ -15,6 +15,7 @@ import {
 } from "@/lib/marketing-copy";
 import { addOnBillingFootnote, planBillingFootnote } from "@/lib/payments-status";
 import {
+  ANNUAL_SAVE_LABEL,
   DEFAULT_PLANS,
   PUBLIC_ADDON_PLAN_IDS,
   applyPlanOverrides,
@@ -97,9 +98,9 @@ assert.equal(boost.pricePkr, 999);
 assert.equal(boost.annualPricePkr, Math.round(999 * 9.6));
 assert.equal(boost.isAddOn, true);
 assert.ok(boost.features.some((f) => /does not increase Teaching Profile capacity/i.test(f)));
-assert.ok(boost.features.some((f) => /annual/i.test(f)));
+assert.ok(boost.features.some((f) => /365-Day|annual/i.test(f)));
 assert.ok(boost.features.some((f) => /20%/i.test(f)));
-assert.ok(/20%|annual/i.test(boost.description));
+assert.ok(/20%|365-Day|annual/i.test(boost.description));
 
 const boostResolved = resolvePlan(boost);
 assert.equal(boostResolved.annualChargePricePkr, Math.round(999 * 9.6));
@@ -148,7 +149,7 @@ assert.doesNotMatch(oncePrice, /\/mo|\/yr/);
 assert.match(formatPlanPrice(999, "PKR", "month"), /\/mo$/);
 assert.match(formatPlanPrice(1499, "PKR", "year"), /\/yr$/);
 
-assert.match(addOnBillingFootnote("PKR", true, "boost"), /One-time|30-day boost/i);
+assert.match(addOnBillingFootnote("PKR", true, "boost"), /30-Day Listing Boost|one-time/i);
 assert.doesNotMatch(addOnBillingFootnote("PKR", true, "boost"), /Billed monthly/i);
 assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);
 assert.match(planBillingFootnote("PKR", true, "monthly"), /Billed monthly/);
@@ -159,7 +160,10 @@ assert.match(pricingClient, /formatPlanPrice\([\s\S]*?"once"/);
 assert.match(pricingClient, /addOnBillingFootnote/);
 assert.match(pricingClient, /oneTime=\{Boolean\(plan\.isAddOn\)\}/);
 assert.match(pricingClient, /ANNUAL_SAVE_LABEL/);
-assert.match(addOnBillingFootnote("PKR", true, "boost", "annual"), /365-day|20%/i);
+assert.match(addOnBillingFootnote("PKR", true, "boost", "annual"), /365-Day Listing Boost|20%/i);
+
+assert.match(ANNUAL_SAVE_LABEL, /Save 20% with annual billing/);
+assert.doesNotMatch(ANNUAL_SAVE_LABEL, /2 months free/i);
 
 // Stale branding overrides stay mapped to public names
 const overridden = applyPlanOverrides({

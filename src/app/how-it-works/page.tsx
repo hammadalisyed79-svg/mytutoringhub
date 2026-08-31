@@ -95,7 +95,8 @@ export default async function HowItWorksPage() {
                 recommended — the badge is earned after review
               </li>
               <li>
-                Optional one-time 30-day Listing Boost on each Teaching Profile from your dashboard
+                Optional 30-Day or 365-Day Listing Boost on each Teaching Profile from your
+                dashboard (one-time; does not add capacity)
                 (does not increase capacity) — paid on Safepay when checkout is live
               </li>
             </ul>
