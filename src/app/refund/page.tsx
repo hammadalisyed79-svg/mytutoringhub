@@ -14,7 +14,7 @@ export default function RefundPage() {
     <div className="page">
       <div className="container narrow-prose">
         <h1 className="page-title">Refund &amp; cancellation policy</h1>
-        <p className="muted">Last updated: August 2026</p>
+        <p className="muted">Last updated: September 2026</p>
         <div className="legal-body">
           <h2>1. What this covers</h2>
           <p>
@@ -59,13 +59,19 @@ export default function RefundPage() {
             Include your receipt or Safepay tracker ID. We review each request manually. Refunds, when
             approved, are returned through the original payment method where Safepay allows.
           </p>
-          <h2>6. What we generally do not refund</h2>
+          <h2>6. Refund turnaround time</h2>
+          <p>
+            Once a refund is approved, we process it within <strong>14 days</strong>. The refund is
+            issued through Safepay to your original payment method. Your bank or card issuer may take
+            additional time to show the credit on your statement after we have processed it.
+          </p>
+          <h2>7. What we generally do not refund</h2>
           <ul>
             <li>Lesson fees paid directly to a tutor</li>
             <li>Subscriptions where substantial platform use occurred after purchase</li>
             <li>Add-on visibility windows (Listing Boost / legacy Highlight) after the boost period has started</li>
           </ul>
-          <h2>7. Related policies</h2>
+          <h2>8. Related policies</h2>
           <p>
             <Link href="/terms">Terms of Service</Link>
             {" · "}
