@@ -769,6 +769,24 @@ export function TutorProfileForm({
   const completedStepCount = steps.filter((row) => isStepDataComplete(row.id)).length;
   const fieldProgressPct = progress;
 
+  const requiredChecklist = useMemo(() => {
+    const rows = [
+      ...completion.checks.map((row) => ({
+        key: row.key,
+        label: row.label,
+        ok: row.ok,
+        required: row.required,
+      })),
+      {
+        key: "email",
+        label: "Email verified",
+        ok: Boolean(emailVerified),
+        required: true,
+      },
+    ];
+    return rows.filter((row) => row.required);
+  }, [completion.checks, emailVerified]);
+
   const stepNav = (
     <nav className="profile-wizard-steps" aria-label="Profile steps">
       <ol className="profile-wizard-steps-list">
@@ -809,7 +827,12 @@ export function TutorProfileForm({
                 <span className="profile-wizard-step-num" aria-hidden="true">
                   {markContent}
                 </span>
-                {active ? <span className="profile-wizard-step-label">{row.title}</span> : null}
+                <span className="profile-wizard-step-label">
+                  {row.title}
+                  {!row.optional && !complete ? (
+                    <span className="profile-wizard-step-req">Required</span>
+                  ) : null}
+                </span>
               </button>
             </li>
           );
@@ -818,15 +841,40 @@ export function TutorProfileForm({
     </nav>
   );
 
+  const requiredFieldsList = (
+    <ul className="profile-complete-list profile-required-checklist" aria-label="Required profile items">
+      {requiredChecklist.map((row) => (
+        <li key={row.key} className={row.ok ? "is-done" : "is-needed"}>
+          <span className="profile-required-mark" aria-hidden="true">
+            {row.ok ? "✓" : "○"}
+          </span>
+          <span className="profile-required-label">{row.label}</span>
+          {row.ok ? (
+            <span className="profile-required-state">Done</span>
+          ) : (
+            <span className="profile-required-state is-required-text">Required</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+
   const wizardChrome = (
     <div className="profile-wizard-chrome">
       <div className="profile-wizard-meta">
         <p className="guided-search-step">
           Step {step + 1} of {steps.length}
-          {currentStep.optional ? " · Optional" : " · Required"}
+          {currentStep.optional ? (
+            " · Optional"
+          ) : (
+            <>
+              {" · "}
+              <span className="profile-required-state is-required-text">Required</span>
+            </>
+          )}
         </p>
         <p className="profile-wizard-fields muted" aria-live="polite">
-          {requiredDone}/{requiredTotal} required fields · {fieldProgressPct}% ·{" "}
+          {requiredDone}/{requiredTotal} required items · {fieldProgressPct}% ·{" "}
           {completedStepCount}/{steps.length} steps done
         </p>
       </div>
@@ -849,6 +897,12 @@ export function TutorProfileForm({
           <i className="profile-wizard-legend-dot is-pending" /> Incomplete
         </span>
       </div>
+      <details className="profile-required-details" open={step === 0 || requiredDone < requiredTotal}>
+        <summary>
+          Required for a live profile ({requiredDone}/{requiredTotal})
+        </summary>
+        {requiredFieldsList}
+      </details>
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
       <p className="field-hint profile-wizard-persist-hint">
@@ -915,13 +969,14 @@ export function TutorProfileForm({
         <div className="profile-complete profile-complete--compact">
           <div className="profile-complete-head">
             <strong>
-              Ready to save · {requiredDone}/{requiredTotal} required fields ready
+              Ready to save · {requiredDone}/{requiredTotal} required items ready
             </strong>
             <span className="profile-complete-pct">{progress}%</span>
           </div>
           <div className="profile-progress" aria-hidden>
             <span style={{ width: `${Math.min(100, progress)}%` }} />
           </div>
+          {requiredFieldsList}
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
             {hasValidTeachingProfile
               ? "Your first Teaching Profile is already set. Save any remaining profile details, then manage Teaching Profiles below."
