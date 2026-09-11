@@ -586,14 +586,14 @@ export function TutorProfileForm({
   }
 
   function focusCrop() {
-    setPhotoMsg("Drag inside the frame to reposition · scroll to zoom in or out.");
+    setPhotoMsg("Full photo is shown first. Scroll to zoom in and crop · drag to reposition.");
   }
 
   function resetCrop() {
     setPhotoCropX(0);
     setPhotoCropY(0);
     setPhotoCropZoom(1);
-    setPhotoMsg("Crop reset. Drag inside the frame to reposition · scroll to zoom.");
+    setPhotoMsg("Crop reset — full photo shown. Scroll to zoom in and crop · drag to move.");
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -621,7 +621,7 @@ export function TutorProfileForm({
       setPhotoCropX(0);
       setPhotoCropY(0);
       setPhotoCropZoom(1);
-      setPhotoMsg("Drag the photo to adjust · scroll to zoom");
+      setPhotoMsg("Full photo shown. Scroll to zoom in and crop · drag to reposition.");
       // Persist immediately so refresh does not lose the uploaded photo.
       void fetch("/api/profile/tutor", {
         method: "PATCH",

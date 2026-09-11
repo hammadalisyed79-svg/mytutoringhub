@@ -23,6 +23,27 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
+/**
+ * Under object-fit:cover, zoom=1 fills the frame (sides/top may be clipped).
+ * Returns zoom that shows the entire image inside the frame (contain-equivalent).
+ */
+export function containZoomForCover(
+  naturalW: number,
+  naturalH: number,
+  frameW: number,
+  frameH: number,
+) {
+  if (naturalW <= 0 || naturalH <= 0 || frameW <= 0 || frameH <= 0) return 1;
+  const imageAspect = naturalW / naturalH;
+  const frameAspect = frameW / frameH;
+  const fit = imageAspect > frameAspect ? frameAspect / imageAspect : imageAspect / frameAspect;
+  return clamp(fit, 0.35, 1);
+}
+
+function isIdentityCrop(x: number, y: number, zoom: number) {
+  return Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && Math.abs((zoom || 1) - 1) < 0.01;
+}
+
 export function PhotoFrameAdjust({
   photoUrl,
   cropX,
@@ -37,7 +58,9 @@ export function PhotoFrameAdjust({
   const dragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const cropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
+  const naturalRef = useRef({ w: 0, h: 0 });
   const [draggingUi, setDraggingUi] = useState(false);
+  const [minZoom, setMinZoom] = useState(0.35);
 
   useEffect(() => {
     cropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
@@ -52,20 +75,74 @@ export function PhotoFrameAdjust({
         y: patch.y ?? cropRef.current.y,
         zoom: patch.zoom ?? cropRef.current.zoom,
       };
+      next.zoom = clamp(next.zoom, minZoom, 3);
+      next.x = clamp(next.x, -100, 100);
+      next.y = clamp(next.y, -100, 100);
       cropRef.current = next;
       onChange(next);
     },
-    [onChange],
+    [onChange, minZoom],
   );
 
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
+  const updateMinZoomFromNatural = useCallback(() => {
+    const frame = frameRef.current;
+    const { w, h } = naturalRef.current;
+    if (!frame || !w || !h) return 1;
+    const rect = frame.getBoundingClientRect();
+    const fit = containZoomForCover(w, h, rect.width, rect.height);
+    setMinZoom(fit);
+    return fit;
+  }, []);
+
+  // New upload / Reset crop sets identity (0,0,1) — switch to full-image fit zoom.
+  useEffect(() => {
+    if (!hasPhoto || !naturalRef.current.w) return;
+    if (!isIdentityCrop(cropX, cropY, cropZoom || 1)) return;
+    const fit = updateMinZoomFromNatural();
+    if (Math.abs((cropZoom || 1) - fit) > 0.02) {
+      onChange({ x: 0, y: 0, zoom: fit });
+    }
+  }, [hasPhoto, photoUrl, cropX, cropY, cropZoom, onChange, updateMinZoomFromNatural]);
+
+  const onImageLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const img = e.currentTarget;
+      naturalRef.current = { w: img.naturalWidth, h: img.naturalHeight };
+      const fit = updateMinZoomFromNatural();
+      if (isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
+        onChange({ x: 0, y: 0, zoom: fit });
+      }
+    },
+    [onChange, updateMinZoomFromNatural],
+  );
+
+  useEffect(() => {
     if (!hasPhoto) return;
-    e.preventDefault();
-    dragging.current = true;
-    setDraggingUi(true);
-    lastPos.current = { x: e.clientX, y: e.clientY };
-    frameRef.current?.setPointerCapture(e.pointerId);
-  }, [hasPhoto]);
+    const frame = frameRef.current;
+    if (!frame) return;
+    const ro = new ResizeObserver(() => {
+      const fit = updateMinZoomFromNatural();
+      if (isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
+        onChange({ x: 0, y: 0, zoom: fit });
+      } else if ((cropRef.current.zoom || 1) < fit) {
+        applyCrop({ zoom: fit });
+      }
+    });
+    ro.observe(frame);
+    return () => ro.disconnect();
+  }, [hasPhoto, photoUrl, onChange, updateMinZoomFromNatural, applyCrop]);
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!hasPhoto) return;
+      e.preventDefault();
+      dragging.current = true;
+      setDraggingUi(true);
+      lastPos.current = { x: e.clientX, y: e.clientY };
+      frameRef.current?.setPointerCapture(e.pointerId);
+    },
+    [hasPhoto],
+  );
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
@@ -77,8 +154,8 @@ export function PhotoFrameAdjust({
       lastPos.current = { x: e.clientX, y: e.clientY };
       const zoom = cropRef.current.zoom || 1;
       applyCrop({
-        x: clamp(cropRef.current.x + dx / zoom, -100, 100),
-        y: clamp(cropRef.current.y + dy / zoom, -100, 100),
+        x: cropRef.current.x + dx / zoom,
+        y: cropRef.current.y + dy / zoom,
       });
     },
     [applyCrop, hasPhoto],
@@ -97,7 +174,7 @@ export function PhotoFrameAdjust({
       e.preventDefault();
       e.stopPropagation();
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      applyCrop({ zoom: clamp((cropRef.current.zoom || 1) + delta, 1, 3) });
+      applyCrop({ zoom: (cropRef.current.zoom || 1) + delta });
     };
 
     node.addEventListener("wheel", onWheel, { passive: false });
@@ -114,7 +191,11 @@ export function PhotoFrameAdjust({
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       role={hasPhoto ? "img" : undefined}
-      aria-label={hasPhoto ? "Profile photo — drag to reposition, scroll to zoom (crop & adjust)" : undefined}
+      aria-label={
+        hasPhoto
+          ? "Profile photo — full image shown first. Scroll to zoom in and crop, drag to reposition."
+          : undefined
+      }
     >
       {hasPhoto ? (
         <>
@@ -124,11 +205,14 @@ export function PhotoFrameAdjust({
             alt=""
             draggable={false}
             className="photo-frame-adjust-image"
+            onLoad={onImageLoad}
             style={{
               transform: `translate(${cropX}%, ${cropY}%) scale(${cropZoom || 1})`,
             }}
           />
-          <span className="photo-frame-adjust-hint">Crop & adjust · Drag · Scroll to zoom</span>
+          <span className="photo-frame-adjust-hint">
+            Full photo first · Scroll to zoom in & crop · Drag to move
+          </span>
         </>
       ) : (
         <span className="photo-frame-adjust-empty">{emptyLabel}</span>
