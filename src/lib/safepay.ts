@@ -71,10 +71,19 @@ export function safepayPublicError(err: unknown): string {
     const env = getSafepayEnv();
     return `Safepay ${env} did not accept these API keys. Use sandbox keys with SAFEPAY_ENV=sandbox, or live keys with SAFEPAY_ENV=production.`;
   }
+  if (
+    /unauthorized/i.test(raw) ||
+    /missing jwt token/i.test(raw) ||
+    /client not permitted/i.test(raw) ||
+    /strategies\/secret/i.test(raw)
+  ) {
+    const env = getSafepayEnv();
+    return `Safepay ${env} rejected SAFEPAY_SECRET_KEY (unauthorized). Fix: (1) paste the Secret key — not the sec_ API key — from the same ${env} dashboard, (2) no spaces/newlines in Vercel, (3) do not mix sandbox keys with SAFEPAY_ENV=production. Redeploy, then test again.`;
+  }
   if (/unsupported meta key/i.test(raw)) {
     return "Safepay rejected this checkout. Please try again.";
   }
-  return (redacted || "Safepay checkout failed").slice(0, 240);
+  return (redacted || "Safepay checkout failed").slice(0, 280);
 }
 
 export async function createSafepayHostedCheckout(opts: {
