@@ -7842,8 +7842,22 @@ a.chip-btn {
   height: 8.5rem;
 }
 
-.photo-frame-adjust {
-  position: relative;
+.photo-frame-adjust-wrap {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.photo-frame-adjust-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.photo-frame-adjust-status {
+  font-size: 0.82rem;
+}
   overflow: hidden;
   display: grid;
   place-items: center;

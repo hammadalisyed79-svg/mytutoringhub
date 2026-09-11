@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  containZoomForCover,
+  detectHeadshotCrop,
+  type PhotoCrop,
+} from "@/lib/photo-face-crop";
 
-export type PhotoCrop = {
-  x: number;
-  y: number;
-  zoom: number;
-};
+export type { PhotoCrop };
+export { containZoomForCover };
 
 type Props = {
   photoUrl?: string;
@@ -17,27 +19,12 @@ type Props = {
   className?: string;
   emptyLabel?: string;
   borderRadius?: string;
+  /** When true (default), new/reset photos auto-frame head→shoulders via face detection. */
+  autoFaceCrop?: boolean;
 };
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
-}
-
-/**
- * Under object-fit:cover, zoom=1 fills the frame (sides/top may be clipped).
- * Returns zoom that shows the entire image inside the frame (contain-equivalent).
- */
-export function containZoomForCover(
-  naturalW: number,
-  naturalH: number,
-  frameW: number,
-  frameH: number,
-) {
-  if (naturalW <= 0 || naturalH <= 0 || frameW <= 0 || frameH <= 0) return 1;
-  const imageAspect = naturalW / naturalH;
-  const frameAspect = frameW / frameH;
-  const fit = imageAspect > frameAspect ? frameAspect / imageAspect : imageAspect / frameAspect;
-  return clamp(fit, 0.35, 1);
 }
 
 function isIdentityCrop(x: number, y: number, zoom: number) {
@@ -53,14 +40,18 @@ export function PhotoFrameAdjust({
   className,
   emptyLabel = "Add photo",
   borderRadius = "1.2rem",
+  autoFaceCrop = true,
 }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const cropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
   const naturalRef = useRef({ w: 0, h: 0 });
+  const facedUrl = useRef<string | null>(null);
+  const prevCropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
   const [draggingUi, setDraggingUi] = useState(false);
   const [minZoom, setMinZoom] = useState(0.35);
+  const [faceStatus, setFaceStatus] = useState<string>("");
 
   useEffect(() => {
     cropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
@@ -94,43 +85,67 @@ export function PhotoFrameAdjust({
     return fit;
   }, []);
 
-  // New upload / Reset crop sets identity (0,0,1) — switch to full-image fit zoom.
-  useEffect(() => {
-    if (!hasPhoto || !naturalRef.current.w) return;
-    if (!isIdentityCrop(cropX, cropY, cropZoom || 1)) return;
-    const fit = updateMinZoomFromNatural();
-    if (Math.abs((cropZoom || 1) - fit) > 0.02) {
-      onChange({ x: 0, y: 0, zoom: fit });
-    }
-  }, [hasPhoto, photoUrl, cropX, cropY, cropZoom, onChange, updateMinZoomFromNatural]);
+  const runFaceFraming = useCallback(
+    async (img: HTMLImageElement, force: boolean) => {
+      if (!autoFaceCrop) return;
+      if (!force && facedUrl.current === photoUrl) return;
+      if (!force && !isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
+        return;
+      }
+
+      setFaceStatus("Framing face…");
+      try {
+        const { crop, method } = await detectHeadshotCrop(img, 1);
+        facedUrl.current = photoUrl || null;
+        cropRef.current = crop;
+        onChange(crop);
+        setFaceStatus(
+          method === "face"
+            ? "Auto-framed head to shoulders — drag or scroll to fine-tune"
+            : "Portrait framed (no face API) — drag or scroll to fine-tune",
+        );
+      } catch {
+        const fit = updateMinZoomFromNatural();
+        onChange({ x: 0, y: 0, zoom: Math.max(fit, 1) });
+        setFaceStatus("Adjust crop manually — scroll to zoom, drag to move");
+      }
+    },
+    [autoFaceCrop, onChange, photoUrl, updateMinZoomFromNatural],
+  );
 
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const img = e.currentTarget;
       naturalRef.current = { w: img.naturalWidth, h: img.naturalHeight };
-      const fit = updateMinZoomFromNatural();
-      if (isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
-        onChange({ x: 0, y: 0, zoom: fit });
-      }
+      updateMinZoomFromNatural();
+      void runFaceFraming(img, facedUrl.current !== photoUrl);
     },
-    [onChange, updateMinZoomFromNatural],
+    [photoUrl, runFaceFraming, updateMinZoomFromNatural],
   );
 
+  // Reset crop (0,0,1) after a non-default crop → re-run face framing
   useEffect(() => {
-    if (!hasPhoto) return;
-    const frame = frameRef.current;
-    if (!frame) return;
-    const ro = new ResizeObserver(() => {
-      const fit = updateMinZoomFromNatural();
-      if (isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
-        onChange({ x: 0, y: 0, zoom: fit });
-      } else if ((cropRef.current.zoom || 1) < fit) {
-        applyCrop({ zoom: fit });
-      }
-    });
-    ro.observe(frame);
-    return () => ro.disconnect();
-  }, [hasPhoto, photoUrl, onChange, updateMinZoomFromNatural, applyCrop]);
+    const prev = prevCropRef.current;
+    const nowIdentity = isIdentityCrop(cropX, cropY, cropZoom || 1);
+    const wasIdentity = isIdentityCrop(prev.x, prev.y, prev.zoom || 1);
+    prevCropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
+
+    if (!hasPhoto || !photoUrl) return;
+    if (!(nowIdentity && !wasIdentity)) return;
+
+    facedUrl.current = null;
+    const img = frameRef.current?.querySelector("img");
+    if (img && img.naturalWidth) {
+      void runFaceFraming(img, true);
+    }
+  }, [cropX, cropY, cropZoom, hasPhoto, photoUrl, runFaceFraming]);
+
+  useEffect(() => {
+    if (!hasPhoto) {
+      facedUrl.current = null;
+      setFaceStatus("");
+    }
+  }, [hasPhoto, photoUrl]);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -181,42 +196,60 @@ export function PhotoFrameAdjust({
     return () => node.removeEventListener("wheel", onWheel);
   }, [applyCrop, hasPhoto]);
 
+  async function requestAutoFrame() {
+    const img = frameRef.current?.querySelector("img");
+    if (!img || !img.naturalWidth) return;
+    facedUrl.current = null;
+    await runFaceFraming(img, true);
+  }
+
   return (
-    <div
-      ref={frameRef}
-      className={`photo-frame-adjust${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
-      style={{ borderRadius }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      role={hasPhoto ? "img" : undefined}
-      aria-label={
-        hasPhoto
-          ? "Profile photo — full image shown first. Scroll to zoom in and crop, drag to reposition."
-          : undefined
-      }
-    >
+    <div className="photo-frame-adjust-wrap">
+      <div
+        ref={frameRef}
+        className={`photo-frame-adjust${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
+        style={{ borderRadius }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        role={hasPhoto ? "img" : undefined}
+        aria-label={
+          hasPhoto
+            ? "Profile photo — auto head-to-shoulders framing. Scroll to zoom, drag to reposition."
+            : undefined
+        }
+      >
+        {hasPhoto ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoUrl}
+              alt=""
+              draggable={false}
+              className="photo-frame-adjust-image"
+              crossOrigin="anonymous"
+              onLoad={onImageLoad}
+              style={{
+                transform: `translate(${cropX}%, ${cropY}%) scale(${cropZoom || 1})`,
+              }}
+            />
+            <span className="photo-frame-adjust-hint">
+              Head → shoulders auto-frame · Scroll zoom · Drag move
+            </span>
+          </>
+        ) : (
+          <span className="photo-frame-adjust-empty">{emptyLabel}</span>
+        )}
+      </div>
       {hasPhoto ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photoUrl}
-            alt=""
-            draggable={false}
-            className="photo-frame-adjust-image"
-            onLoad={onImageLoad}
-            style={{
-              transform: `translate(${cropX}%, ${cropY}%) scale(${cropZoom || 1})`,
-            }}
-          />
-          <span className="photo-frame-adjust-hint">
-            Full photo first · Scroll to zoom in & crop · Drag to move
-          </span>
-        </>
-      ) : (
-        <span className="photo-frame-adjust-empty">{emptyLabel}</span>
-      )}
+        <div className="photo-frame-adjust-toolbar">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => void requestAutoFrame()}>
+            Auto-frame face
+          </button>
+          {faceStatus ? <span className="muted photo-frame-adjust-status">{faceStatus}</span> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
