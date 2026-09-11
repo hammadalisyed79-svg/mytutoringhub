@@ -7858,6 +7858,9 @@ a.chip-btn {
 .photo-frame-adjust-status {
   font-size: 0.82rem;
 }
+
+.photo-frame-adjust {
+  position: relative;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -11070,11 +11073,6 @@ img {
   border-color: var(--brand);
   background: var(--brand);
   color: #fff;
-}
-
-.profile-wizard-step-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .profile-wizard-legend {
