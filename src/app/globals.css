@@ -10912,6 +10912,9 @@ img {
   gap: 0.35rem;
   font-weight: 600;
   color: inherit;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-wizard-step-req {
