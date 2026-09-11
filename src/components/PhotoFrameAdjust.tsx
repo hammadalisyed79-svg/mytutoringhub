@@ -1,14 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  containZoomForCover,
-  detectHeadshotCrop,
-  type PhotoCrop,
-} from "@/lib/photo-face-crop";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import type { PhotoCrop } from "@/lib/photo-face-crop";
+import { detectHeadshotCrop } from "@/lib/photo-face-crop";
 
 export type { PhotoCrop };
-export { containZoomForCover };
 
 type Props = {
   photoUrl?: string;
@@ -25,13 +21,12 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function isIdentityCrop(x: number, y: number, zoom: number) {
-  return Math.abs(x) < 0.01 && Math.abs(y) < 0.01 && Math.abs((zoom || 1) - 1) < 0.01;
-}
-
 /**
- * Large / tall photos: show the full image first (no auto-cut).
- * User drags to center and scrolls to zoom. Optional face auto-frame is a button only.
+ * Google-style profile photo adjuster:
+ * - Full photo visible first (object-fit: contain, zoom = 1)
+ * - Drag to center
+ * - Slider / scroll to zoom
+ * Same contain + translate + scale model as TutorAvatar.
  */
 export function PhotoFrameAdjust({
   photoUrl,
@@ -41,98 +36,57 @@ export function PhotoFrameAdjust({
   onChange,
   className,
   emptyLabel = "Add photo",
-  borderRadius = "1.2rem",
+  borderRadius = "50%",
 }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const cropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
-  const naturalRef = useRef({ w: 0, h: 0 });
-  const fittedUrl = useRef<string | null>(null);
-  const prevCropRef = useRef({ x: cropX, y: cropY, zoom: cropZoom || 1 });
+  const prevPhotoUrl = useRef<string | undefined>(undefined);
   const [draggingUi, setDraggingUi] = useState(false);
-  const [minZoom, setMinZoom] = useState(0.35);
   const [status, setStatus] = useState("");
-
-  useEffect(() => {
-    cropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
-  }, [cropX, cropY, cropZoom]);
+  const zoomId = useId();
 
   const hasPhoto = Boolean(photoUrl?.startsWith("http"));
+  const zoom = clamp(cropZoom || 1, 1, 3);
+
+  useEffect(() => {
+    cropRef.current = { x: cropX, y: cropY, zoom: clamp(cropZoom || 1, 1, 3) };
+  }, [cropX, cropY, cropZoom]);
 
   const applyCrop = useCallback(
     (patch: Partial<PhotoCrop>) => {
       const next = {
-        x: patch.x ?? cropRef.current.x,
-        y: patch.y ?? cropRef.current.y,
-        zoom: patch.zoom ?? cropRef.current.zoom,
+        x: clamp(patch.x ?? cropRef.current.x, -100, 100),
+        y: clamp(patch.y ?? cropRef.current.y, -100, 100),
+        zoom: clamp(patch.zoom ?? cropRef.current.zoom, 1, 3),
       };
-      next.zoom = clamp(next.zoom, minZoom, 3);
-      next.x = clamp(next.x, -100, 100);
-      next.y = clamp(next.y, -100, 100);
       cropRef.current = next;
       onChange(next);
     },
-    [onChange, minZoom],
+    [onChange],
   );
 
-  /** Fit entire photo in the frame (especially important for tall images). */
-  const showFullImageCentered = useCallback(() => {
-    const frame = frameRef.current;
-    const { w, h } = naturalRef.current;
-    if (!frame || !w || !h) return;
-    const rect = frame.getBoundingClientRect();
-    const fit = containZoomForCover(w, h, rect.width, rect.height);
-    setMinZoom(fit);
-    const next = { x: 0, y: 0, zoom: fit };
+  /** Full photo, centered — like opening Google’s photo picker. */
+  const resetToFullPhoto = useCallback(() => {
+    const next = { x: 0, y: 0, zoom: 1 };
     cropRef.current = next;
     onChange(next);
-    setStatus(
-      h > w * 1.1
-        ? "Full tall photo shown — drag to center your face, scroll to zoom in"
-        : "Full photo shown — drag to center, scroll to zoom in",
-    );
+    setStatus("Full photo — drag to center your face, then zoom in");
   }, [onChange]);
 
-  const onImageLoad = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-      naturalRef.current = { w: img.naturalWidth, h: img.naturalHeight };
-      const isNew = fittedUrl.current !== photoUrl;
-      fittedUrl.current = photoUrl || null;
-      const frame = frameRef.current;
-      if (frame) {
-        const rect = frame.getBoundingClientRect();
-        setMinZoom(containZoomForCover(img.naturalWidth, img.naturalHeight, rect.width, rect.height));
-      }
-      // New upload or identity crop → show full image; never auto-cut.
-      if (isNew || isIdentityCrop(cropRef.current.x, cropRef.current.y, cropRef.current.zoom || 1)) {
-        showFullImageCentered();
-      }
-    },
-    [photoUrl, showFullImageCentered],
-  );
-
-  // Reset (0,0,1) → show full image again so user can re-center
+  // Reset framing only when the photo URL changes (new upload), not when reopening saved crop.
   useEffect(() => {
-    const prev = prevCropRef.current;
-    const nowIdentity = isIdentityCrop(cropX, cropY, cropZoom || 1);
-    const wasIdentity = isIdentityCrop(prev.x, prev.y, prev.zoom || 1);
-    prevCropRef.current = { x: cropX, y: cropY, zoom: cropZoom || 1 };
-
-    if (!hasPhoto || !photoUrl) return;
-    if (!(nowIdentity && !wasIdentity)) return;
-    if (!naturalRef.current.w) return;
-    fittedUrl.current = null;
-    showFullImageCentered();
-  }, [cropX, cropY, cropZoom, hasPhoto, photoUrl, showFullImageCentered]);
-
-  useEffect(() => {
-    if (!hasPhoto) {
-      fittedUrl.current = null;
+    if (!photoUrl?.startsWith("http")) {
+      prevPhotoUrl.current = undefined;
       setStatus("");
+      return;
     }
-  }, [hasPhoto, photoUrl]);
+    if (prevPhotoUrl.current && prevPhotoUrl.current !== photoUrl) {
+      resetToFullPhoto();
+    }
+    prevPhotoUrl.current = photoUrl;
+  }, [photoUrl, resetToFullPhoto]);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -151,13 +105,14 @@ export function PhotoFrameAdjust({
       if (!dragging.current || !frameRef.current || !hasPhoto) return;
       e.preventDefault();
       const rect = frameRef.current.getBoundingClientRect();
+      // Move image with the finger/cursor (Google-style).
       const dx = ((e.clientX - lastPos.current.x) / rect.width) * 100;
       const dy = ((e.clientY - lastPos.current.y) / rect.height) * 100;
       lastPos.current = { x: e.clientX, y: e.clientY };
-      const zoom = cropRef.current.zoom || 1;
+      const z = cropRef.current.zoom || 1;
       applyCrop({
-        x: cropRef.current.x + dx / zoom,
-        y: cropRef.current.y + dy / zoom,
+        x: cropRef.current.x + dx / z,
+        y: cropRef.current.y + dy / z,
       });
     },
     [applyCrop, hasPhoto],
@@ -171,14 +126,12 @@ export function PhotoFrameAdjust({
   useEffect(() => {
     const node = frameRef.current;
     if (!node || !hasPhoto) return;
-
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const delta = e.deltaY > 0 ? -0.08 : 0.08;
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
       applyCrop({ zoom: (cropRef.current.zoom || 1) + delta });
     };
-
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
   }, [applyCrop, hasPhoto]);
@@ -189,15 +142,21 @@ export function PhotoFrameAdjust({
     setStatus("Framing face…");
     try {
       const { crop, method } = await detectHeadshotCrop(img, 1);
-      cropRef.current = crop;
-      onChange(crop);
+      // Face crop helper assumes cover; map to contain-ish zoom by keeping pan and using max(1, zoom*0.85)
+      const next = {
+        x: crop.x,
+        y: crop.y,
+        zoom: clamp(Math.max(1.15, crop.zoom * 0.9), 1, 3),
+      };
+      cropRef.current = next;
+      onChange(next);
       setStatus(
         method === "face"
-          ? "Face framed — drag to fine-tune center"
-          : "Portrait framed — drag to fine-tune center",
+          ? "Face centered — drag or zoom to adjust"
+          : "Portrait framed — drag or zoom to adjust",
       );
     } catch {
-      showFullImageCentered();
+      resetToFullPhoto();
     }
   }
 
@@ -205,7 +164,7 @@ export function PhotoFrameAdjust({
     <div className="photo-frame-adjust-wrap">
       <div
         ref={frameRef}
-        className={`photo-frame-adjust${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
+        className={`photo-frame-adjust photo-frame-adjust--google${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
         style={{ borderRadius }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -213,9 +172,7 @@ export function PhotoFrameAdjust({
         onPointerCancel={endDrag}
         role={hasPhoto ? "img" : undefined}
         aria-label={
-          hasPhoto
-            ? "Profile photo — full image shown. Drag to center, scroll to zoom."
-            : undefined
+          hasPhoto ? "Profile photo. Drag to center. Use the slider to zoom." : undefined
         }
       >
         {hasPhoto ? (
@@ -226,29 +183,46 @@ export function PhotoFrameAdjust({
               alt=""
               draggable={false}
               className="photo-frame-adjust-image"
-              crossOrigin="anonymous"
-              onLoad={onImageLoad}
               style={{
-                transform: `translate(${cropX}%, ${cropY}%) scale(${cropZoom || 1})`,
+                transform: `translate(${cropX}%, ${cropY}%) scale(${zoom})`,
               }}
             />
-            <span className="photo-frame-adjust-hint">
-              Full photo · Drag to center · Scroll to zoom
-            </span>
+            <span className="photo-frame-adjust-mask" aria-hidden="true" />
+            <span className="photo-frame-adjust-hint">Drag photo to center</span>
           </>
         ) : (
           <span className="photo-frame-adjust-empty">{emptyLabel}</span>
         )}
       </div>
+
       {hasPhoto ? (
-        <div className="photo-frame-adjust-toolbar">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={showFullImageCentered}>
-            Show full photo
-          </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => void requestAutoFrame()}>
-            Auto-frame face
-          </button>
-          {status ? <span className="muted photo-frame-adjust-status">{status}</span> : null}
+        <div className="photo-frame-adjust-controls">
+          <label className="photo-frame-zoom" htmlFor={zoomId}>
+            <span>Zoom</span>
+            <input
+              id={zoomId}
+              type="range"
+              min={1}
+              max={3}
+              step={0.05}
+              value={zoom}
+              onChange={(e) => applyCrop({ zoom: Number(e.target.value) })}
+            />
+            <span className="photo-frame-zoom-val">{zoom.toFixed(1)}×</span>
+          </label>
+          <div className="photo-frame-adjust-toolbar">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={resetToFullPhoto}>
+              Show full photo
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => void requestAutoFrame()}
+            >
+              Center on face
+            </button>
+          </div>
+          {status ? <p className="muted photo-frame-adjust-status">{status}</p> : null}
         </div>
       ) : null}
     </div>

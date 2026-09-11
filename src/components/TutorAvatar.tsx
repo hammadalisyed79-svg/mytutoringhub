@@ -17,6 +17,8 @@ type TutorAvatarProps = {
 /**
  * Cropped avatar. Uses next/image so multi‑MB blob uploads are resized for display
  * instead of transferring full originals into small cards.
+ *
+ * Uses object-fit:contain so framing matches the profile editor (full photo + user zoom/pan).
  */
 export function TutorAvatar({
   photoUrl,
@@ -31,7 +33,7 @@ export function TutorAvatar({
 }: TutorAvatarProps) {
   const x = cropX ?? 0;
   const y = cropY ?? 0;
-  const zoom = cropZoom ?? 1;
+  const zoom = Math.max(1, cropZoom ?? 1);
 
   const containerStyle: React.CSSProperties = {
     overflow: "hidden",
@@ -72,7 +74,7 @@ export function TutorAvatar({
         quality={quality}
         priority={priority}
         style={{
-          objectFit: "cover",
+          objectFit: "contain",
           transform: `translate(${x}%, ${y}%) scale(${zoom})`,
           transformOrigin: "center center",
         }}

@@ -586,14 +586,14 @@ export function TutorProfileForm({
   }
 
   function focusCrop() {
-    setPhotoMsg("Drag to center your face in the frame · scroll to zoom in if you want a tighter crop.");
+    setPhotoMsg("Drag the photo to center your face, then use the Zoom slider (like Google profile photo).");
   }
 
   function resetCrop() {
     setPhotoCropX(0);
     setPhotoCropY(0);
     setPhotoCropZoom(1);
-    setPhotoMsg("Reset — full photo shown again. Drag to center · scroll to zoom.");
+    setPhotoMsg("Full photo restored — drag to center, then zoom.");
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -621,7 +621,10 @@ export function TutorProfileForm({
       setPhotoCropX(0);
       setPhotoCropY(0);
       setPhotoCropZoom(1);
-      setPhotoMsg("Full photo shown (including tall images). Drag to center · scroll to zoom in.");
+      setPhotoCropX(0);
+      setPhotoCropY(0);
+      setPhotoCropZoom(1);
+      setPhotoMsg("Full photo loaded — drag to center your face, then zoom with the slider.");
       // Persist immediately so refresh does not lose the uploaded photo.
       void fetch("/api/profile/tutor", {
         method: "PATCH",
@@ -994,6 +997,7 @@ export function TutorProfileForm({
             cropX={photoCropX}
             cropY={photoCropY}
             cropZoom={photoCropZoom}
+            borderRadius="50%"
             onChange={({ x, y, zoom }) => {
               setPhotoCropX(x);
               setPhotoCropY(y);
@@ -1003,8 +1007,8 @@ export function TutorProfileForm({
           />
           <div className="profile-photo-hero-copy">
             <p className="field-hint profile-photo-lead">
-              Use a clear photo of yourself. Large or tall images open fully — drag to center your
-              face, then scroll to zoom if you want. JPEG, PNG, WebP, or GIF · max 2 MB.
+              Works like a Google profile photo: we show your full picture first. Drag to center,
+              then zoom. JPEG, PNG, WebP, or GIF · max 2 MB.
             </p>
             <div className="profile-photo-actions">
               <button
