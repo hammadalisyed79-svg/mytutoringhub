@@ -586,14 +586,14 @@ export function TutorProfileForm({
   }
 
   function focusCrop() {
-    setPhotoMsg("Auto-frame keeps head to shoulders. Scroll to zoom · drag to fine-tune.");
+    setPhotoMsg("Drag to center your face in the frame · scroll to zoom in if you want a tighter crop.");
   }
 
   function resetCrop() {
     setPhotoCropX(0);
     setPhotoCropY(0);
     setPhotoCropZoom(1);
-    setPhotoMsg("Crop reset — re-running head-to-shoulders auto-frame.");
+    setPhotoMsg("Reset — full photo shown again. Drag to center · scroll to zoom.");
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -621,7 +621,7 @@ export function TutorProfileForm({
       setPhotoCropX(0);
       setPhotoCropY(0);
       setPhotoCropZoom(1);
-      setPhotoMsg("Auto-framing head to shoulders — you can still drag or zoom to adjust.");
+      setPhotoMsg("Full photo shown (including tall images). Drag to center · scroll to zoom in.");
       // Persist immediately so refresh does not lose the uploaded photo.
       void fetch("/api/profile/tutor", {
         method: "PATCH",
@@ -1003,9 +1003,8 @@ export function TutorProfileForm({
           />
           <div className="profile-photo-hero-copy">
             <p className="field-hint profile-photo-lead">
-              Use a clear headshot. We auto-frame face from head to shoulders on large photos.
-              JPEG, PNG, WebP, or GIF · max 2 MB. No biometric checks are stored — framing runs in
-              your browser only.
+              Use a clear photo of yourself. Large or tall images open fully — drag to center your
+              face, then scroll to zoom if you want. JPEG, PNG, WebP, or GIF · max 2 MB.
             </p>
             <div className="profile-photo-actions">
               <button
