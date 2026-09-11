@@ -83,6 +83,13 @@ export function StartMessageFromQuery({
     setError("");
     setUpgradeUrl(null);
     setLimitHit(false);
+    if (!isTutor) {
+      fireConversionEvent(
+        "contact_tutor_attempt",
+        { source: "messages_compose" },
+        `contact_attempt_${recipientId}`,
+      );
+    }
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -117,6 +124,28 @@ export function StartMessageFromQuery({
       }
       setError(data.message || data.error || "Could not start conversation");
       return;
+    }
+    if (data.conversationId) {
+      if (!isTutor) {
+        fireConversionEvent(
+          "student_tutor_contact",
+          { source: "messages_compose" },
+          `contact_${data.conversationId}`,
+        );
+      } else {
+        fireConversionEvent(
+          "enquiry_reveal",
+          { source: "messages_compose" },
+          `reveal_${data.conversationId}`,
+        );
+      }
+      if (data.isNewContact) {
+        fireConversionEvent(
+          "new_conversation",
+          { source: isTutor ? "tutor" : "student" },
+          `new_convo_${data.conversationId}`,
+        );
+      }
     }
     router.push(
       data.emailSent === false

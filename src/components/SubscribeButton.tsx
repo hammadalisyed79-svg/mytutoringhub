@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import { manualActivationCtaLabel, manualActivationNote } from "@/lib/payments-status";
 import type { SubscriptionPlan } from "@/lib/types";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
+import { checkoutStartedEventForPlan } from "@/lib/analytics-conversions";
 
 export function SubscribeButton({
   plan,
@@ -78,12 +80,38 @@ export function SubscribeButton({
       });
     }
 
-    const data = await res.json();
+    const data = (await res.json()) as {
+      error?: string;
+      url?: string;
+      granted?: boolean;
+      complimentary?: boolean;
+      plan?: string;
+      billing?: string;
+      currency?: string;
+      amount?: number;
+      tracker?: string;
+    };
     setLoading(false);
     if (!res.ok) {
       setError(data.error || "Could not start checkout");
       return;
     }
+
+    // Checkout started ≠ purchase. Fire only after host accepts the session.
+    const checkoutEvent = checkoutStartedEventForPlan(data.plan || plan);
+    if (checkoutEvent && (data.url || data.granted)) {
+      fireConversionEvent(
+        checkoutEvent,
+        {
+          plan: data.plan || plan,
+          billing_period: data.billing || billing || "monthly",
+          currency: data.currency || currency || "PKR",
+          payment_source: data.complimentary ? "complimentary" : "safepay",
+        },
+        `checkout_${data.tracker || data.plan || plan}_${Date.now()}`,
+      );
+    }
+
     if (data.url) window.location.href = data.url;
     else if (data.granted) window.location.href = "/dashboard?checkout=success";
   }

@@ -52,6 +52,7 @@ export function NewAdForm({
     e.preventDefault();
     setLoading(true);
     setError("");
+    fireConversionEvent("student_request_attempt", {}, `request_attempt_${Date.now()}`);
     const fd = new FormData(e.currentTarget);
     const payload = {
       title: String(fd.get("title")),

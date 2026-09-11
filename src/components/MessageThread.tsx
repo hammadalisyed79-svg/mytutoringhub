@@ -7,6 +7,7 @@ import { isImageAttachment } from "@/lib/media";
 import { parseTeachingProfileContextMessage } from "@/lib/message-listing-context";
 import Link from "next/link";
 import { MatchSurveyPrompt } from "@/components/MatchSurveyPrompt";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 type Msg = {
   id: string;
@@ -138,7 +139,14 @@ export function MessageThread({
           ...(attachmentUrl ? { attachmentUrl } : {}),
         }),
       });
-      let data: { error?: string; message?: string; id?: string; emailSent?: boolean } = {};
+      let data: {
+        error?: string;
+        message?: string;
+        id?: string;
+        emailSent?: boolean;
+        firstTutorReply?: boolean;
+        firstStudentReply?: boolean;
+      } = {};
       try {
         data = await res.json();
       } catch {
@@ -147,6 +155,20 @@ export function MessageThread({
       if (!res.ok) {
         setError(data.message || data.error || "Send failed. Try again.");
         return;
+      }
+      if (data.firstTutorReply) {
+        fireConversionEvent(
+          "first_tutor_reply",
+          { conversationId },
+          `first_tutor_reply_${conversationId}`,
+        );
+      }
+      if (data.firstStudentReply) {
+        fireConversionEvent(
+          "first_student_reply",
+          { conversationId },
+          `first_student_reply_${conversationId}`,
+        );
       }
       setBody("");
       setAttachmentUrl("");

@@ -211,6 +211,10 @@ export async function POST(req: Request) {
   // Record usage event for the first message in a new conversation
   if (creatingNewConversation) {
     const senderRole = session.user.role as Role;
+    trackProductEvent("new_conversation", {
+      userId: session.user.id,
+      recipientId: recipientUserId,
+    });
     if (senderRole === "STUDENT" && recipient.role === "TUTOR") {
       await recordUsage(session.user.id, "tutor_contact");
       trackProductEvent("tutor_contact_started", {
@@ -272,7 +276,12 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ conversationId: conversation.id, message, emailSent: mail.sent });
+  return NextResponse.json({
+    conversationId: conversation.id,
+    message,
+    emailSent: mail.sent,
+    isNewContact: creatingNewConversation,
+  });
 }
 
 async function loadTeachingProfileThreadContext(listingId: string) {

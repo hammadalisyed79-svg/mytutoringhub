@@ -7,6 +7,7 @@ import type { Role } from "@/lib/types";
 import { z } from "zod";
 import { teachingProfileThreadContext, lastContextListingId, type ListingContextInput } from "@/lib/message-listing-context";
 import { isMissingCapabilitySchemaError } from "@/lib/search-capabilities";
+import { trackProductEvent } from "@/lib/product-events";
 
 export const runtime = "nodejs";
 
@@ -119,6 +120,23 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   const text = data.body?.trim() || "";
+
+  const priorMessages = await prisma.message.findMany({
+    where: { conversationId: id },
+    select: { senderId: true, sender: { select: { role: true } } },
+    orderBy: { createdAt: "asc" },
+    take: 100,
+  });
+  const priorFromMe = priorMessages.some((m) => m.senderId === session.user.id);
+  const priorFromOther = priorMessages.some((m) => m.senderId !== session.user.id);
+  const myRole = session.user.role;
+  let firstTutorReply = false;
+  let firstStudentReply = false;
+  if (!priorFromMe && priorFromOther) {
+    if (myRole === "TUTOR") firstTutorReply = true;
+    if (myRole === "STUDENT") firstStudentReply = true;
+  }
+
   const message = await prisma.message.create({
     data: {
       conversationId: id,
@@ -131,6 +149,13 @@ export async function POST(req: Request, { params }: Params) {
     where: { id },
     data: { lastMessageAt: new Date() },
   });
+
+  if (firstTutorReply) {
+    trackProductEvent("first_tutor_reply", { userId: session.user.id, conversationId: id });
+  }
+  if (firstStudentReply) {
+    trackProductEvent("first_student_reply", { userId: session.user.id, conversationId: id });
+  }
 
   const otherId =
     conversation.userAId === session.user.id ? conversation.userBId : conversation.userAId;
@@ -157,6 +182,8 @@ export async function POST(req: Request, { params }: Params) {
     ...message,
     sender: { id: session.user.id, name: session.user.name },
     emailSent,
+    firstTutorReply,
+    firstStudentReply,
   });
 }
 

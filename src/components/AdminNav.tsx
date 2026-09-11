@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/admin/plans", label: "Plans & prices" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/revenue", label: "Revenue" },
+  { href: "/admin/revenue/funnel", label: "Revenue funnel" },
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/verifications", label: "Verifications" },
   { href: "/admin/reviews", label: "Reviews" },
@@ -35,7 +36,11 @@ export function AdminNav() {
     <nav className="admin-nav" aria-label="Admin">
       {LINKS.map((item) => {
         const active =
-          item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+          item.href === "/admin"
+            ? pathname === "/admin"
+            : item.href === "/admin/revenue"
+              ? pathname === "/admin/revenue"
+              : pathname.startsWith(item.href);
         return (
           <Link key={item.href} href={item.href} className={active ? "is-active" : undefined}>
             {item.label}

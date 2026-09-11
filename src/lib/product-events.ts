@@ -18,7 +18,39 @@ export type ProductEventName =
   | "search_results_shown"
   | "search_zero_results"
   | "become_tutor"
-  | "switch_account_role";
+  | "switch_account_role"
+  | "new_conversation"
+  | "first_tutor_reply"
+  | "first_student_reply"
+  | "past_paper_download"
+  | "paper_quota_exhausted";
+
+function currentMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Durable limit/quota/milestone rows for admin KPIs (reuses UsageEvent; no schema change). */
+const DURABLE_USAGE_TYPES = new Set([
+  "tutor_contact_limit_hit",
+  "enquiry_reveal_limit_hit",
+  "paper_quota_exhausted",
+]);
+
+async function persistDurableUsage(
+  name: string,
+  props: Record<string, string | number | boolean>,
+) {
+  const userId = typeof props.userId === "string" ? props.userId : null;
+  if (!userId || !DURABLE_USAGE_TYPES.has(name)) return;
+  try {
+    await prisma.usageEvent.create({
+      data: { userId, type: name, month: currentMonth() },
+    });
+  } catch (err) {
+    console.error("[product-event] durable usage persist failed", name, err);
+  }
+}
 
 function cleanProps(props?: Record<string, string | number | boolean | null | undefined>) {
   const clean: Record<string, string | number | boolean> = {};
@@ -73,6 +105,13 @@ export function trackProductEvent(
   }
   if (name === "search_results_shown" || name === "search_zero_results") {
     void persistSearchAnalytics(name, clean);
+  }
+  if (
+    name === "tutor_contact_limit_hit" ||
+    name === "enquiry_reveal_limit_hit" ||
+    name === "paper_quota_exhausted"
+  ) {
+    void persistDurableUsage(name, clean);
   }
 }
 

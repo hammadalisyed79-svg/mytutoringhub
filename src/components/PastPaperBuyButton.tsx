@@ -83,7 +83,17 @@ export function PastPaperBuyButton({
     return (
       <div className="paper-access">
         <span className="muted paper-access-label">{statusLabel}</span>
-        <a className="btn btn-sm" href={downloadHref}>
+        <a
+          className="btn btn-sm"
+          href={downloadHref}
+          onClick={() =>
+            fireConversionEvent(
+              "past_paper_download",
+              { catalogKey },
+              `paper_dl_${catalogKey}`,
+            )
+          }
+        >
           {actionLabel}
         </a>
       </div>
@@ -123,6 +133,7 @@ export function PastPaperBuyButton({
       error?: string;
       message?: string;
       upgradeUrl?: string;
+      granted?: boolean;
     };
     setBusy(false);
     if (!res.ok) {
@@ -143,7 +154,16 @@ export function PastPaperBuyButton({
       setError(data.message || data.error || "Could not start checkout");
       return;
     }
-    if (data.url) window.location.href = data.url;
+    if (data.url) {
+      if (data.granted) {
+        fireConversionEvent(
+          "past_paper_download",
+          { catalogKey, includedInPlan: true },
+          `paper_dl_${catalogKey}`,
+        );
+      }
+      window.location.href = data.url;
+    }
   }
 
   if (upgradeUrl) {

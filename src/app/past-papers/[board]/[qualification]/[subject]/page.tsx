@@ -8,6 +8,7 @@ import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
 import { PastPaperQuotaBanner } from "@/components/PastPaperQuotaBanner";
+import { PageConversion } from "@/components/PageConversion";
 import { getPastPaperFeePkr } from "@/lib/past-papers";
 import { canDownloadPastPaper } from "@/lib/plan-limits";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
@@ -161,6 +162,15 @@ export default async function PastPaperSeoPage({
           {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
         </p>
         <SubjectHubTabs active="papers" />
+        <PageConversion
+          event="past_paper_view"
+          dedupeKey={`paper_view_seo_${board}_${qualification}_${subject}`}
+          params={{
+            subject: titleSubject,
+            board: titleBoard,
+            level: titleLevel,
+          }}
+        />
         {paperQuota ? (
           <PastPaperQuotaBanner
             used={paperQuota.used}

@@ -66,6 +66,11 @@ export function ContactTutorForm({
     setLoading(true);
     setError(null);
     const related = listingId || subjectProfileId;
+    fireConversionEvent(
+      "contact_tutor_attempt",
+      { listingId: related || undefined },
+      `contact_attempt_${recipientId}`,
+    );
     const res = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -127,6 +132,13 @@ export function ContactTutorForm({
         { listingId: related || undefined },
         `enquiry_${data.conversationId}`,
       );
+      if (data.isNewContact !== false) {
+        fireConversionEvent(
+          "new_conversation",
+          { listingId: related || undefined },
+          `new_convo_${data.conversationId}`,
+        );
+      }
     }
     router.push(`/messages/${data.conversationId}`);
   }

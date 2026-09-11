@@ -78,6 +78,12 @@ export async function GET(req: Request) {
     data: { downloadCount: { increment: 1 } },
   });
 
+  const { trackProductEvent } = await import("@/lib/product-events");
+  trackProductEvent("past_paper_download", {
+    userId: session?.user?.id,
+    catalogKey,
+  });
+
   const filename = attachmentFilename(fetched.filename);
   const body = Buffer.from(watermarked);
   return new Response(body, {

@@ -196,6 +196,12 @@ export async function POST(req: Request) {
     });
   }
   if (passDownload.includedInPlan && !passDownload.allowed) {
+    const { trackProductEvent } = await import("@/lib/product-events");
+    trackProductEvent("paper_quota_exhausted", {
+      userId: session.user.id,
+      used: passDownload.used,
+      limit: passDownload.limit,
+    });
     return NextResponse.json(
       {
         error: "paper_limit_exceeded",

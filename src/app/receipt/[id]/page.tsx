@@ -7,7 +7,11 @@ import { formatSafepayPriceId } from "@/lib/currency";
 import { Logo } from "@/components/Logo";
 import { PrintButton } from "@/components/PrintButton";
 import { ConversionBeacon } from "@/components/ConversionBeacon";
-import { purchaseEventForPlan } from "@/lib/analytics-conversions";
+import {
+  purchaseAttributionParams,
+  purchaseEventForPlan,
+  parseSafepayStoredAmount,
+} from "@/lib/analytics-conversions";
 
 export const metadata = { title: "Payment receipt" };
 
@@ -33,19 +37,22 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     ? sub.stripeSubscriptionId
     : sub.id;
 
-  const priceMatch = /^safepay_([A-Z]{3})_(\d+)$/.exec(sub.stripePriceId || "");
-  const currency = priceMatch?.[1] || "PKR";
-  const minor = priceMatch ? Number(priceMatch[2]) : 0;
-  const major =
-    currency === "PKR" || currency === "JPY" || currency === "KRW" ? minor : minor / 100;
+  const priceMatch = parseSafepayStoredAmount(sub.stripePriceId);
+  const currency = priceMatch.currency || "PKR";
+  const major = priceMatch.major;
   const complimentary =
-    major === 0 ||
+    priceMatch.complimentary ||
     Boolean(livePlan?.isComplimentary) ||
     /complimentary|promo|manual/i.test(sub.stripeSubscriptionId || "");
   const purchase = purchaseEventForPlan(sub.plan, {
     complimentary,
     value: complimentary ? 0 : major,
   });
+  const paymentSource = complimentary
+    ? /manual/i.test(sub.stripeSubscriptionId || "")
+      ? ("manual" as const)
+      : ("complimentary" as const)
+    : ("safepay" as const);
 
   const boostWindowDays =
     sub.plan === "AD_BOOST" && sub.billingPeriod === "annual" ? 365 : 30;
@@ -68,15 +75,15 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <ConversionBeacon
             event={purchase.event}
             dedupeKey={`purchase_${sub.id}`}
-            params={{
+            params={purchaseAttributionParams({
               product: planName,
-              planId: sub.plan,
+              plan: sub.plan,
               billingPeriod: sub.billingPeriod || (isOneTimeAddOn ? "once" : "monthly"),
-              value: purchase.value,
               currency,
+              actualPaidValue: purchase.value,
               transactionId: sub.id,
-              payment_source: complimentary ? "complimentary" : "safepay",
-            }}
+              paymentSource,
+            })}
           />
         ) : null}
         <div className="receipt-actions no-print">

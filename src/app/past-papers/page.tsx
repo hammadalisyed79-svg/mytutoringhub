@@ -249,6 +249,15 @@ export default async function PastPapersPage({
         {(subject || sp.q) && <PastPaperTutorCta subject={subject || sp.q || ""} />}
         {subject ? <SubjectStudyHubLinks subject={subject} compact /> : null}
         <SubjectHubTabs active="papers" />
+        <PageConversion
+          event="past_paper_view"
+          dedupeKey={`paper_view_${subject || sp.q || "browse"}_${board || ""}_${year || ""}`}
+          params={{
+            subject: subject || undefined,
+            board: board || undefined,
+            year: year || undefined,
+          }}
+        />
 
         {sp.checkout === "success" && (
           <>
@@ -256,11 +265,16 @@ export default async function PastPapersPage({
               event="past_paper_purchase"
               dedupeKey={`paper_${sp.key || sp.token || "ok"}`}
               params={{
+                product: "Past Paper",
+                plan: "PAST_PAPER",
+                billing_period: "once",
                 paperId: sp.key || undefined,
                 subject: subject || undefined,
                 board: board || undefined,
+                actual_paid_value: feePkr,
                 value: feePkr,
                 currency: "PKR",
+                transaction_id: sp.token || sp.key || "paper",
                 payment_source: "safepay",
               }}
             />

@@ -227,6 +227,7 @@ export async function POST(req: Request) {
       currency,
       amount,
       billing,
+      plan,
       pointsRedeemedPkr,
       listPricePkr: basePricePkr,
     });
