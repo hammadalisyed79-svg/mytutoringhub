@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/ads", label: "Ads" },
   { href: "/admin/teaching-profiles", label: "Teaching Profiles" },
   { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/payments/safepay", label: "Safepay setup" },
   { href: "/admin/plans", label: "Plans & prices" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/revenue", label: "Revenue" },
@@ -40,7 +41,9 @@ export function AdminNav() {
             ? pathname === "/admin"
             : item.href === "/admin/revenue"
               ? pathname === "/admin/revenue"
-              : pathname.startsWith(item.href);
+              : item.href === "/admin/payments"
+                ? pathname === "/admin/payments"
+                : pathname.startsWith(item.href);
         return (
           <Link key={item.href} href={item.href} className={active ? "is-active" : undefined}>
             {item.label}

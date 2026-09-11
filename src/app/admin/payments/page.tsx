@@ -37,7 +37,9 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
         <p className="muted">
           Safepay/Stripe checkouts, complimentary grants, and manual recovery. Tracker IDs are stored on
           each row. Set catalog amounts on{" "}
-          <Link href="/admin/plans">Plans & prices</Link>.
+          <Link href="/admin/plans">Plans & prices</Link>. Configure live keys on{" "}
+          <Link href="/admin/payments/safepay">Safepay setup</Link> (Vercel env — never paste secrets
+          here).
         </p>
       </div>
 

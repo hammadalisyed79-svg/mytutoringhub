@@ -83,6 +83,9 @@ export function PaymentsReadinessPanel() {
       )}
 
       <div className="payments-readiness-actions">
+        <Link href="/admin/payments/safepay" className="btn btn-sm">
+          Safepay setup guide
+        </Link>
         <Link href="/pricing" className="btn btn-secondary btn-sm">
           Open Pricing
         </Link>

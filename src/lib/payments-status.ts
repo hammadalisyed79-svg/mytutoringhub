@@ -109,7 +109,6 @@ export function getPaymentsReadiness(): {
 } {
   const mode = getPaymentsMode();
   const appUrl = getPublicAppUrl();
-  const resendReady = Boolean(process.env.RESEND_API_KEY?.trim()?.startsWith("re_"));
 
   const checks: PaymentsReadinessCheck[] = [
     {
@@ -152,6 +151,45 @@ export function getPaymentsReadiness(): {
     safepayEnv: getSafepayEnv(),
     appUrl: appUrl || "(not set)",
     checks,
+  };
+}
+
+/**
+ * Masked credential status for admin UI only.
+ * Never returns the secret key. Never reads DB — env vars only (safest).
+ */
+export function getSafepayCredentialStatus() {
+  const apiKey = (process.env.SAFEPAY_API_KEY || "").trim();
+  const secret = (process.env.SAFEPAY_SECRET_KEY || "").trim();
+  const intent = (process.env.SAFEPAY_INTENT || "CYBERSOURCE").trim();
+  const webhook =
+    (process.env.SAFEPAY_WEBHOOK_SECRET || "").trim() ||
+    (process.env.CRON_SECRET || "").trim();
+
+  const apiPlaceholder = !apiKey || /replace|\.\.\./i.test(apiKey);
+  const secretPlaceholder = !secret || /replace|\.\.\./i.test(secret);
+
+  return {
+    configured: safepayConfigured(),
+    env: getSafepayEnv(),
+    intent,
+    apiKeyPresent: Boolean(apiKey) && !apiPlaceholder,
+    /** First characters only — enough to confirm which key environment, not enough to reuse. */
+    apiKeyHint: apiKey.startsWith("sec_")
+      ? `${apiKey.slice(0, 8)}…`
+      : apiKey
+        ? "(set, unexpected format)"
+        : "(not set)",
+    secretPresent: Boolean(secret) && !secretPlaceholder,
+    secretHint: secretPlaceholder ? "(not set)" : `set · ${secret.length} chars`,
+    webhookSecretPresent: Boolean(webhook),
+    webhookHint: webhook
+      ? process.env.SAFEPAY_WEBHOOK_SECRET?.trim()
+        ? "SAFEPAY_WEBHOOK_SECRET set"
+        : "using CRON_SECRET fallback"
+      : "(not set)",
+    appUrl: getPublicAppUrl() || "(not set)",
+    checkoutLive: isPaidCheckoutLive(),
   };
 }
 
