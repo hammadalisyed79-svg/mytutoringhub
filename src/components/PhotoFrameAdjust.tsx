@@ -21,13 +21,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-/**
- * Google-style profile photo adjuster:
- * - Full photo visible first (object-fit: contain, zoom = 1)
- * - Drag to center
- * - Slider / scroll to zoom
- * Same contain + translate + scale model as TutorAvatar.
- */
+/** Profile photo adjuster: full image first, drag to pan, slider/scroll to zoom. */
 export function PhotoFrameAdjust({
   photoUrl,
   cropX,
@@ -67,15 +61,14 @@ export function PhotoFrameAdjust({
     [onChange],
   );
 
-  /** Full photo, centered — like opening Google’s photo picker. */
   const resetToFullPhoto = useCallback(() => {
     const next = { x: 0, y: 0, zoom: 1 };
     cropRef.current = next;
     onChange(next);
-    setStatus("Full photo — drag to center your face, then zoom in");
+    setStatus("");
   }, [onChange]);
 
-  // Reset framing only when the photo URL changes (new upload), not when reopening saved crop.
+  // Reset framing only when the photo URL changes (new upload).
   useEffect(() => {
     if (!photoUrl?.startsWith("http")) {
       prevPhotoUrl.current = undefined;
@@ -105,7 +98,6 @@ export function PhotoFrameAdjust({
       if (!dragging.current || !frameRef.current || !hasPhoto) return;
       e.preventDefault();
       const rect = frameRef.current.getBoundingClientRect();
-      // Move image with the finger/cursor (Google-style).
       const dx = ((e.clientX - lastPos.current.x) / rect.width) * 100;
       const dy = ((e.clientY - lastPos.current.y) / rect.height) * 100;
       lastPos.current = { x: e.clientX, y: e.clientY };
@@ -139,10 +131,9 @@ export function PhotoFrameAdjust({
   async function requestAutoFrame() {
     const img = frameRef.current?.querySelector("img");
     if (!img || !img.naturalWidth) return;
-    setStatus("Framing face…");
+    setStatus("Finding face…");
     try {
       const { crop, method } = await detectHeadshotCrop(img, 1);
-      // Face crop helper assumes cover; map to contain-ish zoom by keeping pan and using max(1, zoom*0.85)
       const next = {
         x: crop.x,
         y: crop.y,
@@ -150,13 +141,10 @@ export function PhotoFrameAdjust({
       };
       cropRef.current = next;
       onChange(next);
-      setStatus(
-        method === "face"
-          ? "Face centered — drag or zoom to adjust"
-          : "Portrait framed — drag or zoom to adjust",
-      );
+      setStatus(method === "face" ? "Face centered." : "Portrait framed.");
     } catch {
       resetToFullPhoto();
+      setStatus("Could not detect a face. Drag and zoom manually.");
     }
   }
 
@@ -164,16 +152,14 @@ export function PhotoFrameAdjust({
     <div className="photo-frame-adjust-wrap">
       <div
         ref={frameRef}
-        className={`photo-frame-adjust photo-frame-adjust--google${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
+        className={`photo-frame-adjust${draggingUi ? " is-dragging" : ""}${hasPhoto ? " has-photo" : ""}${className ? ` ${className}` : ""}`}
         style={{ borderRadius }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         role={hasPhoto ? "img" : undefined}
-        aria-label={
-          hasPhoto ? "Profile photo. Drag to center. Use the slider to zoom." : undefined
-        }
+        aria-label={hasPhoto ? "Profile photo. Drag to reposition. Use zoom to crop." : undefined}
       >
         {hasPhoto ? (
           <>
@@ -188,7 +174,7 @@ export function PhotoFrameAdjust({
               }}
             />
             <span className="photo-frame-adjust-mask" aria-hidden="true" />
-            <span className="photo-frame-adjust-hint">Drag photo to center</span>
+            <span className="photo-frame-adjust-hint">Drag to center</span>
           </>
         ) : (
           <span className="photo-frame-adjust-empty">{emptyLabel}</span>
@@ -212,14 +198,14 @@ export function PhotoFrameAdjust({
           </label>
           <div className="photo-frame-adjust-toolbar">
             <button type="button" className="btn btn-secondary btn-sm" onClick={resetToFullPhoto}>
-              Show full photo
+              Reset
             </button>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={() => void requestAutoFrame()}
             >
-              Center on face
+              Center face
             </button>
           </div>
           {status ? <p className="muted photo-frame-adjust-status">{status}</p> : null}

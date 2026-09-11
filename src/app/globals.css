@@ -10973,18 +10973,6 @@ img {
   text-overflow: ellipsis;
 }
 
-.profile-wizard-step-req {
-  color: #b42318;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-}
-
-.profile-wizard-step.is-complete .profile-wizard-step-req {
-  display: none;
-}
-
 .profile-required-details {
   margin: 0.35rem 0 0.55rem;
   padding: 0.55rem 0.75rem;
@@ -11040,23 +11028,6 @@ img {
   flex: 1 1 auto;
   min-width: 0;
   color: inherit;
-}
-
-.profile-required-state {
-  flex: 0 0 auto;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.profile-required-state.is-required-text,
-.profile-complete-list .is-needed .profile-required-state.is-required-text {
-  color: #b42318;
-}
-
-.profile-complete-list .is-done .profile-required-state {
-  color: var(--brand-deep);
 }
 
 .profile-complete-list .is-needed {
@@ -11197,18 +11168,6 @@ img {
 
 .profile-wizard-persist-hint {
   margin: 0.45rem 0 0;
-}
-
-.field-required-note {
-  margin: 0.55rem 0 0;
-  padding: 0.55rem 0.75rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(var(--brand-rgb), 0.18);
-  background: rgba(var(--brand-rgb), 0.05);
-  color: var(--brand-deep);
-  font-size: 0.88rem;
-  font-weight: 550;
-  line-height: 1.4;
 }
 
 .profile-photo-step {

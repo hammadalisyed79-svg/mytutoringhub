@@ -82,7 +82,7 @@ const WIZARD_STEPS = [
   {
     id: "photo",
     title: "Profile photo",
-    hint: "A clear headshot — required to go live.",
+    hint: "Upload a clear photo of yourself.",
     optional: false,
   },
   {
@@ -585,17 +585,6 @@ export function TutorProfileForm({
     setSlots((current) => current.map((slot, i) => (i === index ? { ...slot, ...patch } : slot)));
   }
 
-  function focusCrop() {
-    setPhotoMsg("Drag the photo to center your face, then use the Zoom slider (like Google profile photo).");
-  }
-
-  function resetCrop() {
-    setPhotoCropX(0);
-    setPhotoCropY(0);
-    setPhotoCropZoom(1);
-    setPhotoMsg("Full photo restored — drag to center, then zoom.");
-  }
-
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -621,10 +610,7 @@ export function TutorProfileForm({
       setPhotoCropX(0);
       setPhotoCropY(0);
       setPhotoCropZoom(1);
-      setPhotoCropX(0);
-      setPhotoCropY(0);
-      setPhotoCropZoom(1);
-      setPhotoMsg("Full photo loaded — drag to center your face, then zoom with the slider.");
+      setPhotoMsg("Photo uploaded. Drag to center, then zoom if needed.");
       // Persist immediately so refresh does not lose the uploaded photo.
       void fetch("/api/profile/tutor", {
         method: "PATCH",
@@ -769,7 +755,6 @@ export function TutorProfileForm({
 
   const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => currentStep.id === id;
 
-  const completedStepCount = steps.filter((row) => isStepDataComplete(row.id)).length;
   const fieldProgressPct = progress;
 
   const requiredChecklist = useMemo(() => {
@@ -789,6 +774,11 @@ export function TutorProfileForm({
     ];
     return rows.filter((row) => row.required);
   }, [completion.checks, emailVerified]);
+
+  const stillNeeded = useMemo(
+    () => requiredChecklist.filter((row) => !row.ok),
+    [requiredChecklist],
+  );
 
   const stepNav = (
     <nav className="profile-wizard-steps" aria-label="Profile steps">
@@ -830,12 +820,7 @@ export function TutorProfileForm({
                 <span className="profile-wizard-step-num" aria-hidden="true">
                   {markContent}
                 </span>
-                <span className="profile-wizard-step-label">
-                  {row.title}
-                  {!row.optional && !complete ? (
-                    <span className="profile-wizard-step-req">Required</span>
-                  ) : null}
-                </span>
+                <span className="profile-wizard-step-label">{row.title}</span>
               </button>
             </li>
           );
@@ -852,33 +837,34 @@ export function TutorProfileForm({
             {row.ok ? "✓" : "○"}
           </span>
           <span className="profile-required-label">{row.label}</span>
-          {row.ok ? (
-            <span className="profile-required-state">Done</span>
-          ) : (
-            <span className="profile-required-state is-required-text">Required</span>
-          )}
         </li>
       ))}
     </ul>
   );
+
+  const stillNeededList =
+    stillNeeded.length > 0 ? (
+      <ul className="profile-complete-list profile-required-checklist" aria-label="Still needed">
+        {stillNeeded.map((row) => (
+          <li key={row.key} className="is-needed">
+            <span className="profile-required-mark" aria-hidden="true">
+              ○
+            </span>
+            <span className="profile-required-label">{row.label}</span>
+          </li>
+        ))}
+      </ul>
+    ) : null;
 
   const wizardChrome = (
     <div className="profile-wizard-chrome">
       <div className="profile-wizard-meta">
         <p className="guided-search-step">
           Step {step + 1} of {steps.length}
-          {currentStep.optional ? (
-            " · Optional"
-          ) : (
-            <>
-              {" · "}
-              <span className="profile-required-state is-required-text">Required</span>
-            </>
-          )}
+          {currentStep.optional ? " · Optional" : ""}
         </p>
         <p className="profile-wizard-fields muted" aria-live="polite">
-          {requiredDone}/{requiredTotal} required items · {fieldProgressPct}% ·{" "}
-          {completedStepCount}/{steps.length} steps done
+          {requiredDone}/{requiredTotal} complete · {fieldProgressPct}%
         </p>
       </div>
       <div
@@ -887,7 +873,7 @@ export function TutorProfileForm({
         aria-valuenow={fieldProgressPct}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Required profile fields"
+        aria-label="Profile completion"
       >
         <div className="guided-search-progress-bar" style={{ width: `${fieldProgressPct}%` }} />
       </div>
@@ -900,16 +886,18 @@ export function TutorProfileForm({
           <i className="profile-wizard-legend-dot is-pending" /> Incomplete
         </span>
       </div>
-      <details className="profile-required-details" open={step === 0 || requiredDone < requiredTotal}>
-        <summary>
-          Required for a live profile ({requiredDone}/{requiredTotal})
-        </summary>
-        {requiredFieldsList}
-      </details>
+      {currentStep.id !== "finish" && stillNeeded.length > 0 ? (
+        <details className="profile-required-details" open={stillNeeded.length <= 3}>
+          <summary>
+            Still needed ({stillNeeded.length})
+          </summary>
+          {stillNeededList}
+        </details>
+      ) : null}
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
       <p className="field-hint profile-wizard-persist-hint">
-        Five short steps. Progress saves as you go — you stay private until you save a Teaching Profile.
+        Progress saves as you go. Your profile stays private until you save a Teaching Profile.
       </p>
     </div>
   );
@@ -972,7 +960,7 @@ export function TutorProfileForm({
         <div className="profile-complete profile-complete--compact">
           <div className="profile-complete-head">
             <strong>
-              Ready to save · {requiredDone}/{requiredTotal} required items ready
+              Ready to save · {requiredDone}/{requiredTotal} complete
             </strong>
             <span className="profile-complete-pct">{progress}%</span>
           </div>
@@ -1007,8 +995,7 @@ export function TutorProfileForm({
           />
           <div className="profile-photo-hero-copy">
             <p className="field-hint profile-photo-lead">
-              Works like a Google profile photo: we show your full picture first. Drag to center,
-              then zoom. JPEG, PNG, WebP, or GIF · max 2 MB.
+              Drag to center your face, then zoom. JPEG, PNG, WebP, or GIF · max 2 MB.
             </p>
             <div className="profile-photo-actions">
               <button
@@ -1023,26 +1010,6 @@ export function TutorProfileForm({
                     ? "Change photo"
                     : "Upload photo"}
               </button>
-              {photoUrl.startsWith("http") && (
-                <>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    type="button"
-                    onClick={focusCrop}
-                    disabled={uploading}
-                  >
-                    Adjust crop
-                  </button>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    type="button"
-                    onClick={resetCrop}
-                    disabled={uploading}
-                  >
-                    Reset crop
-                  </button>
-                </>
-              )}
             </div>
             <input
               ref={photoInput}
@@ -1053,11 +1020,6 @@ export function TutorProfileForm({
             />
             {photoError && <p className="form-error">{photoError}</p>}
             {photoMsg && <p className="success">{photoMsg}</p>}
-            {!photoUrl.startsWith("http") && !photoError ? (
-              <p className="field-required-note" role="status">
-                Required to go live — upload a photo, then continue.
-              </p>
-            ) : null}
             <details className="profile-photo-link">
               <summary>Or paste a photo link</summary>
               <input

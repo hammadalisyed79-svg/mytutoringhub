@@ -18,7 +18,7 @@ type TutorAvatarProps = {
  * Cropped avatar. Uses next/image so multi‑MB blob uploads are resized for display
  * instead of transferring full originals into small cards.
  *
- * Uses object-fit:contain so framing matches the profile editor (full photo + user zoom/pan).
+ * Framing matches the profile editor (contain + translate + scale).
  */
 export function TutorAvatar({
   photoUrl,
