@@ -123,7 +123,7 @@ export async function POST(req: Request) {
         {
           error: "limit_exceeded",
           message: `You've used all ${check.limit} tutor contacts this month. Upgrade to Student Pass for unlimited contacts.`,
-          upgradeUrl: "/pricing",
+          upgradeUrl: "/pricing?plan=STUDENT_PASS",
           used: check.used,
           limit: check.limit,
         },
@@ -146,11 +146,16 @@ export async function POST(req: Request) {
   if (isNewContact && role === "TUTOR" && recipient.role === "STUDENT") {
     const check = await canPerformAction(session.user.id, "enquiry_reveal");
     if (!check.allowed) {
+      trackProductEvent("enquiry_reveal_limit_hit", {
+        userId: session.user.id,
+        used: check.used,
+        limit: check.limit,
+      });
       return NextResponse.json(
         {
           error: "limit_exceeded",
           message: `You've used all ${check.limit} enquiry reveals this month. Activate Tutor Pro on Pricing for unlimited student messages.`,
-          upgradeUrl: "/pricing",
+          upgradeUrl: "/pricing?plan=TUTOR_BASIC",
           used: check.used,
           limit: check.limit,
         },

@@ -89,6 +89,18 @@ export function ContactTutorForm({
         });
         return;
       }
+      if (data.error === "limit_exceeded") {
+        fireConversionEvent(
+          "student_contact_limit_reached",
+          { listingId: related || undefined },
+          `contact_limit_${recipientId}`,
+        );
+        fireConversionEvent(
+          "student_pass_upsell_view",
+          { listingId: related || undefined, source: "contact_form" },
+          `pass_upsell_${recipientId}`,
+        );
+      }
       setError({
         error: data.error || "send_failed",
         message:
@@ -186,7 +198,7 @@ export function ContactTutorForm({
           )}
           {isLimit && (
             <p style={{ margin: 0 }}>
-              <Link href={error.upgradeUrl || "/pricing"} className="btn btn-sm">
+              <Link href={error.upgradeUrl || "/pricing?plan=STUDENT_PASS"} className="btn btn-sm">
                 Upgrade to Student Pass
               </Link>
             </p>

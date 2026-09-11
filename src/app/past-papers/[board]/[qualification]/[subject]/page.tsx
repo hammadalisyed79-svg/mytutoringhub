@@ -7,7 +7,9 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { SubjectHubTabs } from "@/components/SubjectHubTabs";
 import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
+import { PastPaperQuotaBanner } from "@/components/PastPaperQuotaBanner";
 import { getPastPaperFeePkr } from "@/lib/past-papers";
+import { canDownloadPastPaper } from "@/lib/plan-limits";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { resolveSeoCurriculum } from "@/lib/past-papers/browse";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
@@ -115,6 +117,10 @@ export default async function PastPaperSeoPage({
       })
     : [];
   const owned = new Set(purchases.map((row) => row.catalogKey));
+  const paperQuota =
+    session?.user && session.user.role !== "ADMIN"
+      ? await canDownloadPastPaper(session.user.id)
+      : null;
   const titleSubject = entry?.subject || subject.replace(/-/g, " ");
   const titleLevel = entry?.level || qualification.replace(/-/g, " ");
   const groups = groupPapersByYearSessionComponent(papers);
@@ -155,6 +161,15 @@ export default async function PastPaperSeoPage({
           {titleLevel}. Files on My Tutoring Hub are {feeLabel} per download.
         </p>
         <SubjectHubTabs active="papers" />
+        {paperQuota ? (
+          <PastPaperQuotaBanner
+            used={paperQuota.used}
+            limit={paperQuota.limit}
+            includedInPlan={paperQuota.includedInPlan}
+          />
+        ) : !session?.user ? (
+          <PastPaperQuotaBanner used={0} limit={0} includedInPlan={false} />
+        ) : null}
         <PastPaperTutorCta
           subject={titleSubject}
           board={entry?.board || (/cambridge/i.test(board) ? "Cambridge International" : board)}

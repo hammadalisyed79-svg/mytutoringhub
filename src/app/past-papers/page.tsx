@@ -10,9 +10,11 @@ import { PastPaperTutorCta } from "@/components/PastPaperTutorCta";
 import { SubjectStudyHubLinks } from "@/components/SubjectStudyHubLinks";
 import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { PastPaperBuyButton } from "@/components/PastPaperBuyButton";
+import { PastPaperQuotaBanner } from "@/components/PastPaperQuotaBanner";
 import { PastPaperSearchForm } from "@/components/PastPaperSearchForm";
 import { PastPaperResultList } from "@/components/PastPaperResultList";
 import { PaginationNav } from "@/components/PaginationNav";
+import { canDownloadPastPaper } from "@/lib/plan-limits";
 import {
   PAST_PAPER_YEARS,
   getPastPaperFeePkr,
@@ -178,6 +180,10 @@ export default async function PastPapersPage({
   const filterTree = buildPastPaperFilterTree(countries, boardCountsByCountry);
   const fileMap = new Map(files.map((row) => [row.catalogKey, row]));
   const owned = new Set(purchases.map((row) => row.catalogKey));
+  const paperQuota =
+    session?.user && session.user.role !== "ADMIN"
+      ? await canDownloadPastPaper(session.user.id)
+      : null;
   const boards = subject ? pastPaperBoards(subject) : [];
   const pages = searchResult ? Math.max(1, Math.ceil(searchResult.total / PAST_PAPER_PAGE_SIZE)) : 1;
   const selectedBoard = board || sp.board || "";
@@ -284,6 +290,16 @@ export default async function PastPapersPage({
         {sp.checkout === "error" && (
           <p className="panel form-error">Payment could not be confirmed. Try again or contact support.</p>
         )}
+
+        {paperQuota ? (
+          <PastPaperQuotaBanner
+            used={paperQuota.used}
+            limit={paperQuota.limit}
+            includedInPlan={paperQuota.includedInPlan}
+          />
+        ) : !session?.user ? (
+          <PastPaperQuotaBanner used={0} limit={0} includedInPlan={false} />
+        ) : null}
 
         <PastPaperSearchForm
           tree={filterTree}

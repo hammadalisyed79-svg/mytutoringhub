@@ -11,6 +11,8 @@ export type ProductEventName =
   | "tutor_contact_started"
   | "tutor_contact_limit_hit"
   | "enquiry_reveal"
+  | "enquiry_reveal_limit_hit"
+  | "match_survey_response"
   | "checkout_started"
   | "listing_viewed"
   | "search_results_shown"

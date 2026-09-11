@@ -21,7 +21,15 @@ export type ConversionEventName =
   | "tutor_enquiry_received"
   | "tutor_pro_activation"
   | "listing_boost_purchase"
-  | "priority_verification_purchase";
+  | "priority_verification_purchase"
+  | "student_contact_limit_reached"
+  | "student_pass_upsell_view"
+  | "enquiry_reveal_limit_reached"
+  | "tutor_pro_upsell_view"
+  | "past_paper_quota_exhausted"
+  | "student_pro_upsell_view"
+  | "successful_match_student_response"
+  | "successful_match_tutor_response";
 
 export type ConversionParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -83,6 +91,14 @@ export const GOOGLE_ADS_SECONDARY = [
   "tutor_profile_completed",
   "teaching_profile_activated",
   "tutor_enquiry_received",
+  "student_contact_limit_reached",
+  "student_pass_upsell_view",
+  "enquiry_reveal_limit_reached",
+  "tutor_pro_upsell_view",
+  "past_paper_quota_exhausted",
+  "student_pro_upsell_view",
+  "successful_match_student_response",
+  "successful_match_tutor_response",
 ] as const;
 
 export const GOOGLE_ADS_TUTOR_GROWTH_PRIMARY = [

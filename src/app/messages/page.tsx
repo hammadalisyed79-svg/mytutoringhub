@@ -62,20 +62,22 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
     },
   });
 
-  const studentPlanSummary =
-    session.user.role === "STUDENT" ? await getPlanDashboardSummary(uid, "STUDENT") : null;
-
-  const hasUnlimited = Boolean(studentPlanSummary && studentPlanSummary.usageLimit < 0);
-  const contactsLimit =
-    studentPlanSummary && studentPlanSummary.usageLimit > 0
-      ? studentPlanSummary.usageLimit
-      : null;
-  const contactsRemaining =
-    studentPlanSummary && studentPlanSummary.usageLimit > 0
-      ? Math.max(0, studentPlanSummary.usageLimit - studentPlanSummary.usageUsed)
-      : hasUnlimited
-        ? null
+  const planSummary =
+    session.user.role === "STUDENT"
+      ? await getPlanDashboardSummary(uid, "STUDENT")
+      : session.user.role === "TUTOR"
+        ? await getPlanDashboardSummary(uid, "TUTOR")
         : null;
+
+  const hasUnlimited = Boolean(planSummary && planSummary.usageLimit < 0);
+  const contactsLimit =
+    planSummary && planSummary.usageLimit > 0 ? planSummary.usageLimit : null;
+  const contactsRemaining =
+    planSummary && planSummary.usageLimit > 0
+      ? Math.max(0, planSummary.usageLimit - planSummary.usageUsed)
+      : null;
+  const composeAudience =
+    session.user.role === "TUTOR" ? ("tutor" as const) : ("student" as const);
 
   const composing = Boolean(recipientId && recipientId !== uid);
 
@@ -113,7 +115,8 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             relatedAdId={sp.ad}
             contactsRemaining={contactsRemaining}
             contactsLimit={contactsLimit}
-            hasUnlimited={hasUnlimited || session.user.role !== "STUDENT"}
+            hasUnlimited={hasUnlimited || session.user.role === "ADMIN"}
+            audience={composeAudience}
           />
         )}
 
@@ -143,7 +146,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
                 ? "Browse student requests and reply. Tutor Pro unlocks unlimited enquiry reveals when you message first."
                 : hasUnlimited
                   ? "Search tutors and send a message — your plan includes unlimited tutor contacts this month."
-                  : studentPlanSummary && contactsRemaining != null && contactsLimit != null
+                  : planSummary && contactsRemaining != null && contactsLimit != null
                     ? `Search tutors and send a message. You have ${contactsRemaining} of ${contactsLimit} free tutor contacts left this month.`
                     : `Search tutors and send a message. ${STUDENT_FREE_CONTACTS_LINE}`}
             </p>

@@ -53,6 +53,7 @@ model User {
   studentRequests      StudentRequest[]
   blocksCreated        UserBlock[]           @relation("BlocksCreated")
   blocksReceived       UserBlock[]           @relation("BlocksReceived")
+  matchFeedback        MarketplaceMatchFeedback[]
 }
 
 /// Peer block: blocker cannot be messaged / contacted by blocked user (and vice versa in contact flows).
@@ -336,6 +337,7 @@ model Conversation {
   lastMessageAt DateTime  @default(now())
   createdAt     DateTime  @default(now())
   messages      Message[]
+  matchFeedback MarketplaceMatchFeedback[]
 
   @@unique([userAId, userBId])
   @@index([lastMessageAt])
@@ -353,6 +355,24 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+/// Optional match-proxy survey (YES/NO/SKIP). No PII; one response per user per conversation.
+model MarketplaceMatchFeedback {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// STUDENT | TUTOR (denormalized for admin aggregates)
+  role           String
+  /// YES | NO | SKIP
+  answer         String
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([createdAt])
+  @@index([role, answer, createdAt])
 }
 
 model Review {

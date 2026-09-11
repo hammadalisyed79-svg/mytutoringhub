@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { GuestPaperCheckout } from "@/components/GuestPaperCheckout";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 export type PaperAccessStatus =
   | "included"
@@ -32,10 +34,17 @@ export function PastPaperBuyButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [upgradeUrl, setUpgradeUrl] = useState<string | null>(null);
 
   const status: PaperAccessStatus =
     accessStatus ||
-    (!available ? "unavailable" : owned ? "owned" : feePkr > 0 ? "individually_purchasable" : "available_with_plan");
+    (!available
+      ? "unavailable"
+      : owned
+        ? "owned"
+        : feePkr > 0
+          ? "individually_purchasable"
+          : "available_with_plan");
 
   if (status === "unavailable" || !available) {
     return (
@@ -103,19 +112,58 @@ export function PastPaperBuyButton({
   async function buy() {
     setBusy(true);
     setError("");
+    setUpgradeUrl(null);
     const res = await fetch("/api/past-papers/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ catalogKey }),
     });
-    const data = await res.json().catch(() => ({}));
+    const data = (await res.json().catch(() => ({}))) as {
+      url?: string;
+      error?: string;
+      message?: string;
+      upgradeUrl?: string;
+    };
     setBusy(false);
     if (!res.ok) {
-      const err = data as { error?: string; message?: string };
-      setError(err.message || err.error || "Could not start checkout");
+      if (data.error === "paper_limit_exceeded") {
+        fireConversionEvent(
+          "past_paper_quota_exhausted",
+          { catalogKey },
+          `paper_quota_${catalogKey}`,
+        );
+        fireConversionEvent("student_pro_upsell_view", { source: "paper_quota" }, `pro_upsell_paper_${catalogKey}`);
+        setUpgradeUrl(data.upgradeUrl || "/pricing?plan=STUDENT_PRO");
+        setError(
+          data.message ||
+            "You've used all 10 included past paper downloads this month. Upgrade to Student Pro for unlimited eligible downloads.",
+        );
+        return;
+      }
+      setError(data.message || data.error || "Could not start checkout");
       return;
     }
     if (data.url) window.location.href = data.url;
+  }
+
+  if (upgradeUrl) {
+    return (
+      <div className="paper-access">
+        <p className="form-error" style={{ marginTop: 0 }}>
+          {error}
+        </p>
+        <p style={{ margin: "0.5rem 0 0", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <Link href={upgradeUrl} className="btn btn-sm">
+            View Student Pro
+          </Link>
+          {feePkr > 0 ? (
+            <button className="btn btn-sm btn-secondary" type="button" onClick={buy} disabled={busy}>
+              {busy ? "Opening…" : `Buy this paper · ${feeLabel}`}
+            </button>
+          ) : null}
+        </p>
+      </div>
+    );
   }
 
   return (

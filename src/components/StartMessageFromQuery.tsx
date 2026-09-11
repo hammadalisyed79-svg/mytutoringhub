@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 export function StartMessageFromQuery({
   recipientId,
@@ -11,14 +12,17 @@ export function StartMessageFromQuery({
   contactsRemaining,
   contactsLimit,
   hasUnlimited,
+  audience = "student",
 }: {
   recipientId: string;
   recipientName?: string;
   relatedAdId?: string;
-  /** Free tier: contacts left this month. Null/undefined when unlimited or unknown. */
+  /** Free tier: contacts / reveals left this month. Null when unlimited or unknown. */
   contactsRemaining?: number | null;
   contactsLimit?: number | null;
   hasUnlimited?: boolean;
+  /** Student→tutor uses Student Pass; tutor→student uses Tutor Pro. */
+  audience?: "student" | "tutor";
 }) {
   const router = useRouter();
   const [body, setBody] = useState("");
@@ -27,6 +31,12 @@ export function StartMessageFromQuery({
   const [limitHit, setLimitHit] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const isTutor = audience === "tutor";
+  const defaultUpgrade = isTutor ? "/pricing?plan=TUTOR_BASIC" : "/pricing?plan=STUDENT_PASS";
+  const upgradeLabel = isTutor ? "Activate Tutor Pro" : "Upgrade to Student Pass";
+  const limitNoun = isTutor ? "enquiry reveals" : "tutor contacts";
+  const limitNounSingular = isTutor ? "enquiry reveal" : "tutor contact";
+
   const blockedByQuota =
     !hasUnlimited &&
     typeof contactsRemaining === "number" &&
@@ -34,14 +44,39 @@ export function StartMessageFromQuery({
     typeof contactsLimit === "number" &&
     contactsLimit > 0;
 
+  function fireLimitAnalytics(source: string) {
+    if (isTutor) {
+      fireConversionEvent(
+        "enquiry_reveal_limit_reached",
+        { source },
+        `reveal_limit_${recipientId}`,
+      );
+      fireConversionEvent("tutor_pro_upsell_view", { source }, `tutor_pro_upsell_${recipientId}`);
+    } else {
+      fireConversionEvent(
+        "student_contact_limit_reached",
+        { source },
+        `contact_limit_${recipientId}`,
+      );
+      fireConversionEvent(
+        "student_pass_upsell_view",
+        { source },
+        `pass_upsell_${recipientId}`,
+      );
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (blockedByQuota) {
       setLimitHit(true);
       setError(
-        `You've used all ${contactsLimit} free tutor contacts this month. Upgrade to Student Pass for unlimited messaging.`,
+        isTutor
+          ? `You've used all ${contactsLimit} free ${limitNoun} this month. Activate Tutor Pro for unlimited student messages.`
+          : `You've used all ${contactsLimit} free ${limitNoun} this month. Upgrade to Student Pass for unlimited messaging.`,
       );
-      setUpgradeUrl("/pricing?plan=STUDENT_PASS");
+      setUpgradeUrl(defaultUpgrade);
+      fireLimitAnalytics("compose_precheck");
       return;
     }
     setLoading(true);
@@ -60,9 +95,12 @@ export function StartMessageFromQuery({
         setLimitHit(true);
         setError(
           data.message ||
-            "You've used all your free tutor contacts this month. Upgrade to Student Pass for unlimited messaging.",
+            (isTutor
+              ? `You've used all your free ${limitNoun} this month. Activate Tutor Pro for unlimited student messages.`
+              : `You've used all your free ${limitNoun} this month. Upgrade to Student Pass for unlimited messaging.`),
         );
-        setUpgradeUrl(data.upgradeUrl || "/pricing?plan=STUDENT_PASS");
+        setUpgradeUrl(data.upgradeUrl || defaultUpgrade);
+        fireLimitAnalytics("api_limit");
         return;
       }
       if (data.error === "email_unverified") {
@@ -70,7 +108,11 @@ export function StartMessageFromQuery({
         return;
       }
       if (data.error === "Recipient not found") {
-        setError("This tutor could not be found. Open their profile and try Message again.");
+        setError(
+          isTutor
+            ? "This student could not be found. Open their request and try Message again."
+            : "This tutor could not be found. Open their profile and try Message again.",
+        );
         return;
       }
       setError(data.message || data.error || "Could not start conversation");
@@ -89,14 +131,18 @@ export function StartMessageFromQuery({
         <h3>Messaging limit reached</h3>
         <p className="muted">
           {error ||
-            `You've used all ${contactsLimit ?? 3} free tutor contacts this month. Upgrade to Student Pass for unlimited messaging.`}
+            `You've used all ${contactsLimit ?? (isTutor ? 3 : 3)} free ${limitNoun} this month. ${
+              isTutor
+                ? "Activate Tutor Pro for unlimited student messages."
+                : "Upgrade to Student Pass for unlimited messaging."
+            }`}
         </p>
         <p>
-          <Link href={upgradeUrl || "/pricing?plan=STUDENT_PASS"} className="btn">
-            Upgrade to Student Pass
+          <Link href={upgradeUrl || defaultUpgrade} className="btn">
+            {upgradeLabel}
           </Link>{" "}
-          <Link href="/search" className="btn btn-secondary">
-            Back to search
+          <Link href={isTutor ? "/ads" : "/search"} className="btn btn-secondary">
+            {isTutor ? "Back to requests" : "Back to search"}
           </Link>
         </p>
       </div>
@@ -108,12 +154,15 @@ export function StartMessageFromQuery({
       <h3>{recipientName ? `Message ${recipientName}` : "Start a conversation"}</h3>
       {hasUnlimited ? (
         <p className="muted" style={{ marginTop: 0 }}>
-          Your plan includes unlimited tutor contacts this month.
+          {isTutor
+            ? "Your plan includes unlimited enquiry reveals this month."
+            : "Your plan includes unlimited tutor contacts this month."}
         </p>
       ) : typeof contactsRemaining === "number" && typeof contactsLimit === "number" ? (
         <p className="muted" style={{ marginTop: 0 }}>
-          {contactsRemaining} of {contactsLimit} free tutor contacts left this month. Replies in an
-          existing chat do not use a contact.
+          {contactsRemaining} of {contactsLimit} free {limitNounSingular}
+          {contactsRemaining === 1 ? "" : "s"} left this month. Replies in an existing chat do not
+          use a {isTutor ? "reveal" : "contact"}.
         </p>
       ) : null}
       <textarea
@@ -122,13 +171,17 @@ export function StartMessageFromQuery({
         required
         minLength={10}
         rows={4}
-        placeholder="Introduce yourself — subject, level, and what you need help with…"
+        placeholder={
+          isTutor
+            ? "Introduce yourself — how you can help with their subject and availability…"
+            : "Introduce yourself — subject, level, and what you need help with…"
+        }
       />
       {error && <p className="form-error">{error}</p>}
       {upgradeUrl && (
         <p>
           <Link href={upgradeUrl} className="btn btn-sm">
-            Upgrade to Student Pass
+            {upgradeLabel}
           </Link>
         </p>
       )}

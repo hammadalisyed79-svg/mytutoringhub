@@ -6,6 +6,7 @@ import { RequestReviewButton } from "@/components/RequestReviewButton";
 import { isImageAttachment } from "@/lib/media";
 import { parseTeachingProfileContextMessage } from "@/lib/message-listing-context";
 import Link from "next/link";
+import { MatchSurveyPrompt } from "@/components/MatchSurveyPrompt";
 
 type Msg = {
   id: string;
@@ -207,6 +208,7 @@ export function MessageThread({
           tutorProfileId={reviewMeta.tutorProfileId}
         />
       )}
+      <MatchSurveyPrompt conversationId={conversationId} viewerRole={viewerRole} />
       <div className="thread-messages" ref={listRef}>
         {messages.length === 0 && (
           <p className="muted">No messages yet. Say hello or attach a document.</p>
