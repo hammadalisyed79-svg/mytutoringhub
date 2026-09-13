@@ -10,6 +10,7 @@ const PLAN_LABELS: Record<string, string> = {
   STUDENT_PASS: "Student Pass",
   STUDENT_PRO: "Student Pro",
   TUTOR_BASIC: "Tutor Pro",
+  EXTRA_ACTIVE: "Extra Active Profile",
   VERIFIED_TUTOR: "Priority Verification Review",
   HIGHLIGHTED_AD: "Listing Highlight (legacy)",
   AD_BOOST: "Listing Boost",

@@ -18,6 +18,7 @@ const schema = z.object({
     "VERIFIED_TUTOR",
     "HIGHLIGHTED_AD",
     "AD_BOOST",
+    "EXTRA_ACTIVE",
     "EXTRA_PROFILE_ADS",
     "UNLIMITED_ADS",
   ]),
@@ -60,6 +61,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
+  if (plan === "EXTRA_ACTIVE") {
+    const { countExtraActiveSlots, EXTRA_ACTIVE_SLOT_MAX } = await import(
+      "@/lib/subject-profile-entitlements"
+    );
+    const { hasPaidTutorPlan } = await import("@/lib/subscription");
+    if (await hasPaidTutorPlan(session.user.id)) {
+      return NextResponse.json(
+        {
+          error:
+            "Tutor Pro already includes up to 10 active Teaching Profiles. Extra Active is only for Free tutors.",
+        },
+        { status: 400 },
+      );
+    }
+    const slots = await countExtraActiveSlots(session.user.id);
+    if (slots >= EXTRA_ACTIVE_SLOT_MAX) {
+      return NextResponse.json(
+        {
+          error: `You already have ${EXTRA_ACTIVE_SLOT_MAX} Extra Active slots (3 live profiles max). Upgrade to Tutor Pro for up to 10.`,
+        },
+        { status: 400 },
+      );
+    }
+  }
+
   let subjectProfileId: string | undefined;
   let subjectProfileNote: string | null = null;
   if (rawListingId) {
@@ -90,9 +116,13 @@ export async function POST(req: Request) {
 
   if (!stripeConfigured() || !priceLooksReal(priceId)) {
     const until = new Date(Date.now() + 30 * 86400000);
+    const tracker =
+      plan === "EXTRA_ACTIVE"
+        ? `dev_${session.user.id}_${plan}_${Date.now()}`
+        : `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`;
     await prisma.subscription.upsert({
       where: {
-        stripeSubscriptionId: `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`,
+        stripeSubscriptionId: tracker,
       },
       update: {
         status: "ACTIVE",
@@ -103,8 +133,9 @@ export async function POST(req: Request) {
         userId: session.user.id,
         plan,
         status: "ACTIVE",
-        stripeSubscriptionId: `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`,
+        stripeSubscriptionId: tracker,
         currentPeriodEnd: until,
+        billingPeriod: plan === "EXTRA_ACTIVE" ? "monthly" : undefined,
         notes: subjectProfileNote,
       },
     });

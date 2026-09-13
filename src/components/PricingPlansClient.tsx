@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ResolvedPlan } from "@/lib/plans";
-import { ANNUAL_SAVE_FOOTNOTE, ANNUAL_SAVE_LABEL, formatPromoUntil } from "@/lib/plans";
+import { ANNUAL_SAVE_FOOTNOTE, ANNUAL_SAVE_LABEL, formatPromoUntil, isRecurringAddOnPlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import Link from "next/link";
@@ -11,6 +11,9 @@ import { manualActivationCtaLabel, addOnBillingFootnote, planBillingFootnote } f
 import { STUDENT_FREE_CONTACT_LIMIT } from "@/lib/plan-limits";
 import { BUSINESS } from "@/lib/business-rules";
 
+function planOneTime(plan: ResolvedPlan) {
+  return Boolean(plan.isAddOn) && !isRecurringAddOnPlan(plan.id);
+}
 function PlanActions({
   plan,
   currency,
@@ -51,7 +54,7 @@ function PlanActions({
           planName={plan.name}
           label={manualActivationCtaLabel(plan.name)}
           featured={featured || plan.id === "VERIFIED_TUTOR"}
-          oneTime={Boolean(plan.isAddOn)}
+          oneTime={planOneTime(plan)}
           subjectProfileId={subjectProfileId}
         />
       );
@@ -68,12 +71,14 @@ function PlanActions({
             ? plan.annualChargePricePkr
             : plan.chargePricePkr
         }
-        oneTime={Boolean(plan.isAddOn)}
+        oneTime={planOneTime(plan)}
         label={
           plan.isAddOn
             ? plan.id === "AD_BOOST" && billing === "annual"
               ? `Add ${plan.name} (1 year · ~20% off)`
-              : `Add ${plan.name}`
+              : isRecurringAddOnPlan(plan.id)
+                ? `Subscribe · ${plan.name}`
+                : `Add ${plan.name}`
             : plan.isComplimentary
               ? `Activate ${plan.name} free`
               : `Pay with Safepay · ${plan.name}`
@@ -130,6 +135,29 @@ function PlanPrice({
     );
   }
   if (plan.isAddOn) {
+    if (isRecurringAddOnPlan(plan.id)) {
+      const showAnnualExtra =
+        billing === "annual" && plan.annualChargePricePkr != null;
+      return (
+        <div className="price-block">
+          <div className="price">
+            {formatPlanPrice(
+              showAnnualExtra ? plan.annualChargePricePkr! : plan.listPricePkr,
+              currency,
+              showAnnualExtra ? "year" : "month",
+            )}
+          </div>
+          {showAnnualExtra ? (
+            <p className="price-was">{formatPlanPrice(plan.listPricePkr * 12, currency, "month")}</p>
+          ) : null}
+          <p className="plan-billing muted">
+            {showAnnualExtra
+              ? `Billed annually · +1 active Teaching Profile · shown in ${currency}`
+              : `Billed monthly · +1 active Teaching Profile · shown in ${currency}`}
+          </p>
+        </div>
+      );
+    }
     const kind = plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD" ? "boost" : "verification";
     const showAnnualBoost =
       kind === "boost" &&
@@ -357,13 +385,13 @@ export function PricingPlansClient({
 
       {addOns.length > 0 && (
         <section className="pricing-addons-section">
-          <h2 className="checkout-section-title">Optional tutor boosts</h2>
+          <h2 className="checkout-section-title">Optional tutor add-ons</h2>
           <p className="muted pricing-addons-lead">
-            Optional visibility upgrades — Priority Verification Review and Listing Boost
-            {paidCheckoutLive ? " on Safepay" : " after payment"}. Teaching Profile capacity is included in
-            Free ({BUSINESS.tutorFreeActiveListings}) and Tutor Pro ({BUSINESS.tutorProActiveListings});
-            legacy Extra/Unlimited packs are not sold as primary products. Listing Boost does not
-            increase Teaching Profile capacity.
+            Extra Active (+1 live Teaching Profile monthly, up to 3 total), Priority Verification, and
+            Listing Boost{paidCheckoutLive ? " on Safepay" : " after payment"}. Free includes{" "}
+            {BUSINESS.tutorFreeActiveListings} active profile; Tutor Pro includes up to{" "}
+            {BUSINESS.tutorProActiveListings}. Boost does not add capacity; legacy Extra/Unlimited packs
+            are not primary products.
           </p>
           <div className="pricing-grid pricing-addons">
             {addOns.map((plan) => (
@@ -382,7 +410,9 @@ export function PricingPlansClient({
                   <PlanPrice
                     plan={plan}
                     currency={currency}
-                    billing={plan.id === "AD_BOOST" ? billing : "monthly"}
+                    billing={
+                      plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : "monthly"
+                    }
                     paidCheckoutLive={paidCheckoutLive}
                   />
                   <ul>
@@ -397,7 +427,9 @@ export function PricingPlansClient({
                     currency={currency}
                     signedIn={signedIn}
                     featured={plan.id === "VERIFIED_TUTOR"}
-                    billing={plan.id === "AD_BOOST" ? billing : "monthly"}
+                    billing={
+                      plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : "monthly"
+                    }
                     paidCheckoutLive={paidCheckoutLive}
                     hubPointsBalance={hubPointsBalance}
                     subjectProfileId={

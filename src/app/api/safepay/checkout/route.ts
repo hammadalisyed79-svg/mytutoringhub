@@ -34,6 +34,7 @@ const schema = z.object({
     "VERIFIED_TUTOR",
     "HIGHLIGHTED_AD",
     "AD_BOOST",
+    "EXTRA_ACTIVE",
     "EXTRA_PROFILE_ADS",
     "UNLIMITED_ADS",
   ]),
@@ -82,6 +83,31 @@ export async function POST(req: Request) {
   }
   if (session.user.role === "TUTOR" && def.audience !== "tutor") {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
+  }
+
+  if (plan === "EXTRA_ACTIVE") {
+    const { countExtraActiveSlots, EXTRA_ACTIVE_SLOT_MAX } = await import(
+      "@/lib/subject-profile-entitlements"
+    );
+    const { hasPaidTutorPlan } = await import("@/lib/subscription");
+    if (await hasPaidTutorPlan(session.user.id)) {
+      return NextResponse.json(
+        {
+          error:
+            "Tutor Pro already includes up to 10 active Teaching Profiles. Extra Active is only for Free tutors.",
+        },
+        { status: 400 },
+      );
+    }
+    const slots = await countExtraActiveSlots(session.user.id);
+    if (slots >= EXTRA_ACTIVE_SLOT_MAX) {
+      return NextResponse.json(
+        {
+          error: `You already have ${EXTRA_ACTIVE_SLOT_MAX} Extra Active slots (3 live profiles max). Upgrade to Tutor Pro for up to 10.`,
+        },
+        { status: 400 },
+      );
+    }
   }
 
   let subjectProfileNote: string | null = null;
@@ -138,8 +164,10 @@ export async function POST(req: Request) {
   const annualPricePkr = def.annualChargePricePkr;
   const canAnnualBoost =
     plan === "AD_BOOST" && billing === "annual" && annualPricePkr != null;
-  const basePricePkr = canAnnualBoost
-    ? annualPricePkr
+  const recurringAddOn = plan === "EXTRA_ACTIVE";
+  const canAnnualExtra = recurringAddOn && billing === "annual" && annualPricePkr != null;
+  const basePricePkr = canAnnualBoost || canAnnualExtra
+    ? annualPricePkr!
     : billing === "annual" && !def.isAddOn && annualPricePkr != null
       ? annualPricePkr
       : def.chargePricePkr;
@@ -155,14 +183,28 @@ export async function POST(req: Request) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
   }
-  // Core add-ons are one-shot; annual Listing Boost stores "annual" for a 365-day window.
+  // Core add-ons are one-shot; EXTRA_ACTIVE is monthly/annual; annual Listing Boost = 365-day window.
   const billingPeriod = canAnnualBoost
     ? "annual"
-    : def.isAddOn
-      ? "once"
-      : billing;
+    : recurringAddOn
+      ? billing === "annual"
+        ? "annual"
+        : "monthly"
+      : def.isAddOn
+        ? "once"
+        : billing;
   const orderId = `${
-    canAnnualBoost ? "ann" : def.isAddOn ? "once" : billing === "annual" ? "ann" : "mth"
+    canAnnualBoost || canAnnualExtra
+      ? "ann"
+      : recurringAddOn
+        ? billing === "annual"
+          ? "ann"
+          : "mth"
+        : def.isAddOn
+          ? "once"
+          : billing === "annual"
+            ? "ann"
+            : "mth"
   }_${plan}_${Date.now()}`;
 
   try {

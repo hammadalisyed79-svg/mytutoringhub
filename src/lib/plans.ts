@@ -159,6 +159,23 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     isAddOn: true,
   },
   {
+    id: "EXTRA_ACTIVE",
+    name: "Extra Active Profile",
+    description:
+      "Add one more live Teaching Profile on top of Free (monthly). Stack up to 2 extras — max 3 active without Tutor Pro. Does not include Tutor Pro ranking or unlimited enquiry reveals.",
+    audience: "tutor",
+    pricePkr: 499,
+    annualPricePkr: Math.round(499 * 9.6),
+    features: [
+      "+1 active Teaching Profile while subscribed",
+      "Stack up to 2 (3 active total with Free)",
+      "Paused drafts stay free",
+      "Upgrade to Tutor Pro anytime for up to 10 active + ranking + unlimited reveals",
+    ],
+    envPriceId: "STRIPE_PRICE_EXTRA_ACTIVE",
+    isAddOn: true,
+  },
+  {
     id: "EXTRA_PROFILE_ADS",
     name: "Extra Profile Ads (legacy)",
     description:
@@ -190,9 +207,15 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
 
 /** Add-ons shown on public Pricing. Legacy listing-cap SKUs stay in DB/checkout for grandfathering. */
 export const PUBLIC_ADDON_PLAN_IDS: SubscriptionPlan[] = [
+  "EXTRA_ACTIVE",
   "VERIFIED_TUTOR",
   "AD_BOOST",
 ];
+
+/** Monthly/annual add-ons (not one-time). */
+export function isRecurringAddOnPlan(planId: string): boolean {
+  return planId === "EXTRA_ACTIVE";
+}
 
 /** Code defaults. Live checkout/pricing uses `getLivePlans()` so admin can override amounts. */
 export const PLANS = DEFAULT_PLANS;

@@ -88,10 +88,19 @@ for (const rel of publicSurfaces) {
 assert.equal(isSubjectProfilePromoActive(), false);
 assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
 
-// 5. No current public +1 Teaching Profile SKU
-assert.deepEqual(PUBLIC_ADDON_PLAN_IDS, ["VERIFIED_TUTOR", "AD_BOOST"]);
+// 5. Extra Active is the public +1 Active SKU (monthly); legacy Extra Profile Ads stay off pricing
+assert.deepEqual(PUBLIC_ADDON_PLAN_IDS, ["EXTRA_ACTIVE", "VERIFIED_TUTOR", "AD_BOOST"]);
 const publicAddOns = DEFAULT_PLANS.filter((p) => PUBLIC_ADDON_PLAN_IDS.includes(p.id));
-assert.ok(!publicAddOns.some((p) => /extra profile|\+1|one more profile/i.test(p.name + p.description)));
+assert.ok(publicAddOns.some((p) => p.id === "EXTRA_ACTIVE"));
+const extraActive = DEFAULT_PLANS.find((p) => p.id === "EXTRA_ACTIVE")!;
+assert.equal(extraActive.pricePkr, 499);
+assert.equal(extraActive.isAddOn, true);
+assert.ok(extraActive.annualPricePkr);
+assert.ok(extraActive.features.some((f) => /\+1 active/i.test(f)));
+assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("EXTRA_PROFILE_ADS"));
+assert.ok(
+  !publicAddOns.some((p) => p.id !== "EXTRA_ACTIVE" && /extra profile|\+1|one more profile/i.test(p.name + p.description)),
+);
 
 // 6. Listing Boost does not grant capacity
 const boost = DEFAULT_PLANS.find((p) => p.id === "AD_BOOST")!;
@@ -159,7 +168,8 @@ assert.match(planBillingFootnote("PKR", true, "once"), /One-time purchase/);
 // PlanPrice path for add-ons must use once formatting helpers (30-day or annual boost)
 assert.match(pricingClient, /formatPlanPrice\([\s\S]*?"once"/);
 assert.match(pricingClient, /addOnBillingFootnote/);
-assert.match(pricingClient, /oneTime=\{Boolean\(plan\.isAddOn\)\}/);
+assert.match(pricingClient, /planOneTime|oneTime=\{/);
+assert.match(pricingClient, /Extra Active/);
 assert.match(pricingClient, /ANNUAL_SAVE_LABEL/);
 assert.match(addOnBillingFootnote("PKR", true, "boost", "annual"), /365-Day Listing Boost|20%/i);
 

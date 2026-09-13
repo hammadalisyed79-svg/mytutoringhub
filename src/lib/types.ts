@@ -6,6 +6,7 @@ export type SubscriptionPlan =
   | "VERIFIED_TUTOR"
   | "HIGHLIGHTED_AD"
   | "AD_BOOST"
+  | "EXTRA_ACTIVE"
   | "EXTRA_PROFILE_ADS"
   | "UNLIMITED_ADS";
 export type SubscriptionStatus =

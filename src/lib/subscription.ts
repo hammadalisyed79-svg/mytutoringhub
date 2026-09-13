@@ -21,6 +21,7 @@ const TUTOR_ANY_PAID_PLANS: SubscriptionPlan[] = [
   "VERIFIED_TUTOR",
   "HIGHLIGHTED_AD",
   "AD_BOOST",
+  "EXTRA_ACTIVE",
   "EXTRA_PROFILE_ADS",
   "UNLIMITED_ADS",
 ];
@@ -164,11 +165,25 @@ export async function canActivateTutorAd(userId: string) {
   const { canActivateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
   const gate = await canActivateSubjectProfile(userId);
   if (!gate.ok) {
-    return { ok: false as const, reason: gate.reason, code: gate.code, activeCount: gate.activeCount, cap: gate.cap };
+    return {
+      ok: false as const,
+      reason: gate.reason,
+      code: gate.code,
+      activeCount: gate.activeCount,
+      cap: gate.cap,
+      extraActiveSlots: gate.extraActiveSlots,
+      canBuyExtraActive: gate.canBuyExtraActive,
+    };
   }
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
-  return { ok: true as const, profile, activeCount: gate.activeCount, cap: gate.cap };
+  return {
+    ok: true as const,
+    profile,
+    activeCount: gate.activeCount,
+    cap: gate.cap,
+    extraActiveSlots: gate.extraActiveSlots,
+  };
 }
 
 /**

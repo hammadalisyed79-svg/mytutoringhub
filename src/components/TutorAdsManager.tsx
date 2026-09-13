@@ -96,6 +96,9 @@ type Entitlement = {
   promoLabel: string;
   freeCapAfterPromo: number;
   paidCap: number;
+  extraActiveSlots?: number;
+  extraActiveMax?: number;
+  canBuyExtraActive?: boolean;
   canCreate: boolean;
   createReason: string | null;
   createPaused?: boolean;
@@ -589,7 +592,7 @@ export function TutorAdsManager({
     entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length;
   const capacityLine = entitlement?.unlimited
     ? "Legacy Unlimited — no active Teaching Profile limit. Boost does not add capacity."
-    : `Free: ${freeCap} active Teaching Profile · Tutor Pro: up to ${paidCap} · Boost does not add capacity.`;
+    : `Free: ${freeCap} active · Extra Active: up to 3 · Tutor Pro: up to ${paidCap} · Boost does not add capacity.`;
   const rateMinLocal = minHourlyRateInput(currency);
   const rateStep = hourlyRateInputStep(currency);
 
@@ -851,8 +854,18 @@ export function TutorAdsManager({
         <div className="panel teaching-listings-upgrade" role="status">
           <p>{upgradeNotice || entitlement?.upgradeMessage || UPGRADE_FOR_MORE_PROFILES_MESSAGE}</p>
           <div className="teaching-listings-upgrade-actions">
-            <Link className="btn btn-sm" href="/pricing">
-              View Tutor Pro plans
+            {entitlement?.canBuyExtraActive !== false ? (
+              <SubscribeButton
+                plan="EXTRA_ACTIVE"
+                planLabel="Extra Active Profile"
+                currency={currency}
+                billing="monthly"
+                label="Add Extra Active (monthly)"
+                paidCheckoutLive={paidCheckoutLive}
+              />
+            ) : null}
+            <Link className="btn btn-sm" href="/pricing?plan=TUTOR_BASIC">
+              View Tutor Pro
             </Link>
           </div>
         </div>
@@ -860,9 +873,21 @@ export function TutorAdsManager({
       {entitlement && !entitlement.canCreate ? (
         <div className="panel teaching-listings-upgrade">
           <p>{entitlement.createReason}</p>
-          <Link className="btn btn-sm" href="/pricing">
-            View plans for more Teaching Profiles
-          </Link>
+          <div className="teaching-listings-upgrade-actions">
+            {entitlement.canBuyExtraActive ? (
+              <SubscribeButton
+                plan="EXTRA_ACTIVE"
+                planLabel="Extra Active Profile"
+                currency={currency}
+                billing="monthly"
+                label="Add Extra Active (monthly)"
+                paidCheckoutLive={paidCheckoutLive}
+              />
+            ) : null}
+            <Link className="btn btn-sm btn-secondary" href="/pricing">
+              View plans
+            </Link>
+          </div>
         </div>
       ) : (
         <>
@@ -878,7 +903,8 @@ export function TutorAdsManager({
           </button>
           {entitlement?.createPaused ? (
             <p className="muted teaching-listings-catalog-hint">
-              Free includes 1 active profile. New subjects save as Paused until you upgrade to Tutor Pro.
+              At your active limit — new subjects save as Paused. Add Extra Active (monthly) or Tutor
+              Pro to run more live.
             </p>
           ) : null}
         </>

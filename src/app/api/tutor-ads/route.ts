@@ -6,14 +6,21 @@ import { normalizeSubjectLabel } from "@/lib/subject-profile";
 import {
   canActivateSubjectProfile,
   canCreateSubjectProfile,
+  countExtraActiveSlots,
   getSubjectProfileActiveCap,
   isSubjectProfilePromoActive,
   subjectProfilePromoLabel,
   FREE_SUBJECT_PROFILES_AFTER_PROMO,
   PAID_SUBJECT_PROFILE_CAP,
+  EXTRA_ACTIVE_SLOT_MAX,
   UPGRADE_REQUIRED_CODE,
+  SWITCH_LIMIT_CODE,
 } from "@/lib/subject-profile-entitlements";
 import { UPGRADE_FOR_MORE_PROFILES_MESSAGE } from "@/lib/teaching-profile-cap";
+import {
+  canSwitchTeachingProfileActive,
+  recordTeachingProfileSwitch,
+} from "@/lib/teaching-profile-switch";
 import {
   capabilitiesFromListingInput,
   displayScalarsFromCapabilities,
@@ -191,11 +198,12 @@ export async function GET() {
     });
   }
 
-  const [rows, cap, createGate, activateGate] = await Promise.all([
+  const [rows, cap, createGate, activateGate, extraActiveSlots] = await Promise.all([
     loadTutorListings(profile.id),
     getSubjectProfileActiveCap(session.user.id),
     canCreateSubjectProfile(session.user.id),
     canActivateSubjectProfile(session.user.id),
+    countExtraActiveSlots(session.user.id),
   ]);
 
   const activeCount = rows.filter((r) => r.status === "ACTIVE").length;
@@ -218,6 +226,9 @@ export async function GET() {
       promoLabel: subjectProfilePromoLabel(),
       freeCapAfterPromo: FREE_SUBJECT_PROFILES_AFTER_PROMO,
       paidCap: PAID_SUBJECT_PROFILE_CAP,
+      extraActiveSlots,
+      extraActiveMax: EXTRA_ACTIVE_SLOT_MAX,
+      canBuyExtraActive: extraActiveSlots < EXTRA_ACTIVE_SLOT_MAX && !unlimited && (cap || 0) < PAID_SUBJECT_PROFILE_CAP,
       canCreate: createGate.ok,
       createReason: createGate.ok ? null : createGate.reason,
       createPaused: Boolean(createGate.ok && createGate.forcePaused),
@@ -359,6 +370,7 @@ export async function PATCH(req: Request) {
   });
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  let recordSwitch = false;
   if (status === "ACTIVE" && row.status !== "ACTIVE") {
     const gate = await canActivateTutorAd(session.user.id);
     if (!gate.ok) {
@@ -367,10 +379,26 @@ export async function PATCH(req: Request) {
           error: gate.reason,
           ...(gate.code ? { code: gate.code } : {}),
           upgradeRequired: gate.code === UPGRADE_REQUIRED_CODE,
+          canBuyExtraActive: Boolean(gate.canBuyExtraActive),
+          extraActiveSlots: gate.extraActiveSlots,
         },
         { status: 403 },
       );
     }
+    const activeCount = await prisma.subjectProfile.count({
+      where: { tutorProfileId: profile.id, status: "ACTIVE" },
+    });
+    const switchGate = await canSwitchTeachingProfileActive(session.user.id, {
+      previousStatus: row.status,
+      currentlyActiveCount: activeCount,
+    });
+    if (!switchGate.ok) {
+      return NextResponse.json(
+        { error: switchGate.reason, code: SWITCH_LIMIT_CODE },
+        { status: 403 },
+      );
+    }
+    recordSwitch = activeCount > 0;
   }
 
   const nextSubject = body.subject ? normalizeSubjectLabel(String(body.subject)) : undefined;
@@ -499,6 +527,10 @@ export async function PATCH(req: Request) {
   await syncDerivedMasterSubjects(profile.id);
 
   await syncTutorBadges(session.user.id);
+
+  if (recordSwitch) {
+    await recordTeachingProfileSwitch(session.user.id).catch(() => undefined);
+  }
 
   return NextResponse.json(serializeListing(listed));
 }
