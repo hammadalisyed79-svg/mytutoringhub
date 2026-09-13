@@ -3,7 +3,7 @@ import {
   type TutorProfileCompletionInput,
 } from "@/lib/tutor-profile-completion";
 
-/** Main setup path only — extras live as collapsed blocks on Save. */
+/** Setup tutor profile — 5 required steps inside block 1. */
 export const TUTOR_WIZARD_STEP_IDS = [
   "photo",
   "basics",
@@ -12,7 +12,7 @@ export const TUTOR_WIZARD_STEP_IDS = [
   "finish",
 ] as const;
 
-/** Optional profile segments — not sequential wizard steps. */
+/** Optional profile segments — each is its own workspace block after Teaching Profiles. */
 export const TUTOR_WIZARD_EXTRA_IDS = [
   "details",
   "schedule",
@@ -23,11 +23,74 @@ export const TUTOR_WIZARD_EXTRA_IDS = [
 export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
 export type TutorWizardExtraId = (typeof TUTOR_WIZARD_EXTRA_IDS)[number];
 
+/** Top-level profile workspace: 6 blocks in order. */
+export const TUTOR_WORKSPACE_BLOCK_IDS = [
+  "setup",
+  "subjects",
+  "details",
+  "schedule",
+  "contact",
+  "verify",
+] as const;
+
+export type TutorWorkspaceBlockId = (typeof TUTOR_WORKSPACE_BLOCK_IDS)[number];
+
+export const TUTOR_WORKSPACE_BLOCKS: {
+  id: TutorWorkspaceBlockId;
+  number: number;
+  title: string;
+  hint: string;
+  optional: boolean;
+}[] = [
+  {
+    id: "setup",
+    number: 1,
+    title: "Tutor profile",
+    hint: "Photo, about you, location, qualifications — 5 steps",
+    optional: false,
+  },
+  {
+    id: "subjects",
+    number: 2,
+    title: "Teaching Profiles",
+    hint: "Add one or more subjects to appear in search",
+    optional: false,
+  },
+  {
+    id: "details",
+    number: 3,
+    title: "Teaching details",
+    hint: "Expertise, levels, languages, experience",
+    optional: true,
+  },
+  {
+    id: "schedule",
+    number: 4,
+    title: "Schedule",
+    hint: "Weekly availability and free first lesson",
+    optional: true,
+  },
+  {
+    id: "contact",
+    number: 5,
+    title: "Contact & video",
+    hint: "Private phone and intro video",
+    optional: true,
+  },
+  {
+    id: "verify",
+    number: 6,
+    title: "ID verification",
+    hint: "Optional trust badge — not required to go live",
+    optional: true,
+  },
+];
+
 /** @deprecated Optional steps removed from the main path; kept empty for callers. */
 export const TUTOR_WIZARD_OPTIONAL_STEPS = new Set<TutorWizardStepId>();
 
 /**
- * Resume at the first incomplete required step.
+ * Resume at the first incomplete required setup step.
  * Extras never block resume — tutors land on Save when required fields are done.
  */
 export function resolveTutorWizardResumeStep(
@@ -52,4 +115,20 @@ export function resolveTutorWizardResumeStep(
   if (!modeOk || !qualsOk) return "teaching";
 
   return "finish";
+}
+
+/** Which of the 6 workspace blocks to open first. */
+export function resolveTutorWorkspaceBlock(opts: {
+  verifyRequested?: boolean;
+  setupComplete: boolean;
+  hasTeachingProfile: boolean;
+  startExtra?: TutorWizardExtraId | null;
+}): TutorWorkspaceBlockId {
+  if (opts.verifyRequested) return "verify";
+  if (opts.startExtra && (TUTOR_WIZARD_EXTRA_IDS as readonly string[]).includes(opts.startExtra)) {
+    return opts.startExtra;
+  }
+  if (!opts.setupComplete) return "setup";
+  if (!opts.hasTeachingProfile) return "subjects";
+  return "setup";
 }

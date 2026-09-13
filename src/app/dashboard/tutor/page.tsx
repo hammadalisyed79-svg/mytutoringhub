@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { TutorProfileForm } from "@/components/TutorProfileForm";
-import { TutorAdsManager } from "@/components/TutorAdsManager";
-import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
+import { TutorProfileWorkspace } from "@/components/TutorProfileWorkspace";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { TutorPlanPanel } from "@/components/TutorPlanPanel";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
@@ -236,80 +234,33 @@ export default async function TutorDashboardPage({
         ) : (
           <div className="tutor-dashboard-stack">
             {user.tutorProfile ? (
-              <section className="panel tutor-profile-workspace" id="tutor-profile">
-              <div className="tutor-profile-workspace-head">
-                <div>
-                  <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
-                  <p className="muted">
-                    {profileComplete
-                      ? "Photo, bio, and extras — Teaching Profiles for each subject are below."
-                      : "Finish the steps below, then add a Teaching Profile to go live."}
-                  </p>
-                </div>
-                <div className="tutor-profile-status-pills">
-                  <span
-                    className={`tutor-status-pill${user.tutorProfile.active ? " is-live" : ""}`}
-                  >
-                    {user.tutorProfile.active ? "Live" : "Setup"}
-                  </span>
-                  {user.tutorProfile.verified ? (
-                    <span className="badge badge-verified">Verified</span>
-                  ) : null}
-                </div>
-              </div>
-
-              <TutorProfileForm
-                initial={user.tutorProfile}
+              <TutorProfileWorkspace
+                initial={{
+                  ...user.tutorProfile,
+                  name: user.name,
+                }}
                 displayName={user.name}
                 subjects={catalogSubjects}
                 extraLevels={extraLevels}
                 emailVerified={Boolean(user.emailVerified)}
-                listingActive={user.tutorProfile.active}
-                verified={user.tutorProfile.verified}
+                trustBadge={badgeProgress?.current || "NEW"}
                 currency={currency}
-                startStep={
-                  sp.verify === "1" && !user.tutorProfile.verified
-                    ? "verify"
-                    : resolveTutorWizardResumeStep(
-                        {
-                          ...user.tutorProfile,
-                          name: user.name,
-                          subjectProfiles: user.tutorProfile.subjectProfiles,
-                        },
-                        {
-                          verified: user.tutorProfile.verified,
-                          live: user.tutorProfile.active,
-                        },
-                      )
+                paidCheckoutLive={paidCheckoutLive}
+                verifyRequested={sp.verify === "1" && !user.tutorProfile.verified}
+                setupComplete={
+                  resolveTutorWizardResumeStep({
+                    ...user.tutorProfile,
+                    name: user.name,
+                    subjectProfiles: user.tutorProfile.subjectProfiles,
+                  }) === "finish"
                 }
-                hasValidTeachingProfile={user.tutorProfile.subjectProfiles.some(isValidActiveTeachingProfile)}
+                hasValidTeachingProfile={user.tutorProfile.subjectProfiles.some(
+                  isValidActiveTeachingProfile,
+                )}
                 hasAnyTeachingProfile={user.tutorProfile.subjectProfiles.length > 0}
+                profileComplete={profileComplete}
               />
-
-              <div className="tutor-workspace-subjects" id="teaching-listings">
-                <header className="teaching-listings-head">
-                  <div>
-                    <h2 id="teaching-listings-section">Teaching Profiles</h2>
-                    <p className="muted">One subject per profile — students find you by subject and rate.</p>
-                  </div>
-                </header>
-                <TutorAdsManager
-                  subjects={catalogSubjects}
-                  extraLevels={extraLevels}
-                  currency={currency}
-                  paidCheckoutLive={paidCheckoutLive}
-                />
-              </div>
-
-              {user.tutorProfile.active ? (
-                <ProfileImprovePanel
-                  listingLive={user.tutorProfile.active}
-                  verified={user.tutorProfile.verified}
-                  trustBadge={badgeProgress?.current || "NEW"}
-                />
-              ) : null}
-            </section>
-          ) : null}
+            ) : null}
           </div>
         )}
       </div>

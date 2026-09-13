@@ -3,36 +3,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
 import { PhotoFrameAdjust } from "@/components/PhotoFrameAdjust";
-import { PhoneInput } from "@/components/PhoneInput";
 import { countryByName } from "@/lib/markets";
 import {
   citiesForCountry,
-  expertiseForSubjects,
-  GENERIC_EXPERTISE,
   inferTutorCountry,
   joinCsv,
   splitCsv,
   tutorCountries,
-  tutorLanguageOptions,
-  tutorLevelOptions,
 } from "@/lib/tutor-catalog";
 import {
-  availabilityTimeOptions,
-  emptyAvailabilitySlot,
-  EXPERIENCE_YEAR_OPTIONS,
   parseAvailability,
   serializeAvailability,
-  WEEKDAYS,
   type AvailabilitySlot,
 } from "@/lib/availability";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
-import { VerificationForm } from "@/components/VerificationForm";
 import {
   TUTOR_WIZARD_STEP_IDS,
-  type TutorWizardExtraId,
   type TutorWizardStepId,
 } from "@/lib/tutor-wizard";
 import {
@@ -70,8 +58,6 @@ type Initial = {
   phone?: string | null;
 };
 
-const TIMES = availabilityTimeOptions();
-
 const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -94,8 +80,8 @@ const WIZARD_STEP_META: Record<TutorWizardStepId, { title: string; hint: string 
     hint: "Your highest qualification and default lesson type.",
   },
   finish: {
-    title: "Save & go live",
-    hint: "Save your profile, then publish one Teaching Profile below.",
+    title: "Save setup",
+    hint: "Save your tutor profile, then continue to Teaching Profiles.",
   },
 };
 
@@ -104,29 +90,6 @@ const WIZARD_STEPS = TUTOR_WIZARD_STEP_IDS.map((id) => ({
   ...WIZARD_STEP_META[id],
   optional: false as const,
 }));
-
-const EXTRA_BLOCKS: { id: TutorWizardExtraId; title: string; hint: string }[] = [
-  {
-    id: "details",
-    title: "Teaching details",
-    hint: "Expertise, levels, languages, experience",
-  },
-  {
-    id: "schedule",
-    title: "Schedule",
-    hint: "Weekly availability and free first lesson",
-  },
-  {
-    id: "contact",
-    title: "Contact & video",
-    hint: "Private phone and intro video",
-  },
-  {
-    id: "verify",
-    title: "ID verification",
-    hint: "Optional trust badge — not required to go live",
-  },
-];
 
 function photoExt(name: string): string {
   const dot = name.lastIndexOf(".");
@@ -181,14 +144,13 @@ export function TutorProfileForm({
   initial,
   displayName,
   subjects: _catalogSubjects,
-  extraLevels = [],
   emailVerified = true,
   listingActive = false,
-  verified = false,
   startStep,
   currency = "PKR",
   hasValidTeachingProfile = false,
   hasAnyTeachingProfile = false,
+  onSetupComplete,
 }: {
   initial: Initial;
   displayName: string;
@@ -198,22 +160,22 @@ export function TutorProfileForm({
   /** Whether the listing is currently public (DB active flag). */
   listingActive?: boolean;
   verified?: boolean;
-  /** Jump to a setup step, or open an extras block on Save (`verify`). */
-  startStep?: TutorWizardStepId | TutorWizardExtraId;
+  /** Jump to a setup step. */
+  startStep?: TutorWizardStepId;
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
   /** Has an ACTIVE Teaching Profile (in search). */
   hasValidTeachingProfile?: boolean;
-  /** Has any Teaching Profile row (active or paused) — hide wizard create form. */
+  /** Has any Teaching Profile row (active or paused). */
   hasAnyTeachingProfile?: boolean;
+  /** After setup save — advance workspace to Teaching Profiles. */
+  onSetupComplete?: () => void;
 }) {
   const router = useRouter();
   const { update } = useSession();
   const photoInput = useRef<HTMLInputElement>(null);
   const countries = useMemo(() => tutorCountries(), []);
-  const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
   const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
-  const languageCatalog = useMemo(() => tutorLanguageOptions(country), [country]);
 
   /** Rate currency follows teaching country (Germany → EUR); falls back to visitor currency. */
   const rateCurrency = useMemo(() => {
@@ -229,38 +191,29 @@ export function TutorProfileForm({
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const manageProfilesOnly = hasAnyTeachingProfile || hasValidTeachingProfile;
-  const openExtraOnLoad =
-    startStep === "verify" ||
-    startStep === "details" ||
-    startStep === "schedule" ||
-    startStep === "contact"
-      ? startStep
-      : null;
   const steps = useMemo(() => {
     return WIZARD_STEPS.map((row) => {
       if (row.id !== "finish") return row;
       if (manageProfilesOnly) {
         return {
           ...row,
-          title: "Save profile",
+          title: "Save setup",
           hint: hasValidTeachingProfile
-            ? "Your main profile is ready. Manage subjects under My Teaching Profiles below."
-            : "Activate a Teaching Profile below to appear in search.",
+            ? "Profile ready — continue to manage Teaching Profiles."
+            : "Save, then add or activate a Teaching Profile next.",
         };
       }
       return {
         ...row,
-        hint: "Save here, then add your first Teaching Profile in the block below.",
+        hint: "Save setup, then add your first Teaching Profile in the next block.",
       };
     });
   }, [manageProfilesOnly, hasValidTeachingProfile]);
   const initialStepIndex = Math.max(
     0,
-    openExtraOnLoad
-      ? steps.findIndex((row) => row.id === "finish")
-      : startStep
-        ? steps.findIndex((row) => row.id === startStep)
-        : 0,
+    startStep && (TUTOR_WIZARD_STEP_IDS as readonly string[]).includes(startStep)
+      ? steps.findIndex((row) => row.id === startStep)
+      : 0,
   );
   const [step, setStep] = useState(initialStepIndex >= 0 ? initialStepIndex : 0);
   const [photoUrl, setPhotoUrl] = useState(initial.photoUrl || "");
@@ -306,8 +259,6 @@ export function TutorProfileForm({
   }, [rateCurrency]);
 
   const cities = useMemo(() => citiesForCountry(country), [country]);
-  const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
-  const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
 
   const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
 
@@ -483,65 +434,6 @@ export function TutorProfileForm({
     } catch {
       setError("Could not save this step. Check your connection and try again.");
       return false;
-    } finally {
-      setDraftSaving(false);
-    }
-  }
-
-  function draftPayloadForExtra(blockId: TutorWizardExtraId): Record<string, unknown> | null {
-    switch (blockId) {
-      case "details":
-        return {
-          expertise: joinCsv(expertiseList),
-          levels: joinCsv(levelList),
-          languages: joinCsv(languageList),
-          experienceYears: experienceYears === "" ? null : Number(experienceYears),
-          teachingMethod: teachingMethod.trim(),
-          wizardStep: "details",
-        };
-      case "schedule":
-        return {
-          availability: serializeAvailability(slots),
-          offersFreeTrial,
-          wizardStep: "schedule",
-        };
-      case "contact":
-        return {
-          introVideoUrl: introVideoUrl.trim(),
-          phone: phone.trim(),
-          wizardStep: "contact",
-        };
-      case "verify":
-        return null;
-      default:
-        return null;
-    }
-  }
-
-  async function saveExtraBlock(blockId: TutorWizardExtraId) {
-    const payload = draftPayloadForExtra(blockId);
-    if (!payload) return;
-    setError("");
-    setMsg("");
-    setDraftNote("");
-    setDraftSaving(true);
-    try {
-      const res = await fetch("/api/profile/tutor", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError((data as { error?: string }).error || "Could not save this section. Try again.");
-        return;
-      }
-      const label = EXTRA_BLOCKS.find((b) => b.id === blockId)?.title || "Section";
-      setMsg(`${label} saved.`);
-      setDraftNote(`${label} saved.`);
-      router.refresh();
-    } catch {
-      setError("Could not save this section. Check your connection and try again.");
     } finally {
       setDraftSaving(false);
     }
@@ -726,10 +618,15 @@ export function TutorProfileForm({
       const nowLive = Boolean(data.active);
       setMsg(
         nowLive
-          ? "Profile saved — your Teaching Profile is live in search."
-          : "Profile saved. Finish the remaining required fields to go live.",
+          ? "Setup saved — your Teaching Profile is live in search."
+          : "Setup saved. Continue to Teaching Profiles to go live.",
       );
       await update({ name: name.trim() });
+      if (onSetupComplete) {
+        onSetupComplete();
+        router.refresh();
+        return;
+      }
       if (nowLive && !listingActive) {
         router.push("/dashboard/tutor?tab=profile&live=1#teaching-listings");
         router.refresh();
@@ -880,7 +777,7 @@ export function TutorProfileForm({
             disabled={uploading || saving || draftSaving}
             onClick={() => void save()}
           >
-            {saving ? "Saving…" : "Save profile"}
+            {saving ? "Saving…" : "Save & continue"}
           </button>
         ) : (
           <>
@@ -905,26 +802,6 @@ export function TutorProfileForm({
       </div>
     </div>
   );
-
-  function extraBlockSaveRow(blockId: TutorWizardExtraId) {
-    if (blockId === "verify") return null;
-    const label = EXTRA_BLOCKS.find((b) => b.id === blockId)?.title || "section";
-    return (
-      <div className="profile-extra-save-row">
-        <button
-          type="button"
-          className="btn btn-sm"
-          disabled={draftSaving || saving}
-          onClick={() => void saveExtraBlock(blockId)}
-        >
-          {draftSaving ? "Saving…" : `Save ${label}`}
-        </button>
-        <p className="muted field-hint" style={{ margin: 0 }}>
-          Saves this section only — you do not need to scroll to the bottom.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <form
@@ -958,10 +835,10 @@ export function TutorProfileForm({
           )}
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
             {hasValidTeachingProfile
-              ? "Live in search — manage subjects in Teaching Profiles below."
+              ? "Setup complete — continue to Teaching Profiles (block 2)."
               : manageProfilesOnly
-                ? "Activate a subject below to appear in search."
-                : "Next: add a Teaching Profile below to go live."}
+                ? "Save setup, then activate a subject in Teaching Profiles."
+                : "Save setup, then add a Teaching Profile in the next block."}
           </p>
         </div>
       ) : null}
@@ -1168,226 +1045,6 @@ export function TutorProfileForm({
           </div>
         </fieldset>
       </section>
-      )}
-
-      {currentStep.id === "finish" && (
-        <>
-          <div className="tutor-profile-extras">
-            <p className="muted" style={{ marginBottom: "0.35rem" }}>
-              Optional extras — save inside each block you open.
-            </p>
-            <div className="profile-finish-save-top">
-              <button
-                type="button"
-                className="btn"
-                disabled={uploading || saving || draftSaving}
-                onClick={() => void save()}
-              >
-                {saving ? "Saving…" : "Save profile"}
-              </button>
-              <p className="muted field-hint" style={{ margin: 0 }}>
-                Saves your full profile. Each optional block also has its own Save.
-              </p>
-            </div>
-            {EXTRA_BLOCKS.map((block) => (
-              <details
-                key={block.id}
-                className="profile-advanced-details"
-                id={block.id === "verify" ? "get-verified" : undefined}
-                open={openExtraOnLoad === block.id}
-              >
-                <summary>
-                  {block.title}
-                  <span className="muted"> — {block.hint}</span>
-                </summary>
-                <div className="profile-advanced-block">
-                  {block.id === "details" ? (
-                    <>
-                      <CatalogMultiSelect
-                        label="Expertise"
-                        selected={expertiseList}
-                        onChange={setExpertiseList}
-                        options={expertiseOptions}
-                        extraOptions={GENERIC_EXPERTISE}
-                        max={16}
-                        addLabel="Add expertise"
-                      />
-                      <CatalogMultiSelect
-                        label="Levels"
-                        selected={levelList}
-                        onChange={setLevelList}
-                        options={levelCatalog.core}
-                        extraOptions={levelCatalog.more}
-                        max={10}
-                        addLabel="Add levels"
-                      />
-                      <CatalogMultiSelect
-                        label="Languages"
-                        hint="Regional languages for your teaching country appear first. Add international languages from the menu if you prefer."
-                        selected={languageList}
-                        onChange={setLanguageList}
-                        options={languageCatalog.core}
-                        extraOptions={languageCatalog.more}
-                        optionsGroupLabel="Regional (priority)"
-                        extraGroupLabel="International (preference)"
-                        max={8}
-                        addLabel="Add languages"
-                      />
-                      <label>
-                        Experience in years
-                        <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-                          <option value="">Select years…</option>
-                          {EXPERIENCE_YEAR_OPTIONS.map((row) => (
-                            <option key={row.value} value={row.value}>
-                              {row.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        How you teach
-                        <textarea
-                          name="teachingMethod"
-                          rows={2}
-                          maxLength={2000}
-                          value={teachingMethod}
-                          onChange={(e) => setTeachingMethod(e.target.value)}
-                          placeholder="Past papers, weekly homework…"
-                        />
-                      </label>
-                      <TutorBioAiHelp
-                        purpose="teachingMethod"
-                        bio={teachingMethod}
-                        name={name}
-                        headline={headline}
-                        subjects={subjectList}
-                        location={location}
-                        country={country}
-                        qualifications=""
-                        experienceYears={
-                          experienceYears === "" || Number.isNaN(Number(experienceYears))
-                            ? null
-                            : Number(experienceYears)
-                        }
-                        teachingMethod=""
-                        languages={joinCsv(languageList)}
-                        levels={levelList}
-                        expertise={joinCsv(expertiseList)}
-                        online={online}
-                        inPerson={inPerson}
-                        onApply={setTeachingMethod}
-                      />
-                      {extraBlockSaveRow("details")}
-                    </>
-                  ) : null}
-                  {block.id === "schedule" ? (
-                    <>
-                      <fieldset className="catalog-pick">
-                        <legend>Weekly availability</legend>
-                        <div className="schedule-rows">
-                          {slots.map((slot, index) => (
-                            <div key={`${slot.day}-${index}`} className="schedule-row">
-                              <select
-                                aria-label="Day"
-                                value={slot.day}
-                                onChange={(e) =>
-                                  updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
-                                }
-                              >
-                                {WEEKDAYS.map((day) => (
-                                  <option key={day} value={day}>
-                                    {day}
-                                  </option>
-                                ))}
-                              </select>
-                              <select
-                                aria-label="Start time"
-                                value={slot.start}
-                                onChange={(e) => updateSlot(index, { start: e.target.value })}
-                              >
-                                {TIMES.map((time) => (
-                                  <option key={time} value={time}>
-                                    {time}
-                                  </option>
-                                ))}
-                              </select>
-                              <span className="muted">to</span>
-                              <select
-                                aria-label="End time"
-                                value={slot.end}
-                                onChange={(e) => updateSlot(index, { end: e.target.value })}
-                              >
-                                {TIMES.map((time) => (
-                                  <option key={time} value={time}>
-                                    {time}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                className="btn btn-secondary btn-sm"
-                                type="button"
-                                onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          type="button"
-                          onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
-                        >
-                          Add time slot
-                        </button>
-                      </fieldset>
-                      <label className="radio">
-                        <input
-                          type="checkbox"
-                          checked={offersFreeTrial}
-                          onChange={(e) => setOffersFreeTrial(e.target.checked)}
-                        />{" "}
-                        Free first lesson
-                      </label>
-                      {extraBlockSaveRow("schedule")}
-                    </>
-                  ) : null}
-                  {block.id === "contact" ? (
-                    <>
-                      <label>
-                        Intro video URL
-                        <input
-                          name="introVideoUrl"
-                          value={introVideoUrl}
-                          onChange={(e) => setIntroVideoUrl(e.target.value)}
-                          placeholder="YouTube or Vimeo"
-                          inputMode="url"
-                        />
-                      </label>
-                      <label>
-                        Phone
-                        <PhoneInput
-                          value={phone}
-                          onChange={setPhone}
-                          defaultCountryCode={defaultPhoneCountry}
-                          hint="Private — never shown on your public profile. Students message you through the platform; phone is for admin and verification only."
-                        />
-                      </label>
-                      {extraBlockSaveRow("contact")}
-                    </>
-                  ) : null}
-                  {block.id === "verify" ? (
-                    !verified ? (
-                      <VerificationForm embedded compact />
-                    ) : (
-                      <p className="success">You are verified.</p>
-                    )
-                  ) : null}
-                </div>
-              </details>
-            ))}
-          </div>
-        </>
       )}
 
       {error && <p className="form-error">{error}</p>}

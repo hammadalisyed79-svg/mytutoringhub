@@ -1,12 +1,27 @@
 import assert from "node:assert/strict";
 import {
   resolveTutorWizardResumeStep,
+  resolveTutorWorkspaceBlock,
   TUTOR_WIZARD_STEP_IDS,
   TUTOR_WIZARD_EXTRA_IDS,
+  TUTOR_WORKSPACE_BLOCK_IDS,
+  TUTOR_WORKSPACE_BLOCKS,
 } from "@/lib/tutor-wizard";
 
 assert.deepEqual([...TUTOR_WIZARD_STEP_IDS], ["photo", "basics", "place", "teaching", "finish"]);
 assert.deepEqual([...TUTOR_WIZARD_EXTRA_IDS], ["details", "schedule", "contact", "verify"]);
+assert.deepEqual(
+  [...TUTOR_WORKSPACE_BLOCK_IDS],
+  ["setup", "subjects", "details", "schedule", "contact", "verify"],
+);
+assert.equal(TUTOR_WORKSPACE_BLOCKS.length, 6);
+assert.equal(resolveTutorWorkspaceBlock({ setupComplete: false, hasTeachingProfile: false }), "setup");
+assert.equal(resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: false }), "subjects");
+assert.equal(resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: true }), "setup");
+assert.equal(
+  resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: true, verifyRequested: true }),
+  "verify",
+);
 
 const almostDone = {
   name: "Sara Ahmed",
