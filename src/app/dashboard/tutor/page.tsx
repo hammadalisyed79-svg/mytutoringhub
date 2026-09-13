@@ -302,6 +302,7 @@ export default async function TutorDashboardPage({
                       )
                 }
                 hasValidTeachingProfile={user.tutorProfile.subjectProfiles.some(isValidActiveTeachingProfile)}
+                hasAnyTeachingProfile={user.tutorProfile.subjectProfiles.length > 0}
               />
             </section>
           ) : null}

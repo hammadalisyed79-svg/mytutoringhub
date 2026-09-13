@@ -105,7 +105,7 @@ const WIZARD_STEPS = [
   {
     id: "finish",
     title: "Teaching Profile",
-    hint: "Create your first Teaching Profile — one subject students can search for.",
+    hint: "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for.",
     optional: false,
   },
 ] as const;
@@ -171,6 +171,7 @@ export function TutorProfileForm({
   startStep,
   currency = "PKR",
   hasValidTeachingProfile = false,
+  hasAnyTeachingProfile = false,
 }: {
   initial: Initial;
   displayName: string;
@@ -185,8 +186,10 @@ export function TutorProfileForm({
   startStep?: (typeof WIZARD_STEPS)[number]["id"] | "verify";
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
-  /** Skip first-profile create when an ACTIVE Teaching Profile already exists. */
+  /** Has an ACTIVE Teaching Profile (in search). */
   hasValidTeachingProfile?: boolean;
+  /** Has any Teaching Profile row (active or paused) — hide wizard create form. */
+  hasAnyTeachingProfile?: boolean;
 }) {
   const router = useRouter();
   const { update } = useSession();
@@ -211,19 +214,25 @@ export function TutorProfileForm({
   const [photoError, setPhotoError] = useState("");
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
+  const manageProfilesOnly = hasAnyTeachingProfile || hasValidTeachingProfile;
   const steps = useMemo(() => {
     return WIZARD_STEPS.map((row) => {
       if (row.id !== "finish") return row;
-      if (hasValidTeachingProfile) {
+      if (manageProfilesOnly) {
         return {
           ...row,
           title: "Save profile",
-          hint: "Optional extras. Your first Teaching Profile is already set.",
+          hint: hasValidTeachingProfile
+            ? "Optional extras. Manage subjects under My Teaching Profiles below."
+            : "You already have Teaching Profiles — activate one below to appear in search.",
         };
       }
-      return row;
+      return {
+        ...row,
+        hint: "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for.",
+      };
     });
-  }, [hasValidTeachingProfile]);
+  }, [manageProfilesOnly, hasValidTeachingProfile]);
   const initialStepIndex = Math.max(
     0,
     startStep && startStep !== "verify"
@@ -306,14 +315,7 @@ export function TutorProfileForm({
 
   const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
 
-  const firstProfileReady =
-    hasValidTeachingProfile ||
-    Boolean(
-      firstSubject.trim() &&
-        ratePkr >= MIN_HOURLY_RATE_PKR &&
-        teachingDescription.trim().length >= 20 &&
-        (online || inPerson),
-    );
+  const firstProfileReady = hasValidTeachingProfile;
 
   const completion = useMemo(
     () =>
@@ -331,6 +333,7 @@ export function TutorProfileForm({
         qualifications,
         hasValidTeachingProfile: firstProfileReady,
         hasValidListingRate: firstProfileReady,
+        hasAnyTeachingProfile: manageProfilesOnly,
       }),
     [
       name,
@@ -345,6 +348,7 @@ export function TutorProfileForm({
       inPerson,
       qualifications,
       firstProfileReady,
+      manageProfilesOnly,
     ],
   );
 
@@ -376,15 +380,7 @@ export function TutorProfileForm({
         if (!qualifications.trim()) return "Add your highest qualification.";
         return null;
       case "finish":
-        if (hasValidTeachingProfile) return null;
-        if (!firstSubject.trim()) return "Choose the subject for your first Teaching Profile.";
-        if (ratePkr < MIN_HOURLY_RATE_PKR) {
-          return `Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)} (${MIN_HOURLY_RATE_PKR} PKR).`;
-        }
-        if (teachingDescription.trim().length < 20) {
-          return "Describe how you teach this subject (at least 20 characters).";
-        }
-        if (!online && !inPerson) return "Choose online, in person, or both.";
+        // Teaching Profiles are created under My Teaching Profiles — not in this wizard.
         return null;
       default:
         return null;
@@ -403,15 +399,7 @@ export function TutorProfileForm({
       case "teaching":
         return (online || inPerson) && Boolean(qualifications.trim());
       case "finish":
-        return Boolean(
-          completion.complete &&
-            emailVerified &&
-            (hasValidTeachingProfile ||
-              (firstSubject.trim() &&
-                ratePkr >= MIN_HOURLY_RATE_PKR &&
-                teachingDescription.trim().length >= 20 &&
-                (online || inPerson))),
-        );
+        return manageProfilesOnly;
       default:
         return false;
     }
@@ -657,20 +645,6 @@ export function TutorProfileForm({
       setError("Add your highest qualification before saving.");
       return;
     }
-    if (!hasValidTeachingProfile) {
-      if (!firstSubject.trim()) {
-        setError("Choose the subject for your first Teaching Profile.");
-        return;
-      }
-      if (ratePkr < MIN_HOURLY_RATE_PKR) {
-        setError(`Hourly rate must be at least ${formatMoney(rateMinLocal, rateCurrency)}.`);
-        return;
-      }
-      if (teachingDescription.trim().length < 20) {
-        setError("Describe how you teach this subject (at least 20 characters).");
-        return;
-      }
-    }
     const effectiveHeadline =
       headline.trim().length >= 8
         ? headline.trim()
@@ -699,22 +673,7 @@ export function TutorProfileForm({
       offersFreeTrial,
       phone: phone.trim(),
     };
-    if (hasValidTeachingProfile) {
-      if (ratePkr >= MIN_HOURLY_RATE_PKR) payload.hourlyRate = ratePkr;
-    } else {
-      payload.hourlyRate = ratePkr;
-      payload.firstTeachingProfile = {
-        subject: firstSubject.trim(),
-        description: teachingDescription.trim(),
-        rate: ratePkr,
-        online,
-        inPerson,
-        levels: teachingLevels,
-        boards: teachingBoards,
-        qualifications: [],
-        syllabusCodes: teachingCodes,
-      };
-    }
+    if (ratePkr >= MIN_HOURLY_RATE_PKR) payload.hourlyRate = ratePkr;
     setSaving(true);
     try {
       const res = await fetch("/api/profile/tutor", {
@@ -924,11 +883,7 @@ export function TutorProfileForm({
         ) : null}
         {currentStep.id === "finish" ? (
           <button className="btn" type="button" disabled={uploading || saving || draftSaving} onClick={() => void save()}>
-            {saving
-              ? "Saving…"
-              : hasValidTeachingProfile
-                ? "Save profile"
-                : "Create Teaching Profile"}
+            {saving ? "Saving…" : "Save profile"}
           </button>
         ) : (
           <button className="btn" type="button" disabled={draftSaving || uploading} onClick={() => void goNext()}>
@@ -967,8 +922,10 @@ export function TutorProfileForm({
           {requiredFieldsList}
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
             {hasValidTeachingProfile
-              ? "Your first Teaching Profile is already set. Save any remaining profile details, then manage Teaching Profiles below."
-              : "Create one Teaching Profile for a single subject. Add more subjects later as separate Teaching Profiles."}
+              ? "Your Teaching Profile is active in search. Manage subjects below."
+              : manageProfilesOnly
+                ? "Activate a Teaching Profile under My Teaching Profiles to appear in search."
+                : "Create your first Teaching Profile under My Teaching Profiles below."}
           </p>
         </div>
       ) : null}
@@ -1179,148 +1136,18 @@ export function TutorProfileForm({
 
       {currentStep.id === "finish" && (
         <>
-          {hasValidTeachingProfile ? (
-            <p className="field-hint">
-              You already have a Teaching Profile. Manage subjects, rates, and Boost under{" "}
-              <strong>My Teaching Profiles</strong> below. Optional extras here stay on your main profile.
-            </p>
-          ) : (
-            <section className="form-section">
-              <CatalogMultiSelect
-                label="Subject"
-                required
-                searchable
-                dropdownOnly
-                max={1}
-                selected={firstSubject ? [firstSubject] : []}
-                onChange={(next) => {
-                  const value = next[0] || "";
-                  setFirstSubject(value);
-                  setSubjects(value ? [value] : []);
-                }}
-                options={listedSubjects}
-                addLabel="Add subject"
-                hint="One canonical subject per Teaching Profile (for example Mathematics, not GCSE Maths). Search, then add from the list."
-              />
-
-              <label>
-                <span>
-                  Hourly rate ({rateCurrency}) <abbr className="req" title="Required">*</abbr>
-                </span>
-                <input
-                  name="hourlyRate"
-                  type="number"
-                  min={rateMinLocal}
-                  step={rateStep}
-                  inputMode="decimal"
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(e.target.value)}
-                />
-                <span className="field-hint">
-                  Minimum {formatMoney(rateMinLocal, rateCurrency)}. This rate is for this Teaching Profile.
-                </span>
-              </label>
-
-              <fieldset className="form-fieldset">
-                <legend>
-                  How you teach this subject <abbr className="req" title="Required">*</abbr>
-                </legend>
-                <div className="checks">
-                  <label className="radio">
-                    <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} /> Online
-                  </label>
-                  <label className="radio">
-                    <input
-                      type="checkbox"
-                      checked={inPerson}
-                      onChange={(e) => setInPerson(e.target.checked)}
-                    />{" "}
-                    In person
-                  </label>
-                </div>
-              </fieldset>
-
-              <CatalogMultiSelect
-                label="Levels"
-                selected={teachingLevels}
-                onChange={setTeachingLevels}
-                options={levelCatalog.core}
-                extraOptions={levelCatalog.more}
-                max={12}
-                addLabel="Add level"
-                hint="Who you teach — school stage or typical cohort. Pick only what you actually cover. GCSE and A Level can share one Mathematics profile."
-              />
-              <CatalogMultiSelect
-                label="Exam boards / curricula"
-                selected={teachingBoards}
-                onChange={setTeachingBoards}
-                options={boardOptions}
-                max={20}
-                dropdownOnly
-                addLabel="Add board"
-                hint="Optional. Add boards you prepare for from the list."
-              />
-              <CatalogMultiSelect
-                label="Syllabus / subject codes"
-                selected={teachingCodes}
-                onChange={setTeachingCodes}
-                options={syllabusCodeOptions}
-                extraOptions={teachingCodes}
-                searchable
-                dropdownOnly
-                max={40}
-                addLabel="Add code"
-                hint="Optional. Codes students use on Past Papers (e.g. 0580, 9709). Search, then add from the list."
-              />
-
-              <div className="tutor-bio-field">
-                <label>
-                  <span>
-                    Teaching description <abbr className="req" title="Required">*</abbr>
-                  </span>
-                  <textarea
-                    name="teachingDescription"
-                    minLength={20}
-                    maxLength={4000}
-                    rows={4}
-                    value={teachingDescription}
-                    onChange={(e) => setTeachingDescription(e.target.value)}
-                    placeholder="Who this subject is for, how you teach it, and what results students can expect."
-                  />
-                </label>
-                <span className="field-hint">{teachingDescription.trim().length}/4000 · at least 20 characters</span>
-                <TutorBioAiHelp
-                  purpose="teachingDescription"
-                  bio={teachingDescription}
-                  name={name}
-                  headline={headline}
-                  subjects={firstSubject ? [firstSubject] : []}
-                  location={location}
-                  country={country}
-                  qualifications=""
-                  experienceYears={
-                    experienceYears === "" || Number.isNaN(Number(experienceYears))
-                      ? null
-                      : Number(experienceYears)
-                  }
-                  teachingMethod={teachingMethod}
-                  languages={joinCsv(languageList)}
-                  levels={teachingLevels}
-                  expertise={joinCsv(expertiseList)}
-                  hourlyRateLabel={
-                    hourlyRate
-                      ? `${hourlyRate} ${rateCurrency}/hr`
-                      : undefined
-                  }
-                  online={online}
-                  inPerson={inPerson}
-                  boards={teachingBoards}
-                  syllabusCodes={teachingCodes}
-                  onApply={setTeachingDescription}
-                />
-              </div>
-            </section>
-          )}
+          <p className="field-hint">
+            {hasValidTeachingProfile
+              ? "Manage subjects, rates, and Boost under My Teaching Profiles below. Optional extras here stay on your main profile."
+              : manageProfilesOnly
+                ? "You already have Teaching Profiles. Activate one under My Teaching Profiles to appear in search (Free includes 1 active)."
+                : "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for."}
+          </p>
+          <p className="field-hint">
+            <a href="#teaching-listings" className="btn btn-sm">
+              {manageProfilesOnly ? "Go to Teaching Profiles" : "Add Teaching Profile"}
+            </a>
+          </p>
           <details className="profile-advanced-details" id="get-verified" open={startStep === "verify"}>
             <summary>Optional — ID verification, schedule, contact</summary>
             <div className="profile-advanced-block">

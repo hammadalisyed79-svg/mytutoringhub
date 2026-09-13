@@ -98,6 +98,11 @@ type Entitlement = {
   paidCap: number;
   canCreate: boolean;
   createReason: string | null;
+  createPaused?: boolean;
+  canActivate?: boolean;
+  activateReason?: string | null;
+  upgradeRequired?: boolean;
+  upgradeMessage?: string | null;
 };
 
 const EMPTY_CAPS: TeachingProfileEditorValues = {
@@ -324,6 +329,7 @@ export function TutorAdsManager({
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [upgradeNotice, setUpgradeNotice] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [createSubject, setCreateSubject] = useState("");
@@ -418,20 +424,30 @@ export function TutorAdsManager({
     const data = await res.json();
     if (!res.ok) {
       flashError(data.error || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
+      if (data.code === "UPGRADE_REQUIRED" || data.upgradeRequired) {
+        setUpgradeNotice(data.error || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
+      }
       return;
     }
     e.currentTarget.reset();
     setCreateSubject("");
     setCreateCaps(EMPTY_CAPS);
     setShowCreate(false);
-    if (data.id) {
+    if (data.id && !data.createdPaused) {
       fireConversionEvent(
         "teaching_profile_activated",
         { listingId: data.id, subject: String(fd.get("subject") || "") },
         `tp_active_${data.id}`,
       );
     }
-    flashSuccess("Teaching Profile published — students can find it in search.");
+    flashSuccess(
+      data.createdPaused
+        ? "Teaching Profile saved as Paused. Upgrade to Tutor Pro to activate more than one in search."
+        : "Teaching Profile published — students can find it in search.",
+    );
+    if (data.createdPaused) {
+      setUpgradeNotice(entitlement?.upgradeMessage || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
+    }
     load();
     router.refresh();
   }
@@ -487,8 +503,12 @@ export function TutorAdsManager({
     setBusyId(null);
     if (!res.ok) {
       flashError(data.error || "Could not update status");
+      if (data.code === "UPGRADE_REQUIRED" || data.upgradeRequired) {
+        setUpgradeNotice(data.error || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
+      }
       return;
     }
+    setUpgradeNotice(null);
     flashSuccess(
       status === "PAUSED"
         ? "Teaching Profile paused — it is hidden from search."
@@ -689,6 +709,16 @@ export function TutorAdsManager({
     </form>
   ) : (
     <div className="teaching-listings-toolbar">
+      {entitlement?.upgradeRequired || upgradeNotice ? (
+        <div className="panel teaching-listings-upgrade" role="status">
+          <p>{upgradeNotice || entitlement?.upgradeMessage || UPGRADE_FOR_MORE_PROFILES_MESSAGE}</p>
+          <div className="teaching-listings-upgrade-actions">
+            <Link className="btn btn-sm" href="/pricing">
+              View Tutor Pro plans
+            </Link>
+          </div>
+        </div>
+      ) : null}
       {entitlement && !entitlement.canCreate ? (
         <div className="panel teaching-listings-upgrade">
           <p>{entitlement.createReason}</p>
@@ -697,9 +727,16 @@ export function TutorAdsManager({
           </Link>
         </div>
       ) : (
-        <button className="btn btn-sm" type="button" onClick={() => setShowCreate(true)}>
-          Add Teaching Profile
-        </button>
+        <>
+          <button className="btn btn-sm" type="button" onClick={() => setShowCreate(true)}>
+            Add Teaching Profile
+          </button>
+          {entitlement?.createPaused ? (
+            <p className="muted teaching-listings-catalog-hint">
+              Free includes 1 active profile. New subjects save as Paused until you upgrade to Tutor Pro.
+            </p>
+          ) : null}
+        </>
       )}
       {subjectChoices.length === 0 && (
         <p className="muted teaching-listings-catalog-hint">

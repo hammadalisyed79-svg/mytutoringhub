@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canCreateTutorAd, syncTutorBadges } from "@/lib/subscription";
+import { canActivateTutorAd, canCreateTutorAd, syncTutorBadges } from "@/lib/subscription";
 import { normalizeSubjectLabel } from "@/lib/subject-profile";
 import {
+  canActivateSubjectProfile,
   canCreateSubjectProfile,
   getSubjectProfileActiveCap,
   isSubjectProfilePromoActive,
   subjectProfilePromoLabel,
   FREE_SUBJECT_PROFILES_AFTER_PROMO,
   PAID_SUBJECT_PROFILE_CAP,
+  UPGRADE_REQUIRED_CODE,
 } from "@/lib/subject-profile-entitlements";
+import { UPGRADE_FOR_MORE_PROFILES_MESSAGE } from "@/lib/teaching-profile-cap";
 import {
   capabilitiesFromListingInput,
   displayScalarsFromCapabilities,
@@ -179,14 +182,20 @@ export async function GET() {
         paidCap: PAID_SUBJECT_PROFILE_CAP,
         canCreate: false,
         createReason: "Create your tutor profile first",
+        createPaused: false,
+        canActivate: false,
+        activateReason: "Create your tutor profile first",
+        upgradeRequired: false,
+        upgradeMessage: UPGRADE_FOR_MORE_PROFILES_MESSAGE,
       },
     });
   }
 
-  const [rows, cap, gate] = await Promise.all([
+  const [rows, cap, createGate, activateGate] = await Promise.all([
     loadTutorListings(profile.id),
     getSubjectProfileActiveCap(session.user.id),
     canCreateSubjectProfile(session.user.id),
+    canActivateSubjectProfile(session.user.id),
   ]);
 
   const activeCount = rows.filter((r) => r.status === "ACTIVE").length;
@@ -209,8 +218,16 @@ export async function GET() {
       promoLabel: subjectProfilePromoLabel(),
       freeCapAfterPromo: FREE_SUBJECT_PROFILES_AFTER_PROMO,
       paidCap: PAID_SUBJECT_PROFILE_CAP,
-      canCreate: gate.ok,
-      createReason: gate.ok ? null : gate.reason,
+      canCreate: createGate.ok,
+      createReason: createGate.ok ? null : createGate.reason,
+      createPaused: Boolean(createGate.ok && createGate.forcePaused),
+      canActivate: activateGate.ok,
+      activateReason: activateGate.ok ? null : activateGate.reason,
+      upgradeRequired: Boolean(
+        (!activateGate.ok && activateGate.code === UPGRADE_REQUIRED_CODE) ||
+          (createGate.ok && createGate.forcePaused),
+      ),
+      upgradeMessage: UPGRADE_FOR_MORE_PROFILES_MESSAGE,
     },
   });
 }
@@ -221,7 +238,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const gate = await canCreateTutorAd(session.user.id);
-  if (!gate.ok) return NextResponse.json({ error: gate.reason }, { status: 403 });
+  if (!gate.ok) {
+    return NextResponse.json(
+      { error: gate.reason, ...(gate.code ? { code: gate.code } : {}) },
+      { status: 403 },
+    );
+  }
+  const forcePaused = Boolean(gate.forcePaused);
   const data = createSchema.parse(await req.json());
   const tutor = await prisma.tutorProfile.findUnique({
     where: { id: gate.profile.id },
@@ -259,10 +282,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const createStatus = forcePaused ? "PAUSED" : "ACTIVE";
   const existing = await listTeachingProfilesForUniqueness(gate.profile.id);
   const clash = shouldRejectActiveCanonicalWrite({
     existing,
-    nextStatus: "ACTIVE",
+    nextStatus: createStatus,
     nextSubject: persist.subject,
   });
   if (clash) {
@@ -275,6 +299,7 @@ export async function POST(req: Request) {
       tutorProfileId: gate.profile.id,
       tutorName: tutor?.user.name,
       existingSubjectsCsv: tutor?.subjects,
+      status: createStatus,
       input: {
         subject: persist.subject,
         title: persist.title,
@@ -312,7 +337,10 @@ export async function POST(req: Request) {
 
   await syncTutorBadges(session.user.id);
 
-  return NextResponse.json(serializeListing(row));
+  return NextResponse.json({
+    ...serializeListing(row),
+    createdPaused: forcePaused,
+  });
 }
 
 export async function PATCH(req: Request) {
@@ -332,8 +360,17 @@ export async function PATCH(req: Request) {
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (status === "ACTIVE" && row.status !== "ACTIVE") {
-    const gate = await canCreateTutorAd(session.user.id);
-    if (!gate.ok) return NextResponse.json({ error: gate.reason }, { status: 403 });
+    const gate = await canActivateTutorAd(session.user.id);
+    if (!gate.ok) {
+      return NextResponse.json(
+        {
+          error: gate.reason,
+          ...(gate.code ? { code: gate.code } : {}),
+          upgradeRequired: gate.code === UPGRADE_REQUIRED_CODE,
+        },
+        { status: 403 },
+      );
+    }
   }
 
   const nextSubject = body.subject ? normalizeSubjectLabel(String(body.subject)) : undefined;

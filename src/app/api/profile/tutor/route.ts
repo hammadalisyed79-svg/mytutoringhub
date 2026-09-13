@@ -262,16 +262,20 @@ export async function PUT(req: Request) {
         }),
       ]);
       if (activeCount >= cap) {
-        return NextResponse.json(
-          { error: "Teaching Profile limit reached. Pause one or upgrade to Tutor Pro." },
-          { status: 403 },
-        );
+        // Free at ACTIVE cap: still allow first create path as Paused (rare; manager is preferred).
+        if (!(Number.isFinite(cap) && activeCount >= 1 && cap <= 1)) {
+          return NextResponse.json(
+            { error: "Teaching Profile limit reached. Pause one or upgrade to Tutor Pro." },
+            { status: 403 },
+          );
+        }
       }
       try {
         const created = await insertTeachingProfile({
           tutorProfileId: profile.id,
           tutorName: parsedName.name,
           syncMasterRate: true,
+          status: activeCount >= cap ? "PAUSED" : "ACTIVE",
           input: {
             subject: data.firstTeachingProfile.subject,
             title: data.firstTeachingProfile.title,

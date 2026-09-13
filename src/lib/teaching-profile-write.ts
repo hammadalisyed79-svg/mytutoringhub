@@ -137,13 +137,20 @@ export function teachingCompletionFromListings(
 }
 
 /**
- * Existing tutors with a valid ACTIVE Teaching Profile must not be forced
- * through first-profile create (do not mint a duplicate Maths row).
+ * Existing tutors with any Teaching Profile must not be forced
+ * through first-profile create (do not mint a duplicate subject row).
  */
 export function shouldSkipFirstTeachingProfileCreate(
   existing: TeachingProfileListabilityRow[] | null | undefined,
 ): boolean {
-  return teachingCompletionFromListings(existing).hasValidTeachingProfile;
+  return (existing || []).some((row) => Boolean(normalizeSubjectLabel(row.subject || "")));
+}
+
+/** True when tutor already has at least one Teaching Profile row (any status). */
+export function hasAnyTeachingProfile(
+  existing: TeachingProfileListabilityRow[] | null | undefined,
+): boolean {
+  return shouldSkipFirstTeachingProfileCreate(existing);
 }
 
 export function mergeDerivedMasterSubjects(existingCsv: string | null | undefined, subject: string): string {
@@ -199,17 +206,20 @@ export async function insertTeachingProfile(opts: {
   tutorName?: string | null;
   existingSubjectsCsv?: string | null;
   syncMasterRate?: boolean;
+  /** Defaults to ACTIVE. Use PAUSED when Free tutor is already at ACTIVE cap. */
+  status?: "ACTIVE" | "PAUSED";
   input: TeachingProfileListingInput;
 }) {
   const { prisma } = await import("@/lib/prisma");
   const fields = teachingProfilePersistFields(opts.input, { tutorName: opts.tutorName });
+  const status = opts.status === "PAUSED" ? "PAUSED" : "ACTIVE";
   const existing = await prisma.subjectProfile.findMany({
     where: { tutorProfileId: opts.tutorProfileId },
     select: TEACHING_PROFILE_UNIQUENESS_SELECT,
   });
   const clash = shouldRejectActiveCanonicalWrite({
     existing,
-    nextStatus: "ACTIVE",
+    nextStatus: status,
     nextSubject: fields.subject,
   });
   if (clash) {
@@ -232,7 +242,7 @@ export async function insertTeachingProfile(opts: {
       online: fields.online,
       inPerson: fields.inPerson,
       rate: fields.rate,
-      status: "ACTIVE",
+      status,
       capabilities: {
         create: fields.capabilities.map((cap) => ({ kind: cap.kind, value: cap.value })),
       },

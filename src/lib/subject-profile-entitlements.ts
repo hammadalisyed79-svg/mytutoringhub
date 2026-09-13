@@ -4,6 +4,7 @@ import {
   UPGRADE_FOR_MORE_PROFILES_MESSAGE,
   resolveCreateTeachingProfileCap,
   resolvePlanTeachingProfileCap,
+  shouldForcePausedTeachingProfileCreate,
 } from "@/lib/teaching-profile-cap";
 
 /**
@@ -15,9 +16,14 @@ import {
  * Existing Free tutors with >1 ACTIVE profiles are grandfathered via
  * resolveCreateTeachingProfileCap (ratchet down only). They are never
  * auto-paused by enforceSubjectProfileCap.
+ *
+ * Free tutors at ACTIVE cap may still **create** extra Teaching Profiles as PAUSED;
+ * activating a second requires Tutor Pro.
  */
 export const FREE_SUBJECT_PROFILES = 1;
 export const TUTOR_PRO_SUBJECT_PROFILE_CAP = 10;
+
+export const UPGRADE_REQUIRED_CODE = "UPGRADE_REQUIRED";
 
 /** @deprecated Free listings are never auto-paused; kept for env compatibility. */
 export function shouldEnforceFreeTeachingProfilePause() {
@@ -110,33 +116,38 @@ export async function countActiveSubjectProfiles(userId: string): Promise<number
 }
 
 export type SubjectProfileGate =
-  | { ok: true; profile: { id: string }; activeCount: number; cap: number }
-  | { ok: false; reason: string; activeCount?: number; cap?: number };
+  | {
+      ok: true;
+      profile: { id: string };
+      activeCount: number;
+      cap: number;
+      /** Create must persist as PAUSED (Free already at ACTIVE cap). */
+      forcePaused?: boolean;
+    }
+  | {
+      ok: false;
+      reason: string;
+      activeCount?: number;
+      cap?: number;
+      code?: typeof UPGRADE_REQUIRED_CODE;
+    };
 
-/**
- * Gate for creating/reactivating a SubjectProfile.
- * Free plan entitlement = 1; grandfathered Free tutors keep existing ACTIVE rows
- * but cannot grow; Pro = 10; Unlimited = ∞.
- */
-export async function canCreateSubjectProfile(
-  userId: string,
-  now = new Date(),
-): Promise<SubjectProfileGate> {
+async function loadTutorGateContext(userId: string, now = new Date()) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { suspended: true, emailVerified: true, role: true },
   });
-  if (!user) return { ok: false, reason: "Create your tutor profile first" };
-  if (user.suspended) return { ok: false, reason: "Account suspended" };
+  if (!user) return { ok: false as const, reason: "Create your tutor profile first" };
+  if (user.suspended) return { ok: false as const, reason: "Account suspended" };
   if (user.role !== "ADMIN" && user.role !== "TUTOR") {
-    return { ok: false, reason: "Switch to a tutor account to publish Teaching Profiles" };
+    return { ok: false as const, reason: "Switch to a tutor account to publish Teaching Profiles" };
   }
   if (user.role !== "ADMIN" && !user.emailVerified) {
-    return { ok: false, reason: "Verify your email to publish Teaching Profiles" };
+    return { ok: false as const, reason: "Verify your email to publish Teaching Profiles" };
   }
 
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
-  if (!profile) return { ok: false, reason: "Create your tutor profile first" };
+  if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
 
   const [planCap, activeCount] = await Promise.all([
     getSubjectProfileActiveCap(userId, now),
@@ -145,6 +156,66 @@ export async function canCreateSubjectProfile(
     }),
   ]);
 
+  return {
+    ok: true as const,
+    profile: { id: profile.id },
+    planCap,
+    activeCount,
+  };
+}
+
+/**
+ * Gate for **creating** a Teaching Profile row.
+ * Free tutors at ACTIVE cap may still create — result must be PAUSED (`forcePaused`).
+ * Pro tutors at ACTIVE cap cannot create more.
+ */
+export async function canCreateSubjectProfile(
+  userId: string,
+  now = new Date(),
+): Promise<SubjectProfileGate> {
+  const ctx = await loadTutorGateContext(userId, now);
+  if (!ctx.ok) return { ok: false, reason: ctx.reason };
+
+  const { profile, planCap, activeCount } = ctx;
+  const activateCap = resolveCreateTeachingProfileCap({ planCap, activeCount });
+
+  if (shouldForcePausedTeachingProfileCreate({ planCap, activeCount })) {
+    return {
+      ok: true,
+      profile,
+      activeCount,
+      cap: planCap,
+      forcePaused: true,
+    };
+  }
+
+  if (activeCount >= activateCap) {
+    if (!Number.isFinite(activateCap)) {
+      return { ok: false, reason: "Active Teaching Profile limit reached.", activeCount, cap: activateCap };
+    }
+    return {
+      ok: false,
+      reason: `Active Teaching Profile limit reached (${activateCap}). Legacy Unlimited Profiles holders keep unlimited profiles.`,
+      activeCount,
+      cap: activateCap,
+    };
+  }
+
+  return { ok: true, profile, activeCount, cap: planCap, forcePaused: false };
+}
+
+/**
+ * Gate for **activating** (or creating as ACTIVE) a Teaching Profile.
+ * Free at cap → upgrade required.
+ */
+export async function canActivateSubjectProfile(
+  userId: string,
+  now = new Date(),
+): Promise<SubjectProfileGate> {
+  const ctx = await loadTutorGateContext(userId, now);
+  if (!ctx.ok) return { ok: false, reason: ctx.reason };
+
+  const { profile, planCap, activeCount } = ctx;
   const cap = resolveCreateTeachingProfileCap({ planCap, activeCount });
 
   if (activeCount >= cap) {
@@ -157,6 +228,7 @@ export async function canCreateSubjectProfile(
         reason: UPGRADE_FOR_MORE_PROFILES_MESSAGE,
         activeCount,
         cap: planCap,
+        code: UPGRADE_REQUIRED_CODE,
       };
     }
     return {
@@ -167,7 +239,7 @@ export async function canCreateSubjectProfile(
     };
   }
 
-  return { ok: true, profile: { id: profile.id }, activeCount, cap: planCap };
+  return { ok: true, profile, activeCount, cap: planCap };
 }
 
 /**
@@ -188,7 +260,7 @@ export async function enforceSubjectProfileCap(
   if (!Number.isFinite(cap)) return { paused: 0, kept: 0, cap };
 
   // Never auto-pause Free tutors — grandfather existing ACTIVE Teaching Profiles.
-  // Create/reactivate gate still blocks growth above the Free ratchet.
+  // Activate gate still blocks growth above the Free ratchet.
   if (cap <= FREE_SUBJECT_PROFILES) {
     const activeCount = await prisma.subjectProfile.count({
       where: { tutorProfileId: profile.id, status: "ACTIVE" },

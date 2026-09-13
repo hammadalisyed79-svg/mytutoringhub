@@ -131,7 +131,8 @@ assert.equal(
   shouldSkipFirstTeachingProfileCreate([
     { status: "PAUSED", subject: "Mathematics", rate: 2500, online: true, inPerson: false },
   ]),
-  false,
+  true,
+  "any existing Teaching Profile (including Paused) skips wizard first-profile create",
 );
 assert.equal(shouldSkipFirstTeachingProfileCreate([]), false);
 

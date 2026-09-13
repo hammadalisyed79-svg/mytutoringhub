@@ -21,11 +21,13 @@ const seedOnly = {
   assert.equal(c.checks.find((r) => r.key === "city")?.ok, false, "Online without country is not city done");
   assert.equal(c.checks.find((r) => r.key === "country")?.ok, false);
   assert.equal(c.checks.find((r) => r.key === "teachingProfile")?.ok, false);
-  assert.equal(c.checks.find((r) => r.key === "rate")?.ok, false, "Seed rate without Teaching Profile is not done");
-  assert.equal(c.checks.find((r) => r.key === "lessonType")?.ok, false);
+  assert.equal(c.checks.find((r) => r.key === "activeSearch")?.ok, false);
+  assert.equal(c.checks.find((r) => r.key === "rate"), undefined, "Rate is no longer a separate checklist row");
+  assert.equal(c.checks.find((r) => r.key === "lessonType"), undefined);
   assert.ok(c.missingRequired.includes("City"));
   assert.ok(c.missingRequired.includes("Country"));
   assert.ok(c.missingRequired.includes("Teaching Profile"));
+  assert.ok(c.missingRequired.includes("Active in search"));
   assert.equal(isTutorTeachingComplete(seedOnly), false);
 }
 
@@ -56,11 +58,11 @@ const seedOnly = {
     headline: "Experienced Math tutor",
     hasValidTeachingProfile: true,
     hasValidListingRate: true,
+    hasAnyTeachingProfile: true,
   };
   const c = getTutorProfileCompletion(listed);
   assert.equal(c.checks.find((r) => r.key === "teachingProfile")?.ok, true);
-  assert.equal(c.checks.find((r) => r.key === "rate")?.ok, true, "Listing rate is authoritative");
-  assert.equal(c.checks.find((r) => r.key === "lessonType")?.ok, true);
+  assert.equal(c.checks.find((r) => r.key === "activeSearch")?.ok, true);
   assert.equal(c.complete, true);
   assert.equal(isTutorProfileListable(listed, listed.name), true);
 }
@@ -98,6 +100,8 @@ const seedOnly = {
       { status: "PAUSED", subject: "Mathematics", rate: 2500, online: true, inPerson: false },
     ],
   });
+  assert.equal(pausedOnly.checks.find((r) => r.key === "teachingProfile")?.ok, true, "Paused profile counts as having a Teaching Profile");
+  assert.equal(pausedOnly.checks.find((r) => r.key === "activeSearch")?.ok, false);
   assert.equal(pausedOnly.complete, false);
 }
 

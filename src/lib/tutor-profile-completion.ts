@@ -1,4 +1,3 @@
-import { MIN_HOURLY_RATE_PKR } from "@/lib/currency";
 import {
   teachingCompletionFromListings,
   type TeachingProfileListabilityRow,
@@ -36,6 +35,8 @@ export type TutorProfileCompletionInput = {
    * Public searchability must not depend on TutorProfile.subjects CSV.
    */
   hasValidTeachingProfile?: boolean;
+  /** At least one Teaching Profile row exists (any status) — wizard create can be skipped. */
+  hasAnyTeachingProfile?: boolean;
   /** Optional listings — used when the boolean flags are omitted. */
   subjectProfiles?: TeachingProfileListabilityRow[] | null;
   online?: boolean;
@@ -81,9 +82,11 @@ export function isTutorTeachingComplete(input: TutorProfileCompletionInput) {
 
 export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
   const teaching = resolveTeachingCompletion(input);
-  const rateOk =
-    teaching.hasValidListingRate ||
-    (teaching.hasValidTeachingProfile && Number(input.hourlyRate) >= MIN_HOURLY_RATE_PKR);
+  const hasAnyProfile =
+    typeof input.hasAnyTeachingProfile === "boolean"
+      ? input.hasAnyTeachingProfile
+      : (input.subjectProfiles || []).some((row) => Boolean((row.subject || "").trim())) ||
+        teaching.hasValidTeachingProfile;
 
   const checks: ProfileFieldCheck[] = [
     { key: "name", label: "Name", ok: (input.name?.trim().length ?? 0) >= 2, required: true },
@@ -120,18 +123,12 @@ export function getTutorProfileCompletion(input: TutorProfileCompletionInput) {
     {
       key: "teachingProfile",
       label: "Teaching Profile",
-      ok: teaching.hasValidTeachingProfile,
+      ok: hasAnyProfile,
       required: true,
     },
     {
-      key: "rate",
-      label: "Hourly rate",
-      ok: teaching.hasValidTeachingProfile && rateOk,
-      required: true,
-    },
-    {
-      key: "lessonType",
-      label: "Lesson type",
+      key: "activeSearch",
+      label: "Active in search",
       ok: teaching.hasValidTeachingProfile,
       required: true,
     },
@@ -168,6 +165,10 @@ export function completionInputFromTutorRow(
   name?: string | null,
 ): TutorProfileCompletionInput {
   const teaching = teachingCompletionFromListings(profile.subjectProfiles);
+  const hasAny =
+    profile.hasAnyTeachingProfile !== undefined
+      ? profile.hasAnyTeachingProfile
+      : (profile.subjectProfiles || []).some((row) => Boolean((row.subject || "").trim()));
   return {
     ...profile,
     name: name ?? profile.name,
@@ -177,6 +178,7 @@ export function completionInputFromTutorRow(
         : teaching.hasValidTeachingProfile,
     hasValidListingRate:
       profile.hasValidListingRate !== undefined ? profile.hasValidListingRate : teaching.hasValidListingRate,
+    hasAnyTeachingProfile: hasAny,
   };
 }
 

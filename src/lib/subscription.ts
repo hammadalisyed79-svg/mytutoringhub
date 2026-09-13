@@ -148,10 +148,27 @@ export async function tutorAdLimit(userId: string) {
 export async function canCreateTutorAd(userId: string) {
   const { canCreateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
   const gate = await canCreateSubjectProfile(userId);
-  if (!gate.ok) return { ok: false as const, reason: gate.reason };
+  if (!gate.ok) return { ok: false as const, reason: gate.reason, code: gate.code };
   const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
   if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
-  return { ok: true as const, profile };
+  return {
+    ok: true as const,
+    profile,
+    forcePaused: Boolean(gate.forcePaused),
+    activeCount: gate.activeCount,
+    cap: gate.cap,
+  };
+}
+
+export async function canActivateTutorAd(userId: string) {
+  const { canActivateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
+  const gate = await canActivateSubjectProfile(userId);
+  if (!gate.ok) {
+    return { ok: false as const, reason: gate.reason, code: gate.code, activeCount: gate.activeCount, cap: gate.cap };
+  }
+  const profile = await prisma.tutorProfile.findUnique({ where: { userId } });
+  if (!profile) return { ok: false as const, reason: "Create your tutor profile first" };
+  return { ok: true as const, profile, activeCount: gate.activeCount, cap: gate.cap };
 }
 
 /**

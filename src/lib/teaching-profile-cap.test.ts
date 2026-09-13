@@ -9,6 +9,7 @@ import {
   isGrandfatheredFreeTeachingProfiles,
   resolveCreateTeachingProfileCap,
   resolvePlanTeachingProfileCap,
+  shouldForcePausedTeachingProfileCreate,
 } from "@/lib/teaching-profile-cap";
 
 assert.equal(FREE_SUBJECT_PROFILES, 1);
@@ -43,7 +44,12 @@ assert.ok(isGrandfatheredFreeTeachingProfiles(3, 1));
 assert.ok(!isGrandfatheredFreeTeachingProfiles(1, 1));
 assert.ok(!isGrandfatheredFreeTeachingProfiles(3, 10));
 
-assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Upgrade to Tutor Pro.*10 Teaching Profiles/);
+assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 1, activeCount: 0 }), false);
+assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 1, activeCount: 1 }), true);
+assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 10, activeCount: 1 }), false);
+
+assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Tutor Pro/);
+assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /1 active/);
 
 assert.equal(
   resolveSubjectProfileActiveCap({ unlimitedProfiles: false, hasTutorPro: false }),

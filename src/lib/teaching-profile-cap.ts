@@ -17,7 +17,17 @@ import {
 } from "@/lib/subject-profile-entitlements";
 
 export const UPGRADE_FOR_MORE_PROFILES_MESSAGE =
-  "Upgrade to Tutor Pro to create up to 10 Teaching Profiles.";
+  "Free includes 1 active Teaching Profile. Upgrade to Tutor Pro to activate or run more (up to 10).";
+
+/** True when Free (or grandfathered Free) is at/over plan ACTIVE cap — new rows must stay Paused. */
+export function shouldForcePausedTeachingProfileCreate(opts: {
+  planCap: number;
+  activeCount: number;
+}): boolean {
+  if (!Number.isFinite(opts.planCap)) return false;
+  if (opts.planCap > FREE_SUBJECT_PROFILES) return false;
+  return opts.activeCount >= FREE_SUBJECT_PROFILES;
+}
 
 /** Plan-level Free/Pro/Unlimited cap (Boost never affects this). */
 export function resolvePlanTeachingProfileCap(opts: {
