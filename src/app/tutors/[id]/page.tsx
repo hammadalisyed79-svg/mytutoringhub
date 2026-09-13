@@ -212,6 +212,11 @@ export default async function TutorProfilePage({ params }: Params) {
     notFound();
   }
 
+  // Never expose tutor phone on public/student views (even after messaging).
+  if (!isOwner && !isAdmin) {
+    tutor.phone = null;
+  }
+
   // Fire-and-forget profile view (skip owner views; ignore missing table)
   if (!isOwner) {
     void prisma.profileView
@@ -251,22 +256,8 @@ export default async function TutorProfilePage({ params }: Params) {
     take: 4,
   });
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
-  let hasConversation = false;
-  if (viewerId && !isOwner && !isAdmin) {
-    const talked = await prisma.conversation.findFirst({
-      where: {
-        OR: [
-          { userAId: viewerId, userBId: tutor.userId },
-          { userAId: tutor.userId, userBId: viewerId },
-        ],
-      },
-      select: { id: true },
-    });
-    hasConversation = Boolean(talked);
-  }
-  const showPhone = Boolean(
-    tutor.verified && tutor.phone && (isOwner || isAdmin || hasConversation),
-  );
+  // Phone is never public — owner/admin may see it for account context only.
+  const showPhone = Boolean(tutor.phone && (isOwner || isAdmin));
   const canMessage = session?.user?.role === "STUDENT";
   const viewer =
     canMessage && session?.user
@@ -815,14 +806,10 @@ export default async function TutorProfilePage({ params }: Params) {
               </p>
               <p className="muted">{availability}</p>
               {showPhone ? (
-                <p>Phone: {tutor.phone}</p>
-              ) : (
-                canMessage &&
-                tutor.verified &&
-                tutor.phone && (
-                  <p className="muted">Phone is shared after you message each other. Use Message below.</p>
-                )
-              )}
+                <p className="muted">
+                  Your phone (private — not shown to students): {tutor.phone}
+                </p>
+              ) : null}
               {canMessage ? (
                 <ContactTutorForm
                   recipientId={tutor.user.id}

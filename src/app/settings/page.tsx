@@ -188,7 +188,7 @@ export default function SettingsPage() {
               value={phone}
               onChange={setPhone}
               defaultCountryCode={defaultCountryCode}
-              hint="Include your country code. We format numbers internationally (e.g. +92 321 6001040)."
+              hint="Never shown on public profiles. Include your country code (e.g. +92 321 6001040)."
             />
           </label>
           <label>

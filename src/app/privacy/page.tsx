@@ -16,21 +16,24 @@ export default function PrivacyPage() {
         <div className="legal-body">
           <h2>1. Data we collect</h2>
           <p>
-            Account details (name, email, password hash), role, tutor profile content, student
-            requests, messages, reviews, subscription and payment references from our payment
-            processor (Safepay), and basic technical logs (IP, browser) for security.
+            Account details (name, email, phone if provided, password hash), role, tutor profile
+            content, student requests, messages, reviews, subscription and payment references from
+            our payment processor (Safepay), and basic technical logs (IP, browser) for security.
           </p>
           <h2>2. How we use data</h2>
           <p>
             To operate the marketplace, show profiles in search, enable messaging for subscribers,
-            process platform payments, moderate content, and improve the service. We do not sell
-            personal data.
+            process platform payments, moderate content, and improve the service. Phone numbers are
+            used for account, admin, and verification purposes only — they are never shown on public
+            tutor profiles or search results. We do not sell personal data.
           </p>
           <h2>3. Sharing</h2>
           <p>
-            Profile information you publish is visible to visitors. Messages are visible to
-            conversation participants. Payment processors receive data needed to complete
-            checkout. We may disclose information if required by law.
+            Profile information you publish (such as name, photo, bio, subjects, and rates) is
+            visible to visitors. Phone and other private contact details are not published on public
+            profiles; students contact tutors through platform messaging. Messages are visible to
+            conversation participants. Payment processors receive data needed to complete checkout.
+            We may disclose information if required by law.
           </p>
           <h2>4. Retention</h2>
           <p>
