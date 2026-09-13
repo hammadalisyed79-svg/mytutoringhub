@@ -19,7 +19,7 @@ Repo: `C:\Tutor` · branch `main`
 ## What changed
 
 - Locked public commercial copy to Student Free/Pass/Pro and Tutor Free/Pro + Listing Boost + Priority Verification Review + Past Paper PKR 100.
-- Removed Extra Active / Hub Points / Tutor Basic / Profile Boost from **new public sales** surfaces; legacy entitlements and checkout IDs preserved for grandfathering.
+- Removed Extra Active / Hub Points / Tutor Basic / Profile Boost from **new public sales** surfaces (including pricing hero bullets); legacy entitlements and checkout IDs preserved for grandfathering.
 - Search matching uses canonical subject identity only (no substring Science→Computer Science).
 - Similar profiles: same subject → broader location → labelled generic nearby.
 - Terms / Refund / Help / checkout footer: access for purchased period; no false auto-renew claim for one-time Hosted Checkout.

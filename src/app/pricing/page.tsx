@@ -97,8 +97,8 @@ export default async function PricingPage({
                 Pass unlocks unlimited messaging
               </li>
               <li>
-                <strong>Tutors:</strong> {BUSINESS.tutorFreeActiveListings} live profile free · Extra
-                Active adds +1 · Tutor Pro up to {BUSINESS.tutorProActiveListings}
+                <strong>Tutors:</strong> {BUSINESS.tutorFreeActiveListings} active Teaching Profile
+                free · Tutor Pro up to {BUSINESS.tutorProActiveListings}
               </li>
               <li>
                 <Link href="/free-vs-paid">Compare free vs paid</Link> if you want the full feature

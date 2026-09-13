@@ -105,9 +105,13 @@ assert.doesNotMatch(marketing, /Extra Active/);
 assert.match(marketing, /Listing Boost and Priority Verification Review are separate paid add-ons/);
 
 const freeVsPaid = readSrc("lib/free-vs-paid.ts");
-assert.doesNotMatch(freeVsPaid, /Extra Active — \+1/);
+assert.doesNotMatch(freeVsPaid, /Extra Active/);
 assert.match(freeVsPaid, /Tutor Pro — up to/);
 assert.match(freeVsPaid, /Launch offer/);
+
+const pricingPage = readSrc("app/pricing/page.tsx");
+assert.doesNotMatch(pricingPage, /Extra Active/);
+assert.match(pricingPage, /active Teaching Profile/);
 
 // 6. Listing Boost does not grant capacity
 const boost = DEFAULT_PLANS.find((p) => p.id === "AD_BOOST")!;

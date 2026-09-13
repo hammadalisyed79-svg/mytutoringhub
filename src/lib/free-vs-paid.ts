@@ -94,7 +94,7 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
     feature: "Active Teaching Profiles",
     free: `${FREE_SUBJECT_PROFILES}`,
     paid: `Tutor Pro up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
-    detail: `Free includes ${FREE_SUBJECT_PROFILES} active Teaching Profile. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Legacy Extra Active and Unlimited Profiles holders keep their existing entitlements.`,
+    detail: `Free includes ${FREE_SUBJECT_PROFILES} active Teaching Profile. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Existing holders of legacy capacity add-ons keep their entitlements.`,
   },
   {
     feature: "Priority search ranking",
@@ -190,7 +190,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Legacy Extra Active, Extra Profile Ads, and Unlimited Profiles holders keep their entitlements.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Existing holders of legacy capacity add-ons keep their entitlements.",
   },
 ] as const;
 
