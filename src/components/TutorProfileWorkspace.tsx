@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { TutorProfileExtraStep } from "@/components/TutorProfileExtraStep";
@@ -47,6 +48,7 @@ type ProfileInitial = {
 };
 
 export function TutorProfileWorkspace({
+  profileId,
   initial,
   displayName,
   subjects,
@@ -61,6 +63,7 @@ export function TutorProfileWorkspace({
   hasAnyTeachingProfile,
   profileComplete,
 }: {
+  profileId: string;
   initial: ProfileInitial;
   displayName: string;
   subjects: string[];
@@ -139,6 +142,16 @@ export function TutorProfileWorkspace({
               ? "Refine your presence anytime — move through each stage at your pace."
               : "A calm path from profile to subjects. Optional polish comes after."}
           </p>
+          <div className="tutor-workspace-preview-actions">
+            <Link
+              className="btn btn-secondary btn-sm"
+              href={`/tutors/${profileId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              See how students see you
+            </Link>
+          </div>
         </div>
         <div className="tutor-profile-status-pills">
           <span className={`tutor-status-pill${initial.active ? " is-live" : ""}`}>

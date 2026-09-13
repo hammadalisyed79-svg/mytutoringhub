@@ -123,7 +123,7 @@ export function buildTutorProfileStatus(input: TutorProfileStatusInput): TutorPr
       suspiciousName: assessment.suspiciousName,
       emailVerified: assessment.emailVerified,
       complete: completion.complete,
-      cta: profileHref ? { label: "View public profile", href: profileHref } : null,
+      cta: profileHref ? { label: "See how students see you", href: profileHref } : null,
       secondaryCta: { label: "Improve profile", href: editHref },
     };
   }
@@ -149,6 +149,8 @@ export function buildTutorProfileStatus(input: TutorProfileStatusInput): TutorPr
     emailVerified: assessment.emailVerified,
     complete: completion.complete,
     cta: { label: "Complete my profile", href: editHref },
-    secondaryCta: profileHref ? { label: "Preview my public profile", href: profileHref } : null,
+    secondaryCta: profileHref
+      ? { label: "See how students see you", href: profileHref }
+      : null,
   };
 }

@@ -90,12 +90,24 @@ export function TutorProfileStatusCard({
 
       <div className="tutor-profile-status-actions">
         {view.cta ? (
-          <Link className="btn btn-sm" href={view.cta.href}>
+          <Link
+            className="btn btn-sm"
+            href={view.cta.href}
+            {...(view.cta.href.startsWith("/tutors/")
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+          >
             {view.cta.label}
           </Link>
         ) : null}
         {view.secondaryCta ? (
-          <Link className="btn btn-secondary btn-sm" href={view.secondaryCta.href}>
+          <Link
+            className="btn btn-secondary btn-sm"
+            href={view.secondaryCta.href}
+            {...(view.secondaryCta.href.startsWith("/tutors/")
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+          >
             {view.secondaryCta.label}
           </Link>
         ) : null}

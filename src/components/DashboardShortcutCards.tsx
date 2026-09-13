@@ -6,6 +6,7 @@ export type DashboardShortcut = {
   description: string;
   icon: string;
   badge?: string;
+  external?: boolean;
 };
 
 export function DashboardShortcutCards({
@@ -25,7 +26,12 @@ export function DashboardShortcutCards({
       </div>
       <div className="dash-shortcut-grid">
         {items.map((item) => (
-          <Link key={`${item.href}-${item.label}`} href={item.href} className="dash-shortcut-card">
+          <Link
+            key={`${item.href}-${item.label}`}
+            href={item.href}
+            className="dash-shortcut-card"
+            {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          >
             <span className="dash-shortcut-icon" aria-hidden>
               {item.icon}
             </span>

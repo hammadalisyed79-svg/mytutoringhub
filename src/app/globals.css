@@ -3474,6 +3474,14 @@ select:focus {
   border-bottom: 1px solid rgba(var(--brand-rgb), 0.1);
 }
 
+.tutor-workspace-preview-actions {
+  margin-top: 0.85rem;
+}
+
+.tutor-workspace-preview-actions .btn {
+  font-weight: 600;
+}
+
 .tutor-profile-workspace.is-luxe .tutor-profile-workspace-head h2 {
   font-size: clamp(1.55rem, 3.2vw, 2rem);
   letter-spacing: -0.03em;

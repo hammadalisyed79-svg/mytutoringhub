@@ -114,7 +114,17 @@ export default async function TutorDashboardPage({
             </p>
           </div>
           <div className="page-hero-actions">
-            <Link className="btn" href="/messages">
+            {user.tutorProfile ? (
+              <Link
+                className="btn"
+                href={`/tutors/${user.tutorProfile.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                See how students see you
+              </Link>
+            ) : null}
+            <Link className="btn btn-secondary" href="/messages">
               Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
             </Link>
             {profileComplete ? (
@@ -188,7 +198,11 @@ export default async function TutorDashboardPage({
               />
             </div>
 
-            <TutorDashboardShortcuts unread={inbox.unread} sp={sp} />
+            <TutorDashboardShortcuts
+              unread={inbox.unread}
+              sp={sp}
+              profileHref={user.tutorProfile ? `/tutors/${user.tutorProfile.id}` : null}
+            />
 
             <details className="panel tutor-dashboard-more">
               <summary>
@@ -236,6 +250,7 @@ export default async function TutorDashboardPage({
           <div className="tutor-dashboard-stack">
             {user.tutorProfile ? (
               <TutorProfileWorkspace
+                profileId={user.tutorProfile.id}
                 initial={{
                   ...user.tutorProfile,
                   name: user.name,

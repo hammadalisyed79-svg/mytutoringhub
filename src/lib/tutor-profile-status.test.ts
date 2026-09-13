@@ -48,7 +48,7 @@ const completeBase = {
   });
   assert.equal(view.status, "LIVE");
   assert.equal(view.percent, 100);
-  assert.equal(view.cta?.label, "View public profile");
+  assert.equal(view.cta?.label, "See how students see you");
   assert.ok(view.summary.toLowerCase().includes("visible"));
 }
 

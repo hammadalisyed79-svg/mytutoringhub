@@ -7,9 +7,11 @@ import {
 export function TutorDashboardShortcuts({
   unread = 0,
   sp,
+  profileHref,
 }: {
   unread?: number;
   sp: DashboardSearchParams;
+  profileHref?: string | null;
 }) {
   const items = [
     {
@@ -31,6 +33,17 @@ export function TutorDashboardShortcuts({
       description: "Edit & Teaching Profiles",
       icon: "✎",
     },
+    ...(profileHref
+      ? [
+          {
+            href: profileHref,
+            label: "Student view",
+            description: "See how students see you",
+            icon: "◐",
+            external: true as const,
+          },
+        ]
+      : []),
     {
       href: "/dashboard/tutor/analytics",
       label: "Analytics",
