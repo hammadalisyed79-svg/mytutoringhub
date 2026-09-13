@@ -331,8 +331,11 @@ export function TutorAdsManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [upgradeNotice, setUpgradeNotice] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [createStep, setCreateStep] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [createSubject, setCreateSubject] = useState("");
+  const [createTitle, setCreateTitle] = useState("");
+  const [createHeadline, setCreateHeadline] = useState("");
   const [createCaps, setCreateCaps] = useState<TeachingProfileEditorValues>(EMPTY_CAPS);
   const [createDescription, setCreateDescription] = useState("");
   const [createRate, setCreateRate] = useState("");
@@ -399,26 +402,52 @@ export function TutorAdsManager({
     return () => window.clearTimeout(t);
   }, []);
 
-  async function create(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function create(opts?: { skipOptional?: boolean }) {
     clearFeedback();
-    const fd = new FormData(e.currentTarget);
+    const subject = createSubject.trim();
+    const title = createTitle.trim();
+    if (!subject) {
+      flashError("Choose or type a subject.");
+      setCreateStep(0);
+      return;
+    }
+    if (title.length < 5) {
+      flashError("Profile title needs at least 5 characters.");
+      setCreateStep(0);
+      return;
+    }
+    if (!createLocation.trim()) {
+      flashError("Add a city or Online.");
+      setCreateStep(1);
+      return;
+    }
+    const ratePkr = hourlyRateInputToPkr(Number(createRate) || 0, currency);
+    if (!createRate.trim() || Number(createRate) < rateMinLocal) {
+      flashError(`Hourly rate must be at least ${formatMoney(rateMinLocal, currency)}.`);
+      setCreateStep(1);
+      return;
+    }
+    if (!createOnline && !createInPerson) {
+      flashError("Choose online, in person, or both.");
+      setCreateStep(1);
+      return;
+    }
     const res = await fetch("/api/tutor-ads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        subject: String(fd.get("subjectCustom") || fd.get("subject") || "").trim(),
-        title: String(fd.get("title")),
+        subject,
+        title,
         levels: createCaps.levels,
         boards: createCaps.boards,
         qualifications: createCaps.qualifications,
         syllabusCodes: createCaps.syllabusCodes,
-        location: String(fd.get("location")),
-        rate: rateFromForm(fd),
-        online: fd.get("online") === "on",
-        inPerson: fd.get("inPerson") === "on",
-        description: String(fd.get("description") || ""),
-        headline: String(fd.get("headline") || ""),
+        location: createLocation.trim(),
+        rate: ratePkr,
+        online: createOnline,
+        inPerson: createInPerson,
+        description: opts?.skipOptional ? "" : createDescription,
+        headline: opts?.skipOptional ? "" : createHeadline,
       }),
     });
     const data = await res.json();
@@ -429,14 +458,11 @@ export function TutorAdsManager({
       }
       return;
     }
-    e.currentTarget.reset();
-    setCreateSubject("");
-    setCreateCaps(EMPTY_CAPS);
-    setShowCreate(false);
+    resetCreateForm();
     if (data.id && !data.createdPaused) {
       fireConversionEvent(
         "teaching_profile_activated",
-        { listingId: data.id, subject: String(fd.get("subject") || "") },
+        { listingId: data.id, subject },
         `tp_active_${data.id}`,
       );
     }
@@ -450,6 +476,20 @@ export function TutorAdsManager({
     }
     load();
     router.refresh();
+  }
+
+  function resetCreateForm() {
+    setShowCreate(false);
+    setCreateStep(0);
+    setCreateSubject("");
+    setCreateTitle("");
+    setCreateHeadline("");
+    setCreateCaps(EMPTY_CAPS);
+    setCreateDescription("");
+    setCreateRate("");
+    setCreateLocation("");
+    setCreateOnline(true);
+    setCreateInPerson(false);
   }
 
   async function saveEdit(
@@ -543,168 +583,262 @@ export function TutorAdsManager({
     return "badge badge-muted";
   }
 
+  const CREATE_STEPS = [
+    { id: "subject", title: "Subject", optional: false },
+    { id: "pricing", title: "Rate & levels", optional: false },
+    { id: "copy", title: "Description", optional: true },
+  ] as const;
+
+  function advanceCreateFromSubject() {
+    clearFeedback();
+    if (!createSubject.trim()) {
+      flashError("Choose or type a subject.");
+      return;
+    }
+    if (createTitle.trim().length < 5) {
+      flashError("Profile title needs at least 5 characters.");
+      return;
+    }
+    setCreateStep(1);
+  }
+
+  function advanceCreateFromPricing() {
+    clearFeedback();
+    if (!createLocation.trim()) {
+      flashError("Add a city or Online.");
+      return;
+    }
+    if (!createRate.trim() || Number(createRate) < rateMinLocal) {
+      flashError(`Hourly rate must be at least ${formatMoney(rateMinLocal, currency)}.`);
+      return;
+    }
+    if (!createOnline && !createInPerson) {
+      flashError("Choose online, in person, or both.");
+      return;
+    }
+    setCreateStep(2);
+  }
+
+  const createStepMeta = CREATE_STEPS[createStep] || CREATE_STEPS[0];
+
   const createControls = showCreate ? (
-    <form className="stack-form profile-form teaching-listing-form teaching-listing-create" onSubmit={create}>
+    <form
+      className="stack-form profile-form teaching-listing-form teaching-listing-create"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (createStep === 0) {
+          advanceCreateFromSubject();
+          return;
+        }
+        if (createStep === 1) {
+          advanceCreateFromPricing();
+          return;
+        }
+        void create();
+      }}
+    >
       <h3 style={{ marginTop: 0 }}>Create Teaching Profile</h3>
+      <p className="muted guided-search-step">
+        Step {createStep + 1} of {CREATE_STEPS.length} · {createStepMeta.title}
+        {createStepMeta.optional ? " (optional)" : ""}
+      </p>
       <p className="field-hint">
         One subject per profile. Put levels and boards inside it — not as extra rows.
       </p>
-      <label>
-        <span>
-          Subject{" "}
-          <abbr className="req" title="Required">
-            *
-          </abbr>
-        </span>
-        <select
-          name="subject"
-          value={createSubject}
-          onChange={(e) => setCreateSubject(e.target.value)}
-        >
-          <option value="" disabled>
-            What do you teach?
-          </option>
-          {subjectChoices.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Or type a subject
-        <input
-          name="subjectCustom"
-          placeholder="e.g. Further Mathematics"
-          onChange={(e) => {
-            if (e.target.value.trim()) setCreateSubject(e.target.value);
-          }}
-        />
-      </label>
-      <label>
-        <span>
-          Profile title{" "}
-          <abbr className="req" title="Required">
-            *
-          </abbr>
-        </span>
-        <input name="title" required minLength={5} placeholder="e.g. GCSE Maths · exam prep" />
-      </label>
-      <TeachingProfileCapabilityFields
-        subject={createSubject}
-        extraLevels={extraLevels}
-        values={createCaps}
-        onChange={setCreateCaps}
-      />
-      <label>
-        <span>
-          City / area{" "}
-          <abbr className="req" title="Required">
-            *
-          </abbr>
-        </span>
-        <input
-          name="location"
-          required
-          placeholder="City or Online"
-          value={createLocation}
-          onChange={(e) => setCreateLocation(e.target.value)}
-        />
-      </label>
-      <label>
-        <span>
-          Hourly rate ({currency}){" "}
-          <abbr className="req" title="Required">
-            *
-          </abbr>
-        </span>
-        <input
-          name="rate"
-          type="number"
-          min={rateMinLocal}
-          step={rateStep}
-          inputMode="decimal"
-          required
-          placeholder={hourlyRateInputValue(1500, currency)}
-          value={createRate}
-          onChange={(e) => setCreateRate(e.target.value)}
-        />
-        <span className="field-hint">Minimum {formatMoney(rateMinLocal, currency)}.</span>
-      </label>
-      <fieldset className="form-fieldset">
-        <legend>How you teach</legend>
-        <div className="checks">
-          <label className="radio">
-            <input
-              name="online"
-              type="checkbox"
-              checked={createOnline}
-              onChange={(e) => setCreateOnline(e.target.checked)}
-            />{" "}
-            Online
+
+      {createStep === 0 ? (
+        <>
+          <label>
+            <span>
+              Subject{" "}
+              <abbr className="req" title="Required">
+                *
+              </abbr>
+            </span>
+            <select
+              name="subject"
+              value={createSubject}
+              onChange={(e) => setCreateSubject(e.target.value)}
+            >
+              <option value="" disabled>
+                What do you teach?
+              </option>
+              {subjectChoices.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </label>
-          <label className="radio">
+          <label>
+            Or type a subject
             <input
-              name="inPerson"
-              type="checkbox"
-              checked={createInPerson}
-              onChange={(e) => setCreateInPerson(e.target.checked)}
-            />{" "}
-            In person
+              name="subjectCustom"
+              placeholder="e.g. Further Mathematics"
+              onChange={(e) => {
+                if (e.target.value.trim()) setCreateSubject(e.target.value);
+              }}
+            />
           </label>
-        </div>
-      </fieldset>
-      <div className="tutor-bio-field">
-        <label>
-          Teaching description
-          <textarea
-            name="description"
-            rows={3}
-            value={createDescription}
-            onChange={(e) => setCreateDescription(e.target.value)}
-            placeholder="Who this subject is for, how you teach it, and what results students can expect."
+          <label>
+            <span>
+              Profile title{" "}
+              <abbr className="req" title="Required">
+                *
+              </abbr>
+            </span>
+            <input
+              name="title"
+              required
+              minLength={5}
+              placeholder="e.g. GCSE Maths · exam prep"
+              value={createTitle}
+              onChange={(e) => setCreateTitle(e.target.value)}
+            />
+          </label>
+        </>
+      ) : null}
+
+      {createStep === 1 ? (
+        <>
+          <TeachingProfileCapabilityFields
+            subject={createSubject}
+            extraLevels={extraLevels}
+            values={createCaps}
+            onChange={setCreateCaps}
           />
-        </label>
-        <TeachingDescriptionAiHelp
-          description={createDescription}
-          subject={createSubject}
-          caps={createCaps}
-          location={createLocation}
-          hourlyRateLabel={createRate.trim() ? `${createRate} ${currency}/hr` : undefined}
-          online={createOnline}
-          inPerson={createInPerson}
-          onApply={setCreateDescription}
-        />
-      </div>
-      <details className="profile-advanced-details">
-        <summary>Optional — short headline</summary>
-        <div className="profile-advanced-block">
+          <label>
+            <span>
+              City / area{" "}
+              <abbr className="req" title="Required">
+                *
+              </abbr>
+            </span>
+            <input
+              name="location"
+              required
+              placeholder="City or Online"
+              value={createLocation}
+              onChange={(e) => setCreateLocation(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>
+              Hourly rate ({currency}){" "}
+              <abbr className="req" title="Required">
+                *
+              </abbr>
+            </span>
+            <input
+              name="rate"
+              type="number"
+              min={rateMinLocal}
+              step={rateStep}
+              inputMode="decimal"
+              required
+              placeholder={hourlyRateInputValue(1500, currency)}
+              value={createRate}
+              onChange={(e) => setCreateRate(e.target.value)}
+            />
+            <span className="field-hint">Minimum {formatMoney(rateMinLocal, currency)}.</span>
+          </label>
+          <fieldset className="form-fieldset">
+            <legend>How you teach</legend>
+            <div className="checks">
+              <label className="radio">
+                <input
+                  name="online"
+                  type="checkbox"
+                  checked={createOnline}
+                  onChange={(e) => setCreateOnline(e.target.checked)}
+                />{" "}
+                Online
+              </label>
+              <label className="radio">
+                <input
+                  name="inPerson"
+                  type="checkbox"
+                  checked={createInPerson}
+                  onChange={(e) => setCreateInPerson(e.target.checked)}
+                />{" "}
+                In person
+              </label>
+            </div>
+          </fieldset>
+        </>
+      ) : null}
+
+      {createStep === 2 ? (
+        <>
+          <div className="tutor-bio-field">
+            <label>
+              Teaching description
+              <textarea
+                name="description"
+                rows={3}
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                placeholder="Who this subject is for, how you teach it, and what results students can expect."
+              />
+            </label>
+            <TeachingDescriptionAiHelp
+              description={createDescription}
+              subject={createSubject}
+              caps={createCaps}
+              location={createLocation}
+              hourlyRateLabel={createRate.trim() ? `${createRate} ${currency}/hr` : undefined}
+              online={createOnline}
+              inPerson={createInPerson}
+              onApply={setCreateDescription}
+            />
+          </div>
           <label>
             Short headline
-            <input name="headline" placeholder="Shown on search cards" />
+            <input
+              name="headline"
+              placeholder="Shown on search cards"
+              value={createHeadline}
+              onChange={(e) => setCreateHeadline(e.target.value)}
+            />
           </label>
-        </div>
-      </details>
+        </>
+      ) : null}
+
       <div className="teaching-listing-actions">
-        <button className="btn btn-sm" type="submit">
-          Publish Teaching Profile
-        </button>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={() => {
-            setShowCreate(false);
-            setCreateCaps(EMPTY_CAPS);
-            setCreateSubject("");
-            setCreateDescription("");
-            setCreateRate("");
-            setCreateLocation("");
-            setCreateOnline(true);
-            setCreateInPerson(false);
-          }}
-        >
-          Cancel
-        </button>
+        {createStep > 0 ? (
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            onClick={() => {
+              clearFeedback();
+              setCreateStep((s) => Math.max(0, s - 1));
+            }}
+          >
+            Back
+          </button>
+        ) : (
+          <button className="btn btn-secondary btn-sm" type="button" onClick={resetCreateForm}>
+            Cancel
+          </button>
+        )}
+        {createStep === 2 ? (
+          <>
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => void create({ skipOptional: true })}
+            >
+              Skip for now
+            </button>
+            <button className="btn btn-sm" type="submit">
+              Publish Teaching Profile
+            </button>
+          </>
+        ) : (
+          <button className="btn btn-sm" type="submit">
+            Next
+          </button>
+        )}
       </div>
     </form>
   ) : (
@@ -728,7 +862,14 @@ export function TutorAdsManager({
         </div>
       ) : (
         <>
-          <button className="btn btn-sm" type="button" onClick={() => setShowCreate(true)}>
+          <button
+            className="btn btn-sm"
+            type="button"
+            onClick={() => {
+              setCreateStep(0);
+              setShowCreate(true);
+            }}
+          >
             Add Teaching Profile
           </button>
           {entitlement?.createPaused ? (

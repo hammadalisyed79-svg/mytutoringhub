@@ -1,24 +1,34 @@
 import {
   isTutorCityComplete,
-  resolveTeachingCompletion,
   type TutorProfileCompletionInput,
 } from "@/lib/tutor-profile-completion";
 
-/** Short FindTutor-style setup — advanced fields live outside this flow. */
+/** Required steps first; optional extras each get their own skippable step. */
 export const TUTOR_WIZARD_STEP_IDS = [
   "photo",
   "basics",
   "place",
   "teaching",
+  "details",
+  "schedule",
+  "contact",
+  "verify",
   "finish",
 ] as const;
 
 export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
 
+export const TUTOR_WIZARD_OPTIONAL_STEPS = new Set<TutorWizardStepId>([
+  "details",
+  "schedule",
+  "contact",
+  "verify",
+]);
+
 /**
  * Resume at the first incomplete required step.
- * Teaching step is qualifications / lesson-mode defaults.
- * Finish is “create first Teaching Profile” unless a valid ACTIVE listing already exists.
+ * Optional steps (details / schedule / contact / verify) are never forced on resume —
+ * tutors land on Save and can jump back, or Skip when they open them.
  */
 export function resolveTutorWizardResumeStep(
   profile: TutorProfileCompletionInput & {
@@ -40,9 +50,6 @@ export function resolveTutorWizardResumeStep(
   const modeOk = Boolean(profile.online || profile.inPerson);
   const qualsOk = Boolean(profile.qualifications?.trim());
   if (!modeOk || !qualsOk) return "teaching";
-
-  const teaching = resolveTeachingCompletion(profile);
-  if (!teaching.hasValidTeachingProfile) return "finish";
 
   return "finish";
 }

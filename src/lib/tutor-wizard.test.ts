@@ -26,12 +26,12 @@ assert.equal(
 assert.equal(
   resolveTutorWizardResumeStep(almostDone),
   "finish",
-  "no Teaching Profile yet → first-profile step (finish)",
+  "required steps done → Save (optional extras are skippable, not forced)",
 );
 assert.equal(
   resolveTutorWizardResumeStep({ ...almostDone, subjects: "Chemistry", hourlyRate: 2500 }),
   "finish",
-  "master CSV / master rate do not skip the first Teaching Profile step",
+  "master CSV / master rate do not insert extra required wizard steps",
 );
 assert.equal(
   resolveTutorWizardResumeStep({ ...almostDone, hasValidTeachingProfile: true, hasValidListingRate: true }),

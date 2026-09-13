@@ -18,7 +18,6 @@ import {
   tutorLanguageOptions,
   tutorLevelOptions,
 } from "@/lib/tutor-catalog";
-import { curriculumBoards, curriculumCodesForCapabilities } from "@/lib/curriculum";
 import {
   availabilityTimeOptions,
   emptyAvailabilitySlot,
@@ -34,14 +33,16 @@ import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
+  TUTOR_WIZARD_OPTIONAL_STEPS,
+  TUTOR_WIZARD_STEP_IDS,
+  type TutorWizardStepId,
+} from "@/lib/tutor-wizard";
+import {
   currencyFromCountry,
   DEFAULT_HOURLY_RATE_PKR,
-  formatMoney,
-  hourlyRateInputStep,
   hourlyRateInputToPkr,
   hourlyRateInputValue,
   MIN_HOURLY_RATE_PKR,
-  minHourlyRateInput,
   type CurrencyCode,
 } from "@/lib/currency";
 
@@ -77,38 +78,53 @@ const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-const WIZARD_STEPS = [
-  {
-    id: "photo",
+const WIZARD_STEP_META: Record<
+  TutorWizardStepId,
+  { title: string; hint: string }
+> = {
+  photo: {
     title: "Profile photo",
     hint: "Upload a clear photo of yourself.",
-    optional: false,
   },
-  {
-    id: "basics",
+  basics: {
     title: "About you",
     hint: "Your name and a short introduction for students.",
-    optional: false,
   },
-  {
-    id: "place",
+  place: {
     title: "Location",
     hint: "Country and city for search.",
-    optional: false,
   },
-  {
-    id: "teaching",
+  teaching: {
     title: "Qualifications",
-    hint: "Your highest qualification and default lesson type. Subject Teaching Profiles come next.",
-    optional: false,
+    hint: "Your highest qualification and default lesson type.",
   },
-  {
-    id: "finish",
-    title: "Teaching Profile",
-    hint: "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for.",
-    optional: false,
+  details: {
+    title: "Teaching details",
+    hint: "Expertise, levels, languages, and how you teach. Optional — skip if you prefer.",
   },
-] as const;
+  schedule: {
+    title: "Schedule",
+    hint: "Weekly availability and free first lesson. Optional — skip if you prefer.",
+  },
+  contact: {
+    title: "Contact & video",
+    hint: "Phone and intro video. Optional — skip if you prefer.",
+  },
+  verify: {
+    title: "ID verification",
+    hint: "Verify your identity for a trust badge. Optional — skip if you prefer.",
+  },
+  finish: {
+    title: "Save profile",
+    hint: "Save your main profile, then manage subjects under My Teaching Profiles.",
+  },
+};
+
+const WIZARD_STEPS = TUTOR_WIZARD_STEP_IDS.map((id) => ({
+  id,
+  ...WIZARD_STEP_META[id],
+  optional: TUTOR_WIZARD_OPTIONAL_STEPS.has(id),
+}));
 
 function photoExt(name: string): string {
   const dot = name.lastIndexOf(".");
@@ -162,7 +178,7 @@ async function parseUploadResponse(
 export function TutorProfileForm({
   initial,
   displayName,
-  subjects: catalogSubjects,
+  subjects: _catalogSubjects,
   extraLevels = [],
   emailVerified = true,
   listingActive = false,
@@ -182,8 +198,8 @@ export function TutorProfileForm({
   listingActive?: boolean;
   verified?: boolean;
   trustBadge?: TutorTrustBadge | string;
-  /** Jump straight to a wizard step (verify opens finish + ID upload). */
-  startStep?: (typeof WIZARD_STEPS)[number]["id"] | "verify";
+  /** Jump straight to a wizard step (verify opens the ID step). */
+  startStep?: TutorWizardStepId | "verify";
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
   /** Has an ACTIVE Teaching Profile (in search). */
@@ -205,8 +221,6 @@ export function TutorProfileForm({
     return code ? currencyFromCountry(code) : currency;
   }, [country, currency]);
 
-  const rateMinLocal = minHourlyRateInput(rateCurrency);
-  const rateStep = hourlyRateInputStep(rateCurrency);
   const rateCurrencyRef = useRef(rateCurrency);
 
   const [msg, setMsg] = useState("");
@@ -223,13 +237,13 @@ export function TutorProfileForm({
           ...row,
           title: "Save profile",
           hint: hasValidTeachingProfile
-            ? "Optional extras. Manage subjects under My Teaching Profiles below."
+            ? "Optional extras are done or skipped. Manage subjects under My Teaching Profiles below."
             : "You already have Teaching Profiles — activate one below to appear in search.",
         };
       }
       return {
         ...row,
-        hint: "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for.",
+        hint: "Save here, then create your first Teaching Profile under My Teaching Profiles below.",
       };
     });
   }, [manageProfilesOnly, hasValidTeachingProfile]);
@@ -238,7 +252,7 @@ export function TutorProfileForm({
     startStep && startStep !== "verify"
       ? steps.findIndex((row) => row.id === startStep)
       : startStep === "verify"
-        ? steps.findIndex((row) => row.id === "finish")
+        ? steps.findIndex((row) => row.id === "verify")
         : 0,
   );
   const [step, setStep] = useState(initialStepIndex >= 0 ? initialStepIndex : 0);
@@ -250,12 +264,7 @@ export function TutorProfileForm({
   const [headline, setHeadline] = useState(initial.headline || "");
   const [name, setName] = useState(displayName);
   const [bio, setBio] = useState(initial.bio || "");
-  const [subjectList, setSubjectList] = useState(splitCsv(initial.subjects));
-  const [firstSubject, setFirstSubject] = useState(() => splitCsv(initial.subjects)[0] || "");
-  const [teachingDescription, setTeachingDescription] = useState("");
-  const [teachingLevels, setTeachingLevels] = useState<string[]>([]);
-  const [teachingBoards, setTeachingBoards] = useState<string[]>([]);
-  const [teachingCodes, setTeachingCodes] = useState<string[]>([]);
+  const [subjectList] = useState(splitCsv(initial.subjects));
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
   const [levelList, setLevelList] = useState(splitCsv(initial.levels));
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
@@ -271,7 +280,7 @@ export function TutorProfileForm({
   );
   const [teachingMethod, setTeachingMethod] = useState(initial.teachingMethod || "");
   const [slots, setSlots] = useState<AvailabilitySlot[]>(() => parseAvailability(initial.availability));
-  const [videoUrl, setVideoUrl] = useState(initial.videoUrl || "");
+  const [videoUrl] = useState(initial.videoUrl || "");
   const [introVideoUrl, setIntroVideoUrl] = useState(initial.introVideoUrl || "");
   const [phone, setPhone] = useState(initial.phone || "");
   const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
@@ -293,25 +302,6 @@ export function TutorProfileForm({
   const cities = useMemo(() => citiesForCountry(country), [country]);
   const defaultPhoneCountry = useMemo(() => countryByName(country)?.code || "PK", [country]);
   const expertiseOptions = useMemo(() => expertiseForSubjects(subjectList), [subjectList]);
-  const listedSubjects = useMemo(() => {
-    const extra = [firstSubject, ...subjectList].filter(
-      (name) => name && !catalogSubjects.some((item) => item.toLowerCase() === name.toLowerCase()),
-    );
-    return [...catalogSubjects, ...extra];
-  }, [catalogSubjects, firstSubject, subjectList]);
-
-  const boardOptions = useMemo(() => curriculumBoards(), []);
-  const syllabusCodeOptions = useMemo(() => {
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const row of curriculumCodesForCapabilities(firstSubject, teachingBoards, teachingLevels)) {
-      const code = row.code?.trim();
-      if (!code || seen.has(code)) continue;
-      seen.add(code);
-      out.push(code);
-    }
-    return out;
-  }, [firstSubject, teachingBoards, teachingLevels]);
 
   const ratePkr = hourlyRateInputToPkr(Number(hourlyRate) || 0, rateCurrency);
 
@@ -357,7 +347,7 @@ export function TutorProfileForm({
   const progress = Math.round((requiredDone / requiredTotal) * 100);
   const currentStep = steps[Math.min(step, steps.length - 1)];
 
-  function validateStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): string | null {
+  function validateStep(stepId: TutorWizardStepId): string | null {
     switch (stepId) {
       case "photo":
         if (!photoUrl.startsWith("https://")) return "Upload a profile photo to continue.";
@@ -379,8 +369,11 @@ export function TutorProfileForm({
         if (!online && !inPerson) return "Choose online, in person, or both.";
         if (!qualifications.trim()) return "Add your highest qualification.";
         return null;
+      case "details":
+      case "schedule":
+      case "contact":
+      case "verify":
       case "finish":
-        // Teaching Profiles are created under My Teaching Profiles — not in this wizard.
         return null;
       default:
         return null;
@@ -388,7 +381,7 @@ export function TutorProfileForm({
   }
 
   /** True only when the step’s data is actually filled — not merely visited. */
-  function isStepDataComplete(stepId: (typeof WIZARD_STEPS)[number]["id"]): boolean {
+  function isStepDataComplete(stepId: TutorWizardStepId): boolean {
     switch (stepId) {
       case "photo":
         return photoUrl.startsWith("https://");
@@ -398,6 +391,20 @@ export function TutorProfileForm({
         return Boolean(country?.trim() && location.trim());
       case "teaching":
         return (online || inPerson) && Boolean(qualifications.trim());
+      case "details":
+        return (
+          expertiseList.length > 0 ||
+          levelList.length > 0 ||
+          languageList.length > 0 ||
+          Boolean(experienceYears) ||
+          Boolean(teachingMethod.trim())
+        );
+      case "schedule":
+        return slots.length > 0 || offersFreeTrial;
+      case "contact":
+        return Boolean(phone.trim() || introVideoUrl.trim() || videoUrl.trim());
+      case "verify":
+        return Boolean(verified);
       case "finish":
         return manageProfilesOnly;
       default:
@@ -405,7 +412,7 @@ export function TutorProfileForm({
     }
   }
 
-  function stepStatus(stepId: (typeof WIZARD_STEPS)[number]["id"], index: number) {
+  function stepStatus(stepId: TutorWizardStepId, index: number) {
     const active = index === step;
     const complete = isStepDataComplete(stepId);
     const skipped = Boolean(
@@ -417,7 +424,7 @@ export function TutorProfileForm({
     return { active, complete, skipped, pending, upcoming };
   }
 
-  function draftPayloadForStep(stepId: (typeof WIZARD_STEPS)[number]["id"]): Record<string, unknown> | null {
+  function draftPayloadForStep(stepId: TutorWizardStepId): Record<string, unknown> | null {
     switch (stepId) {
       case "photo":
         if (!photoUrl.startsWith("https://")) return null;
@@ -454,13 +461,38 @@ export function TutorProfileForm({
           qualifications: qualifications.trim(),
           wizardStep: "teaching",
         };
+      case "details":
+        return {
+          expertise: joinCsv(expertiseList),
+          levels: joinCsv(levelList),
+          languages: joinCsv(languageList),
+          experienceYears: experienceYears === "" ? null : Number(experienceYears),
+          teachingMethod: teachingMethod.trim(),
+          wizardStep: "details",
+        };
+      case "schedule":
+        return {
+          availability: serializeAvailability(slots),
+          offersFreeTrial,
+          wizardStep: "schedule",
+        };
+      case "contact":
+        return {
+          phone: phone.trim(),
+          introVideoUrl: introVideoUrl.trim(),
+          videoUrl: videoUrl.trim(),
+          wizardStep: "contact",
+        };
+      case "verify":
+      case "finish":
+        return null;
       default:
         return null;
     }
   }
 
   async function saveDraft(
-    stepId: (typeof WIZARD_STEPS)[number]["id"],
+    stepId: TutorWizardStepId,
     opts?: { silent?: boolean },
   ): Promise<boolean> {
     const payload = draftPayloadForStep(stepId);
@@ -556,14 +588,6 @@ export function TutorProfileForm({
     if (location && !nextCities.some((city) => city.toLowerCase() === location.toLowerCase())) {
       setLocation(nextCities.includes("Online") ? "Online" : nextCities[0] || "");
     }
-  }
-
-  function setSubjects(next: string[]) {
-    setSubjectList(next);
-    const allowed = new Set(
-      [...expertiseForSubjects(next), ...GENERIC_EXPERTISE].map((item) => item.toLowerCase()),
-    );
-    setExpertiseList((current) => current.filter((item) => allowed.has(item.toLowerCase())));
   }
 
   function updateSlot(index: number, patch: Partial<AvailabilitySlot>) {
@@ -709,7 +733,7 @@ export function TutorProfileForm({
     }
   }
 
-  const show = (id: (typeof WIZARD_STEPS)[number]["id"]) => currentStep.id === id;
+  const show = (id: TutorWizardStepId) => currentStep.id === id;
 
   const fieldProgressPct = progress;
 
@@ -1138,7 +1162,7 @@ export function TutorProfileForm({
         <>
           <p className="field-hint">
             {hasValidTeachingProfile
-              ? "Manage subjects, rates, and Boost under My Teaching Profiles below. Optional extras here stay on your main profile."
+              ? "Manage subjects, rates, and Boost under My Teaching Profiles below."
               : manageProfilesOnly
                 ? "You already have Teaching Profiles. Activate one under My Teaching Profiles to appear in search (Free includes 1 active)."
                 : "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for."}
@@ -1148,154 +1172,169 @@ export function TutorProfileForm({
               {manageProfilesOnly ? "Go to Teaching Profiles" : "Add Teaching Profile"}
             </a>
           </p>
-          <details className="profile-advanced-details" id="get-verified" open={startStep === "verify"}>
-            <summary>Optional — ID verification, schedule, contact</summary>
-            <div className="profile-advanced-block">
-              {!verified ? <VerificationForm embedded compact /> : (
-                <p className="success">You are verified.</p>
-              )}
-              <CatalogMultiSelect
-                label="Expertise"
-                selected={expertiseList}
-                onChange={setExpertiseList}
-                options={expertiseOptions}
-                extraOptions={GENERIC_EXPERTISE}
-                max={16}
-                addLabel="Add expertise"
-              />
-              <CatalogMultiSelect
-                label="Levels"
-                selected={levelList}
-                onChange={setLevelList}
-                options={levelCatalog.core}
-                extraOptions={levelCatalog.more}
-                max={10}
-                addLabel="Add levels"
-              />
-              <CatalogMultiSelect
-                label="Languages"
-                selected={languageList}
-                onChange={setLanguageList}
-                options={languageCatalog.core}
-                extraOptions={languageCatalog.more}
-                max={8}
-                addLabel="Add languages"
-              />
-              <label>
-                Experience in years
-                <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-                  <option value="">Select years…</option>
-                  {EXPERIENCE_YEAR_OPTIONS.map((row) => (
-                    <option key={row.value} value={row.value}>
-                      {row.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                How you teach
-                <textarea
-                  name="teachingMethod"
-                  rows={2}
-                  value={teachingMethod}
-                  onChange={(e) => setTeachingMethod(e.target.value)}
-                  placeholder="Past papers, weekly homework…"
-                />
-              </label>
-              <fieldset className="catalog-pick">
-                <legend>Weekly availability</legend>
-                <div className="schedule-rows">
-                  {slots.map((slot, index) => (
-                    <div key={`${slot.day}-${index}`} className="schedule-row">
-                      <select
-                        aria-label="Day"
-                        value={slot.day}
-                        onChange={(e) =>
-                          updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
-                        }
-                      >
-                        {WEEKDAYS.map((day) => (
-                          <option key={day} value={day}>
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        aria-label="Start time"
-                        value={slot.start}
-                        onChange={(e) => updateSlot(index, { start: e.target.value })}
-                      >
-                        {TIMES.map((time) => (
-                          <option key={time} value={time}>
-                            {time}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="muted">to</span>
-                      <select
-                        aria-label="End time"
-                        value={slot.end}
-                        onChange={(e) => updateSlot(index, { end: e.target.value })}
-                      >
-                        {TIMES.map((time) => (
-                          <option key={time} value={time}>
-                            {time}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        type="button"
-                        onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  type="button"
-                  onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
-                >
-                  Add time slot
-                </button>
-              </fieldset>
-              <label className="radio">
-                <input
-                  type="checkbox"
-                  checked={offersFreeTrial}
-                  onChange={(e) => setOffersFreeTrial(e.target.checked)}
-                />{" "}
-                Free first lesson
-              </label>
-              <label>
-                Intro video URL
-                <input
-                  name="introVideoUrl"
-                  value={introVideoUrl}
-                  onChange={(e) => setIntroVideoUrl(e.target.value)}
-                  placeholder="YouTube or Vimeo"
-                  inputMode="url"
-                />
-              </label>
-              <label>
-                Phone
-                <PhoneInput
-                  value={phone}
-                  onChange={setPhone}
-                  defaultCountryCode={defaultPhoneCountry}
-                  hint="Shown publicly only after verification."
-                />
-              </label>
-            </div>
-          </details>
           <ProfileImprovePanel
             listingLive={listingActive}
             verified={verified}
             trustBadge={trustBadge}
           />
         </>
+      )}
+
+      {show("details") && (
+        <section className="form-section">
+          <CatalogMultiSelect
+            label="Expertise"
+            selected={expertiseList}
+            onChange={setExpertiseList}
+            options={expertiseOptions}
+            extraOptions={GENERIC_EXPERTISE}
+            max={16}
+            addLabel="Add expertise"
+          />
+          <CatalogMultiSelect
+            label="Levels"
+            selected={levelList}
+            onChange={setLevelList}
+            options={levelCatalog.core}
+            extraOptions={levelCatalog.more}
+            max={10}
+            addLabel="Add levels"
+          />
+          <CatalogMultiSelect
+            label="Languages"
+            selected={languageList}
+            onChange={setLanguageList}
+            options={languageCatalog.core}
+            extraOptions={languageCatalog.more}
+            max={8}
+            addLabel="Add languages"
+          />
+          <label>
+            Experience in years
+            <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
+              <option value="">Select years…</option>
+              {EXPERIENCE_YEAR_OPTIONS.map((row) => (
+                <option key={row.value} value={row.value}>
+                  {row.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            How you teach
+            <textarea
+              name="teachingMethod"
+              rows={2}
+              value={teachingMethod}
+              onChange={(e) => setTeachingMethod(e.target.value)}
+              placeholder="Past papers, weekly homework…"
+            />
+          </label>
+        </section>
+      )}
+
+      {show("schedule") && (
+        <section className="form-section">
+          <fieldset className="catalog-pick">
+            <legend>Weekly availability</legend>
+            <div className="schedule-rows">
+              {slots.map((slot, index) => (
+                <div key={`${slot.day}-${index}`} className="schedule-row">
+                  <select
+                    aria-label="Day"
+                    value={slot.day}
+                    onChange={(e) =>
+                      updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
+                    }
+                  >
+                    {WEEKDAYS.map((day) => (
+                      <option key={day} value={day}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    aria-label="Start time"
+                    value={slot.start}
+                    onChange={(e) => updateSlot(index, { start: e.target.value })}
+                  >
+                    {TIMES.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="muted">to</span>
+                  <select
+                    aria-label="End time"
+                    value={slot.end}
+                    onChange={(e) => updateSlot(index, { end: e.target.value })}
+                  >
+                    {TIMES.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    type="button"
+                    onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
+            >
+              Add time slot
+            </button>
+          </fieldset>
+          <label className="radio">
+            <input
+              type="checkbox"
+              checked={offersFreeTrial}
+              onChange={(e) => setOffersFreeTrial(e.target.checked)}
+            />{" "}
+            Free first lesson
+          </label>
+        </section>
+      )}
+
+      {show("contact") && (
+        <section className="form-section">
+          <label>
+            Intro video URL
+            <input
+              name="introVideoUrl"
+              value={introVideoUrl}
+              onChange={(e) => setIntroVideoUrl(e.target.value)}
+              placeholder="YouTube or Vimeo"
+              inputMode="url"
+            />
+          </label>
+          <label>
+            Phone
+            <PhoneInput
+              value={phone}
+              onChange={setPhone}
+              defaultCountryCode={defaultPhoneCountry}
+              hint="Shown publicly only after verification."
+            />
+          </label>
+        </section>
+      )}
+
+      {show("verify") && (
+        <section className="form-section" id="get-verified">
+          {!verified ? <VerificationForm embedded compact /> : (
+            <p className="success">You are verified.</p>
+          )}
+        </section>
       )}
 
       {error && <p className="form-error">{error}</p>}
