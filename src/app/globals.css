@@ -3607,6 +3607,11 @@ select:focus {
 
 .tutor-workspace-stage {
   animation: tutorWorkspaceIn 0.35s ease both;
+  scroll-margin-top: calc(var(--header-h, 4rem) + 0.75rem);
+}
+
+.profile-form-wizard {
+  scroll-margin-top: calc(var(--header-h, 4rem) + 0.75rem);
 }
 
 @keyframes tutorWorkspaceIn {

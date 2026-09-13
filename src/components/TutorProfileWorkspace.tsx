@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
 import { TutorProfileExtraStep } from "@/components/TutorProfileExtraStep";
@@ -87,6 +87,7 @@ export function TutorProfileWorkspace({
     [verifyRequested, setupComplete, hasAnyTeachingProfile, startExtra],
   );
   const [block, setBlock] = useState<TutorWorkspaceBlockId>(initialBlock);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   const setupStartStep = useMemo(
     () =>
@@ -105,11 +106,16 @@ export function TutorProfileWorkspace({
   const activeBlock = TUTOR_WORKSPACE_BLOCKS[blockIndex] || TUTOR_WORKSPACE_BLOCKS[0];
   const journeyPct = Math.round(((blockIndex + 1) / TUTOR_WORKSPACE_BLOCKS.length) * 100);
 
+  function scrollToForm() {
+    // Wait a frame so the new block panel is in the DOM before scrolling.
+    requestAnimationFrame(() => {
+      stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   function goTo(id: TutorWorkspaceBlockId) {
     setBlock(id);
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    scrollToForm();
   }
 
   function goNextFrom(id: TutorWorkspaceBlockId) {
@@ -186,7 +192,7 @@ export function TutorProfileWorkspace({
         </ol>
       </nav>
 
-      <div className="tutor-workspace-stage">
+      <div className="tutor-workspace-stage" ref={stageRef} id="tutor-workspace-form">
         {block === "setup" ? (
           <div className="tutor-workspace-block-panel" id="workspace-setup">
             <TutorProfileForm

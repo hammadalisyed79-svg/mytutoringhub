@@ -174,6 +174,7 @@ export function TutorProfileForm({
   const router = useRouter();
   const { update } = useSession();
   const photoInput = useRef<HTMLInputElement>(null);
+  const formAnchorRef = useRef<HTMLFormElement>(null);
   const countries = useMemo(() => tutorCountries(), []);
   const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
 
@@ -447,12 +448,18 @@ export function TutorProfileForm({
     const saved = await saveDraft(currentStep.id);
     if (!saved) return;
     setStep((s) => Math.min(s + 1, steps.length - 1));
+    requestAnimationFrame(() => {
+      formAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function goBack() {
     setError("");
     setDraftNote("");
     setStep((s) => Math.max(0, s - 1));
+    requestAnimationFrame(() => {
+      formAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   async function goToStep(index: number) {
@@ -463,6 +470,9 @@ export function TutorProfileForm({
       await saveDraft(currentStep.id, { silent: true });
     }
     setStep(index);
+    requestAnimationFrame(() => {
+      formAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function setCountryAndCity(nextCountry: string) {
@@ -791,6 +801,7 @@ export function TutorProfileForm({
 
   return (
     <form
+      ref={formAnchorRef}
       className="stack-form profile-form profile-form-wizard"
       onSubmit={(e) => {
         e.preventDefault();
