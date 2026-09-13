@@ -253,7 +253,9 @@ function PlanCard({
   return (
     <article className={`plan${featured ? " plan-featured" : ""}`}>
       <div className="plan-body">
-        {badge ? <span className="plan-badge">{badge}</span> : null}
+        {badge ? (
+          <span className={`plan-badge${featured ? "" : " plan-badge-soft"}`}>{badge}</span>
+        ) : null}
         <h3>{plan.name}</h3>
         <p className="muted">{plan.description}</p>
         <PlanPrice

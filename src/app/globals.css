@@ -2016,25 +2016,9 @@ body.auth-modal-open .nav-backdrop {
   font-size: 0.82rem;
 }
 
+/* Featured plan elevation is defined after .plan (see .plan.plan-featured). */
 .plan-featured {
   position: relative;
-  border-color: rgba(var(--brand-rgb), 0.42);
-  background:
-    linear-gradient(180deg, rgba(var(--brand-rgb), 0.06) 0%, transparent 42%),
-    #fff;
-  box-shadow:
-    0 0 0 1px rgba(var(--brand-rgb), 0.12),
-    0 18px 42px rgba(8, 46, 40, 0.12);
-  transform: translateY(-2px);
-}
-
-.plan-featured::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  border-radius: calc(var(--radius) + 4px) calc(var(--radius) + 4px) 0 0;
-  background: linear-gradient(90deg, var(--brand), var(--brand-deep));
 }
 
 .plan-badge {
@@ -5239,6 +5223,33 @@ select:focus {
 
 .plan-featured:hover {
   transform: translateY(-4px);
+}
+
+.plan.plan-featured {
+  border-color: rgba(var(--brand-rgb), 0.42);
+  background:
+    linear-gradient(180deg, rgba(var(--brand-rgb), 0.06) 0%, transparent 42%),
+    #fff;
+  box-shadow:
+    0 0 0 1px rgba(var(--brand-rgb), 0.12),
+    0 18px 42px rgba(8, 46, 40, 0.12);
+  transform: translateY(-2px);
+}
+
+.plan.plan-featured::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  border-radius: calc(var(--radius) + 4px) calc(var(--radius) + 4px) 0 0;
+  background: linear-gradient(90deg, var(--brand), var(--brand-deep));
+}
+
+.plan.plan-featured:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 1px rgba(var(--brand-rgb), 0.16),
+    0 22px 48px rgba(8, 46, 40, 0.16);
 }
 
 .plan h3 {
