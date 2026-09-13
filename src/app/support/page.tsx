@@ -7,7 +7,7 @@ import { getSiteSettings } from "@/lib/site-settings";
 import { privateMetadata } from "@/lib/seo";
 
 export const metadata = privateMetadata(
-  "AI support",
+  "Support",
   "Get instant answers about plans, messaging, verification, and using My Tutoring Hub.",
 );
 
@@ -37,10 +37,10 @@ export default async function SupportPage() {
   return (
     <div className="page">
       <div className="container narrow-prose">
-        <h1 className="page-title">AI support</h1>
+        <h1 className="page-title">Support</h1>
         <p className="section-lead">
-          Instant answers about Student Pass, messaging, verification, payments, and how the
-          platform works. For homework help, use the{" "}
+          Instant answers about Student Pass, Student Pro, Tutor Pro, messaging, verification,
+          payments, and how the platform works. For homework help, use the{" "}
           <Link href="/assistant">Study assistant</Link> (Student Pro).
         </p>
         <AiChatPanel
@@ -53,6 +53,10 @@ export default async function SupportPage() {
         />
         <p className="muted" style={{ marginTop: "1rem" }}>
           <Link href="/help">Help &amp; FAQ</Link>
+          {" · "}
+          <Link href="/pricing">Pricing</Link>
+          {" · "}
+          <Link href="/free-vs-paid">Free vs paid</Link>
           {" · "}
           <Link href="/contact">Contact</Link>
           {" · "}

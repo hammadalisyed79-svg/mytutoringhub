@@ -7,6 +7,12 @@ const AiSupportWidget = dynamic(
   { ssr: false },
 );
 
-export function AiSupportWidgetLazy({ configured }: { configured: boolean }) {
-  return <AiSupportWidget configured={configured} />;
+export function AiSupportWidgetLazy({
+  configured,
+  aiDisabled = false,
+}: {
+  configured: boolean;
+  aiDisabled?: boolean;
+}) {
+  return <AiSupportWidget configured={configured} aiDisabled={aiDisabled} />;
 }

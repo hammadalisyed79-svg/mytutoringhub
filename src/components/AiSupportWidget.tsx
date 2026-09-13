@@ -6,9 +6,17 @@ import { useEffect, useState } from "react";
 import { AiChatPanel } from "@/components/AiChatPanel";
 import { AI_SUPPORT_WELCOME } from "@/lib/ai-support";
 
-export function AiSupportWidget({ configured }: { configured: boolean }) {
-  const { status } = useSession();
+type Props = {
+  configured: boolean;
+  /** When true, show Help link only (site setting disableAiAssistant). */
+  aiDisabled?: boolean;
+};
+
+export function AiSupportWidget({ configured, aiDisabled = false }: Props) {
+  const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const role = session?.user?.role;
+  const chatBlocked = aiDisabled && role !== "ADMIN";
 
   useEffect(() => {
     if (!open) return;
@@ -21,7 +29,7 @@ export function AiSupportWidget({ configured }: { configured: boolean }) {
 
   if (status === "loading") return null;
 
-  if (status !== "authenticated") {
+  if (status !== "authenticated" || chatBlocked) {
     return (
       <div className="ai-support-widget">
         <Link href="/help" className="ai-support-launcher" aria-label="Help and FAQ">
@@ -35,11 +43,13 @@ export function AiSupportWidget({ configured }: { configured: boolean }) {
   return (
     <div className={`ai-support-widget${open ? " is-open" : ""}`}>
       {open ? (
-        <div className="ai-support-panel" role="dialog" aria-label="AI support chat">
+        <div className="ai-support-panel" role="dialog" aria-label="Support chat">
           <header className="ai-support-panel-head">
             <div>
-              <strong>Support assistant</strong>
-              <p className="muted ai-support-panel-sub">Instant help with plans, messaging &amp; account</p>
+              <strong>Support</strong>
+              <p className="muted ai-support-panel-sub">
+                Plans, messaging, verification &amp; account help
+              </p>
             </div>
             <button
               type="button"
@@ -64,8 +74,12 @@ export function AiSupportWidget({ configured }: { configured: boolean }) {
               Open full page
             </Link>
             {" · "}
+            <Link href="/help" onClick={() => setOpen(false)}>
+              Help &amp; FAQ
+            </Link>
+            {" · "}
             <Link href="/contact" onClick={() => setOpen(false)}>
-              Contact billing
+              Contact
             </Link>
           </p>
         </div>
@@ -75,7 +89,7 @@ export function AiSupportWidget({ configured }: { configured: boolean }) {
         className="ai-support-launcher"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-label={open ? "Close support chat" : "Open AI support chat"}
+        aria-label={open ? "Close support chat" : "Open support chat"}
       >
         <span aria-hidden>?</span>
         <span className="ai-support-launcher-label">{open ? "Close" : "Support"}</span>

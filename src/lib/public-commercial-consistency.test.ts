@@ -58,6 +58,7 @@ const publicSurfaces = [
   "lib/marketing-copy.ts",
   "lib/free-vs-paid.ts",
   "lib/plans.ts",
+  "lib/ai-support.ts",
   "components/PricingPlansClient.tsx",
 ];
 
@@ -185,5 +186,15 @@ const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free r
 assert.ok(proFaq);
 assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
 assert.match(proFaq!.a, /30 September 2026/);
+
+// AI Support prompt stays on the same commercial truth as Help / Pricing
+const aiSupport = readSrc("lib/ai-support.ts");
+assert.match(aiSupport, /STUDENT_FREE_CONTACTS_LINE/);
+assert.match(aiSupport, /STUDENT_PASS_PAPERS_LINE/);
+assert.match(aiSupport, /TUTOR_FREE_LISTING_LINE/);
+assert.match(aiSupport, /TUTOR_PRO_LISTING_LINE/);
+assert.match(aiSupport, /IDENTITY_VERIFIED_LINE/);
+assert.match(aiSupport, /30 September 2026/);
+assert.doesNotMatch(aiSupport, /Tutor Basic/i);
 
 console.log("public-commercial-consistency.test.ts: ok");

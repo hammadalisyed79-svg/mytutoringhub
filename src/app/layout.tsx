@@ -10,6 +10,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
 import { AiSupportWidgetLazy } from "@/components/AiSupportWidgetLazy";
+import { getSiteSettings } from "@/lib/site-settings";
 import {
   DEFAULT_SITE_URL,
   SITE_NAME,
@@ -86,7 +87,9 @@ export const viewport: Viewport = {
   themeColor: "#08463c",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSiteSettings();
+
   return (
     <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
@@ -101,7 +104,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
           <SiteFooter />
-          <AiSupportWidgetLazy configured={Boolean(process.env.OPENAI_API_KEY?.trim())} />
+          <AiSupportWidgetLazy
+            configured={Boolean(process.env.OPENAI_API_KEY?.trim())}
+            aiDisabled={settings.disableAiAssistant}
+          />
           <ServiceWorkerRegister />
           <GoogleAnalytics />
           <Analytics />
