@@ -96,7 +96,9 @@ export function TutorBioAiHelp({
           data.error ||
             (purpose === "teachingDescription"
               ? "Could not draft the teaching description. Try again."
-              : "Could not draft the introduction. Try again."),
+              : purpose === "teachingMethod"
+                ? "Could not draft how you teach. Try again."
+                : "Could not draft the introduction. Try again."),
         );
         return;
       }
@@ -122,9 +124,13 @@ export function TutorBioAiHelp({
       ? placeholder
         ? "Select subject, rate, lesson mode, and the capability chips first. We will mention what you picked, grouped if there are many, not a raw list of codes."
         : "Uses this form: subject, rate, online or in-person, levels, boards, awards, and codes. It will not invent experience, degrees, or reviews."
-      : placeholder
-        ? "The placeholder text is ignored. We will start from your name and any subjects you have added, not that default line."
-        : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews.";
+      : purpose === "teachingMethod"
+        ? placeholder
+          ? "Uses your subjects, levels, expertise, languages, and experience when available. Prefer concrete lesson methods over fluff."
+          : "Improves this text using your profile details. It will not invent experience, qualifications, or reviews."
+        : placeholder
+          ? "The placeholder text is ignored. We will start from your name and any subjects you have added, not that default line."
+          : "Uses your name, subjects, and other profile details. It will not invent experience, qualifications, or reviews.";
 
   return (
     <div className="tutor-bio-ai">
@@ -165,7 +171,11 @@ export function TutorBioAiHelp({
             maxLength={500}
             value={extra}
             onChange={(e) => setExtra(e.target.value)}
-            placeholder="True extras only, e.g. exam boards you teach or how you run lessons."
+            placeholder={
+              purpose === "teachingMethod"
+                ? "True extras only, e.g. timed past papers every Friday or concept drills before homework."
+                : "True extras only, e.g. exam boards you teach or how you run lessons."
+            }
           />
         </label>
       </details>

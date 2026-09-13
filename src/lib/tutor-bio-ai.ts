@@ -4,7 +4,7 @@ export const AI_TUTOR_BIO_KIND = "tutor-bio";
 export const AI_TUTOR_BIO_RATE_LIMIT = 20;
 
 export type TutorBioAiMode = "generate" | "improve";
-export type TutorBioAiPurpose = "bio" | "teachingDescription";
+export type TutorBioAiPurpose = "bio" | "teachingDescription" | "teachingMethod";
 
 export type TutorBioFacts = {
   name?: string | null;
@@ -69,8 +69,25 @@ Hard rules:
 - Aim for about 80–170 words. Stay between 20 and 4000 characters.
 - Output the description only — no title, quotes, markdown, or preamble.`;
 
+export const AI_TEACHING_METHOD_SYSTEM = `You write the "How you teach" field for a tutor profile on My Tutoring Hub.
+
+Your job: a short, professional paragraph about concrete teaching methods — how lessons run, practice, feedback, and exam prep — not a life story or soft marketing bio.
+
+Hard rules:
+- Use ONLY facts listed under "Known profile details" and, when improving, the tutor's existing draft plus their optional notes.
+- Focus on methods students can picture: past papers, homework cadence, concept drills, worked examples, error review, timed practice, lesson structure.
+- Tie methods to listed subjects, levels, expertise, or languages when those facts exist. Do not invent boards, curricula, or techniques they did not imply.
+- NEVER invent years of experience, degrees, certificates, schools, exam results, student counts, ratings, reviews, awards, or job titles.
+- If a detail is missing, omit it. Avoid fluffy filler ("passionate", "nurturing environment", "unlock potential") and credential clichés ("10+ years", "hundreds of students", "top-rated").
+- Do not mention My Tutoring Hub, AI, or that this text was generated.
+- Write in first person.
+- Aim for about 40–110 words. Stay between 20 and 2000 characters.
+- Output the teaching-method text only — no title, quotes, markdown, or preamble.`;
+
 export function tutorCopyAiSystemPrompt(purpose: TutorBioAiPurpose = "bio") {
-  return purpose === "teachingDescription" ? AI_TEACHING_DESCRIPTION_SYSTEM : AI_TUTOR_BIO_SYSTEM;
+  if (purpose === "teachingDescription") return AI_TEACHING_DESCRIPTION_SYSTEM;
+  if (purpose === "teachingMethod") return AI_TEACHING_METHOD_SYSTEM;
+  return AI_TUTOR_BIO_SYSTEM;
 }
 
 export function effectiveTutorBioForAi(bio?: string | null) {
@@ -332,6 +349,22 @@ export function formatTutorBioFacts(facts: TutorBioFacts, purpose: TutorBioAiPur
     ].filter(Boolean);
     return lines.length ? lines.join("\n") : "None provided.";
   }
+  if (purpose === "teachingMethod") {
+    const mode = lessonModeLabel(facts.online, facts.inPerson);
+    const lines = [
+      factLine("Name", facts.name),
+      factLine("Headline", facts.headline),
+      factLine("Subjects", subjects),
+      factLine("Teaching Profiles", facts.listings),
+      factLine("Levels", asList(facts.levels).join(", ")),
+      factLine("Expertise", facts.expertise),
+      factLine("Languages", facts.languages),
+      factLine("Lesson mode", mode),
+      factLine("Years of experience (only if listed)", years),
+      factLine("Tutor notes (their own words — do not add extra credentials)", facts.notes),
+    ].filter(Boolean);
+    return lines.length ? lines.join("\n") : "None provided.";
+  }
   const lines = [
     factLine("Name", facts.name),
     factLine("Headline", facts.headline),
@@ -364,18 +397,29 @@ export function buildTutorBioUserMessage({
   const resolved = resolveTutorBioAiMode(mode, incoming);
   const draft = resolved === "improve" ? incoming : "";
   const teaching = purpose === "teachingDescription";
+  const method = purpose === "teachingMethod";
   const task =
     resolved === "improve"
       ? teaching
         ? "Improve the existing Teaching Profile description: clearer and easier for students to scan. Keep the tutor's meaning. Stay on this subject. Do not add credentials, results, or stats they did not mention."
-        : "Improve the existing draft: clearer, warmer, and easier for students to scan. Keep the tutor's meaning. Do not add credentials, results, or stats they did not mention."
+        : method
+          ? "Improve the existing How you teach draft: clearer, more concrete methods, easier for students to scan. Keep the tutor's meaning. Do not add credentials, results, or stats they did not mention."
+          : "Improve the existing draft: clearer, warmer, and easier for students to scan. Keep the tutor's meaning. Do not add credentials, results, or stats they did not mention."
       : teaching
         ? "Write a new Teaching Profile description from the known details only. Ignore any placeholder seed text. Weave in the capability summary in natural sentences: who it is for, boards/curricula, awards, and at most a few codes. If details are sparse, keep it modest and invite students to message — still no invented background."
-        : "Write a new starter bio from the known details only. Ignore any placeholder seed text. If details are sparse, keep it modest and invite students to message — still no invented background.";
+        : method
+          ? "Write a new How you teach paragraph from the known details only. Ignore any placeholder seed text. Prefer concrete lesson methods over soft branding. If details are sparse, keep it modest and invite students to ask how lessons run — still no invented background."
+          : "Write a new starter bio from the known details only. Ignore any placeholder seed text. If details are sparse, keep it modest and invite students to message — still no invented background.";
+
+  const fieldLabel = teaching
+    ? "Field: Teaching Profile description (one subject)."
+    : method
+      ? "Field: How you teach."
+      : "Field: About you.";
 
   return [
     `Mode: ${resolved}.`,
-    teaching ? "Field: Teaching Profile description (one subject)." : "Field: About you.",
+    fieldLabel,
     task,
     "",
     "Known profile details:",

@@ -28,7 +28,7 @@ const stringList = z.union([
 
 const schema = z.object({
   mode: z.enum(["generate", "improve"]).optional().default("generate"),
-  purpose: z.enum(["bio", "teachingDescription"]).optional().default("bio"),
+  purpose: z.enum(["bio", "teachingDescription", "teachingMethod"]).optional().default("bio"),
   name: z.string().trim().max(80).optional(),
   bio: z.string().max(4000).optional(),
   headline: z.string().trim().max(120).optional(),
@@ -153,9 +153,9 @@ export async function POST(req: Request) {
       subjects: draft.subjects,
       location: draft.location,
       country: draft.country,
-      qualifications: purpose === "teachingDescription" ? undefined : draft.qualifications,
+      qualifications: purpose === "teachingDescription" || purpose === "teachingMethod" ? undefined : draft.qualifications,
       experienceYears: draft.experienceYears,
-      teachingMethod: draft.teachingMethod,
+      teachingMethod: purpose === "teachingMethod" ? undefined : draft.teachingMethod,
       languages: draft.languages,
       levels: draft.levels,
       expertise: draft.expertise,
@@ -174,13 +174,15 @@ export async function POST(req: Request) {
       subjects: purpose === "teachingDescription" ? thisSubject : splitCsv(stored.subjects),
       location: stored.location,
       country: stored.country,
-      qualifications: purpose === "teachingDescription" ? "" : stored.qualifications,
+      qualifications: purpose === "teachingDescription" || purpose === "teachingMethod" ? "" : stored.qualifications,
       experienceYears: stored.experienceYears,
-      teachingMethod: stored.teachingMethod,
+      teachingMethod: purpose === "teachingMethod" ? "" : stored.teachingMethod,
       languages: stored.languages,
       levels: purpose === "teachingDescription" ? draft.levels : stored.levels,
       expertise: stored.expertise,
       listings,
+      online: undefined,
+      inPerson: undefined,
     },
   );
   if (purpose === "teachingDescription") {
@@ -196,8 +198,13 @@ export async function POST(req: Request) {
       syllabusCodes: asStringList(draft.syllabusCodes),
     });
   }
+  if (purpose === "teachingMethod") {
+    facts.online = draft.online ?? null;
+    facts.inPerson = draft.inPerson ?? null;
+  }
 
-  const existingBio = draft.bio ?? (purpose === "teachingDescription" ? "" : stored.bio);
+  const existingBio =
+    draft.bio ?? (purpose === "teachingDescription" || purpose === "teachingMethod" ? "" : stored.bio);
   const mode = resolveTutorBioAiMode(draft.mode, existingBio);
   const userContent = buildTutorBioUserMessage({
     mode,
@@ -219,7 +226,9 @@ export async function POST(req: Request) {
       result.status === 503
         ? purpose === "teachingDescription"
           ? "The writing helper isn't configured right now. You can still write the teaching description yourself."
-          : "The writing helper isn't configured right now. You can still write the introduction yourself."
+          : purpose === "teachingMethod"
+            ? "The writing helper isn't configured right now. You can still write how you teach yourself."
+            : "The writing helper isn't configured right now. You can still write the introduction yourself."
         : result.error;
     return NextResponse.json(
       { error, ...(result.code ? { code: result.code } : {}) },
@@ -228,14 +237,16 @@ export async function POST(req: Request) {
   }
 
   const bio = sanitizeGeneratedBio(result.text);
-  const minChars = purpose === "teachingDescription" ? 20 : 40;
+  const minChars = purpose === "bio" ? 40 : 20;
   if (bio.length < minChars) {
     return NextResponse.json(
       {
         error:
           purpose === "teachingDescription"
             ? "Could not draft a usable teaching description. Add the subject or a short note and try again."
-            : "Could not draft a usable introduction. Add a subject or a short note and try again.",
+            : purpose === "teachingMethod"
+              ? "Could not draft a usable teaching method. Add a subject or a short note and try again."
+              : "Could not draft a usable introduction. Add a subject or a short note and try again.",
       },
       { status: 502 },
     );

@@ -3,6 +3,7 @@ import { DEFAULT_TUTOR_BIO, isDefaultTutorBio } from "./tutor-listing-copy";
 import {
   AI_TUTOR_BIO_SYSTEM,
   AI_TEACHING_DESCRIPTION_SYSTEM,
+  AI_TEACHING_METHOD_SYSTEM,
   buildTutorBioUserMessage,
   effectiveTutorBioForAi,
   formatTeachingListingFacts,
@@ -111,9 +112,14 @@ assert.match(AI_TUTOR_BIO_SYSTEM, /qualifications/);
 
 assert.equal(tutorCopyAiSystemPrompt("bio"), AI_TUTOR_BIO_SYSTEM);
 assert.equal(tutorCopyAiSystemPrompt("teachingDescription"), AI_TEACHING_DESCRIPTION_SYSTEM);
+assert.equal(tutorCopyAiSystemPrompt("teachingMethod"), AI_TEACHING_METHOD_SYSTEM);
 assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /THIS subject/);
 assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /Stay between 20 and 4000/);
 assert.match(AI_TEACHING_DESCRIPTION_SYSTEM, /NEVER dump a raw list of syllabus codes/);
+assert.match(AI_TEACHING_METHOD_SYSTEM, /How you teach/);
+assert.match(AI_TEACHING_METHOD_SYSTEM, /past papers/i);
+assert.match(AI_TEACHING_METHOD_SYSTEM, /Stay between 20 and 2000/);
+assert.doesNotMatch(AI_TEACHING_METHOD_SYSTEM, /THIS subject/);
 
 const fewCaps = summarizeTeachingCapabilities({
   subject: "Business",
@@ -177,6 +183,40 @@ assert.match(teachingPrompt, /Cambridge/);
 assert.match(teachingPrompt, /9709/);
 assert.doesNotMatch(teachingPrompt, /Field: About you/);
 assert.doesNotMatch(teachingPrompt, /Qualifications \(only if listed\)/);
+
+const methodPrompt = buildTutorBioUserMessage({
+  mode: "generate",
+  purpose: "teachingMethod",
+  facts: {
+    name: "Zain Ali",
+    subjects: ["Mathematics", "Physics"],
+    levels: "A Level, GCSE",
+    expertise: "Exam technique",
+    languages: "English, Urdu",
+    experienceYears: 6,
+    online: true,
+    inPerson: false,
+  },
+  existingBio: "",
+});
+assert.match(methodPrompt, /Field: How you teach/);
+assert.match(methodPrompt, /Subjects: Mathematics, Physics/);
+assert.match(methodPrompt, /Levels: A Level, GCSE/);
+assert.match(methodPrompt, /Lesson mode: Online/);
+assert.match(methodPrompt, /concrete lesson methods/);
+assert.doesNotMatch(methodPrompt, /Teaching method:/);
+assert.doesNotMatch(methodPrompt, /Field: About you/);
+assert.doesNotMatch(methodPrompt, /Capability summary/);
+
+const methodImprove = buildTutorBioUserMessage({
+  mode: "improve",
+  purpose: "teachingMethod",
+  facts: { name: "Zain Ali", subjects: ["Chemistry"] },
+  existingBio: "Past papers and weekly homework.",
+});
+assert.match(methodImprove, /Mode: improve/);
+assert.match(methodImprove, /Past papers and weekly homework/);
+assert.match(methodImprove, /more concrete methods/);
 
 const quals = tutorQualificationOptions(["Primary", "IB Diploma", "HSC"]);
 assert.ok(quals.core.includes("IB Diploma"));

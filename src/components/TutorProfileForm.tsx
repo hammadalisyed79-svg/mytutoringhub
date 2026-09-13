@@ -1126,11 +1126,34 @@ export function TutorProfileForm({
                         <textarea
                           name="teachingMethod"
                           rows={2}
+                          maxLength={2000}
                           value={teachingMethod}
                           onChange={(e) => setTeachingMethod(e.target.value)}
                           placeholder="Past papers, weekly homework…"
                         />
                       </label>
+                      <TutorBioAiHelp
+                        purpose="teachingMethod"
+                        bio={teachingMethod}
+                        name={name}
+                        headline={headline}
+                        subjects={subjectList}
+                        location={location}
+                        country={country}
+                        qualifications=""
+                        experienceYears={
+                          experienceYears === "" || Number.isNaN(Number(experienceYears))
+                            ? null
+                            : Number(experienceYears)
+                        }
+                        teachingMethod=""
+                        languages={joinCsv(languageList)}
+                        levels={levelList}
+                        expertise={joinCsv(expertiseList)}
+                        online={online}
+                        inPerson={inPerson}
+                        onApply={setTeachingMethod}
+                      />
                     </>
                   ) : null}
                   {block.id === "schedule" ? (
