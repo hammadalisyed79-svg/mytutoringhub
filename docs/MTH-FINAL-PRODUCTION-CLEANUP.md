@@ -58,10 +58,11 @@ See `docs/MTH-LEGAL-COMPLIANCE-BACKLOG.md` (minors, safeguarding, transfers, ret
 
 ## Deployment
 
-- Pushed to `origin/main` (commits through `e7ad5c5`).
+- Pushed to `origin/main` (through `71d5764`).
 - Live smoke: https://www.mytutoringhub.com (/, /pricing, /free-vs-paid, /help, /how-it-works, /become-a-tutor, /search, /past-papers, /terms, /refund, /privacy)
 - Pricing hero: Tutor Free = 1 active Teaching Profile · Tutor Pro up to 10 (no Extra Active).
 - SiteSettings overrides can no longer resurrect stale Tutor Pro / Priority / Boost copy or list prices.
+- Fixed duplicate `/mo` on localized plan price display.
 
 ## Remaining blockers
 
