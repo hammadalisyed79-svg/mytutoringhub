@@ -33,8 +33,8 @@ import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
 import { VerificationForm } from "@/components/VerificationForm";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
-  TUTOR_WIZARD_OPTIONAL_STEPS,
   TUTOR_WIZARD_STEP_IDS,
+  type TutorWizardExtraId,
   type TutorWizardStepId,
 } from "@/lib/tutor-wizard";
 import {
@@ -78,10 +78,7 @@ const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
 const PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 const PHOTO_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-const WIZARD_STEP_META: Record<
-  TutorWizardStepId,
-  { title: string; hint: string }
-> = {
+const WIZARD_STEP_META: Record<TutorWizardStepId, { title: string; hint: string }> = {
   photo: {
     title: "Profile photo",
     hint: "Upload a clear photo of yourself.",
@@ -98,33 +95,40 @@ const WIZARD_STEP_META: Record<
     title: "Qualifications",
     hint: "Your highest qualification and default lesson type.",
   },
-  details: {
-    title: "Teaching details",
-    hint: "Expertise, levels, languages, and how you teach. Optional — skip if you prefer.",
-  },
-  schedule: {
-    title: "Schedule",
-    hint: "Weekly availability and free first lesson. Optional — skip if you prefer.",
-  },
-  contact: {
-    title: "Contact & video",
-    hint: "Phone and intro video. Optional — skip if you prefer.",
-  },
-  verify: {
-    title: "ID verification",
-    hint: "Verify your identity for a trust badge. Optional — skip if you prefer.",
-  },
   finish: {
-    title: "Save profile",
-    hint: "Save your main profile, then manage subjects under My Teaching Profiles.",
+    title: "Save & go live",
+    hint: "Save your profile, then publish one Teaching Profile below.",
   },
 };
 
 const WIZARD_STEPS = TUTOR_WIZARD_STEP_IDS.map((id) => ({
   id,
   ...WIZARD_STEP_META[id],
-  optional: TUTOR_WIZARD_OPTIONAL_STEPS.has(id),
+  optional: false as const,
 }));
+
+const EXTRA_BLOCKS: { id: TutorWizardExtraId; title: string; hint: string }[] = [
+  {
+    id: "details",
+    title: "Teaching details",
+    hint: "Expertise, levels, languages, experience",
+  },
+  {
+    id: "schedule",
+    title: "Schedule",
+    hint: "Weekly availability and free first lesson",
+  },
+  {
+    id: "contact",
+    title: "Contact & video",
+    hint: "Phone and intro video",
+  },
+  {
+    id: "verify",
+    title: "ID verification",
+    hint: "Optional trust badge — not required to go live",
+  },
+];
 
 function photoExt(name: string): string {
   const dot = name.lastIndexOf(".");
@@ -198,8 +202,8 @@ export function TutorProfileForm({
   listingActive?: boolean;
   verified?: boolean;
   trustBadge?: TutorTrustBadge | string;
-  /** Jump straight to a wizard step (verify opens the ID step). */
-  startStep?: TutorWizardStepId | "verify";
+  /** Jump to a setup step, or open an extras block on Save (`verify`). */
+  startStep?: TutorWizardStepId | TutorWizardExtraId;
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
   currency?: CurrencyCode;
   /** Has an ACTIVE Teaching Profile (in search). */
@@ -229,6 +233,13 @@ export function TutorProfileForm({
   const [photoMsg, setPhotoMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const manageProfilesOnly = hasAnyTeachingProfile || hasValidTeachingProfile;
+  const openExtraOnLoad =
+    startStep === "verify" ||
+    startStep === "details" ||
+    startStep === "schedule" ||
+    startStep === "contact"
+      ? startStep
+      : null;
   const steps = useMemo(() => {
     return WIZARD_STEPS.map((row) => {
       if (row.id !== "finish") return row;
@@ -237,22 +248,22 @@ export function TutorProfileForm({
           ...row,
           title: "Save profile",
           hint: hasValidTeachingProfile
-            ? "Optional extras are done or skipped. Manage subjects under My Teaching Profiles below."
-            : "You already have Teaching Profiles — activate one below to appear in search.",
+            ? "Your main profile is ready. Manage subjects under My Teaching Profiles below."
+            : "Activate a Teaching Profile below to appear in search.",
         };
       }
       return {
         ...row,
-        hint: "Save here, then create your first Teaching Profile under My Teaching Profiles below.",
+        hint: "Save here, then add your first Teaching Profile in the block below.",
       };
     });
   }, [manageProfilesOnly, hasValidTeachingProfile]);
   const initialStepIndex = Math.max(
     0,
-    startStep && startStep !== "verify"
-      ? steps.findIndex((row) => row.id === startStep)
-      : startStep === "verify"
-        ? steps.findIndex((row) => row.id === "verify")
+    openExtraOnLoad
+      ? steps.findIndex((row) => row.id === "finish")
+      : startStep
+        ? steps.findIndex((row) => row.id === startStep)
         : 0,
   );
   const [step, setStep] = useState(initialStepIndex >= 0 ? initialStepIndex : 0);
@@ -286,7 +297,6 @@ export function TutorProfileForm({
   const [offersFreeTrial, setOffersFreeTrial] = useState(Boolean(initial.offersFreeTrial));
   const [draftSaving, setDraftSaving] = useState(false);
   const [draftNote, setDraftNote] = useState("");
-  const [skippedOptional, setSkippedOptional] = useState<Set<string>>(() => new Set());
 
   // Keep the typed amount consistent when teaching country (hence currency) changes.
   useEffect(() => {
@@ -369,10 +379,6 @@ export function TutorProfileForm({
         if (!online && !inPerson) return "Choose online, in person, or both.";
         if (!qualifications.trim()) return "Add your highest qualification.";
         return null;
-      case "details":
-      case "schedule":
-      case "contact":
-      case "verify":
       case "finish":
         return null;
       default:
@@ -391,20 +397,6 @@ export function TutorProfileForm({
         return Boolean(country?.trim() && location.trim());
       case "teaching":
         return (online || inPerson) && Boolean(qualifications.trim());
-      case "details":
-        return (
-          expertiseList.length > 0 ||
-          levelList.length > 0 ||
-          languageList.length > 0 ||
-          Boolean(experienceYears) ||
-          Boolean(teachingMethod.trim())
-        );
-      case "schedule":
-        return slots.length > 0 || offersFreeTrial;
-      case "contact":
-        return Boolean(phone.trim() || introVideoUrl.trim() || videoUrl.trim());
-      case "verify":
-        return Boolean(verified);
       case "finish":
         return manageProfilesOnly;
       default:
@@ -415,13 +407,9 @@ export function TutorProfileForm({
   function stepStatus(stepId: TutorWizardStepId, index: number) {
     const active = index === step;
     const complete = isStepDataComplete(stepId);
-    const skipped = Boolean(
-      steps[index]?.optional && skippedOptional.has(stepId) && !complete,
-    );
-    // ✕ only for steps already passed without being filled — not for future steps.
-    const pending = !complete && !skipped && !active && index < step;
-    const upcoming = !complete && !skipped && !active && index > step;
-    return { active, complete, skipped, pending, upcoming };
+    const pending = !complete && !active && index < step;
+    const upcoming = !complete && !active && index > step;
+    return { active, complete, skipped: false, pending, upcoming };
   }
 
   function draftPayloadForStep(stepId: TutorWizardStepId): Record<string, unknown> | null {
@@ -461,29 +449,6 @@ export function TutorProfileForm({
           qualifications: qualifications.trim(),
           wizardStep: "teaching",
         };
-      case "details":
-        return {
-          expertise: joinCsv(expertiseList),
-          levels: joinCsv(levelList),
-          languages: joinCsv(languageList),
-          experienceYears: experienceYears === "" ? null : Number(experienceYears),
-          teachingMethod: teachingMethod.trim(),
-          wizardStep: "details",
-        };
-      case "schedule":
-        return {
-          availability: serializeAvailability(slots),
-          offersFreeTrial,
-          wizardStep: "schedule",
-        };
-      case "contact":
-        return {
-          phone: phone.trim(),
-          introVideoUrl: introVideoUrl.trim(),
-          videoUrl: videoUrl.trim(),
-          wizardStep: "contact",
-        };
-      case "verify":
       case "finish":
         return null;
       default:
@@ -532,13 +497,6 @@ export function TutorProfileForm({
     }
     const saved = await saveDraft(currentStep.id);
     if (!saved) return;
-    if (currentStep.optional && !isStepDataComplete(currentStep.id)) {
-      setSkippedOptional((prev) => {
-        const next = new Set(prev);
-        next.add(currentStep.id);
-        return next;
-      });
-    }
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
@@ -552,34 +510,10 @@ export function TutorProfileForm({
     if (index < 0 || index >= steps.length || index === step) return;
     setError("");
     setDraftNote("");
-    // Persist the step you're leaving when it already validates.
     if (!validateStep(currentStep.id)) {
       await saveDraft(currentStep.id, { silent: true });
     }
-    if (index > step) {
-      setSkippedOptional((prev) => {
-        const next = new Set(prev);
-        for (let i = step; i < index; i++) {
-          const row = steps[i];
-          if (row?.optional && !isStepDataComplete(row.id)) next.add(row.id);
-        }
-        return next;
-      });
-    }
     setStep(index);
-  }
-
-  async function skipOptional() {
-    if (!currentStep.optional) return;
-    setError("");
-    setDraftNote("");
-    setSkippedOptional((prev) => {
-      const next = new Set(prev);
-      next.add(currentStep.id);
-      return next;
-    });
-    await saveDraft(currentStep.id, { silent: true });
-    setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
   function setCountryAndCity(nextCountry: string) {
@@ -764,36 +698,31 @@ export function TutorProfileForm({
     <nav className="profile-wizard-steps" aria-label="Profile steps">
       <ol className="profile-wizard-steps-list">
         {steps.map((row, index) => {
-          const { active, complete, skipped, pending } = stepStatus(row.id, index);
+          const { active, complete, pending } = stepStatus(row.id, index);
           const stateClass = active
             ? " is-active"
             : complete
               ? " is-complete"
-              : skipped
-                ? " is-skipped"
-                : pending
-                  ? " is-pending"
-                  : "";
+              : pending
+                ? " is-pending"
+                : "";
           let markContent: string | number = index + 1;
           if (complete) markContent = "✓";
-          else if (skipped) markContent = "–";
           else if (pending) markContent = "✕";
           const statusLabel = complete
             ? "completed"
-            : skipped
-              ? "skipped"
-              : pending
-                ? "incomplete"
-                : active
-                  ? "current"
-                  : "upcoming";
+            : pending
+              ? "incomplete"
+              : active
+                ? "current"
+                : "upcoming";
           return (
             <li key={row.id}>
               <button
                 type="button"
                 className={`profile-wizard-step${stateClass}`}
                 aria-current={active ? "step" : undefined}
-                aria-label={`Step ${index + 1}: ${row.title} (${statusLabel}${row.optional ? ", optional" : ""})`}
+                aria-label={`Step ${index + 1}: ${row.title} (${statusLabel})`}
                 title={`${row.title} — ${statusLabel}`}
                 onClick={() => void goToStep(index)}
               >
@@ -807,19 +736,6 @@ export function TutorProfileForm({
         })}
       </ol>
     </nav>
-  );
-
-  const requiredFieldsList = (
-    <ul className="profile-complete-list profile-required-checklist" aria-label="Required profile items">
-      {requiredChecklist.map((row) => (
-        <li key={row.key} className={row.ok ? "is-done" : "is-needed"}>
-          <span className="profile-required-mark" aria-hidden="true">
-            {row.ok ? "✓" : "○"}
-          </span>
-          <span className="profile-required-label">{row.label}</span>
-        </li>
-      ))}
-    </ul>
   );
 
   const stillNeededList =
@@ -841,11 +757,16 @@ export function TutorProfileForm({
       <div className="profile-wizard-meta">
         <p className="guided-search-step">
           Step {step + 1} of {steps.length}
-          {currentStep.optional ? " · Optional" : ""}
         </p>
-        <p className="profile-wizard-fields muted" aria-live="polite">
-          {requiredDone}/{requiredTotal} complete · {fieldProgressPct}%
-        </p>
+        {stillNeeded.length > 0 ? (
+          <p className="profile-wizard-fields muted" aria-live="polite">
+            {stillNeeded.length} still needed · {fieldProgressPct}%
+          </p>
+        ) : (
+          <p className="profile-wizard-fields muted" aria-live="polite">
+            Ready · {fieldProgressPct}%
+          </p>
+        )}
       </div>
       <div
         className="guided-search-progress"
@@ -858,27 +779,8 @@ export function TutorProfileForm({
         <div className="guided-search-progress-bar" style={{ width: `${fieldProgressPct}%` }} />
       </div>
       {stepNav}
-      <div className="profile-wizard-legend" aria-hidden="true">
-        <span>
-          <i className="profile-wizard-legend-dot is-complete" /> Done
-        </span>
-        <span>
-          <i className="profile-wizard-legend-dot is-pending" /> Incomplete
-        </span>
-      </div>
-      {currentStep.id !== "finish" && stillNeeded.length > 0 ? (
-        <details className="profile-required-details" open={stillNeeded.length <= 3}>
-          <summary>
-            Still needed ({stillNeeded.length})
-          </summary>
-          {stillNeededList}
-        </details>
-      ) : null}
       <h3 className="guided-search-title">{currentStep.title}</h3>
       <p className="muted guided-search-hint">{currentStep.hint}</p>
-      <p className="field-hint profile-wizard-persist-hint">
-        Progress saves as you go. Your profile stays private until you save a Teaching Profile.
-      </p>
     </div>
   );
 
@@ -895,16 +797,6 @@ export function TutorProfileForm({
       </button>
       <div className="profile-wizard-actions-right">
         {draftNote ? <p className="profile-wizard-draft-note muted">{draftNote}</p> : null}
-        {currentStep.optional ? (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            disabled={draftSaving}
-            onClick={() => void skipOptional()}
-          >
-            Skip for now
-          </button>
-        ) : null}
         {currentStep.id === "finish" ? (
           <button className="btn" type="button" disabled={uploading || saving || draftSaving} onClick={() => void save()}>
             {saving ? "Saving…" : "Save profile"}
@@ -934,22 +826,26 @@ export function TutorProfileForm({
 
       {currentStep.id === "finish" ? (
         <div className="profile-complete profile-complete--compact">
-          <div className="profile-complete-head">
-            <strong>
-              Ready to save · {requiredDone}/{requiredTotal} complete
-            </strong>
-            <span className="profile-complete-pct">{progress}%</span>
-          </div>
-          <div className="profile-progress" aria-hidden>
-            <span style={{ width: `${Math.min(100, progress)}%` }} />
-          </div>
-          {requiredFieldsList}
+          {stillNeeded.length > 0 ? (
+            <>
+              <div className="profile-complete-head">
+                <strong>Almost there · {stillNeeded.length} left</strong>
+                <span className="profile-complete-pct">{progress}%</span>
+              </div>
+              {stillNeededList}
+            </>
+          ) : (
+            <div className="profile-complete-head">
+              <strong>Ready to save</strong>
+              <span className="profile-complete-pct">{progress}%</span>
+            </div>
+          )}
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
             {hasValidTeachingProfile
               ? "Your Teaching Profile is active in search. Manage subjects below."
               : manageProfilesOnly
                 ? "Activate a Teaching Profile under My Teaching Profiles to appear in search."
-                : "Create your first Teaching Profile under My Teaching Profiles below."}
+                : "Next: add one Teaching Profile below (subject + rate) so students can find you."}
           </p>
         </div>
       ) : null}
@@ -1160,181 +1056,194 @@ export function TutorProfileForm({
 
       {currentStep.id === "finish" && (
         <>
-          <p className="field-hint">
-            {hasValidTeachingProfile
-              ? "Manage subjects, rates, and Boost under My Teaching Profiles below."
-              : manageProfilesOnly
-                ? "You already have Teaching Profiles. Activate one under My Teaching Profiles to appear in search (Free includes 1 active)."
-                : "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for."}
-          </p>
           <p>
             <a href="#teaching-listings" className="btn btn-sm">
               {manageProfilesOnly ? "Go to Teaching Profiles" : "Add Teaching Profile"}
             </a>
           </p>
-          <ProfileImprovePanel
-            listingLive={listingActive}
-            verified={verified}
-            trustBadge={trustBadge}
-          />
-        </>
-      )}
 
-      {show("details") && (
-        <section className="form-section">
-          <CatalogMultiSelect
-            label="Expertise"
-            selected={expertiseList}
-            onChange={setExpertiseList}
-            options={expertiseOptions}
-            extraOptions={GENERIC_EXPERTISE}
-            max={16}
-            addLabel="Add expertise"
-          />
-          <CatalogMultiSelect
-            label="Levels"
-            selected={levelList}
-            onChange={setLevelList}
-            options={levelCatalog.core}
-            extraOptions={levelCatalog.more}
-            max={10}
-            addLabel="Add levels"
-          />
-          <CatalogMultiSelect
-            label="Languages"
-            selected={languageList}
-            onChange={setLanguageList}
-            options={languageCatalog.core}
-            extraOptions={languageCatalog.more}
-            max={8}
-            addLabel="Add languages"
-          />
-          <label>
-            Experience in years
-            <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-              <option value="">Select years…</option>
-              {EXPERIENCE_YEAR_OPTIONS.map((row) => (
-                <option key={row.value} value={row.value}>
-                  {row.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            How you teach
-            <textarea
-              name="teachingMethod"
-              rows={2}
-              value={teachingMethod}
-              onChange={(e) => setTeachingMethod(e.target.value)}
-              placeholder="Past papers, weekly homework…"
-            />
-          </label>
-        </section>
-      )}
-
-      {show("schedule") && (
-        <section className="form-section">
-          <fieldset className="catalog-pick">
-            <legend>Weekly availability</legend>
-            <div className="schedule-rows">
-              {slots.map((slot, index) => (
-                <div key={`${slot.day}-${index}`} className="schedule-row">
-                  <select
-                    aria-label="Day"
-                    value={slot.day}
-                    onChange={(e) =>
-                      updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
-                    }
-                  >
-                    {WEEKDAYS.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    aria-label="Start time"
-                    value={slot.start}
-                    onChange={(e) => updateSlot(index, { start: e.target.value })}
-                  >
-                    {TIMES.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="muted">to</span>
-                  <select
-                    aria-label="End time"
-                    value={slot.end}
-                    onChange={(e) => updateSlot(index, { end: e.target.value })}
-                  >
-                    {TIMES.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    type="button"
-                    onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
-                  >
-                    Remove
-                  </button>
+          <div className="tutor-profile-extras">
+            <p className="muted" style={{ marginBottom: "0.35rem" }}>
+              Optional extras — open any block, then Save profile.
+            </p>
+            {EXTRA_BLOCKS.map((block) => (
+              <details
+                key={block.id}
+                className="profile-advanced-details"
+                id={block.id === "verify" ? "get-verified" : undefined}
+                open={openExtraOnLoad === block.id}
+              >
+                <summary>
+                  {block.title}
+                  <span className="muted"> — {block.hint}</span>
+                </summary>
+                <div className="profile-advanced-block">
+                  {block.id === "details" ? (
+                    <>
+                      <CatalogMultiSelect
+                        label="Expertise"
+                        selected={expertiseList}
+                        onChange={setExpertiseList}
+                        options={expertiseOptions}
+                        extraOptions={GENERIC_EXPERTISE}
+                        max={16}
+                        addLabel="Add expertise"
+                      />
+                      <CatalogMultiSelect
+                        label="Levels"
+                        selected={levelList}
+                        onChange={setLevelList}
+                        options={levelCatalog.core}
+                        extraOptions={levelCatalog.more}
+                        max={10}
+                        addLabel="Add levels"
+                      />
+                      <CatalogMultiSelect
+                        label="Languages"
+                        selected={languageList}
+                        onChange={setLanguageList}
+                        options={languageCatalog.core}
+                        extraOptions={languageCatalog.more}
+                        max={8}
+                        addLabel="Add languages"
+                      />
+                      <label>
+                        Experience in years
+                        <select value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
+                          <option value="">Select years…</option>
+                          {EXPERIENCE_YEAR_OPTIONS.map((row) => (
+                            <option key={row.value} value={row.value}>
+                              {row.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        How you teach
+                        <textarea
+                          name="teachingMethod"
+                          rows={2}
+                          value={teachingMethod}
+                          onChange={(e) => setTeachingMethod(e.target.value)}
+                          placeholder="Past papers, weekly homework…"
+                        />
+                      </label>
+                    </>
+                  ) : null}
+                  {block.id === "schedule" ? (
+                    <>
+                      <fieldset className="catalog-pick">
+                        <legend>Weekly availability</legend>
+                        <div className="schedule-rows">
+                          {slots.map((slot, index) => (
+                            <div key={`${slot.day}-${index}`} className="schedule-row">
+                              <select
+                                aria-label="Day"
+                                value={slot.day}
+                                onChange={(e) =>
+                                  updateSlot(index, { day: e.target.value as AvailabilitySlot["day"] })
+                                }
+                              >
+                                {WEEKDAYS.map((day) => (
+                                  <option key={day} value={day}>
+                                    {day}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                aria-label="Start time"
+                                value={slot.start}
+                                onChange={(e) => updateSlot(index, { start: e.target.value })}
+                              >
+                                {TIMES.map((time) => (
+                                  <option key={time} value={time}>
+                                    {time}
+                                  </option>
+                                ))}
+                              </select>
+                              <span className="muted">to</span>
+                              <select
+                                aria-label="End time"
+                                value={slot.end}
+                                onChange={(e) => updateSlot(index, { end: e.target.value })}
+                              >
+                                {TIMES.map((time) => (
+                                  <option key={time} value={time}>
+                                    {time}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                type="button"
+                                onClick={() => setSlots((current) => current.filter((_, i) => i !== index))}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
+                        >
+                          Add time slot
+                        </button>
+                      </fieldset>
+                      <label className="radio">
+                        <input
+                          type="checkbox"
+                          checked={offersFreeTrial}
+                          onChange={(e) => setOffersFreeTrial(e.target.checked)}
+                        />{" "}
+                        Free first lesson
+                      </label>
+                    </>
+                  ) : null}
+                  {block.id === "contact" ? (
+                    <>
+                      <label>
+                        Intro video URL
+                        <input
+                          name="introVideoUrl"
+                          value={introVideoUrl}
+                          onChange={(e) => setIntroVideoUrl(e.target.value)}
+                          placeholder="YouTube or Vimeo"
+                          inputMode="url"
+                        />
+                      </label>
+                      <label>
+                        Phone
+                        <PhoneInput
+                          value={phone}
+                          onChange={setPhone}
+                          defaultCountryCode={defaultPhoneCountry}
+                          hint="Shown publicly only after verification."
+                        />
+                      </label>
+                    </>
+                  ) : null}
+                  {block.id === "verify" ? (
+                    !verified ? (
+                      <VerificationForm embedded compact />
+                    ) : (
+                      <p className="success">You are verified.</p>
+                    )
+                  ) : null}
                 </div>
-              ))}
-            </div>
-            <button
-              className="btn btn-secondary btn-sm"
-              type="button"
-              onClick={() => setSlots((current) => [...current, emptyAvailabilitySlot()])}
-            >
-              Add time slot
-            </button>
-          </fieldset>
-          <label className="radio">
-            <input
-              type="checkbox"
-              checked={offersFreeTrial}
-              onChange={(e) => setOffersFreeTrial(e.target.checked)}
-            />{" "}
-            Free first lesson
-          </label>
-        </section>
-      )}
+              </details>
+            ))}
+          </div>
 
-      {show("contact") && (
-        <section className="form-section">
-          <label>
-            Intro video URL
-            <input
-              name="introVideoUrl"
-              value={introVideoUrl}
-              onChange={(e) => setIntroVideoUrl(e.target.value)}
-              placeholder="YouTube or Vimeo"
-              inputMode="url"
+          {listingActive ? (
+            <ProfileImprovePanel
+              listingLive={listingActive}
+              verified={verified}
+              trustBadge={trustBadge}
             />
-          </label>
-          <label>
-            Phone
-            <PhoneInput
-              value={phone}
-              onChange={setPhone}
-              defaultCountryCode={defaultPhoneCountry}
-              hint="Shown publicly only after verification."
-            />
-          </label>
-        </section>
-      )}
-
-      {show("verify") && (
-        <section className="form-section" id="get-verified">
-          {!verified ? <VerificationForm embedded compact /> : (
-            <p className="success">You are verified.</p>
-          )}
-        </section>
+          ) : null}
+        </>
       )}
 
       {error && <p className="form-error">{error}</p>}

@@ -3,32 +3,32 @@ import {
   type TutorProfileCompletionInput,
 } from "@/lib/tutor-profile-completion";
 
-/** Required steps first; optional extras each get their own skippable step. */
+/** Main setup path only — extras live as collapsed blocks on Save. */
 export const TUTOR_WIZARD_STEP_IDS = [
   "photo",
   "basics",
   "place",
   "teaching",
-  "details",
-  "schedule",
-  "contact",
-  "verify",
   "finish",
 ] as const;
 
-export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
-
-export const TUTOR_WIZARD_OPTIONAL_STEPS = new Set<TutorWizardStepId>([
+/** Optional profile segments — not sequential wizard steps. */
+export const TUTOR_WIZARD_EXTRA_IDS = [
   "details",
   "schedule",
   "contact",
   "verify",
-]);
+] as const;
+
+export type TutorWizardStepId = (typeof TUTOR_WIZARD_STEP_IDS)[number];
+export type TutorWizardExtraId = (typeof TUTOR_WIZARD_EXTRA_IDS)[number];
+
+/** @deprecated Optional steps removed from the main path; kept empty for callers. */
+export const TUTOR_WIZARD_OPTIONAL_STEPS = new Set<TutorWizardStepId>();
 
 /**
  * Resume at the first incomplete required step.
- * Optional steps (details / schedule / contact / verify) are never forced on resume —
- * tutors land on Save and can jump back, or Skip when they open them.
+ * Extras never block resume — tutors land on Save when required fields are done.
  */
 export function resolveTutorWizardResumeStep(
   profile: TutorProfileCompletionInput & {

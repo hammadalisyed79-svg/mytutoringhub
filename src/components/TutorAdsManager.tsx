@@ -418,18 +418,18 @@ export function TutorAdsManager({
     }
     if (!createLocation.trim()) {
       flashError("Add a city or Online.");
-      setCreateStep(1);
+      setCreateStep(0);
       return;
     }
     const ratePkr = hourlyRateInputToPkr(Number(createRate) || 0, currency);
     if (!createRate.trim() || Number(createRate) < rateMinLocal) {
       flashError(`Hourly rate must be at least ${formatMoney(rateMinLocal, currency)}.`);
-      setCreateStep(1);
+      setCreateStep(0);
       return;
     }
     if (!createOnline && !createInPerson) {
       flashError("Choose online, in person, or both.");
-      setCreateStep(1);
+      setCreateStep(0);
       return;
     }
     const res = await fetch("/api/tutor-ads", {
@@ -584,12 +584,11 @@ export function TutorAdsManager({
   }
 
   const CREATE_STEPS = [
-    { id: "subject", title: "Subject", optional: false },
-    { id: "pricing", title: "Rate & levels", optional: false },
+    { id: "essentials", title: "Subject & rate", optional: false },
     { id: "copy", title: "Description", optional: true },
   ] as const;
 
-  function advanceCreateFromSubject() {
+  function advanceCreateFromEssentials() {
     clearFeedback();
     if (!createSubject.trim()) {
       flashError("Choose or type a subject.");
@@ -599,11 +598,6 @@ export function TutorAdsManager({
       flashError("Profile title needs at least 5 characters.");
       return;
     }
-    setCreateStep(1);
-  }
-
-  function advanceCreateFromPricing() {
-    clearFeedback();
     if (!createLocation.trim()) {
       flashError("Add a city or Online.");
       return;
@@ -616,7 +610,7 @@ export function TutorAdsManager({
       flashError("Choose online, in person, or both.");
       return;
     }
-    setCreateStep(2);
+    setCreateStep(1);
   }
 
   const createStepMeta = CREATE_STEPS[createStep] || CREATE_STEPS[0];
@@ -627,11 +621,7 @@ export function TutorAdsManager({
       onSubmit={(e) => {
         e.preventDefault();
         if (createStep === 0) {
-          advanceCreateFromSubject();
-          return;
-        }
-        if (createStep === 1) {
-          advanceCreateFromPricing();
+          advanceCreateFromEssentials();
           return;
         }
         void create();
@@ -642,9 +632,7 @@ export function TutorAdsManager({
         Step {createStep + 1} of {CREATE_STEPS.length} · {createStepMeta.title}
         {createStepMeta.optional ? " (optional)" : ""}
       </p>
-      <p className="field-hint">
-        One subject per profile. Put levels and boards inside it — not as extra rows.
-      </p>
+      <p className="field-hint">One subject per profile. Students find you by subject and rate.</p>
 
       {createStep === 0 ? (
         <>
@@ -696,17 +684,6 @@ export function TutorAdsManager({
               onChange={(e) => setCreateTitle(e.target.value)}
             />
           </label>
-        </>
-      ) : null}
-
-      {createStep === 1 ? (
-        <>
-          <TeachingProfileCapabilityFields
-            subject={createSubject}
-            extraLevels={extraLevels}
-            values={createCaps}
-            onChange={setCreateCaps}
-          />
           <label>
             <span>
               City / area{" "}
@@ -765,10 +742,17 @@ export function TutorAdsManager({
               </label>
             </div>
           </fieldset>
+          <TeachingProfileCapabilityFields
+            subject={createSubject}
+            extraLevels={extraLevels}
+            values={createCaps}
+            onChange={setCreateCaps}
+            compact
+          />
         </>
       ) : null}
 
-      {createStep === 2 ? (
+      {createStep === 1 ? (
         <>
           <div className="tutor-bio-field">
             <label>
@@ -821,7 +805,7 @@ export function TutorAdsManager({
             Cancel
           </button>
         )}
-        {createStep === 2 ? (
+        {createStep === 1 ? (
           <>
             <button
               className="btn btn-secondary btn-sm"

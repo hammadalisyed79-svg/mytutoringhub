@@ -3234,6 +3234,29 @@ select:focus {
   margin-top: 1.25rem;
 }
 
+.tutor-dashboard-more {
+  margin-top: 1.25rem;
+}
+
+.tutor-dashboard-more > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+}
+
+.tutor-dashboard-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.tutor-profile-extras {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.85rem 0 0.35rem;
+}
+
 .tutor-profile-workspace {
   scroll-margin-top: 5rem;
 }

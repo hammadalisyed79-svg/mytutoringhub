@@ -15,7 +15,7 @@ export function TutorDashboardShortcuts({
     {
       href: "/ads",
       label: "Student requests",
-      description: "Browse & reply to ads",
+      description: "Browse & reply",
       icon: "▣",
     },
     {
@@ -27,8 +27,8 @@ export function TutorDashboardShortcuts({
     },
     {
       href: tutorDashboardTabHref(sp, "profile"),
-      label: "Edit profile",
-      description: "Your public listing",
+      label: "Profile & listings",
+      description: "Edit & Teaching Profiles",
       icon: "✎",
     },
     {
@@ -37,36 +37,12 @@ export function TutorDashboardShortcuts({
       description: "Views & enquiries",
       icon: "▲",
     },
-    {
-      href: tutorDashboardTabHref(sp, "growth", "tutor-recommendations"),
-      label: "Recommendations",
-      description: "Grow your badge",
-      icon: "◆",
-    },
-    {
-      href: "/pricing",
-      label: "Tutor add-ons",
-      description: "Boost & verified",
-      icon: "✦",
-    },
-    {
-      href: "/dashboard/tutor/plan",
-      label: "Your plan",
-      description: "Basic & add-ons",
-      icon: "◇",
-    },
-    {
-      href: "/settings",
-      label: "Settings",
-      description: "Account & security",
-      icon: "⚙",
-    },
   ];
 
   return (
     <DashboardShortcutCards
       title="Shortcuts"
-      lead="Quick access to growth tools and your listing."
+      lead="The essentials while you grow."
       items={items}
     />
   );

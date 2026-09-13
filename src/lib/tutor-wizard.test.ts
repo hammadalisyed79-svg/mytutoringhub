@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { resolveTutorWizardResumeStep } from "@/lib/tutor-wizard";
+import {
+  resolveTutorWizardResumeStep,
+  TUTOR_WIZARD_STEP_IDS,
+  TUTOR_WIZARD_EXTRA_IDS,
+} from "@/lib/tutor-wizard";
+
+assert.deepEqual([...TUTOR_WIZARD_STEP_IDS], ["photo", "basics", "place", "teaching", "finish"]);
+assert.deepEqual([...TUTOR_WIZARD_EXTRA_IDS], ["details", "schedule", "contact", "verify"]);
 
 const almostDone = {
   name: "Sara Ahmed",
@@ -26,12 +33,11 @@ assert.equal(
 assert.equal(
   resolveTutorWizardResumeStep(almostDone),
   "finish",
-  "required steps done → Save (optional extras are skippable, not forced)",
+  "required steps done → Save (extras are collapsed, not forced)",
 );
 assert.equal(
   resolveTutorWizardResumeStep({ ...almostDone, subjects: "Chemistry", hourlyRate: 2500 }),
   "finish",
-  "master CSV / master rate do not insert extra required wizard steps",
 );
 assert.equal(
   resolveTutorWizardResumeStep({ ...almostDone, hasValidTeachingProfile: true, hasValidListingRate: true }),

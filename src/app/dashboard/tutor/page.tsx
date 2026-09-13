@@ -109,7 +109,7 @@ export default async function TutorDashboardPage({
             <p className="muted">
               {statusView?.status === "LIVE"
                 ? "Your profile is live — manage Teaching Profiles and reply to students."
-                : "Finish a short profile (5 steps), then publish a Teaching Profile students can find."}
+                : "Quick setup: photo → about you → location → qualifications → one Teaching Profile."}
             </p>
           </div>
           <div className="page-hero-actions">
@@ -165,29 +165,12 @@ export default async function TutorDashboardPage({
             <section className="panel tutor-student-requests-panel">
               <h2>Students looking for tutors</h2>
               <p className="muted">
-                Browse open student requests that match subjects you teach. Messaging limits follow
-                your current plan — free accounts can still reply within existing rules.
+                Browse open requests that match subjects you teach.
               </p>
               <div className="panel-actions-row">
                 <Link className="btn btn-secondary" href="/ads">
                   View student requests
                 </Link>
-              </div>
-            </section>
-
-            <section className="panel">
-              <h2>Also learning as a student?</h2>
-              <p className="muted section-lead-tight">
-                Switch to student mode to search tutors, post requests, and use student contacts —
-                your tutor profile and Teaching Profiles stay saved on this account.
-              </p>
-              <div className="panel-actions-row">
-                <SwitchProfileButton
-                  target="STUDENT"
-                  label="Switch to student mode"
-                  className="btn btn-secondary"
-                  busyLabel="Switching…"
-                />
               </div>
             </section>
 
@@ -205,44 +188,47 @@ export default async function TutorDashboardPage({
 
             <TutorDashboardShortcuts unread={inbox.unread} sp={sp} />
 
-            <div className="tutor-dashboard-stack">
-            {badgeProgress ? (
-              <div className="tutor-dashboard-timeline">
-                <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />
+            <details className="panel tutor-dashboard-more">
+              <summary>
+                <strong>More tools</strong>
+                <span className="muted"> — badges, invite, boost, recommendations</span>
+              </summary>
+              <div className="tutor-dashboard-stack" style={{ marginTop: "0.85rem" }}>
+                {badgeProgress ? (
+                  <div className="tutor-dashboard-timeline">
+                    <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />
+                  </div>
+                ) : null}
+
+                <InviteTutorShare
+                  referrerId={session.user.id}
+                  referrerName={session.user.name}
+                  compact
+                  id="invite-tutor"
+                />
+
+                {user.tutorProfile ? <ProfileBoostPanel currency={currency} /> : null}
+
+                {user.tutorProfile ? (
+                  <section className="panel" id="add-listing-cta">
+                    <h2>Reach more students</h2>
+                    <TeachingProfileDuplicateNotice message={teachingProfileDuplicate?.message} />
+                    <p className="muted">
+                      Add a Teaching Profile for each subject — students search by subject, level, and board.
+                    </p>
+                    <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#teaching-listings">
+                      Manage Teaching Profiles
+                    </Link>
+                  </section>
+                ) : null}
+
+                {user.tutorProfile && badgeProgress ? (
+                  <div id="tutor-recommendations">
+                    <TutorRecommendationForm />
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-
-            <InviteTutorShare
-              referrerId={session.user.id}
-              referrerName={session.user.name}
-              compact
-              id="invite-tutor"
-            />
-
-            {user.tutorProfile ? (
-              <ProfileBoostPanel currency={currency} />
-            ) : null}
-
-            {user.tutorProfile ? (
-              <section className="panel" id="add-listing-cta">
-                <h2>Reach more students</h2>
-                <TeachingProfileDuplicateNotice message={teachingProfileDuplicate?.message} />
-                <p className="muted">
-                  Add a Teaching Profile for each subject you offer — then boost the ones that matter
-                  most. Students search by subject, level, and board.
-                </p>
-                <Link className="btn btn-sm" href="/dashboard/tutor?tab=profile#teaching-listings">
-                  Manage Teaching Profiles
-                </Link>
-              </section>
-            ) : null}
-
-            {user.tutorProfile && badgeProgress ? (
-              <div id="tutor-recommendations">
-                <TutorRecommendationForm />
-              </div>
-            ) : null}
-            </div>
+            </details>
           </>
         ) : (
           <div className="tutor-dashboard-stack">
@@ -253,8 +239,8 @@ export default async function TutorDashboardPage({
                   <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
                   <p className="muted">
                     {profileComplete
-                      ? "Your photo, bio, and verification. Subjects are managed as Teaching Profiles below."
-                      : "Photo → about you → location → qualifications → first Teaching Profile."}
+                      ? "Your photo, bio, and verification. Subjects are Teaching Profiles below."
+                      : "Four short steps, then one Teaching Profile to go live."}
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
@@ -268,13 +254,6 @@ export default async function TutorDashboardPage({
                   ) : null}
                 </div>
               </div>
-
-              {!user.tutorProfile.active ? (
-                <div className="tutor-profile-hidden-note" role="status">
-                  <strong>Not in search yet.</strong> Complete the steps below and verify your email —
-                  then save. Eligible profiles go live automatically.
-                </div>
-              ) : null}
 
               <TutorProfileForm
                 initial={user.tutorProfile}
@@ -311,8 +290,7 @@ export default async function TutorDashboardPage({
               <section className="panel" id="teaching-listings">
                 <h2 id="teaching-listings-section">My Teaching Profiles</h2>
                 <p className="muted teaching-listings-intro">
-                  One Teaching Profile per subject. Levels, boards, and rates live inside each
-                  profile — that is how students find you in search.
+                  One block per subject. Start with subject, title, city, and rate — levels are optional.
                 </p>
                 <TutorAdsManager
                   subjects={catalogSubjects}

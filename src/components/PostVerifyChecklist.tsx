@@ -2,41 +2,28 @@ import Link from "next/link";
 import type { TutorProfileStatusView } from "@/lib/tutor-profile-status";
 
 export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusView }) {
-  const profileSteps = view.checks.filter((c) => c.required && c.key !== "email");
-
   return (
     <section className="panel post-verify-checklist" aria-labelledby="post-verify-tutor-title">
       <p className="success" role="status">
         Email confirmed — nice work.
       </p>
-      <h2 id="post-verify-tutor-title">Next: get your tutor profile live</h2>
+      <h2 id="post-verify-tutor-title">
+        {view.status === "LIVE" ? "Your profile can appear in search" : "Finish Quick setup to go live"}
+      </h2>
       <p className="muted">
-        Complete profiles appear in search for free. Tutor Pro adds ranking and unlimited enquiry
-        reveals — not basic visibility.
+        {view.status === "LIVE"
+          ? "Reply to student requests and keep your Teaching Profiles up to date."
+          : "Four short profile steps, then one Teaching Profile with a subject and rate."}
       </p>
-      <ol className="post-verify-checklist-steps">
-        <li className="is-done">
-          <span aria-hidden>✓</span> Email verified
-        </li>
-        {profileSteps.map((step) => (
-          <li key={step.key} className={step.ok ? "is-done" : "is-needed"}>
-            <span aria-hidden>{step.ok ? "✓" : "○"}</span> {step.label}
-          </li>
-        ))}
-      </ol>
       <div className="post-verify-checklist-actions">
         <Link className="btn" href="/dashboard/tutor?tab=profile#tutor-profile">
-          {view.status === "LIVE" ? "View profile editor" : "Complete my profile"}
+          {view.status === "LIVE" ? "View profile" : "Continue setup"}
         </Link>
-        {view.status === "LIVE" && view.cta ? (
-          <Link className="btn btn-secondary" href={view.cta.href}>
-            View public listing
-          </Link>
-        ) : (
+        {view.status === "LIVE" ? (
           <Link className="btn btn-secondary" href="/ads">
-            Browse student requests
+            Student requests
           </Link>
-        )}
+        ) : null}
       </div>
     </section>
   );

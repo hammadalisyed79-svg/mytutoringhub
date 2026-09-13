@@ -20,7 +20,6 @@ export function TutorProfileStatusCard({
 
   const required = view.checks.filter((c) => c.required);
   const needed = required.filter((c) => !c.ok);
-  const done = required.filter((c) => c.ok);
 
   return (
     <section
@@ -68,22 +67,6 @@ export function TutorProfileStatusCard({
                 {needed.map((c) => (
                   <li key={c.key} className="is-needed">
                     <span className="tutor-profile-check-mark" aria-hidden />
-                    <span>{c.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {done.length > 0 ? (
-            <div className="tutor-profile-status-group">
-              <p className="tutor-profile-status-group-label">Done</p>
-              <ul className="tutor-profile-status-checks is-done-row">
-                {done.map((c) => (
-                  <li key={c.key} className="is-done">
-                    <span className="tutor-profile-check-mark" aria-hidden>
-                      ✓
-                    </span>
                     <span>{c.label}</span>
                   </li>
                 ))}
