@@ -86,6 +86,7 @@ export function TutorProfileExtraStep({
 }) {
   const router = useRouter();
   const meta = EXTRA_META[blockId];
+  const blockMeta = TUTOR_WORKSPACE_BLOCKS.find((b) => b.id === blockId);
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
   const languageCatalog = useMemo(
     () => tutorLanguageOptions(initial.country || ""),
@@ -183,7 +184,7 @@ export function TutorProfileExtraStep({
   return (
     <div className="tutor-workspace-block-panel stack-form">
       <header className="tutor-workspace-block-intro">
-        <p className="eyebrow">Optional · Block {blockId === "details" ? 3 : blockId === "schedule" ? 4 : blockId === "contact" ? 5 : 6} of 6</p>
+        <p className="eyebrow">{blockMeta?.optional ? "Optional" : "Stage"} · {blockMeta?.number}/6</p>
         <h3>{meta.title}</h3>
         <p className="muted">{meta.hint}</p>
       </header>

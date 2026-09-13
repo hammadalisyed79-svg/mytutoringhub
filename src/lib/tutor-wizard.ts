@@ -39,6 +39,7 @@ export const TUTOR_WORKSPACE_BLOCKS: {
   id: TutorWorkspaceBlockId;
   number: number;
   title: string;
+  shortTitle: string;
   hint: string;
   optional: boolean;
 }[] = [
@@ -46,34 +47,39 @@ export const TUTOR_WORKSPACE_BLOCKS: {
     id: "setup",
     number: 1,
     title: "Tutor profile",
-    hint: "Photo, about you, location, qualifications — 5 steps",
+    shortTitle: "Profile",
+    hint: "Photo, about you, location, qualifications",
     optional: false,
   },
   {
     id: "subjects",
     number: 2,
     title: "Teaching Profiles",
-    hint: "Add one or more subjects to appear in search",
+    shortTitle: "Subjects",
+    hint: "Subjects you teach in search",
     optional: false,
   },
   {
     id: "details",
     number: 3,
     title: "Teaching details",
-    hint: "Expertise, levels, languages, experience",
+    shortTitle: "Details",
+    hint: "Expertise, levels, languages",
     optional: true,
   },
   {
     id: "schedule",
     number: 4,
     title: "Schedule",
-    hint: "Weekly availability and free first lesson",
+    shortTitle: "Schedule",
+    hint: "Weekly availability",
     optional: true,
   },
   {
     id: "contact",
     number: 5,
     title: "Contact & video",
+    shortTitle: "Contact",
     hint: "Private phone and intro video",
     optional: true,
   },
@@ -81,7 +87,8 @@ export const TUTOR_WORKSPACE_BLOCKS: {
     id: "verify",
     number: 6,
     title: "ID verification",
-    hint: "Optional trust badge — not required to go live",
+    shortTitle: "Verify",
+    hint: "Optional trust badge",
     optional: true,
   },
 ];

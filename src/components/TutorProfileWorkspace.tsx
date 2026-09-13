@@ -96,14 +96,14 @@ export function TutorProfileWorkspace({
           name: displayName,
           subjectProfiles: initial.subjectProfiles as never,
         },
-        {
-          verified: initial.verified,
-        },
+        { verified: initial.verified },
       ),
     [initial, displayName],
   );
 
   const blockIndex = TUTOR_WORKSPACE_BLOCK_IDS.indexOf(block);
+  const activeBlock = TUTOR_WORKSPACE_BLOCKS[blockIndex] || TUTOR_WORKSPACE_BLOCKS[0];
+  const journeyPct = Math.round(((blockIndex + 1) / TUTOR_WORKSPACE_BLOCKS.length) * 100);
 
   function goTo(id: TutorWorkspaceBlockId) {
     setBlock(id);
@@ -114,34 +114,45 @@ export function TutorProfileWorkspace({
 
   function goNextFrom(id: TutorWorkspaceBlockId) {
     const i = TUTOR_WORKSPACE_BLOCK_IDS.indexOf(id);
-    const next = TUTOR_WORKSPACE_BLOCK_IDS[Math.min(i + 1, TUTOR_WORKSPACE_BLOCK_IDS.length - 1)];
-    goTo(next);
+    goTo(TUTOR_WORKSPACE_BLOCK_IDS[Math.min(i + 1, TUTOR_WORKSPACE_BLOCK_IDS.length - 1)]);
   }
 
   function goBackFrom(id: TutorWorkspaceBlockId) {
     const i = TUTOR_WORKSPACE_BLOCK_IDS.indexOf(id);
-    const prev = TUTOR_WORKSPACE_BLOCK_IDS[Math.max(i - 1, 0)];
-    goTo(prev);
+    goTo(TUTOR_WORKSPACE_BLOCK_IDS[Math.max(i - 1, 0)]);
   }
 
   return (
-    <section className="panel tutor-profile-workspace" id="tutor-profile">
-      <div className="tutor-profile-workspace-head">
+    <section className="panel tutor-profile-workspace is-luxe" id="tutor-profile">
+      <header className="tutor-profile-workspace-head">
         <div>
+          <p className="eyebrow">{profileComplete ? "Your listing" : "Welcome"}</p>
           <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
-          <p className="muted">
-            6 blocks: setup (5 steps) → Teaching Profiles → 4 optional extras.
+          <p className="muted tutor-workspace-lead">
+            {profileComplete
+              ? "Refine your presence anytime — move through each stage at your pace."
+              : "A calm path from profile to subjects. Optional polish comes after."}
           </p>
         </div>
         <div className="tutor-profile-status-pills">
           <span className={`tutor-status-pill${initial.active ? " is-live" : ""}`}>
-            {initial.active ? "Live" : "Setup"}
+            {initial.active ? "Live in search" : "In setup"}
           </span>
           {initial.verified ? <span className="badge badge-verified">Verified</span> : null}
         </div>
+      </header>
+
+      <div className="tutor-workspace-journey" aria-hidden="true">
+        <div className="tutor-workspace-journey-track">
+          <div className="tutor-workspace-journey-fill" style={{ width: `${journeyPct}%` }} />
+        </div>
+        <p className="tutor-workspace-journey-label">
+          Stage {activeBlock.number} of {TUTOR_WORKSPACE_BLOCKS.length}
+          {activeBlock.optional ? " · Optional" : ""}
+        </p>
       </div>
 
-      <nav className="tutor-workspace-blocks" aria-label="Profile blocks">
+      <nav className="tutor-workspace-blocks" aria-label="Profile stages">
         <ol className="tutor-workspace-blocks-list">
           {TUTOR_WORKSPACE_BLOCKS.map((row) => {
             const active = row.id === block;
@@ -155,17 +166,18 @@ export function TutorProfileWorkspace({
                   type="button"
                   className={`tutor-workspace-block-btn${active ? " is-active" : ""}${done ? " is-done" : ""}`}
                   aria-current={active ? "step" : undefined}
+                  aria-label={`${row.number}. ${row.title}${row.optional ? " (optional)" : ""}`}
+                  title={row.hint}
                   onClick={() => goTo(row.id)}
                 >
                   <span className="tutor-workspace-block-num" aria-hidden="true">
-                    {row.number}
+                    {done && !active ? "✓" : row.number}
                   </span>
                   <span className="tutor-workspace-block-copy">
                     <strong>
-                      {row.title}
-                      {row.optional ? <span className="tutor-workspace-optional"> Optional</span> : null}
+                      <span className="tutor-workspace-title-full">{row.title}</span>
+                      <span className="tutor-workspace-title-short">{row.shortTitle}</span>
                     </strong>
-                    <span className="muted">{row.hint}</span>
                   </span>
                 </button>
               </li>
@@ -174,94 +186,97 @@ export function TutorProfileWorkspace({
         </ol>
       </nav>
 
-      {block === "setup" ? (
-        <div className="tutor-workspace-block-panel" id="workspace-setup">
-          <p className="eyebrow">Block 1 of 6 · Setup</p>
-          <TutorProfileForm
-            initial={initial}
-            displayName={displayName}
-            subjects={subjects}
-            extraLevels={extraLevels}
-            emailVerified={emailVerified}
-            listingActive={initial.active}
-            verified={initial.verified}
-            currency={currency}
-            startStep={setupStartStep}
-            hasValidTeachingProfile={hasValidTeachingProfile}
-            hasAnyTeachingProfile={hasAnyTeachingProfile}
-            onSetupComplete={() => goTo("subjects")}
-          />
-        </div>
-      ) : null}
+      <div className="tutor-workspace-stage">
+        {block === "setup" ? (
+          <div className="tutor-workspace-block-panel" id="workspace-setup">
+            <TutorProfileForm
+              initial={initial}
+              displayName={displayName}
+              subjects={subjects}
+              extraLevels={extraLevels}
+              emailVerified={emailVerified}
+              listingActive={initial.active}
+              verified={initial.verified}
+              currency={currency}
+              startStep={setupStartStep}
+              hasValidTeachingProfile={hasValidTeachingProfile}
+              hasAnyTeachingProfile={hasAnyTeachingProfile}
+              onSetupComplete={() => goTo("subjects")}
+            />
+          </div>
+        ) : null}
 
-      {block === "subjects" ? (
-        <div className="tutor-workspace-block-panel" id="teaching-listings">
-          <header className="tutor-workspace-block-intro">
-            <p className="eyebrow">Block 2 of 6</p>
-            <h3 id="teaching-listings-section">Teaching Profiles</h3>
-            <p className="muted">One subject per profile — students find you by subject and rate.</p>
-          </header>
-          <TutorAdsManager
-            subjects={subjects}
-            extraLevels={extraLevels}
-            currency={currency}
-            paidCheckoutLive={paidCheckoutLive}
-          />
-          <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky">
-            <button type="button" className="btn btn-secondary" onClick={() => goBackFrom("subjects")}>
-              Back
-            </button>
-            <div className="profile-wizard-actions-right">
-              <button type="button" className="btn" onClick={() => goNextFrom("subjects")}>
-                {hasAnyTeachingProfile ? "Next: optional extras" : "Skip to optional extras"}
+        {block === "subjects" ? (
+          <div className="tutor-workspace-block-panel" id="teaching-listings">
+            <header className="tutor-workspace-block-intro">
+              <h3 id="teaching-listings-section">Teaching Profiles</h3>
+              <p className="muted">One subject each — students find you by subject and rate.</p>
+            </header>
+            <TutorAdsManager
+              subjects={subjects}
+              extraLevels={extraLevels}
+              currency={currency}
+              paidCheckoutLive={paidCheckoutLive}
+            />
+            <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
+              <button type="button" className="btn btn-secondary" onClick={() => goBackFrom("subjects")}>
+                Back
               </button>
+              <div className="profile-wizard-actions-right">
+                <button type="button" className="btn" onClick={() => goNextFrom("subjects")}>
+                  {hasAnyTeachingProfile ? "Continue" : "Skip for now"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {block === "details" || block === "schedule" || block === "contact" || block === "verify" ? (
-        <TutorProfileExtraStep
-          blockId={block as TutorWizardExtraId}
-          initial={{
-            name: displayName,
-            headline: initial.headline,
-            subjects: initial.subjects,
-            expertise: initial.expertise,
-            levels: initial.levels,
-            languages: initial.languages,
-            location: initial.location,
-            country: initial.country,
-            experienceYears: initial.experienceYears,
-            teachingMethod: initial.teachingMethod,
-            availability: initial.availability,
-            introVideoUrl: initial.introVideoUrl,
-            phone: initial.phone,
-            offersFreeTrial: initial.offersFreeTrial,
-            online: initial.online,
-            inPerson: initial.inPerson,
-          }}
-          verified={initial.verified}
-          extraLevels={extraLevels}
-          onBack={() => goBackFrom(block)}
-          onSkip={() => goNextFrom(block)}
-          onSavedNext={() => {
-            if (block === "verify") {
-              goTo("subjects");
-              return;
-            }
-            goNextFrom(block);
-          }}
-        />
-      ) : null}
+        {block === "details" ||
+        block === "schedule" ||
+        block === "contact" ||
+        block === "verify" ? (
+          <TutorProfileExtraStep
+            blockId={block as TutorWizardExtraId}
+            initial={{
+              name: displayName,
+              headline: initial.headline,
+              subjects: initial.subjects,
+              expertise: initial.expertise,
+              levels: initial.levels,
+              languages: initial.languages,
+              location: initial.location,
+              country: initial.country,
+              experienceYears: initial.experienceYears,
+              teachingMethod: initial.teachingMethod,
+              availability: initial.availability,
+              introVideoUrl: initial.introVideoUrl,
+              phone: initial.phone,
+              offersFreeTrial: initial.offersFreeTrial,
+              online: initial.online,
+              inPerson: initial.inPerson,
+            }}
+            verified={initial.verified}
+            extraLevels={extraLevels}
+            onBack={() => goBackFrom(block)}
+            onSkip={() => goNextFrom(block)}
+            onSavedNext={() => {
+              if (block === "verify") {
+                goTo("subjects");
+                return;
+              }
+              goNextFrom(block);
+            }}
+          />
+        ) : null}
 
-      {block === "subjects" && initial.active ? (
-        <ProfileImprovePanel
-          listingLive={initial.active}
-          verified={initial.verified}
-          trustBadge={trustBadge}
-        />
-      ) : null}
+        {block === "subjects" && initial.active ? (
+          <ProfileImprovePanel
+            listingLive={initial.active}
+            verified={initial.verified}
+            trustBadge={trustBadge}
+          />
+        ) : null}
+      </div>
     </section>
   );
 }

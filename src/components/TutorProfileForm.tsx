@@ -299,9 +299,6 @@ export function TutorProfileForm({
     ],
   );
 
-  const requiredDone = completion.requiredDone + (emailVerified ? 1 : 0);
-  const requiredTotal = completion.requiredTotal + 1;
-  const progress = Math.round((requiredDone / requiredTotal) * 100);
   const currentStep = steps[Math.min(step, steps.length - 1)];
 
   function validateStep(stepId: TutorWizardStepId): string | null {
@@ -450,22 +447,6 @@ export function TutorProfileForm({
     const saved = await saveDraft(currentStep.id);
     if (!saved) return;
     setStep((s) => Math.min(s + 1, steps.length - 1));
-  }
-
-  async function saveCurrentStep() {
-    setError("");
-    setDraftNote("");
-    setMsg("");
-    if (currentStep.id === "finish") {
-      await save();
-      return;
-    }
-    const problem = validateStep(currentStep.id);
-    if (problem) {
-      setError(problem);
-      return;
-    }
-    await saveDraft(currentStep.id);
   }
 
   function goBack() {
@@ -642,8 +623,6 @@ export function TutorProfileForm({
 
   const show = (id: TutorWizardStepId) => currentStep.id === id;
 
-  const fieldProgressPct = progress;
-
   const requiredChecklist = useMemo(() => {
     const rows = [
       ...completion.checks.map((row) => ({
@@ -663,9 +642,30 @@ export function TutorProfileForm({
   }, [completion.checks, emailVerified]);
 
   const stillNeeded = useMemo(
-    () => requiredChecklist.filter((row) => !row.ok),
+    () =>
+      requiredChecklist.filter(
+        (row) =>
+          !row.ok &&
+          row.key !== "teachingProfile" &&
+          row.key !== "listing" &&
+          row.key !== "active" &&
+          !/teaching profile|active in search|subject profile/i.test(row.label),
+      ),
     [requiredChecklist],
   );
+
+  const setupProgressPct = useMemo(() => {
+    const setupKeys = requiredChecklist.filter(
+      (row) =>
+        row.key !== "teachingProfile" &&
+        row.key !== "listing" &&
+        row.key !== "active" &&
+        !/teaching profile|active in search|subject profile/i.test(row.label),
+    );
+    if (setupKeys.length === 0) return 100;
+    const done = setupKeys.filter((row) => row.ok).length;
+    return Math.round((done / setupKeys.length) * 100);
+  }, [requiredChecklist]);
 
   const stepNav = (
     <nav className="profile-wizard-steps" aria-label="Profile steps">
@@ -726,39 +726,35 @@ export function TutorProfileForm({
     ) : null;
 
   const wizardChrome = (
-    <div className="profile-wizard-chrome">
+    <div className="profile-wizard-chrome profile-wizard-chrome--luxe">
       <div className="profile-wizard-meta">
         <p className="guided-search-step">
           Step {step + 1} of {steps.length}
         </p>
-        {stillNeeded.length > 0 ? (
-          <p className="profile-wizard-fields muted" aria-live="polite">
-            {stillNeeded.length} still needed · {fieldProgressPct}%
-          </p>
-        ) : (
-          <p className="profile-wizard-fields muted" aria-live="polite">
-            Ready · {fieldProgressPct}%
-          </p>
-        )}
+        <p className="profile-wizard-fields muted" aria-live="polite">
+          {setupProgressPct}% complete
+        </p>
       </div>
       <div
         className="guided-search-progress"
         role="progressbar"
-        aria-valuenow={fieldProgressPct}
+        aria-valuenow={setupProgressPct}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Profile completion"
+        aria-label="Setup progress"
       >
-        <div className="guided-search-progress-bar" style={{ width: `${fieldProgressPct}%` }} />
+        <div className="guided-search-progress-bar" style={{ width: `${setupProgressPct}%` }} />
       </div>
       {stepNav}
-      <h3 className="guided-search-title">{currentStep.title}</h3>
-      <p className="muted guided-search-hint">{currentStep.hint}</p>
+      <div className="profile-wizard-heading">
+        <h3 className="guided-search-title">{currentStep.title}</h3>
+        <p className="muted guided-search-hint">{currentStep.hint}</p>
+      </div>
     </div>
   );
 
   const wizardActions = (
-    <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky">
+    <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
       <button
         type="button"
         className="btn btn-secondary"
@@ -780,24 +776,14 @@ export function TutorProfileForm({
             {saving ? "Saving…" : "Save & continue"}
           </button>
         ) : (
-          <>
-            <button
-              className="btn btn-secondary"
-              type="button"
-              disabled={draftSaving || uploading || saving}
-              onClick={() => void saveCurrentStep()}
-            >
-              {draftSaving ? "Saving…" : "Save step"}
-            </button>
-            <button
-              className="btn"
-              type="button"
-              disabled={draftSaving || uploading || saving}
-              onClick={() => void goNext()}
-            >
-              {draftSaving ? "Saving…" : "Save & next"}
-            </button>
-          </>
+          <button
+            className="btn"
+            type="button"
+            disabled={draftSaving || uploading || saving}
+            onClick={() => void goNext()}
+          >
+            {draftSaving ? "Saving…" : "Continue"}
+          </button>
         )}
       </div>
     </div>
@@ -818,28 +804,22 @@ export function TutorProfileForm({
       {wizardChrome}
 
       {currentStep.id === "finish" ? (
-        <div className="profile-complete profile-complete--compact">
+        <div className="profile-complete profile-complete--luxe">
           {stillNeeded.length > 0 ? (
             <>
-              <div className="profile-complete-head">
-                <strong>Almost there · {stillNeeded.length} left</strong>
-                <span className="profile-complete-pct">{progress}%</span>
-              </div>
+              <p className="eyebrow">Almost ready</p>
+              <h4>Finish these setup items</h4>
               {stillNeededList}
             </>
           ) : (
-            <div className="profile-complete-head">
-              <strong>Ready to save</strong>
-              <span className="profile-complete-pct">{progress}%</span>
-            </div>
+            <>
+              <p className="eyebrow">Ready</p>
+              <h4>Your tutor profile is set</h4>
+              <p className="muted">
+                Save to lock this in, then add the subjects you teach.
+              </p>
+            </>
           )}
-          <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
-            {hasValidTeachingProfile
-              ? "Setup complete — continue to Teaching Profiles (block 2)."
-              : manageProfilesOnly
-                ? "Save setup, then activate a subject in Teaching Profiles."
-                : "Save setup, then add a Teaching Profile in the next block."}
-          </p>
         </div>
       ) : null}
 
