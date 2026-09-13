@@ -147,7 +147,7 @@ export function TutorProfileForm({
   emailVerified = true,
   listingActive = false,
   startStep,
-  currency = "PKR",
+  currency = "USD",
   hasValidTeachingProfile = false,
   hasAnyTeachingProfile = false,
   onSetupComplete,

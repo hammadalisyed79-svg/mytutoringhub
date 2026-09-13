@@ -229,14 +229,15 @@ assert.match(aiSupport, /Science and Computer Science/);
 assert.doesNotMatch(aiSupport, /Extra Active/);
 assert.doesNotMatch(aiSupport, /Tutor Basic/i);
 
-const supportLive = buildAiSupportSystemPrompt({ paidCheckoutLive: true });
-const supportSoon = buildAiSupportSystemPrompt({ paidCheckoutLive: false });
+const supportLive = buildAiSupportSystemPrompt({ paidCheckoutLive: true, currency: "EUR" });
+const supportSoon = buildAiSupportSystemPrompt({ paidCheckoutLive: false, currency: "USD" });
 assert.match(supportLive, /Safepay checkout is LIVE/);
 assert.match(supportSoon, /may still be launching/);
+assert.match(supportLive, /Always quote money in EUR/);
 assert.match(supportLive, new RegExp(`${BUSINESS.studentFreeContactsPerMonth} new tutor contacts`));
 assert.match(supportLive, new RegExp(`${BUSINESS.studentPassPaperDownloadsPerMonth} past paper`));
 assert.match(supportLive, new RegExp(`up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles`));
-assert.match(supportLive, new RegExp(`PKR ${DEFAULT_PAST_PAPER_FEE_PKR}`));
+assert.doesNotMatch(supportLive, /list PKR 1999|list PKR 3499|one-time PKR 2999/i);
 assert.doesNotMatch(
   supportLive,
   /unlimited past papers with Student Pass|faster responses with Student Pass/i,

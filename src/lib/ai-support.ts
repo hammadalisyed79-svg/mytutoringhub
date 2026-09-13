@@ -13,6 +13,7 @@ import { BUSINESS, NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
 import { ANNUAL_SAVE_FOOTNOTE, DEFAULT_PLANS } from "@/lib/plans";
 import { DEFAULT_PAST_PAPER_FEE_PKR } from "@/lib/past-papers";
 import { PAYMENTS_SUPPORT_EMAIL } from "@/lib/payments-status";
+import { formatPaperDownloadFee, formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 
 export const AI_SUPPORT_KIND = "support";
 export const AI_STUDY_KIND = "study";
@@ -24,15 +25,17 @@ function planListPricePkr(id: string) {
   return DEFAULT_PLANS.find((p) => p.id === id)?.pricePkr ?? null;
 }
 
-const PRICE_PASS = planListPricePkr("STUDENT_PASS");
-const PRICE_PRO = planListPricePkr("STUDENT_PRO");
-const PRICE_TUTOR_PRO = planListPricePkr("TUTOR_BASIC");
-const PRICE_BOOST = planListPricePkr("AD_BOOST");
-const PRICE_VERIFY = planListPricePkr("VERIFIED_TUTOR");
+const PRICE_PASS = planListPricePkr("STUDENT_PASS") ?? 1999;
+const PRICE_PRO = planListPricePkr("STUDENT_PRO") ?? 3499;
+const PRICE_TUTOR_PRO = planListPricePkr("TUTOR_BASIC") ?? 1499;
+const PRICE_BOOST = planListPricePkr("AD_BOOST") ?? 999;
+const PRICE_VERIFY = planListPricePkr("VERIFIED_TUTOR") ?? 2999;
 
 export type AiSupportPromptOptions = {
   /** True when Safepay production checkout is live. */
   paidCheckoutLive: boolean;
+  /** Visitor display currency — never force PKR on non-PK users. */
+  currency?: CurrencyCode;
 };
 
 /**
@@ -40,8 +43,16 @@ export type AiSupportPromptOptions = {
  * and locked commercial enforcement (plan-limits, subject-profile-entitlements).
  */
 export function buildAiSupportSystemPrompt(opts: AiSupportPromptOptions) {
+  const currency = opts.currency || "USD";
+  const passPrice = formatPlanPrice(PRICE_PASS, currency);
+  const proPrice = formatPlanPrice(PRICE_PRO, currency);
+  const tutorProPrice = formatPlanPrice(PRICE_TUTOR_PRO, currency);
+  const boostPrice = formatPlanPrice(PRICE_BOOST, currency, "once");
+  const verifyPrice = formatPlanPrice(PRICE_VERIFY, currency, "once");
+  const paperFee = formatPaperDownloadFee(DEFAULT_PAST_PAPER_FEE_PKR, currency);
+
   const checkoutLine = opts.paidCheckoutLive
-    ? `Safepay checkout is LIVE for platform SKUs (Student Pass/Pro, Tutor Pro, Listing Boost, Priority Verification Review, and single past-paper purchases). Prices display in the visitor’s currency. Lesson fees are NEVER processed through Safepay.`
+    ? `Safepay checkout is LIVE for platform SKUs (Student Pass/Pro, Tutor Pro, Listing Boost, Priority Verification Review, and single past-paper purchases). Prices display in the visitor’s currency (${currency}). Lesson fees are NEVER processed through Safepay.`
     : `Safepay card checkout may still be launching. Complimentary Tutor Pro (Launch offer) and free Teaching Profiles work without payment. Paid plans can be requested/activated via ${PAYMENTS_SUPPORT_EMAIL} or the in-app activation flow on /pricing. Lesson fees are NEVER processed through Safepay.`;
 
   return `You are the My Tutoring Hub Support Assistant — a friendly, accurate help bot for students and tutors.
@@ -54,13 +65,13 @@ Your job: answer questions about how the website works — accounts, plans, mess
 - My Tutoring Hub is a tutoring marketplace: students find tutors; tutors list Teaching Profiles; lesson fees stay between them.
 - ${NO_LESSON_COMMISSION_LINE}
 - Search (/search), join, browse profiles, and browse past papers are free.
-- Rates can display in the visitor’s local currency.
+- Always quote money in ${currency} for this visitor. Catalogue amounts are stored in PKR and converted for display — do not force PKR unless the visitor currency is PKR.
 - Science and Computer Science are different subjects — never treat them as the same match.
 
 ### Students
 - Free: ${STUDENT_FREE_CONTACTS_LINE} Replies inside existing threads do not use a new contact.
-- Student Pass (list PKR ${PRICE_PASS}/mo; annual ~20% off): unlimited new tutor contacts, post “need a tutor” request ads, ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads/month.
-- Student Pro (list PKR ${PRICE_PRO}/mo; annual ~20% off): everything in Pass + unlimited eligible past paper downloads + AI study assistant (/assistant).
+- Student Pass (${passPrice}; annual ~20% off): unlimited new tutor contacts, post “need a tutor” request ads, ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads/month.
+- Student Pro (${proPrice}; annual ~20% off): everything in Pass + unlimited eligible past paper downloads + AI study assistant (/assistant).
 - ${STUDENT_PASS_PAPERS_LINE}
 - ${STUDENT_REQUESTS_LINE} Posting requires Student Pass or Pro (/ads/new).
 - Exam countdown (/study/countdown) and study progress are free browser tools (not cloud-synced).
@@ -70,17 +81,17 @@ Your job: answer questions about how the website works — accounts, plans, mess
 - ${TUTOR_FREE_LISTING_LINE}
 - Free tutors: ${BUSINESS.tutorFreeActiveListings} active Teaching Profile; ${BUSINESS.tutorFreeEnquiryRevealsPerMonth} enquiry reveals/month when messaging students first; can receive & reply to inbound student messages; keep 100% of lesson fees.
 - ${TUTOR_PRO_LISTING_LINE}
-- Tutor Pro list price PKR ${PRICE_TUTOR_PRO}/mo (annual ~20% off). Internal plan id may be TUTOR_BASIC — always call it “Tutor Pro” to users.
+- Tutor Pro list price ${tutorProPrice} (annual ~20% off). Internal plan id may be TUTOR_BASIC — always call it “Tutor Pro” to users.
 - ${TUTOR_PRO_LAUNCH_OFFER_LINE}
 - Teaching Profile = one canonical subject listing (Maths, Physics, …) with boards/levels/syllabus; photo, verification, and reviews stay on the master profile. Students see separate search cards per Teaching Profile.
-- Listing Boost (PKR ${PRICE_BOOST} for 30 days; 365-day option ~20% off vs twelve 30-day buys): optional visibility lift on ONE Teaching Profile. Does NOT add Teaching Profile capacity. Buy from the tutor dashboard Teaching Profile, not as a capacity upgrade.
-- ${IDENTITY_VERIFIED_LINE} Priority Verification Review is a one-time PKR ${PRICE_VERIFY} queue jump — payment never auto-grants the badge.
+- Listing Boost (${boostPrice} for 30 days; 365-day option ~20% off vs twelve 30-day buys): optional visibility lift on ONE Teaching Profile. Does NOT add Teaching Profile capacity. Buy from the tutor dashboard Teaching Profile, not as a capacity upgrade.
+- ${IDENTITY_VERIFIED_LINE} Priority Verification Review is a one-time ${verifyPrice} queue jump — payment never auto-grants the badge.
 - Tutor analytics/dashboard insights are available to listed tutors; do not claim analytics are Tutor-Pro-exclusive.
 - Existing holders of legacy capacity add-ons keep entitlements, but those products are NOT sold to new buyers. Prefer Tutor Pro for more live profiles.
 
 ### Past papers
 - ${PAST_PAPERS_ENTITLEMENT_LINE}
-- Single-paper purchase default fee PKR ${DEFAULT_PAST_PAPER_FEE_PKR} when offered (shown in local currency). Guests can buy without an account; Pass/Pro included downloads require an active plan after sign-in.
+- Single-paper purchase default about ${paperFee} when offered (shown in local currency). Guests can buy without an account; Pass/Pro included downloads require an active plan after sign-in.
 
 ### Payments & renewals
 - ${checkoutLine}
@@ -116,8 +127,11 @@ Concise, warm, step-by-step. Short paragraphs or bullets. Prefer paths like /pri
 Launch offer end date when relevant: ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}.`;
 }
 
-/** @deprecated Prefer buildAiSupportSystemPrompt({ paidCheckoutLive }) for live accuracy. */
-export const AI_SUPPORT_SYSTEM = buildAiSupportSystemPrompt({ paidCheckoutLive: true });
+/** @deprecated Prefer buildAiSupportSystemPrompt({ paidCheckoutLive, currency }) for live accuracy. */
+export const AI_SUPPORT_SYSTEM = buildAiSupportSystemPrompt({
+  paidCheckoutLive: true,
+  currency: "USD",
+});
 
 export const AI_SUPPORT_WELCOME =
   "Hi! I can help with Student Pass/Pro, Tutor Pro, messaging limits, Teaching Profiles, past papers, verification, and Safepay billing. What do you need?";

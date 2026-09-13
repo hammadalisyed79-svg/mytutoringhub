@@ -51,7 +51,7 @@ import { PageConversion } from "@/components/PageConversion";
 export const metadata = pageMetadata({
   title: "Past Papers – GCSE, A-Level, IGCSE & IB",
   description:
-    "Browse past papers free. Download with Student Pass (10/month), Student Pro (unlimited), or pay per paper (default PKR 100).",
+    "Browse past papers free. Download with Student Pass (10/month), Student Pro (unlimited), or pay per paper when offered.",
   path: "/past-papers",
 });
 
@@ -271,9 +271,9 @@ export default async function PastPapersPage({
                 paperId: sp.key || undefined,
                 subject: subject || undefined,
                 board: board || undefined,
-                actual_paid_value: feePkr,
-                value: feePkr,
-                currency: "PKR",
+                actual_paid_value: feePkr === 0 ? 0 : undefined,
+                value: feePkr === 0 ? 0 : undefined,
+                currency,
                 transaction_id: sp.token || sp.key || "paper",
                 payment_source: "safepay",
               }}

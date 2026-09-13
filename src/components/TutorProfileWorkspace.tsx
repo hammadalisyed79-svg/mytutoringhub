@@ -55,7 +55,7 @@ export function TutorProfileWorkspace({
   extraLevels = [],
   emailVerified = true,
   trustBadge = "NEW",
-  currency = "PKR",
+  currency = "USD",
   paidCheckoutLive = true,
   verifyRequested = false,
   setupComplete,

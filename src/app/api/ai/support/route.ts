@@ -16,6 +16,7 @@ import {
 } from "@/lib/ai-support";
 import { getSiteSettings } from "@/lib/site-settings";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
 import type { Role } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -76,7 +77,10 @@ export async function POST(req: Request) {
     userId: session.user.id,
     kind: AI_SUPPORT_KIND,
     message,
-    systemPrompt: buildAiSupportSystemPrompt({ paidCheckoutLive: isPaidCheckoutLive() }),
+    systemPrompt: buildAiSupportSystemPrompt({
+      paidCheckoutLive: isPaidCheckoutLive(),
+      currency: await getVisitorCurrency(),
+    }),
     rateLimit: AI_SUPPORT_RATE_LIMIT,
   });
 

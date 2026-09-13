@@ -44,7 +44,7 @@ const schema = z
     subjects: z.string().trim().max(2000).optional(),
     hourlyRate: z
       .number()
-      .min(500, "Hourly rate must be at least 500 PKR")
+      .min(500, "Hourly rate is below the platform minimum")
       .max(50000, "Hourly rate is too high")
       .optional(),
     firstTeachingProfile: z

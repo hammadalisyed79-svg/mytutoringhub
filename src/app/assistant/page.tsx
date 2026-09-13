@@ -47,10 +47,8 @@ export default async function AssistantPage() {
   if (!(await canUseStudyAssistant(session.user.id, session.user.role as Role))) {
     const currency = await getVisitorCurrency();
     const pro = await getLivePlan("STUDENT_PRO");
-    const proMonthly = pro ? formatPlanPrice(pro.listPricePkr, currency) : "PKR 3,499/mo";
-    const proAnnual = pro?.annualPricePkr
-      ? formatPlanPrice(pro.annualPricePkr, currency, "year")
-      : "PKR 33,590/yr";
+    const proMonthly = formatPlanPrice(pro?.listPricePkr ?? 3499, currency);
+    const proAnnual = formatPlanPrice(pro?.annualPricePkr ?? 33590, currency, "year");
     return (
       <div className="page">
         <div className="container narrow-prose">

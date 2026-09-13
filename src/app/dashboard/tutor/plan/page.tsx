@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { PlanBanner } from "@/components/PlanBanner";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
 import { LaunchOfferBlock } from "@/components/LaunchOfferBlock";
@@ -19,9 +20,17 @@ export default async function TutorPlanPage() {
   if (session.user.role === "STUDENT") redirect("/dashboard/student/plan");
   if (session.user.role === "ADMIN") redirect("/admin");
 
+  const profileCountry = await prisma.tutorProfile
+    .findUnique({
+      where: { userId: session.user.id },
+      select: { country: true },
+    })
+    .then((p) => p?.country)
+    .catch(() => null);
+
   const [summary, currency, tutorProPlan] = await Promise.all([
     getPlanDashboardSummary(session.user.id, session.user.role as Role),
-    getVisitorCurrency(),
+    getVisitorCurrency({ preferCountryCode: profileCountry }),
     getLivePlan("TUTOR_BASIC"),
   ]);
   const paidCheckoutLive = isPaidCheckoutLive();

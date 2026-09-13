@@ -17,6 +17,7 @@ import {
   hourlyRateInputValue,
   minHourlyRateInput,
   formatMoney,
+  formatPlanPrice,
   type CurrencyCode,
 } from "@/lib/currency";
 import { scoreListingQuality } from "@/lib/listing-quality";
@@ -356,7 +357,7 @@ function EditTeachingProfileForm({
 export function TutorAdsManager({
   subjects,
   extraLevels = [],
-  currency = "PKR",
+  currency = "USD",
   paidCheckoutLive = true,
 }: {
   subjects: string[];
@@ -1100,7 +1101,11 @@ export function TutorAdsManager({
                     plan="AD_BOOST"
                     planLabel="Listing Boost"
                     currency={currency}
-                    label={boosted ? "Extend 30-Day Listing Boost · PKR 999" : "30-Day Listing Boost · One-time"}
+                    label={
+                      boosted
+                        ? `Extend 30-Day Listing Boost · ${formatPlanPrice(999, currency, "once")}`
+                        : `30-Day Listing Boost · ${formatPlanPrice(999, currency, "once")}`
+                    }
                     featured
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}

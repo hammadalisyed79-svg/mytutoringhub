@@ -56,10 +56,8 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
   const currency = await getVisitorCurrency();
   const paidCheckoutLive = isPaidCheckoutLive();
   const pass = await getLivePlan("STUDENT_PASS");
-  const passMonthly = pass ? formatPlanPrice(pass.listPricePkr, currency) : "PKR 1,999/mo";
-  const passAnnual = pass?.annualPricePkr
-    ? formatPlanPrice(pass.annualPricePkr, currency, "year")
-    : "PKR 19,190/yr";
+  const passMonthly = formatPlanPrice(pass?.listPricePkr ?? 1999, currency);
+  const passAnnual = formatPlanPrice(pass?.annualPricePkr ?? 19190, currency, "year");
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -72,8 +70,9 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
         <h1 className="page-title">Post a tutor request</h1>
         <p className="muted">
           Describe the subject, level, and city. Tutors can reply within their enquiry limits. An
-          active Student Pass is required to post. Budgets are entered in PKR and shown in{" "}
-          <strong>{currency}</strong> on the board.
+          active Student Pass is required to post. Enter your budget in{" "}
+          <strong>{currency}</strong> — it is stored in PKR and shown in each viewer&apos;s currency
+          on the board.
         </p>
         {!allowed ? (
           <ContextualUpgradePanel

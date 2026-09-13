@@ -23,6 +23,8 @@ import {
 } from "@/lib/receipt-copy";
 import { parsePurchaseNotes, purchaseContinueCta } from "@/lib/purchase-context";
 import { safeReturnPath } from "@/lib/safe-return-url";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
+import type { CurrencyCode } from "@/lib/currency";
 
 export const metadata = { title: "Receipt" };
 
@@ -58,10 +60,17 @@ export default async function ReceiptPage({
     ? livePlan?.promoLabel || getPlan(sub.plan as never)?.promoLabel || null
     : null;
   const periodEnd = sub.currentPeriodEnd;
+  const priceMatch = parseSafepayStoredAmount(sub.stripePriceId);
+  const displayCurrency = (
+    complimentary
+      ? await getVisitorCurrency()
+      : (priceMatch.currency as CurrencyCode) || (await getVisitorCurrency())
+  ) as CurrencyCode;
   const amount = receiptAmountLabel({
     complimentary,
     stripePriceId: sub.stripePriceId,
     promoLabel,
+    currency: displayCurrency,
   });
   const lineDescription = receiptLineDescription({
     planName,
@@ -76,9 +85,7 @@ export default async function ReceiptPage({
   const orderRef = sub.stripeSubscriptionId?.startsWith("track_")
     ? sub.stripeSubscriptionId
     : sub.id;
-
-  const priceMatch = parseSafepayStoredAmount(sub.stripePriceId);
-  const currency = priceMatch.currency || "PKR";
+  const currency = (priceMatch.currency as CurrencyCode) || displayCurrency;
   const major = priceMatch.major;
   const purchase = purchaseEventForPlan(sub.plan, {
     complimentary,

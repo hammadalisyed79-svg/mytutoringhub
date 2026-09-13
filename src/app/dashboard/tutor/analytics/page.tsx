@@ -46,8 +46,6 @@ export default async function TutorAnalyticsPage() {
   if (!session?.user) redirect("/login");
   if (session.user.role !== "TUTOR") redirect("/dashboard");
 
-  const currency = await getVisitorCurrency();
-
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: session.user.id },
     include: {
@@ -58,6 +56,8 @@ export default async function TutorAnalyticsPage() {
 
   const profile = user.tutorProfile;
   if (!profile) redirect("/dashboard");
+
+  const currency = await getVisitorCurrency({ preferCountryCode: profile.country });
 
   const listed = Boolean(profile.active);
   const hasPaidPlan = hasPaidTutorPlan(user.subscriptions);

@@ -71,7 +71,7 @@ export function SubscribeButton({
       {
         plan,
         billing_period: billing || (oneTime ? "once" : "monthly"),
-        currency: currency || "PKR",
+        currency: currency || "USD",
         trigger: trigger || undefined,
         source_page: sourcePage || undefined,
       },
@@ -136,7 +136,7 @@ export function SubscribeButton({
         {
           plan: data.plan || plan,
           billing_period: data.billing || billing || "monthly",
-          currency: data.currency || currency || "PKR",
+          currency: data.currency || currency || "USD",
           payment_source: data.complimentary ? "complimentary" : "safepay",
           trigger: trigger || undefined,
           source_page: sourcePage || undefined,

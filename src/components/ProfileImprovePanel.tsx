@@ -3,26 +3,30 @@
 import Link from "next/link";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { SubscribeButton } from "@/components/SubscribeButton";
+import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 
 export function ProfileImprovePanel({
   listingLive,
   verified,
   trustBadge = "NEW",
-  currency,
+  currency = "USD",
   paidCheckoutLive = true,
-  priorityPriceLabel = "PKR 2,999",
+  priorityPriceLabel,
   showPriorityCheckout = false,
 }: {
   listingLive: boolean;
   verified: boolean;
   trustBadge?: TutorTrustBadge | string;
-  currency?: string;
+  currency?: CurrencyCode | string;
   paidCheckoutLive?: boolean;
   priorityPriceLabel?: string;
   /** When true, show inline Priority Verification purchase (pending / eligible). */
   showPriorityCheckout?: boolean;
 }) {
+  const verifyPrice =
+    priorityPriceLabel ||
+    formatPlanPrice(2999, (currency as CurrencyCode) || "USD", "once");
   return (
     <section className="profile-improve panel">
       <h3 className="profile-improve-title">Improve your profile</h3>
@@ -57,7 +61,7 @@ export function ProfileImprovePanel({
               {showPriorityCheckout ? (
                 <div className="profile-improve-priority">
                   <p className="muted" style={{ marginTop: "0.75rem", marginBottom: "0.35rem" }}>
-                    Optional: move your request into the priority review queue ({priorityPriceLabel}{" "}
+                    Optional: move your request into the priority review queue ({verifyPrice}{" "}
                     one-time). Priority Review does not guarantee approval.
                   </p>
                   <SubscribeButton

@@ -1,4 +1,4 @@
-import { formatSafepayPriceId } from "@/lib/currency";
+import { formatMoney, formatSafepayPriceId, type CurrencyCode } from "@/lib/currency";
 import { parseSafepayStoredAmount } from "@/lib/analytics-conversions";
 import { formatPromoUntil } from "@/lib/plans";
 
@@ -35,10 +35,13 @@ export function receiptAmountLabel(opts: {
   complimentary: boolean;
   stripePriceId: string | null | undefined;
   promoLabel?: string | null;
+  /** Display currency for complimentary zero amounts (visitor or charged currency). */
+  currency?: CurrencyCode;
 }): string {
   if (opts.complimentary) {
     const offer = opts.promoLabel?.trim();
-    return offer ? `PKR 0 — ${offer}` : "PKR 0 — Complimentary";
+    const zero = formatMoney(0, opts.currency || "USD");
+    return offer ? `${zero} — ${offer}` : `${zero} — Complimentary`;
   }
   return formatSafepayPriceId(opts.stripePriceId) || "Paid via Safepay";
 }

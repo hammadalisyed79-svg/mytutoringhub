@@ -12,7 +12,7 @@ import { runHubPointsMaintenance } from "@/lib/hub-points";
 import { createEmailVerificationLink } from "@/lib/email-verification";
 import { STUDENT_FREE_CONTACT_LIMIT, canPerformAction } from "@/lib/plan-limits";
 import { hasStudentMessagingPass } from "@/lib/subscription";
-import { formatHourly } from "@/lib/currency";
+import { currencyFromCountry, formatHourly, type CurrencyCode } from "@/lib/currency";
 import { publicListedTutorWhere, filterCanonicallyPublicTutors } from "@/lib/tutor-public-eligibility";
 
 export const EMAIL_SEQUENCES = {
@@ -69,12 +69,12 @@ async function fetchSuggestedTutors(limit = 3) {
 
 function tutorPickListHtml(
   tutors: Awaited<ReturnType<typeof fetchSuggestedTutors>>,
-  currency = "PKR",
+  currency: CurrencyCode = "USD",
 ) {
   return tutors
     .map((t) => {
       const subjects = (t.subjects || "").split(/[,;/|]/)[0]?.trim() || "Tutoring";
-      const rate = formatHourly(t.hourlyRate, currency as never);
+      const rate = formatHourly(t.hourlyRate, currency);
       const badge = t.verified ? " · Verified" : "";
       return `<li style="margin:0 0 14px;padding:14px 16px;background:#f6f1e8;border-radius:10px;list-style:none">
 <strong>${t.user.name}</strong>${badge}<br/>
@@ -83,6 +83,13 @@ function tutorPickListHtml(
 </li>`;
     })
     .join("");
+}
+
+function currencyForTutorPicks(
+  tutors: Awaited<ReturnType<typeof fetchSuggestedTutors>>,
+): CurrencyCode {
+  const country = tutors.find((t) => t.country?.trim())?.country;
+  return country ? currencyFromCountry(country) : "USD";
 }
 
 export async function sendPostVerifyEmail(userId: string) {
@@ -146,7 +153,7 @@ export async function sendTutorPicksEmail(userId: string) {
       subject: `${tutors.length} tutors to get you started · My Tutoring Hub`,
       html: tutorPicksEmailHtml({
         name: user.name,
-        tutorsHtml: tutorPickListHtml(tutors),
+        tutorsHtml: tutorPickListHtml(tutors, currencyForTutorPicks(tutors)),
         searchUrl: `${appUrl()}/search`,
       }),
     });

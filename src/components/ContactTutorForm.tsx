@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { ContextualUpgradePanel } from "@/components/ContextualUpgradePanel";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
+import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 
 type ContactError = {
   error?: string;
@@ -32,8 +33,8 @@ export function ContactTutorForm({
   contactUsed,
   contactLimit,
   currency,
-  priceLabel = "PKR 1,999/month",
-  annualPriceLabel = "PKR 19,190/year",
+  priceLabel,
+  annualPriceLabel,
   paidCheckoutLive = true,
 }: {
   recipientId: string;
@@ -52,6 +53,11 @@ export function ContactTutorForm({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const displayCurrency = (currency as CurrencyCode) || "USD";
+  const passMonthly =
+    priceLabel || formatPlanPrice(1999, displayCurrency);
+  const passAnnual =
+    annualPriceLabel || formatPlanPrice(19190, displayCurrency, "year");
   const returnUrl =
     typeof pathname === "string" && pathname.startsWith("/")
       ? `${pathname}#message-tutor`
@@ -172,11 +178,11 @@ export function ContactTutorForm({
           lead="Unlimited new tutor contacts so you can keep messaging."
           plan="STUDENT_PASS"
           planLabel="Student Pass"
-          priceLabel={priceLabel}
+          priceLabel={passMonthly}
           billingLabel="Billed monthly"
           annualOption={{
-            monthlyLabel: priceLabel,
-            annualLabel: annualPriceLabel,
+            monthlyLabel: passMonthly,
+            annualLabel: passAnnual,
           }}
           benefits={[
             "Unlimited tutor contacts",
@@ -186,7 +192,7 @@ export function ContactTutorForm({
           ctaLabel="Get Student Pass"
           maybeLaterHref={returnUrl || pathname || "/search"}
           maybeLaterLabel="Maybe later"
-          currency={currency}
+          currency={displayCurrency}
           paidCheckoutLive={paidCheckoutLive}
           returnUrl={returnUrl}
           trigger="contact_limit"

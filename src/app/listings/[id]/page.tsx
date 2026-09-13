@@ -250,14 +250,15 @@ export default async function SubjectListingPage({ params }: Params) {
         getLivePlan("STUDENT_PASS"),
       ])
     : [null, true, null];
-  const passMonthly =
-    studentPass && currency
-      ? formatPlanPrice(studentPass.listPricePkr, currency)
-      : "PKR 1,999/mo";
-  const passAnnual =
-    studentPass?.annualPricePkr && currency
-      ? formatPlanPrice(studentPass.annualPricePkr, currency, "year")
-      : "PKR 19,190/yr";
+  const passMonthly = formatPlanPrice(
+    studentPass?.listPricePkr ?? 1999,
+    currency,
+  );
+  const passAnnual = formatPlanPrice(
+    studentPass?.annualPricePkr ?? 19190,
+    currency,
+    "year",
+  );
   const tutorName = tutor.user.name?.trim() || "Tutor";
   const initial = tutorName.slice(0, 1).toUpperCase();
   const hourlyLabel = formatHourly(listing.rate, currency);

@@ -52,15 +52,17 @@ assert.equal(
     complimentary: true,
     stripePriceId: "promo_complimentary",
     promoLabel: "Launch offer",
+    currency: "USD",
   }),
-  "PKR 0 — Launch offer",
+  "$0.00 — Launch offer",
 );
 assert.equal(
   receiptAmountLabel({
     complimentary: true,
     stripePriceId: "promo_complimentary",
+    currency: "USD",
   }),
-  "PKR 0 — Complimentary",
+  "$0.00 — Complimentary",
 );
 assert.match(
   receiptAmountLabel({

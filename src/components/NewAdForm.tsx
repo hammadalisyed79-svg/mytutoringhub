@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatHourly, type CurrencyCode } from "@/lib/currency";
+import {
+  formatHourly,
+  formatMoney,
+  hourlyRateInputStep,
+  hourlyRateInputToPkr,
+  minHourlyRateInput,
+  pkrToCurrency,
+  type CurrencyCode,
+} from "@/lib/currency";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
 import { SuggestField } from "@/components/SuggestField";
 import { suggestSubjects } from "@/lib/search-smart";
@@ -23,7 +31,7 @@ export function NewAdForm({
   titlePlaceholder,
   levelPlaceholder,
   initial,
-  currency = "PKR",
+  currency = "USD",
 }: {
   subjects: string[];
   titlePlaceholder: string;
@@ -65,6 +73,7 @@ export function NewAdForm({
     setError("");
     fireConversionEvent("student_request_attempt", {}, `request_attempt_${Date.now()}`);
     const fd = new FormData(e.currentTarget);
+    const budgetLocal = fd.get("budget") ? Number(fd.get("budget")) : null;
     const payload = {
       title: String(fd.get("title")),
       subject: subject.trim() || String(fd.get("subject")),
@@ -73,7 +82,10 @@ export function NewAdForm({
       syllabusCode: String(fd.get("syllabusCode") || "") || null,
       location: String(fd.get("location")),
       description: String(fd.get("description")),
-      budget: fd.get("budget") ? Number(fd.get("budget")) : null,
+      budget:
+        budgetLocal != null && Number.isFinite(budgetLocal)
+          ? hourlyRateInputToPkr(budgetLocal, currency)
+          : null,
       online: fd.get("online") === "on",
       inPerson: fd.get("inPerson") === "on",
     };
@@ -172,11 +184,17 @@ export function NewAdForm({
         />
       </label>
       <label>
-        Budget per hour (PKR, optional)
-        <input name="budget" type="number" min={500} step={100} placeholder="e.g. 1500" />
+        Budget per hour ({currency}, optional)
+        <input
+          name="budget"
+          type="number"
+          min={minHourlyRateInput(currency)}
+          step={hourlyRateInputStep(currency)}
+          placeholder={`e.g. ${Math.round(pkrToCurrency(1500, currency))}`}
+        />
         <span className="field-hint">
-          Enter PKR. Example: 1500 PKR shows as {formatHourly(1500, currency)} to viewers in{" "}
-          {currency}.
+          Entered in {currency}. Example: {formatMoney(pkrToCurrency(1500, currency), currency)}
+          /hr shows as {formatHourly(1500, currency)} to viewers worldwide.
         </span>
       </label>
       <label>

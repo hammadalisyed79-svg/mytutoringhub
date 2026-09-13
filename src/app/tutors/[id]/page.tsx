@@ -273,14 +273,15 @@ export default async function TutorProfilePage({ params }: Params) {
           getLivePlan("STUDENT_PASS"),
         ])
       : [null, true, null];
-  const passMonthly =
-    studentPass && currency
-      ? formatPlanPrice(studentPass.listPricePkr, currency)
-      : "PKR 1,999/mo";
-  const passAnnual =
-    studentPass?.annualPricePkr && currency
-      ? formatPlanPrice(studentPass.annualPricePkr, currency, "year")
-      : "PKR 19,190/yr";
+  const passMonthly = formatPlanPrice(
+    studentPass?.listPricePkr ?? 1999,
+    currency,
+  );
+  const passAnnual = formatPlanPrice(
+    studentPass?.annualPricePkr ?? 19190,
+    currency,
+    "year",
+  );
   const viewer =
     canMessage && session?.user
       ? await prisma.user.findUnique({
