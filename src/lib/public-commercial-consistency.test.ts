@@ -11,6 +11,8 @@ import {
   IDENTITY_VERIFIED_LINE,
   TUTOR_FREE_LISTING_LINE,
   TUTOR_PRO_LISTING_LINE,
+  TUTOR_PRO_LAUNCH_OFFER_LINE,
+  TUTOR_PRO_LAUNCH_OFFER_UNTIL,
   studentFreeContactsPhrase,
 } from "@/lib/marketing-copy";
 import { addOnBillingFootnote, planBillingFootnote } from "@/lib/payments-status";
@@ -61,6 +63,7 @@ const publicSurfaces = [
   "lib/plans.ts",
   "lib/ai-support.ts",
   "components/PricingPlansClient.tsx",
+  "components/LaunchOfferBlock.tsx",
 ];
 
 const cliffPatterns = [
@@ -147,17 +150,53 @@ assert.doesNotMatch(pricingClient, /Extra Profile Ads(?! \(legacy\))/);
 assert.match(pricingClient, /Extra Active/);
 assert.match(pricingClient, /pricing-path/);
 assert.match(pricingClient, /For students|For tutors/);
+assert.match(pricingClient, /LaunchOfferBlock/);
+assert.match(pricingClient, /Launch offer/);
+
+const launchOffer = readSrc("components/LaunchOfferBlock.tsx");
+assert.match(launchOffer, /What you get free/);
+assert.match(launchOffer, /After /);
+assert.match(launchOffer, /Activate Tutor Pro free/);
+assert.match(launchOffer, /View plans/);
+assert.match(launchOffer, /Extra Active/);
+assert.doesNotMatch(launchOffer, /requires Tutor Pro/i);
+
+const marketing = readSrc("lib/marketing-copy.ts");
+assert.match(marketing, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
+assert.match(marketing, /30 September 2026/);
+assert.match(marketing, /Extra Active and Listing Boost are separate paid products/);
 
 const freeVsPaid = readSrc("lib/free-vs-paid.ts");
 assert.match(freeVsPaid, /legacy Extra\/Unlimited/);
 assert.match(freeVsPaid, /Extra Active/);
+assert.match(freeVsPaid, /Launch offer/);
+assert.match(freeVsPaid, /separate from the Launch offer/);
 
 // 10. Tutor Pro promo date does not alter Free Teaching Profile cap
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
 assert.equal(tutorPro.promoUntil, "2026-09-30");
 assert.ok(tutorPro.isComplimentary || tutorPro.promoEnabled);
+assert.equal(tutorPro.promoLabel, "Launch offer");
+assert.match(tutorPro.promoNote || "", /Extra Active/);
+assert.match(tutorPro.promoNote || "", /list price/i);
 assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(isSubjectProfilePromoActive(), false);
+
+// Promo gating: after promoUntil end-of-day UTC, offer is inactive
+const afterPromo = resolvePlan(
+  DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+  new Date("2026-10-01T00:00:01Z"),
+);
+assert.equal(afterPromo.isPromoActive, false);
+assert.equal(afterPromo.isComplimentary, false);
+assert.equal(afterPromo.chargePricePkr, afterPromo.listPricePkr);
+
+const stillLive = resolvePlan(
+  DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+  new Date("2026-09-30T23:59:00Z"),
+);
+assert.equal(stillLive.isPromoActive, true);
+assert.equal(stillLive.isComplimentary, true);
 
 // One-time add-on price formatting (no /mo)
 const oncePrice = formatPlanPrice(999, "PKR", "once");
@@ -204,6 +243,9 @@ assert.ok(proFaq);
 assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} live profile`));
 assert.match(proFaq!.a, /30 September 2026/);
 assert.match(proFaq!.a, /Extra Active/);
+assert.match(proFaq!.a, /Launch offer/);
+assert.match(proFaq!.a, /list price applies/);
+assert.match(proFaq!.a, /separate from the Launch offer/);
 
 // AI Support prompt stays on the same commercial truth as Help / Pricing
 const aiSupport = readSrc("lib/ai-support.ts");
@@ -211,8 +253,13 @@ assert.match(aiSupport, /STUDENT_FREE_CONTACTS_LINE/);
 assert.match(aiSupport, /STUDENT_PASS_PAPERS_LINE/);
 assert.match(aiSupport, /TUTOR_FREE_LISTING_LINE/);
 assert.match(aiSupport, /TUTOR_PRO_LISTING_LINE/);
+assert.match(aiSupport, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
 assert.match(aiSupport, /IDENTITY_VERIFIED_LINE/);
-assert.match(aiSupport, /30 September 2026/);
+assert.match(aiSupport, /Extra Active is a separate paid/);
 assert.doesNotMatch(aiSupport, /Tutor Basic/i);
+
+assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /30 September 2026/);
+assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /30 September 2026/);
+assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Extra Active and Listing Boost are separate paid products/);
 
 console.log("public-commercial-consistency.test.ts: ok");

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { formatPromoUntil, getLivePlans, getPlan } from "@/lib/plans";
+import { getLivePlans, getPlan } from "@/lib/plans";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { PaymentsComingSoonBanner } from "@/components/PaymentsComingSoonBanner";
@@ -48,8 +48,6 @@ export default async function PricingPage({
   const addOns = visible.filter(
     (p) => p.isAddOn && (PUBLIC_ADDON_PLAN_IDS as readonly string[]).includes(p.id),
   );
-  const liveOffer = allPlans.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive);
-
   const deepPlan = sp.plan ? getPlan(sp.plan) : null;
   const defaultAudience: "student" | "tutor" | undefined =
     role === "TUTOR"
@@ -117,16 +115,6 @@ export default async function PricingPage({
 
         {!paidCheckoutLive && <PaymentsComingSoonBanner />}
 
-        {liveOffer && (
-          <aside className="promo-banner">
-            <strong>{liveOffer.promoLabel || "Limited offer"}</strong>
-            <p>
-              {liveOffer.promoNote ||
-                `Tutor Pro is ${liveOffer.isComplimentary ? "complimentary" : "discounted"} until ${formatPromoUntil(liveOffer.promoEndsAt)}. Extra Active, Listing Boost, and Priority Verification remain optional paid products.`}
-            </p>
-          </aside>
-        )}
-
         <div className="checkout-trust-bar">
           {paidCheckoutLive ? (
             <>
@@ -138,7 +126,7 @@ export default async function PricingPage({
           ) : (
             <>
               <span>Free Teaching Profiles</span>
-              <span>Complimentary Tutor Pro</span>
+              <span>Launch offer on Tutor Pro</span>
               <span>Bank transfer accepted</span>
               <span>Plans activated within 24h</span>
             </>
@@ -167,7 +155,7 @@ export default async function PricingPage({
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
             {paidCheckoutLive
               ? "Join free, then pay from the plan you pick. Signed-in accounts start checkout here — no trip back to register."
-              : "Join free first. Complimentary Tutor Pro activates without payment; other paid plans can be confirmed by email until card checkout is live."}
+              : "Join free first. The Tutor Pro Launch offer activates without payment; Extra Active and other paid plans can be confirmed by email until card checkout is live."}
           </p>
         )}
 

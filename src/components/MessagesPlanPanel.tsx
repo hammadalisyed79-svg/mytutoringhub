@@ -25,15 +25,23 @@ function CompactPlanCard({
   return (
     <article className={`plan plan-compact${featured ? " plan-featured" : ""}`}>
       <div className="plan-body">
-        {(plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
+        {(plan.isPromoActive ? (
+          <span className="plan-badge">{plan.promoLabel || "Launch offer"}</span>
+        ) : plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" ? (
           <span className="plan-badge">Recommended</span>
-        )}
+        ) : null)}
         {plan.id === "STUDENT_PRO" && <span className="plan-badge">Includes AI</span>}
         <h3>{plan.name}</h3>
         <p className="muted">{plan.description}</p>
         <div className="price-block">
-          <div className="price">{formatPlanPrice(price, currency)}</div>
-          <p className="plan-billing muted">Per month · shown in {currency}</p>
+          <div className="price">
+            {plan.isComplimentary ? "Complimentary" : formatPlanPrice(price, currency)}
+          </div>
+          <p className="plan-billing muted">
+            {plan.isComplimentary
+              ? `Free until offer ends · then ${formatPlanPrice(plan.listPricePkr, currency)}`
+              : `Per month · shown in ${currency}`}
+          </p>
         </div>
         <ul>
           {plan.features.slice(0, 3).map((f) => (

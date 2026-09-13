@@ -5,6 +5,7 @@ import type { ResolvedPlan } from "@/lib/plans";
 import { ANNUAL_SAVE_FOOTNOTE, ANNUAL_SAVE_LABEL, formatPromoUntil, isRecurringAddOnPlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { SubscribeButton } from "@/components/SubscribeButton";
+import { LaunchOfferBlock } from "@/components/LaunchOfferBlock";
 import Link from "next/link";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import { manualActivationCtaLabel, addOnBillingFootnote, planBillingFootnote } from "@/lib/payments-status";
@@ -128,8 +129,8 @@ function PlanPrice({
         <div className="price">Complimentary</div>
         <p className="price-was">{formatPlanPrice(plan.listPricePkr, currency)}</p>
         <p className="plan-billing">
-          Free until {formatPromoUntil(plan.promoEndsAt)}. Then{" "}
-          {formatPlanPrice(plan.listPricePkr, currency)}.
+          Launch offer · free until {formatPromoUntil(plan.promoEndsAt)}. Then{" "}
+          {formatPlanPrice(plan.listPricePkr, currency)}/mo.
         </p>
       </div>
     );
@@ -256,7 +257,9 @@ function PlanCard({
           billing={planBilling}
           paidCheckoutLive={paidCheckoutLive}
         />
-        {plan.promoNote && plan.isPromoActive ? <p className="promo-note">{plan.promoNote}</p> : null}
+        {plan.promoNote && plan.isPromoActive && plan.id !== "TUTOR_BASIC" ? (
+          <p className="promo-note">{plan.promoNote}</p>
+        ) : null}
         <ul>
           {plan.features.map((f) => (
             <li key={f}>{f}</li>
@@ -322,6 +325,11 @@ export function PricingPlansClient({
   const visibilityAddOns = useMemo(
     () => addOns.filter((p) => p.id !== "EXTRA_ACTIVE"),
     [addOns],
+  );
+
+  const tutorProOffer = useMemo(
+    () => tutorCore.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive) ?? null,
+    [tutorCore],
   );
 
   const showStudent = studentCore.length > 0;
@@ -467,11 +475,25 @@ export function PricingPlansClient({
             </h2>
             <p className="muted pricing-addons-lead">
               List free with {BUSINESS.tutorFreeActiveListings} live Teaching Profile. Need another
-              subject live? Add Extra Active. Growing fast? Tutor Pro unlocks up to{" "}
+              subject live? Add Extra Active (paid capacity). Growing fast? Tutor Pro unlocks up to{" "}
               {BUSINESS.tutorProActiveListings} live profiles plus ranking and unlimited enquiry
-              reveals.
+              reveals
+              {tutorProOffer?.isComplimentary
+                ? " — complimentary under the Launch offer until the stated date"
+                : ""}
+              .
             </p>
           </header>
+
+          {tutorProOffer ? (
+            <LaunchOfferBlock
+              plan={tutorProOffer}
+              currency={currency}
+              signedIn={signedIn}
+              paidCheckoutLive={paidCheckoutLive}
+              plansHref="#plans"
+            />
+          ) : null}
 
           <ol className="pricing-path" aria-label="Tutor growth path">
             <li>

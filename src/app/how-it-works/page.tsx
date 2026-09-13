@@ -70,6 +70,9 @@ export default async function HowItWorksPage() {
             <Link href={studentCta.href} className="btn" style={{ marginTop: "1rem" }}>
               {studentCta.label}
             </Link>
+            <p style={{ marginTop: "0.75rem" }}>
+              <Link href="/pricing?plan=STUDENT_PASS">Compare student plans</Link>
+            </p>
           </section>
         )}
 
@@ -86,9 +89,10 @@ export default async function HowItWorksPage() {
               </li>
               <li>
                 Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile in
-                search; Tutor Pro unlocks up to {BUSINESS.tutorProActiveListings}{" "}
-                plus relevance-first ranking and unlimited enquiry reveals (complimentary until 30
-                September 2026)
+                search permanently. Under the Launch offer, Tutor Pro is complimentary until 30
+                September 2026 — up to {BUSINESS.tutorProActiveListings} live profiles plus
+                relevance-first ranking and unlimited enquiry reveals; after that date, list price
+                applies. Extra Active is paid capacity (+1 live), separate from the Launch offer.
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is
@@ -96,13 +100,16 @@ export default async function HowItWorksPage() {
               </li>
               <li>
                 Optional 30-Day or 365-Day Listing Boost on each Teaching Profile from your
-                dashboard (one-time; does not add capacity)
-                (does not increase capacity) — paid on Safepay when checkout is live
+                dashboard (one-time; does not increase capacity) — paid on Safepay when checkout is
+                live
               </li>
             </ul>
             <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>
               {tutorCta.label}
             </Link>
+            <p style={{ marginTop: "0.75rem" }}>
+              <Link href="/pricing?plan=TUTOR_BASIC">Compare tutor plans</Link>
+            </p>
           </section>
         )}
 

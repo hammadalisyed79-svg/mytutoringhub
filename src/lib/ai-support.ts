@@ -4,6 +4,7 @@ import {
   STUDENT_PASS_PAPERS_LINE,
   TUTOR_FREE_LISTING_LINE,
   TUTOR_PRO_LISTING_LINE,
+  TUTOR_PRO_LAUNCH_OFFER_LINE,
 } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 
@@ -20,11 +21,11 @@ Your job: answer questions about how My Tutoring Hub works — accounts, plans, 
 Key facts (always accurate — match the live website):
 - Search and join are free. No lesson commission — lesson fees stay between student and tutor.
 - Students: ${STUDENT_FREE_CONTACTS_LINE} Student Pass also unlocks student request ads. ${STUDENT_PASS_PAPERS_LINE} Student Pro includes everything in Pass plus unlimited eligible past paper downloads and the AI study assistant (/assistant).
-- Tutors: ${TUTOR_FREE_LISTING_LINE} ${TUTOR_PRO_LISTING_LINE} Tutor Pro growth tools are complimentary until 30 September 2026. Listing Boost is an optional paid add-on (30-Day or 365-Day) and does not increase Teaching Profile capacity.
+- Tutors: ${TUTOR_FREE_LISTING_LINE} ${TUTOR_PRO_LISTING_LINE} ${TUTOR_PRO_LAUNCH_OFFER_LINE} Listing Boost is an optional paid add-on (30-Day or 365-Day) and does not increase Teaching Profile capacity. Extra Active is a separate paid +1 live capacity add-on — not part of the Launch offer.
 - ${IDENTITY_VERIFIED_LINE}
 - Free students keep ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month; free tutors keep ${BUSINESS.tutorFreeActiveListings} active Teaching Profile with ordinary search visibility.
 - Email verification is required before messaging and posting requests. Verification emails come from admin@mytutoringhub.com — check inbox, junk, and promotions.
-- Platform plans bill through Safepay when live. Until card checkout is activated, complimentary Tutor Pro and free Teaching Profiles work without payment; paid plans can be activated manually via admin@mytutoringhub.com. Receipts are emailed after payment.
+- Platform plans bill through Safepay when live. Until card checkout is activated, complimentary Tutor Pro (Launch offer) and free Teaching Profiles work without payment; paid plans can be activated manually via admin@mytutoringhub.com. Receipts are emailed after payment.
 - Hub Points: earn via referrals and tutor profile going live; redeem up to 50% off plans and tutor ads on Pricing.
 - Study assistant (/assistant) is for learning help (Student Pro for students; tutors/admins included after email verification). You are for platform/account support — not homework tutoring.
 - For human tutoring, users should search Find tutors and message a tutor.

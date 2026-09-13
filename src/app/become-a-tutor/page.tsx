@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
-import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE } from "@/lib/marketing-copy";
+import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE, TUTOR_PRO_LAUNCH_OFFER_UNTIL } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
@@ -11,7 +11,7 @@ import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
   title: "Become a Tutor – Free Teaching Profiles & Tutor Pro Priority",
-  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Tutor Pro growth tools complimentary until 30 September 2026.`,
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Launch offer: Tutor Pro complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}.`,
   path: "/become-a-tutor",
 });
 
@@ -82,11 +82,13 @@ export default async function BecomeATutorPage({
             <p className="muted">
               Eligible tutors appear in search with Teaching Profiles for the subjects they teach.
               Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile
-              permanently with ordinary search visibility. Tutor Pro unlocks up to{" "}
-              {BUSINESS.tutorProActiveListings} Teaching Profiles plus relevance-first ranking and
-              unlimited enquiry reveals (complimentary until 30 September 2026). Listing Boost is an
-              optional one-time 30-day boost and does not increase capacity. Identity Verified is
-              earned after review — Priority Verification Review only jumps the queue.
+              permanently with ordinary search visibility. Under the Launch offer, Tutor Pro is
+              complimentary until {TUTOR_PRO_LAUNCH_OFFER_UNTIL} — up to{" "}
+              {BUSINESS.tutorProActiveListings} Teaching Profiles plus ranking and unlimited enquiry
+              reveals; after that date, list price applies. Extra Active adds paid live capacity
+              (separate from the Launch offer). Listing Boost is an optional visibility add-on and
+              does not increase capacity. Identity Verified is earned after review — Priority
+              Verification Review only jumps the queue.
             </p>
           </div>
         </div>
@@ -102,8 +104,12 @@ export default async function BecomeATutorPage({
         </div>
         <p className="muted" style={{ marginTop: "1rem" }}>
           We do not promise a specific number of students. Visibility depends on your Teaching
-          Profiles, location, and how complete your main profile is.{" "}
-          <Link href="/pricing">See optional tutor plans</Link>
+          Profiles, location, and how complete your main profile is.
+        </p>
+        <p style={{ marginTop: "0.75rem" }}>
+          <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-secondary">
+            See optional tutor plans
+          </Link>
         </p>
 
         <InviteTutorShare

@@ -110,7 +110,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Tutor Pro is complimentary until 30 September 2026. Free listing still includes 1 live Teaching Profile. Identity Verified is earned via review — not purchased.",
+      "Launch offer: Tutor Pro is free until 30 September 2026 (up to 10 live profiles, ranking, unlimited reveals). After that, list price applies. Free listing stays 1 live profile permanently. Extra Active and Listing Boost are separate paid products.",
   },
   {
     id: "VERIFIED_TUTOR",

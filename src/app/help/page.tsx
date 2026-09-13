@@ -2,7 +2,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { BUSINESS } from "@/lib/business-rules";
 import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
-import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE, TUTOR_PRO_LAUNCH_OFFER_LINE } from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
   title: "Help & FAQ – Contacting Tutors, Plans & Payments",
@@ -42,11 +42,11 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Pro) are billed for the period you purchase through Safepay when live. Listing Boost and Priority Verification Review are one-time purchases. Until card checkout is activated, complimentary Tutor Pro and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Pro) are billed for the period you purchase through Safepay when live. Listing Boost, Extra Active, and Priority Verification Review are separate paid products. Until card checkout is activated, the Tutor Pro Launch offer and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
   },
   {
     q: "Is Tutor Pro free?",
-    a: `Complete tutor profiles appear in search for free with ${BUSINESS.tutorFreeActiveListings} active Teaching Profile — permanently, not a temporary promo. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} Teaching Profiles plus relevance-first ranking and unlimited enquiry reveals (Tutor Pro growth tools are complimentary until 30 September 2026). Listing Boost is optional as a 30-Day or 365-Day one-time purchase per Teaching Profile and does not increase capacity. Identity Verified is earned after identity review — Priority Verification Review only jumps the queue and never auto-awards the badge. Free students keep ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month.`,
+    a: `Complete tutor profiles appear in search for free with ${BUSINESS.tutorFreeActiveListings} active Teaching Profile — permanently, not a temporary promo. ${TUTOR_PRO_LAUNCH_OFFER_LINE} Identity Verified is earned after identity review — Priority Verification Review only jumps the queue and never auto-awards the badge. Free students keep ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month.`,
   },
   {
     q: "Why do I need to verify my email?",

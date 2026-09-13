@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { getPlan } from "@/lib/plans";
+import { getPlan, type ResolvedPlan } from "@/lib/plans";
 import { SubscribeButton } from "@/components/SubscribeButton";
 import { RecoverPaymentForm } from "@/components/RecoverPaymentForm";
+import { BUSINESS } from "@/lib/business-rules";
+import { TUTOR_PRO_LAUNCH_OFFER_LABEL } from "@/lib/marketing-copy";
+import { formatPromoUntil } from "@/lib/plans";
 
 type PlanSubscription = {
   id: string;
@@ -38,12 +41,15 @@ export function TutorPlanPanel({
   pendingSubs,
   currency,
   paidCheckoutLive,
+  tutorProPlan,
 }: {
   corePlan: PlanSubscription | undefined;
   addOnSubs: PlanSubscription[];
   pendingSubs: PlanSubscription[];
   currency: string;
   paidCheckoutLive: boolean;
+  /** Live Tutor Pro plan — used to gate Launch offer CTA by promoUntil. */
+  tutorProPlan?: ResolvedPlan | null;
 }) {
   const activePlans = corePlan
     ? [
@@ -51,6 +57,11 @@ export function TutorPlanPanel({
         ...addOnSubs.filter((sub) => sub.id !== corePlan.id),
       ]
     : [];
+
+  const launchActive = Boolean(tutorProPlan?.isPromoActive && tutorProPlan?.isComplimentary);
+  const untilLabel = tutorProPlan?.promoEndsAt
+    ? formatPromoUntil(tutorProPlan.promoEndsAt)
+    : null;
 
   return (
     <section className="tutor-plan-wallet" aria-labelledby="tutor-plan-heading">
@@ -108,11 +119,24 @@ export function TutorPlanPanel({
           </ul>
         ) : (
           <div className="tutor-plan-empty">
-            <p>
-              Complete your profile to appear in search for free with 1 Teaching Profile.
-              Tutor Pro unlocks relevance-first ranking, unlimited enquiry reveals, and up to 10
-              Teaching Profiles.
-            </p>
+            {launchActive ? (
+              <>
+                <p className="tutor-plan-offer-label">{TUTOR_PRO_LAUNCH_OFFER_LABEL}</p>
+                <p>
+                  Free listing includes {BUSINESS.tutorFreeActiveListings} live Teaching Profile.
+                  Activate Tutor Pro free until {untilLabel}: up to{" "}
+                  {BUSINESS.tutorProActiveListings} live profiles, ranking, and unlimited enquiry
+                  reveals. Extra Active (+1 capacity) and Listing Boost stay separate paid products.
+                </p>
+              </>
+            ) : (
+              <p>
+                Complete your profile to appear in search for free with{" "}
+                {BUSINESS.tutorFreeActiveListings} Teaching Profile. Tutor Pro unlocks
+                relevance-first ranking, unlimited enquiry reveals, and up to{" "}
+                {BUSINESS.tutorProActiveListings} Teaching Profiles.
+              </p>
+            )}
           </div>
         )}
 
@@ -140,14 +164,20 @@ export function TutorPlanPanel({
 
         {!corePlan ? (
           <div className="tutor-plan-cta">
-            <SubscribeButton
-              plan="TUTOR_BASIC"
-              planLabel="Tutor Pro"
-              currency={currency}
-              label="Activate Tutor Pro free"
-              complimentary
-              paidCheckoutLive={paidCheckoutLive}
-            />
+            {launchActive ? (
+              <SubscribeButton
+                plan="TUTOR_BASIC"
+                planLabel="Tutor Pro"
+                currency={currency}
+                label="Activate Tutor Pro free"
+                complimentary
+                paidCheckoutLive={paidCheckoutLive}
+              />
+            ) : (
+              <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-block">
+                View Tutor Pro plans
+              </Link>
+            )}
           </div>
         ) : null}
 

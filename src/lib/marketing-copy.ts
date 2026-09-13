@@ -31,6 +31,23 @@ export const TUTOR_FREE_LISTING_LINE =
 export const TUTOR_PRO_LISTING_LINE =
   `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} live Teaching Profiles, relevance-first ranking, unlimited enquiry reveals, enhanced student-request access, and analytics.`;
 
+/** Public label for the Tutor Pro complimentary window (gated by plans.promoUntil). */
+export const TUTOR_PRO_LAUNCH_OFFER_LABEL = "Launch offer";
+
+/** Inclusive end date shown in marketing copy — must match plans.promoUntil. */
+export const TUTOR_PRO_LAUNCH_OFFER_UNTIL = "30 September 2026";
+
+/** Benefits included free while the Launch offer is active. */
+export const TUTOR_PRO_LAUNCH_BENEFITS = [
+  `Up to ${BUSINESS.tutorProActiveListings} live Teaching Profiles`,
+  "Relevance-first ranking among matching students",
+  "Unlimited enquiry reveals when you message students first",
+] as const;
+
+/** One-line summary for FAQs, help, and AI support. */
+export const TUTOR_PRO_LAUNCH_OFFER_LINE =
+  `Launch offer: Tutor Pro is complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited reveals). After that date, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} live Teaching Profile permanently. Extra Active and Listing Boost are separate paid products — not part of this offer.`;
+
 export const IDENTITY_VERIFIED_LINE =
   "Identity Verified means a successful identity review — not a qualification, degree, quality, or background check. The badge is earned, not purchased; Priority Verification Review only jumps the queue.";
 

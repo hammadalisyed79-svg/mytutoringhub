@@ -12,7 +12,7 @@ import { ensureHubPointsFresh, getHubPointsSummary } from "@/lib/hub-points";
 import { DashboardMessageAlert } from "@/components/DashboardMessageAlert";
 import { getUnreadMessageSummary } from "@/lib/message-inbox";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
-import { getPlan } from "@/lib/plans";
+import { getLivePlan, getPlan } from "@/lib/plans";
 import { TutorBadgeProgressPanel, TutorRecommendationForm } from "@/components/TutorBadgeProgress";
 import { getTutorBadgeStats, tutorBadgeProgress } from "@/lib/tutor-badges";
 import {
@@ -53,10 +53,11 @@ export default async function TutorDashboardPage({
 
   const sp = await searchParams;
   const paidCheckoutLive = isPaidCheckoutLive();
-  const [{ user, currency, catalogSubjects, extraLevels, pendingSubs, corePlan, addOnSubs }, inbox] =
+  const [{ user, currency, catalogSubjects, extraLevels, pendingSubs, corePlan, addOnSubs }, inbox, tutorProPlan] =
     await Promise.all([
       prepareDashboardHome(session.user.id, "TUTOR", sp),
       getUnreadMessageSummary(session.user.id),
+      getLivePlan("TUTOR_BASIC"),
     ]);
   await ensureHubPointsFresh(session.user.id);
   const hubPoints = await getHubPointsSummary(session.user.id, { currency, role: "TUTOR" });
@@ -183,6 +184,7 @@ export default async function TutorDashboardPage({
                 pendingSubs={pendingSubs}
                 currency={currency}
                 paidCheckoutLive={paidCheckoutLive}
+                tutorProPlan={tutorProPlan}
               />
             </div>
 

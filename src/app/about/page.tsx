@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { BUSINESS, NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
-import { STUDENT_FREE_CONTACTS_LINE, TUTOR_FREE_LISTING_LINE } from "@/lib/marketing-copy";
+import {
+  STUDENT_FREE_CONTACTS_LINE,
+  TUTOR_FREE_LISTING_LINE,
+  TUTOR_PRO_LAUNCH_OFFER_LINE,
+} from "@/lib/marketing-copy";
 
 export const metadata = pageMetadata({
   title: "About My Tutoring Hub – Private Tutors Marketplace",
@@ -33,13 +37,12 @@ export default function AboutPage() {
             earned after approval. Platform subscriptions are billed through Safepay.
           </p>
           <h2>Launch offer</h2>
+          <p>{TUTOR_PRO_LAUNCH_OFFER_LINE}</p>
           <p>
-            Tutor Pro (relevance-first ranking and unlimited enquiry reveals) is complimentary until
-            30 September 2026. Free tutors already get {BUSINESS.tutorFreeActiveListings} active
-            Teaching Profile permanently with organic search visibility; Tutor Pro unlocks up to{" "}
-            {BUSINESS.tutorProActiveListings}. Listing Boost is a one-time 30-day visibility add-on and
-            does not increase capacity. Priority Verification Review stays optional. Identity Verified
-            is earned after review — not purchased.
+            <Link href="/pricing?plan=TUTOR_BASIC">View plans</Link>
+            {" · "}
+            Free tutors keep {BUSINESS.tutorFreeActiveListings} live Teaching Profile whether or not
+            they activate Tutor Pro.
           </p>
           <h2>Trust &amp; safety</h2>
           <p>
@@ -49,6 +52,8 @@ export default function AboutPage() {
           </p>
           <p>
             <Link href="/how-it-works">How it works</Link>
+            {" · "}
+            <Link href="/pricing">Pricing</Link>
             {" · "}
             <Link href="/help">Help</Link>
             {" · "}

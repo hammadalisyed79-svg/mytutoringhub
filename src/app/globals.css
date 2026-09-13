@@ -1981,6 +1981,101 @@ body.auth-modal-open .nav-backdrop {
   line-height: 1.55;
 }
 
+.launch-offer {
+  margin: 0 0 1.5rem;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid rgba(var(--brand-rgb), 0.3);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(var(--brand-rgb), 0.12), rgba(255, 252, 247, 0.98) 55%),
+    var(--surface, #fff);
+}
+
+.launch-offer--compact {
+  padding: 1rem 1.15rem;
+  margin-bottom: 0;
+}
+
+.launch-offer-label {
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-deep);
+}
+
+.launch-offer-title {
+  margin: 0 0 0.55rem;
+  font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+  line-height: 1.25;
+  color: var(--ink, #1a1a1a);
+}
+
+.launch-offer-lead {
+  margin: 0 0 1rem;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 42rem;
+}
+
+.launch-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.launch-offer-subhead {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+}
+
+.launch-offer-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.5;
+}
+
+.launch-offer-list li + li {
+  margin-top: 0.3rem;
+}
+
+.launch-offer-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.65rem 0.75rem;
+}
+
+.launch-offer-ctas .checkout-action {
+  flex: 1 1 14rem;
+  min-width: min(100%, 14rem);
+}
+
+.launch-offer-ctas .checkout-action .btn,
+.launch-offer-ctas > .btn {
+  width: auto;
+  min-width: 11rem;
+}
+
+.launch-offer-footnote {
+  margin: 0.85rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 720px) {
+  .launch-offer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .launch-offer-ctas .checkout-action .btn,
+  .launch-offer-ctas > .btn {
+    width: 100%;
+  }
+}
+
 .payments-soon-banner {
   margin: 0 0 1.25rem;
   padding: 1.05rem 1.2rem;
@@ -3123,6 +3218,15 @@ select:focus {
   border-radius: 14px;
   background: rgba(var(--brand-rgb), 0.05);
   border: 1px dashed rgba(var(--brand-rgb), 0.18);
+}
+
+.tutor-plan-offer-label {
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand-deep);
 }
 
 .tutor-plan-empty p {

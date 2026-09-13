@@ -12,9 +12,10 @@ export function PaymentsComingSoonBanner() {
     <aside className="payments-soon-banner" role="status">
       <strong>Secure checkout launching soon</strong>
       <p>
-        Free Teaching Profiles and complimentary Tutor Pro are available now with no payment. For
-        Student Pass and paid tutor upgrades, use Contact billing after you pay — we activate plans
-        within 24 hours. Support: {PAYMENTS_SUPPORT_EMAIL}.
+        Free Teaching Profiles work now with no payment. During the Launch offer, Tutor Pro also
+        activates free — see Tutor plans for details. For Student Pass, Extra Active, and other paid
+        upgrades, use Contact billing after you pay; we activate within 24 hours. Support:{" "}
+        {PAYMENTS_SUPPORT_EMAIL}.
       </p>
       <p className="payments-soon-banner-actions">
         {onPricing ? (
