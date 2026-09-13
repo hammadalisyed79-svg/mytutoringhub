@@ -10575,6 +10575,41 @@ img {
   margin-top: 0.75rem;
 }
 
+.teaching-listing-manage {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  max-width: 16rem;
+}
+
+.teaching-listing-manage-label {
+  display: block;
+  margin: 0;
+}
+
+.teaching-listing-manage select {
+  width: 100%;
+  min-height: 2.4rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.teaching-listing-boost-details > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .teaching-listing-boost-row,
 .subject-profile-boost-row {
   display: grid;
