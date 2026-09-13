@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { CatalogMultiSelect } from "@/components/CatalogMultiSelect";
 import { curriculumBoards, curriculumCodesForCapabilities } from "@/lib/curriculum";
 import type { TeachingProfileEditorValues } from "@/lib/teaching-profile-dashboard";
-import { tutorLevelOptions, tutorQualificationOptions } from "@/lib/tutor-catalog";
+import { tutorLevelOptions } from "@/lib/tutor-catalog";
 
 function addUnique(list: string[], token: string) {
   if (list.some((item) => item.toLowerCase() === token.toLowerCase())) return list;
@@ -26,10 +26,6 @@ export function TeachingProfileCapabilityFields({
 }) {
   const [codeDraft, setCodeDraft] = useState("");
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
-  const qualificationCatalog = useMemo(
-    () => tutorQualificationOptions(values.qualifications),
-    [values.qualifications],
-  );
   const boards = useMemo(() => curriculumBoards(), []);
   const codeOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -53,8 +49,7 @@ export function TeachingProfileCapabilityFields({
   const fields = (
     <>
       <p className="field-hint">
-        Who you teach and which awards you cover. Pick only what you actually offer — you do not
-        need every chip.
+        Choose levels you teach. Boards and syllabus codes are optional — add only what you use.
       </p>
       <CatalogMultiSelect
         label="Levels"
@@ -72,18 +67,9 @@ export function TeachingProfileCapabilityFields({
         onChange={(boardsNext) => onChange({ ...values, boards: boardsNext })}
         options={boards}
         max={20}
+        dropdownOnly
         addLabel="Add board"
-        hint="Optional. Which boards you prepare for. You do not need every chip."
-      />
-      <CatalogMultiSelect
-        label="Qualification stages"
-        selected={values.qualifications}
-        onChange={(qualifications) => onChange({ ...values, qualifications })}
-        options={qualificationCatalog.core}
-        extraOptions={[...qualificationCatalog.more, ...values.qualifications]}
-        max={16}
-        addLabel="Add qualification"
-        hint="Optional. Named awards or certificates (IGCSE, IB Diploma, HSC, SAT) — not the same as Levels."
+        hint="Optional. Add boards you prepare for from the list."
       />
       <CatalogMultiSelect
         label="Syllabus / subject codes"
@@ -92,9 +78,10 @@ export function TeachingProfileCapabilityFields({
         options={codeOptions}
         extraOptions={values.syllabusCodes}
         searchable
+        dropdownOnly
         max={40}
         addLabel="Add code"
-        hint="Optional. Codes students use on Past Papers (0580, 9709). Narrows when you pick boards or levels. A long list is grouped in AI Help."
+        hint="Optional. Codes students use on Past Papers (e.g. 0580, 9709). Search, then add from the list."
       />
       <label>
         Add a code not in the catalog
@@ -122,7 +109,7 @@ export function TeachingProfileCapabilityFields({
   if (compact) {
     return (
       <details className="profile-advanced-details">
-        <summary>Levels, boards, awards &amp; syllabus codes (optional)</summary>
+        <summary>Levels, boards &amp; syllabus codes (optional)</summary>
         <div className="profile-advanced-block">{fields}</div>
       </details>
     );

@@ -17,7 +17,6 @@ import {
   tutorCountries,
   tutorLanguageOptions,
   tutorLevelOptions,
-  tutorQualificationOptions,
 } from "@/lib/tutor-catalog";
 import { curriculumBoards, curriculumCodesForCapabilities } from "@/lib/curriculum";
 import {
@@ -247,9 +246,7 @@ export function TutorProfileForm({
   const [teachingDescription, setTeachingDescription] = useState("");
   const [teachingLevels, setTeachingLevels] = useState<string[]>([]);
   const [teachingBoards, setTeachingBoards] = useState<string[]>([]);
-  const [teachingQuals, setTeachingQuals] = useState<string[]>([]);
   const [teachingCodes, setTeachingCodes] = useState<string[]>([]);
-  const qualificationCatalog = useMemo(() => tutorQualificationOptions(teachingQuals), [teachingQuals]);
   const [expertiseList, setExpertiseList] = useState(splitCsv(initial.expertise));
   const [levelList, setLevelList] = useState(splitCsv(initial.levels));
   const [languageList, setLanguageList] = useState(splitCsv(initial.languages));
@@ -714,7 +711,7 @@ export function TutorProfileForm({
         inPerson,
         levels: teachingLevels,
         boards: teachingBoards,
-        qualifications: teachingQuals,
+        qualifications: [],
         syllabusCodes: teachingCodes,
       };
     }
@@ -1259,18 +1256,9 @@ export function TutorProfileForm({
                 onChange={setTeachingBoards}
                 options={boardOptions}
                 max={20}
+                dropdownOnly
                 addLabel="Add board"
-                hint="Optional. Which boards you prepare for. You do not need every chip."
-              />
-              <CatalogMultiSelect
-                label="Qualification stages"
-                selected={teachingQuals}
-                onChange={setTeachingQuals}
-                options={qualificationCatalog.core}
-                extraOptions={[...qualificationCatalog.more, ...teachingQuals]}
-                max={16}
-                addLabel="Add qualification"
-                hint="Optional. Named awards or certificates (IGCSE, IB Diploma, HSC, SAT) — not the same as Levels. Skip chips you already covered above."
+                hint="Optional. Add boards you prepare for from the list."
               />
               <CatalogMultiSelect
                 label="Syllabus / subject codes"
@@ -1279,9 +1267,10 @@ export function TutorProfileForm({
                 options={syllabusCodeOptions}
                 extraOptions={teachingCodes}
                 searchable
+                dropdownOnly
                 max={40}
                 addLabel="Add code"
-                hint="Optional. Codes students use on Past Papers (0580, 9709). Narrows when you pick boards or levels. A long list is grouped in AI Help."
+                hint="Optional. Codes students use on Past Papers (e.g. 0580, 9709). Search, then add from the list."
               />
 
               <div className="tutor-bio-field">
@@ -1326,7 +1315,6 @@ export function TutorProfileForm({
                   online={online}
                   inPerson={inPerson}
                   boards={teachingBoards}
-                  qualificationStages={teachingQuals}
                   syllabusCodes={teachingCodes}
                   onApply={setTeachingDescription}
                 />

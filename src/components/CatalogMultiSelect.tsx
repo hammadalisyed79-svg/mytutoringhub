@@ -13,6 +13,8 @@ type Props = {
   extraOptions?: string[];
   searchable?: boolean;
   directory?: boolean;
+  /** Hide the option chip cloud — selected chips + dropdown only. */
+  dropdownOnly?: boolean;
   max?: number;
   addLabel?: string;
   emptyHint?: string;
@@ -33,6 +35,7 @@ export function CatalogMultiSelect({
   extraOptions = [],
   searchable,
   directory,
+  dropdownOnly = false,
   max = 12,
   addLabel = "Add another",
   emptyHint,
@@ -58,13 +61,16 @@ export function CatalogMultiSelect({
     [extraOptions, options, selected],
   );
 
-  const remaining = useMemo(
-    () =>
-      [...options, ...extraOptions].filter(
-        (name) => !selected.some((item) => item.toLowerCase() === name.toLowerCase()),
-      ),
-    [options, extraOptions, selected],
-  );
+  const remaining = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return [...options, ...extraOptions].filter((name) => {
+      if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) return false;
+      if (!needle) return true;
+      return name.toLowerCase().includes(needle);
+    });
+  }, [options, extraOptions, selected, query]);
+
+  const addChoices = extras.length && !dropdownOnly ? extras : remaining;
 
   function toggle(name: string) {
     if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) {
@@ -116,54 +122,55 @@ export function CatalogMultiSelect({
         />
       )}
 
-      {directory && groups ? (
-        <div className="catalog-directory" role="group" aria-label={`All ${label.toLowerCase()}`}>
-          {groups.map(([letter, names]) => (
-            <div key={letter} className="catalog-letter">
-              <strong>{letter}</strong>
-              <div className="chip-row">
-                {names.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    className={`chip-btn ${selected.some((item) => item.toLowerCase() === name.toLowerCase()) ? "is-on" : ""}`}
-                    onClick={() => toggle(name)}
-                    disabled={atMax && !selected.some((item) => item.toLowerCase() === name.toLowerCase())}
-                  >
-                    {name}
-                  </button>
-                ))}
+      {!dropdownOnly &&
+        (directory && groups ? (
+          <div className="catalog-directory" role="group" aria-label={`All ${label.toLowerCase()}`}>
+            {groups.map(([letter, names]) => (
+              <div key={letter} className="catalog-letter">
+                <strong>{letter}</strong>
+                <div className="chip-row">
+                  {names.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className={`chip-btn ${selected.some((item) => item.toLowerCase() === name.toLowerCase()) ? "is-on" : ""}`}
+                      onClick={() => toggle(name)}
+                      disabled={atMax && !selected.some((item) => item.toLowerCase() === name.toLowerCase())}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-          {listed.length === 0 && <p className="muted">No matching subjects in the catalog.</p>}
-        </div>
-      ) : listed.length === 0 ? (
-        <p className="muted">{emptyHint || "Nothing listed yet."}</p>
-      ) : (
-        <div className="chip-row" role="group" aria-label={label}>
-          {listed.map((name) => (
-            <button
-              key={name}
-              type="button"
-              className={`chip-btn ${selected.some((item) => item.toLowerCase() === name.toLowerCase()) ? "is-on" : ""}`}
-              onClick={() => toggle(name)}
-              disabled={atMax && !selected.some((item) => item.toLowerCase() === name.toLowerCase())}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
+            ))}
+            {listed.length === 0 && <p className="muted">No matching subjects in the catalog.</p>}
+          </div>
+        ) : listed.length === 0 ? (
+          <p className="muted">{emptyHint || "Nothing listed yet."}</p>
+        ) : (
+          <div className="chip-row" role="group" aria-label={label}>
+            {listed.map((name) => (
+              <button
+                key={name}
+                type="button"
+                className={`chip-btn ${selected.some((item) => item.toLowerCase() === name.toLowerCase()) ? "is-on" : ""}`}
+                onClick={() => toggle(name)}
+                disabled={atMax && !selected.some((item) => item.toLowerCase() === name.toLowerCase())}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        ))}
 
-      {(extras.length > 0 || remaining.length > 0) && (
+      {addChoices.length > 0 || selected.length > 0 || dropdownOnly ? (
         <div className="catalog-add">
           <label>
             {addLabel}
             <span className="catalog-add-row">
               <select value={pick} onChange={(e) => setPick(e.target.value)} disabled={atMax}>
                 <option value="">{atMax ? `Maximum ${max}` : "Select to add…"}</option>
-                {(extras.length ? extras : remaining).map((name) => (
+                {addChoices.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>
@@ -175,7 +182,7 @@ export function CatalogMultiSelect({
             </span>
           </label>
         </div>
-      )}
+      ) : null}
     </fieldset>
   );
 }
