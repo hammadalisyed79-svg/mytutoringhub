@@ -82,7 +82,7 @@ export function LaunchOfferBlock({
             <ul className="launch-offer-list">
               <li>
                 Tutor Pro returns to list price
-                {listPrice ? ` (${listPrice}/mo)` : ""}
+                {listPrice ? ` (${listPrice})` : ""}
               </li>
               <li>
                 Free listing still includes {BUSINESS.tutorFreeActiveListings} live Teaching Profile

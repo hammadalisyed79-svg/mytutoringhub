@@ -130,7 +130,7 @@ function PlanPrice({
         <p className="price-was">{formatPlanPrice(plan.listPricePkr, currency)}</p>
         <p className="plan-billing">
           Launch offer · free until {formatPromoUntil(plan.promoEndsAt)}. Then{" "}
-          {formatPlanPrice(plan.listPricePkr, currency)}/mo.
+          {formatPlanPrice(plan.listPricePkr, currency)}.
         </p>
       </div>
     );
@@ -194,7 +194,7 @@ function PlanPrice({
         <p className="price-was">{formatPlanPrice(plan.listPricePkr * 12, currency)}</p>
         <p className="plan-billing muted">
           Billed yearly · save ~20% · about{" "}
-          {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)}/mo equivalent ·{" "}
+          {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)} equivalent ·{" "}
           {currency}
           {paidCheckoutLive ? " · Safepay" : ""}
         </p>
