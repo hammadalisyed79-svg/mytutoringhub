@@ -5,20 +5,20 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { PaymentsComingSoonBanner } from "@/components/PaymentsComingSoonBanner";
 import { PricingPlansClient } from "@/components/PricingPlansClient";
-import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { prisma } from "@/lib/prisma";
-import { VALUE_PROPOSITION, STUDENT_PASS_PAPERS_LINE, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
+import { STUDENT_PASS_PAPERS_LINE, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
 import { pageMetadata } from "@/lib/seo";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
+import { BUSINESS } from "@/lib/business-rules";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
   title: "Plans & Pricing – Student Pass, Student Pro & Tutor Subscriptions",
-  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Tutor Pro adds priority. No lesson commission.`,
+  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Extra Active adds live subjects; Tutor Pro adds growth tools. No lesson commission.`,
   path: "/pricing",
 });
 
@@ -50,6 +50,17 @@ export default async function PricingPage({
   );
   const liveOffer = allPlans.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive);
 
+  const deepPlan = sp.plan ? getPlan(sp.plan) : null;
+  const defaultAudience: "student" | "tutor" | undefined =
+    role === "TUTOR"
+      ? "tutor"
+      : role === "STUDENT"
+        ? "student"
+        : deepPlan?.audience === "tutor" ||
+            deepPlan?.audience === "student"
+          ? deepPlan.audience
+          : undefined;
+
   const me = session?.user
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
@@ -75,26 +86,32 @@ export default async function PricingPage({
       <div className="container">
         <div className="checkout-hero">
           <div>
-            <p className="eyebrow">Platform subscriptions</p>
-            <h1 className="page-title">Plans & pricing</h1>
+            <p className="eyebrow">Simple plans</p>
+            <h1 className="page-title">Plans &amp; pricing</h1>
             <p className="section-lead">
-              {VALUE_PROPOSITION} Prices shown in <strong>{currency}</strong>.{" "}
-              {STUDENT_PASS_PAPERS_LINE}{" "}
-              {paidCheckoutLive
-                ? "There is no shopping cart — choose a plan and pay on Safepay in one step."
-                : "Card checkout is launching soon — free and complimentary plans work now; paid plans activate within 24 hours after payment."}
+              Start free. Upgrade only when you need more contacts, more live Teaching Profiles, or
+              growth tools. Prices shown in <strong>{currency}</strong>. We never take a cut of
+              lesson fees.
             </p>
-            <ValuePropStrip />
-            <p className="muted" style={{ marginTop: "0.75rem" }}>
-              Not sure what&apos;s included?{" "}
-              <Link href="/free-vs-paid">Read the free vs paid guide</Link> before you choose a
-              plan.
-            </p>
+            <ul className="pricing-hero-bullets">
+              <li>
+                <strong>Students:</strong> {BUSINESS.studentFreeContactsPerMonth} free contacts/month —
+                Pass unlocks unlimited messaging
+              </li>
+              <li>
+                <strong>Tutors:</strong> {BUSINESS.tutorFreeActiveListings} live profile free · Extra
+                Active adds +1 · Tutor Pro up to {BUSINESS.tutorProActiveListings}
+              </li>
+              <li>
+                <Link href="/free-vs-paid">Compare free vs paid</Link> if you want the full feature
+                table
+              </li>
+            </ul>
           </div>
-          <ol className="checkout-steps" aria-label="Checkout steps">
-            <li className={session?.user ? "is-done" : "is-current"}>1. Account</li>
-            <li className={session?.user ? "is-current" : ""}>2. Choose plan</li>
-            <li>{paidCheckoutLive ? "3. Pay on Safepay" : "3. Confirm activation"}</li>
+          <ol className="checkout-steps" aria-label="How checkout works">
+            <li className={session?.user ? "is-done" : "is-current"}>1. Create a free account</li>
+            <li className={session?.user ? "is-current" : ""}>2. Choose a plan</li>
+            <li>{paidCheckoutLive ? "3. Pay securely on Safepay" : "3. Confirm activation"}</li>
           </ol>
         </div>
 
@@ -105,7 +122,7 @@ export default async function PricingPage({
             <strong>{liveOffer.promoLabel || "Limited offer"}</strong>
             <p>
               {liveOffer.promoNote ||
-                `Tutor Pro is ${liveOffer.isComplimentary ? "complimentary" : "discounted"} until ${formatPromoUntil(liveOffer.promoEndsAt)}. Listing Boost and Priority Verification Review remain optional paid products.`}
+                `Tutor Pro is ${liveOffer.isComplimentary ? "complimentary" : "discounted"} until ${formatPromoUntil(liveOffer.promoEndsAt)}. Extra Active, Listing Boost, and Priority Verification remain optional paid products.`}
             </p>
           </aside>
         )}
@@ -113,10 +130,10 @@ export default async function PricingPage({
         <div className="checkout-trust-bar">
           {paidCheckoutLive ? (
             <>
-              <span>256-bit encrypted checkout</span>
+              <span>Encrypted checkout</span>
               <span>Email confirmation</span>
               <span>Works worldwide</span>
-              <span>No cart — one-click plan checkout</span>
+              <span>No cart — one-step checkout</span>
             </>
           ) : (
             <>
@@ -149,8 +166,8 @@ export default async function PricingPage({
         {!session?.user && (
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
             {paidCheckoutLive
-              ? "Join free, then pay on Safepay from the plan you pick. Signed-in accounts never go back to register — checkout starts here."
-              : "Join free first. Complimentary Tutor Pro activates without payment; other paid plans — email us until card checkout is live."}
+              ? "Join free, then pay from the plan you pick. Signed-in accounts start checkout here — no trip back to register."
+              : "Join free first. Complimentary Tutor Pro activates without payment; other paid plans can be confirmed by email until card checkout is live."}
           </p>
         )}
 
@@ -162,6 +179,7 @@ export default async function PricingPage({
           paidCheckoutLive={paidCheckoutLive}
           hubPointsBalance={hubPointsBalance}
           subjectProfileId={sp.subjectProfileId}
+          defaultAudience={defaultAudience}
         />
       </div>
     </div>

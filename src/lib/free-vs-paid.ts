@@ -93,8 +93,8 @@ export const TUTOR_COMPARE_ROWS: CompareRow[] = [
   {
     feature: "Active Teaching Profiles",
     free: `${FREE_SUBJECT_PROFILES}`,
-    paid: `Up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
-    detail: `Free tutors get ${FREE_SUBJECT_PROFILES} active Teaching Profile with organic search visibility. More subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Legacy Unlimited Profiles holders keep unlimited Teaching Profiles.`,
+    paid: `Extra Active up to 3 · Tutor Pro up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}`,
+    detail: `Free includes ${FREE_SUBJECT_PROFILES} live Teaching Profile. Extra Active (+1 each, stackable ×2) reaches 3 live without Pro. Tutor Pro unlocks up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}. Legacy Unlimited Profiles holders keep unlimited capacity.`,
   },
   {
     feature: "Priority search ranking",
@@ -151,8 +151,9 @@ export const STUDENT_PAID_HIGHLIGHTS = [
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  `Tutor Pro — relevance-first ranking, unlimited reveals, up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} Teaching Profiles (complimentary until 30 Sept 2026)`,
-  "Optional — Listing Boost per Teaching Profile; Priority Verification Review (badge only after approval)",
+  "Extra Active — +1 live Teaching Profile monthly (stack up to 3 live without Pro)",
+  `Tutor Pro — up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} live profiles, ranking, unlimited reveals (complimentary until 30 Sept 2026)`,
+  "Optional — Listing Boost per profile; Priority Verification Review (badge only after approval)",
 ] as const;
 
 export const FREE_VS_PAID_FAQS = [
@@ -170,7 +171,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — Tutor Pro is complimentary until 30 September 2026 for growth tools (relevance-first ranking and unlimited enquiry reveals). Free tutors already get ${FREE_SUBJECT_PROFILES} active Teaching Profile with ordinary search visibility; more subjects require Tutor Pro (up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP}). Listing Boost is optional (30-Day or 365-Day, save about 20% on 365-day) and does not increase Teaching Profile capacity. The Identity Verified badge is earned via identity review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — Tutor Pro is complimentary until 30 September 2026 (ranking + unlimited enquiry reveals + up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} live Teaching Profiles). Free tutors already get ${FREE_SUBJECT_PROFILES} live profile; Extra Active can add up to 2 more live slots (3 total) without Pro. Listing Boost is optional and does not add capacity. Identity Verified is earned via review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a Teaching Profile?",
@@ -190,7 +191,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each Teaching Profile on your tutor dashboard. Extra Profile Ads and Unlimited Profiles are legacy products — existing holders keep their entitlements.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, Extra Active, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost is purchased from each Teaching Profile on your tutor dashboard. Extra Profile Ads and Unlimited Profiles are legacy Extra/Unlimited products — existing holders keep their entitlements.",
   },
 ] as const;
 

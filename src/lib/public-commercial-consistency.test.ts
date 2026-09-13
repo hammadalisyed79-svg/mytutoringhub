@@ -40,8 +40,9 @@ assert.equal(BUSINESS.tutorFreeActiveListings, 1);
 assert.equal(BUSINESS.tutorProActiveListings, 10);
 assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
-assert.match(TUTOR_FREE_LISTING_LINE, /1 active Teaching Profile/);
-assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 active Teaching Profiles/);
+assert.match(TUTOR_FREE_LISTING_LINE, /1 live Teaching Profile/);
+assert.match(TUTOR_FREE_LISTING_LINE, /Extra Active/);
+assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 live Teaching Profiles/);
 
 // 3–4. No retired listing-cap cliffs in public app sources
 const publicSurfaces = [
@@ -96,7 +97,7 @@ const extraActive = DEFAULT_PLANS.find((p) => p.id === "EXTRA_ACTIVE")!;
 assert.equal(extraActive.pricePkr, 499);
 assert.equal(extraActive.isAddOn, true);
 assert.ok(extraActive.annualPricePkr);
-assert.ok(extraActive.features.some((f) => /\+1 active/i.test(f)));
+assert.ok(extraActive.features.some((f) => /\+1 (active|live)/i.test(f)));
 assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("EXTRA_PROFILE_ADS"));
 assert.ok(
   !publicAddOns.some((p) => p.id !== "EXTRA_ACTIVE" && /extra profile|\+1|one more profile/i.test(p.name + p.description)),
@@ -108,9 +109,9 @@ assert.equal(boost.pricePkr, 999);
 assert.equal(boost.annualPricePkr, Math.round(999 * 9.6));
 assert.equal(boost.isAddOn, true);
 assert.ok(boost.features.some((f) => /does not increase Teaching Profile capacity/i.test(f)));
-assert.ok(boost.features.some((f) => /365-Day|annual/i.test(f)));
+assert.ok(boost.features.some((f) => /365-day|365-Day|annual/i.test(f)));
 assert.ok(boost.features.some((f) => /20%/i.test(f)));
-assert.ok(/20%|365-Day|annual/i.test(boost.description));
+assert.ok(/does not add more live profiles|does not increase Teaching Profile capacity/i.test(boost.description));
 
 const boostResolved = resolvePlan(boost);
 assert.equal(boostResolved.annualChargePricePkr, Math.round(999 * 9.6));
@@ -125,7 +126,7 @@ assert.match(studentFreeContactsPhrase(), /^3 new tutor contacts per month$/);
 // 8. Priority Verification Review does not auto-verify
 const priority = DEFAULT_PLANS.find((p) => p.id === "VERIFIED_TUTOR")!;
 assert.equal(priority.pricePkr, 2999);
-assert.ok(priority.features.some((f) => /never auto-awards verification/i.test(f)));
+assert.ok(priority.features.some((f) => /never auto-(awards verification|verifies)/i.test(f)));
 assert.match(IDENTITY_VERIFIED_LINE, /earned, not purchased/i);
 assert.match(IDENTITY_VERIFIED_LINE, /not a qualification/i);
 
@@ -143,7 +144,13 @@ assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("UNLIMITED_ADS"));
 
 const pricingClient = readSrc("components/PricingPlansClient.tsx");
 assert.doesNotMatch(pricingClient, /Extra Profile Ads(?! \(legacy\))/);
-assert.match(pricingClient, /legacy Extra\/Unlimited/);
+assert.match(pricingClient, /Extra Active/);
+assert.match(pricingClient, /pricing-path/);
+assert.match(pricingClient, /For students|For tutors/);
+
+const freeVsPaid = readSrc("lib/free-vs-paid.ts");
+assert.match(freeVsPaid, /legacy Extra\/Unlimited/);
+assert.match(freeVsPaid, /Extra Active/);
 
 // 10. Tutor Pro promo date does not alter Free Teaching Profile cap
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
@@ -194,8 +201,9 @@ assert.doesNotMatch(terms, /Subscriptions renew\s+according to the plan you purc
 // Free-vs-paid FAQ keeps Free permanent + Pro promo separate
 const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free right now?");
 assert.ok(proFaq);
-assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
+assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} live profile`));
 assert.match(proFaq!.a, /30 September 2026/);
+assert.match(proFaq!.a, /Extra Active/);
 
 // AI Support prompt stays on the same commercial truth as Help / Pricing
 const aiSupport = readSrc("lib/ai-support.ts");

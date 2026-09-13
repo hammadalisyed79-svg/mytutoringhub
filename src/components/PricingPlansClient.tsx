@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ResolvedPlan } from "@/lib/plans";
 import { ANNUAL_SAVE_FOOTNOTE, ANNUAL_SAVE_LABEL, formatPromoUntil, isRecurringAddOnPlan } from "@/lib/plans";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
@@ -14,6 +14,7 @@ import { BUSINESS } from "@/lib/business-rules";
 function planOneTime(plan: ResolvedPlan) {
   return Boolean(plan.isAddOn) && !isRecurringAddOnPlan(plan.id);
 }
+
 function PlanActions({
   plan,
   currency,
@@ -31,7 +32,6 @@ function PlanActions({
   billing: "monthly" | "annual";
   paidCheckoutLive: boolean;
   hubPointsBalance?: number;
-  /** When set (deep link), Boost/Highlight can checkout for that Teaching Profile. */
   subjectProfileId?: string;
 }) {
   if (signedIn) {
@@ -136,8 +136,7 @@ function PlanPrice({
   }
   if (plan.isAddOn) {
     if (isRecurringAddOnPlan(plan.id)) {
-      const showAnnualExtra =
-        billing === "annual" && plan.annualChargePricePkr != null;
+      const showAnnualExtra = billing === "annual" && plan.annualChargePricePkr != null;
       return (
         <div className="price-block">
           <div className="price">
@@ -152,8 +151,8 @@ function PlanPrice({
           ) : null}
           <p className="plan-billing muted">
             {showAnnualExtra
-              ? `Billed annually · +1 active Teaching Profile · shown in ${currency}`
-              : `Billed monthly · +1 active Teaching Profile · shown in ${currency}`}
+              ? `Billed yearly · +1 live Teaching Profile · ${currency}`
+              : `Billed monthly · +1 live Teaching Profile · ${currency}`}
           </p>
         </div>
       );
@@ -193,9 +192,10 @@ function PlanPrice({
         <div className="price">{formatPlanPrice(plan.annualChargePricePkr!, currency, "year")}</div>
         <p className="price-was">{formatPlanPrice(plan.listPricePkr * 12, currency)}</p>
         <p className="plan-billing muted">
-          Billed annually · save ~20% vs monthly · about{" "}
-          {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)} equivalent · shown
-          in {currency} · {paidCheckoutLive ? "paid on Safepay" : "activate after payment"}
+          Billed yearly · save ~20% · about{" "}
+          {formatPlanPrice(Math.round(plan.annualChargePricePkr! / 12), currency)}/mo equivalent ·{" "}
+          {currency}
+          {paidCheckoutLive ? " · Safepay" : ""}
         </p>
       </div>
     );
@@ -220,6 +220,76 @@ function PlanPrice({
   );
 }
 
+function PlanCard({
+  plan,
+  currency,
+  signedIn,
+  billing,
+  paidCheckoutLive,
+  hubPointsBalance,
+  subjectProfileId,
+  featured,
+  badge,
+}: {
+  plan: ResolvedPlan;
+  currency: CurrencyCode;
+  signedIn: boolean;
+  billing: "monthly" | "annual";
+  paidCheckoutLive: boolean;
+  hubPointsBalance?: number;
+  subjectProfileId?: string;
+  featured?: boolean;
+  badge?: string | null;
+}) {
+  const planBilling =
+    plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : plan.isAddOn ? "monthly" : billing;
+
+  return (
+    <article className={`plan${featured ? " plan-featured" : ""}`}>
+      <div className="plan-body">
+        {badge ? <span className="plan-badge">{badge}</span> : null}
+        <h3>{plan.name}</h3>
+        <p className="muted">{plan.description}</p>
+        <PlanPrice
+          plan={plan}
+          currency={currency}
+          billing={planBilling}
+          paidCheckoutLive={paidCheckoutLive}
+        />
+        {plan.promoNote && plan.isPromoActive ? <p className="promo-note">{plan.promoNote}</p> : null}
+        <ul>
+          {plan.features.map((f) => (
+            <li key={f}>{f}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="plan-cta">
+        <PlanActions
+          plan={plan}
+          currency={currency}
+          signedIn={signedIn}
+          featured={featured}
+          billing={planBilling}
+          paidCheckoutLive={paidCheckoutLive}
+          hubPointsBalance={hubPointsBalance}
+          subjectProfileId={
+            plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD" ? subjectProfileId : undefined
+          }
+        />
+      </div>
+    </article>
+  );
+}
+
+function planBadge(plan: ResolvedPlan): string | null {
+  if (plan.isPromoActive) return plan.promoLabel || "Limited offer";
+  if (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") return "Most popular";
+  if (plan.id === "STUDENT_PRO") return "Includes AI";
+  if (plan.id === "VERIFIED_TUTOR") return "Recommended";
+  if (plan.id === "EXTRA_ACTIVE") return "Add capacity";
+  return null;
+}
+
 export function PricingPlansClient({
   corePlans,
   addOns,
@@ -228,6 +298,7 @@ export function PricingPlansClient({
   paidCheckoutLive,
   hubPointsBalance = 0,
   subjectProfileId,
+  defaultAudience,
 }: {
   corePlans: ResolvedPlan[];
   addOns: ResolvedPlan[];
@@ -236,222 +307,276 @@ export function PricingPlansClient({
   paidCheckoutLive: boolean;
   hubPointsBalance?: number;
   subjectProfileId?: string;
+  /** When both audiences are visible, which tab to open first. */
+  defaultAudience?: "student" | "tutor";
 }) {
+  const studentCore = useMemo(
+    () => corePlans.filter((p) => p.audience === "student"),
+    [corePlans],
+  );
+  const tutorCore = useMemo(() => corePlans.filter((p) => p.audience === "tutor"), [corePlans]);
+  const capacityAddOn = useMemo(
+    () => addOns.find((p) => p.id === "EXTRA_ACTIVE") ?? null,
+    [addOns],
+  );
+  const visibilityAddOns = useMemo(
+    () => addOns.filter((p) => p.id !== "EXTRA_ACTIVE"),
+    [addOns],
+  );
+
+  const showStudent = studentCore.length > 0;
+  const showTutor = tutorCore.length > 0 || addOns.length > 0;
+  const bothAudiences = showStudent && showTutor;
+
+  const [audience, setAudience] = useState<"student" | "tutor">(
+    defaultAudience === "tutor" || (!showStudent && showTutor)
+      ? "tutor"
+      : defaultAudience === "student" || showStudent
+        ? "student"
+        : "tutor",
+  );
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+
   const hasAnnual =
     corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null) ||
-    addOns.some((p) => p.id === "AD_BOOST" && p.annualChargePricePkr != null);
+    addOns.some(
+      (p) =>
+        (p.id === "AD_BOOST" || p.id === "EXTRA_ACTIVE") && p.annualChargePricePkr != null,
+    );
+
+  const viewingStudent = bothAudiences ? audience === "student" : showStudent;
+  const viewingTutor = bothAudiences ? audience === "tutor" : showTutor;
+
+  const sharedProps = {
+    currency,
+    signedIn,
+    billing,
+    paidCheckoutLive,
+    hubPointsBalance,
+    subjectProfileId,
+  } as const;
 
   return (
-    <div id="plans">
-      {hasAnnual && (
-        <div className="billing-toggle" role="group" aria-label="Billing period">
+    <div id="plans" className="pricing-plans">
+      {bothAudiences ? (
+        <div className="pricing-audience-tabs" role="tablist" aria-label="Who is this for?">
           <button
             type="button"
-            className={`btn btn-sm ${billing === "monthly" ? "" : "btn-secondary"}`}
-            aria-pressed={billing === "monthly"}
-            onClick={() => setBilling("monthly")}
+            role="tab"
+            aria-selected={audience === "student"}
+            className={`pricing-audience-tab${audience === "student" ? " is-active" : ""}`}
+            onClick={() => setAudience("student")}
           >
-            Monthly / 30-day
+            For students
           </button>
           <button
             type="button"
-            className={`btn btn-sm ${billing === "annual" ? "" : "btn-secondary"}`}
-            aria-pressed={billing === "annual"}
-            onClick={() => setBilling("annual")}
+            role="tab"
+            aria-selected={audience === "tutor"}
+            className={`pricing-audience-tab${audience === "tutor" ? " is-active" : ""}`}
+            onClick={() => setAudience("tutor")}
           >
-            {ANNUAL_SAVE_LABEL}
+            For tutors
           </button>
         </div>
-      )}
-      {hasAnnual ? <p className="muted pricing-addons-lead">{ANNUAL_SAVE_FOOTNOTE}</p> : null}
+      ) : null}
 
-      <section>
-        <h2 className="checkout-section-title">Start free</h2>
-        <p className="muted pricing-addons-lead">
-          Create an account at no cost before you upgrade. Students get{" "}
-          {STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month; tutors with a complete profile
-          appear in search free.
-        </p>
-        <div className="pricing-grid" style={{ marginBottom: "1.75rem" }}>
-          <article className="plan">
-            <div className="plan-body">
-              <h3>Student Free</h3>
-              <p className="muted">Browse tutors and message with a monthly contact allowance.</p>
-              <div className="price-block">
-                <div className="price">Free</div>
-              </div>
-              <ul>
-                <li>Search &amp; browse tutors</li>
-                <li>{STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month</li>
-                <li>Reply in existing conversations</li>
-                <li>No commission on lesson fees</li>
-              </ul>
-            </div>
-            <div className="plan-cta">
-              {signedIn ? (
-                <Link href="/search" className="btn btn-block btn-secondary">
-                  Find tutors
-                </Link>
-              ) : (
-                <Link href="/register?role=student" className="btn btn-block btn-secondary">
-                  Join free as student
-                </Link>
-              )}
-            </div>
-          </article>
-          <article className="plan">
-            <div className="plan-body">
-              <h3>Tutor Free</h3>
-              <p className="muted">Complete your profile and appear in search worldwide.</p>
-              <div className="price-block">
-                <div className="price">Free</div>
-              </div>
-              <ul>
-                <li>Appear in search when profile is complete</li>
-                <li>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</li>
-                <li>Receive &amp; reply to student messages</li>
-                <li>Monthly enquiry allowance when you message first</li>
-                <li>Keep 100% of lesson fees</li>
-              </ul>
-            </div>
-            <div className="plan-cta">
-              {signedIn ? (
-                <Link href="/become-a-tutor" className="btn btn-block btn-secondary">
-                  Tutor tools
-                </Link>
-              ) : (
-                <Link href="/register?role=tutor" className="btn btn-block btn-secondary">
-                  Join free as tutor
-                </Link>
-              )}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="checkout-section-title">Core plans</h2>
-        <div className="pricing-grid">
-          {corePlans.map((plan) => (
-            <article
-              key={plan.id}
-              className={`plan ${plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC" || plan.id === "STUDENT_PRO" ? "plan-featured" : ""}`}
+      {hasAnnual ? (
+        <div className="pricing-billing-bar">
+          <div className="billing-toggle" role="group" aria-label="Billing period">
+            <button
+              type="button"
+              className={`btn btn-sm ${billing === "monthly" ? "" : "btn-secondary"}`}
+              aria-pressed={billing === "monthly"}
+              onClick={() => setBilling("monthly")}
             >
+              Monthly
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${billing === "annual" ? "" : "btn-secondary"}`}
+              aria-pressed={billing === "annual"}
+              onClick={() => setBilling("annual")}
+            >
+              {ANNUAL_SAVE_LABEL}
+            </button>
+          </div>
+          <p className="muted pricing-addons-lead">{ANNUAL_SAVE_FOOTNOTE}</p>
+        </div>
+      ) : null}
+
+      {viewingStudent ? (
+        <section className="pricing-section-block" aria-labelledby="student-plans-heading">
+          <header className="pricing-section-intro">
+            <h2 id="student-plans-heading" className="checkout-section-title">
+              Student plans
+            </h2>
+            <p className="muted pricing-addons-lead">
+              Browse free. Upgrade only if you need unlimited messaging, request ads, or study tools.
+              Lesson fees stay between you and the tutor.
+            </p>
+          </header>
+
+          <div className="pricing-grid" style={{ marginBottom: "1.25rem" }}>
+            <article className="plan">
               <div className="plan-body">
-                {plan.isPromoActive ? (
-                  <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
-                ) : (
-                  (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") && (
-                    <span className="plan-badge">Most popular</span>
-                  )
-                )}
-                {plan.id === "STUDENT_PRO" && !plan.isPromoActive && (
-                  <span className="plan-badge">Includes AI</span>
-                )}
-                <h3>{plan.name}</h3>
-                <p className="muted">{plan.description}</p>
-                <PlanPrice
-                  plan={plan}
-                  currency={currency}
-                  billing={billing}
-                  paidCheckoutLive={paidCheckoutLive}
-                />
-                {plan.promoNote && plan.isPromoActive && (
-                  <p className="promo-note">{plan.promoNote}</p>
-                )}
+                <span className="plan-badge plan-badge-soft">Always free</span>
+                <h3>Student Free</h3>
+                <p className="muted">Search tutors and message with a monthly contact allowance.</p>
+                <div className="price-block">
+                  <div className="price">Free</div>
+                </div>
                 <ul>
-                  {plan.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
+                  <li>Search &amp; browse tutors worldwide</li>
+                  <li>{STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month</li>
+                  <li>Unlimited replies in existing chats</li>
+                  <li>No commission on lesson fees</li>
                 </ul>
               </div>
               <div className="plan-cta">
-                <PlanActions
-                  plan={plan}
-                  currency={currency}
-                  signedIn={signedIn}
-                  featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
-                  billing={billing}
-                  paidCheckoutLive={paidCheckoutLive}
-                  hubPointsBalance={hubPointsBalance}
-                  subjectProfileId={subjectProfileId}
-                />
+                {signedIn ? (
+                  <Link href="/search" className="btn btn-block btn-secondary">
+                    Find tutors
+                  </Link>
+                ) : (
+                  <Link href="/register?role=student" className="btn btn-block btn-secondary">
+                    Join free as student
+                  </Link>
+                )}
               </div>
             </article>
-          ))}
-        </div>
-      </section>
 
-      {addOns.length > 0 && (
-        <section className="pricing-addons-section">
-          <h2 className="checkout-section-title">Optional tutor add-ons</h2>
-          <p className="muted pricing-addons-lead">
-            Extra Active (+1 live Teaching Profile monthly, up to 3 total), Priority Verification, and
-            Listing Boost{paidCheckoutLive ? " on Safepay" : " after payment"}. Free includes{" "}
-            {BUSINESS.tutorFreeActiveListings} active profile; Tutor Pro includes up to{" "}
-            {BUSINESS.tutorProActiveListings}. Boost does not add capacity; legacy Extra/Unlimited packs
-            are not primary products.
-          </p>
-          <div className="pricing-grid pricing-addons">
-            {addOns.map((plan) => (
-              <article
+            {studentCore.map((plan) => (
+              <PlanCard
                 key={plan.id}
-                className={`plan${plan.id === "VERIFIED_TUTOR" ? " plan-featured" : ""}`}
-              >
-                <div className="plan-body">
-                  {plan.id === "VERIFIED_TUTOR" ? (
-                    <span className="plan-badge">Recommended</span>
-                  ) : plan.isPromoActive ? (
-                    <span className="plan-badge">{plan.promoLabel || "Limited offer"}</span>
-                  ) : null}
-                  <h3>{plan.name}</h3>
-                  <p className="muted">{plan.description}</p>
-                  <PlanPrice
-                    plan={plan}
-                    currency={currency}
-                    billing={
-                      plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : "monthly"
-                    }
-                    paidCheckoutLive={paidCheckoutLive}
-                  />
-                  <ul>
-                    {plan.features.map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="plan-cta">
-                  <PlanActions
-                    plan={plan}
-                    currency={currency}
-                    signedIn={signedIn}
-                    featured={plan.id === "VERIFIED_TUTOR"}
-                    billing={
-                      plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : "monthly"
-                    }
-                    paidCheckoutLive={paidCheckoutLive}
-                    hubPointsBalance={hubPointsBalance}
-                    subjectProfileId={
-                      plan.id === "AD_BOOST" || plan.id === "HIGHLIGHTED_AD"
-                        ? subjectProfileId
-                        : undefined
-                    }
-                  />
-                </div>
-              </article>
+                plan={plan}
+                {...sharedProps}
+                featured={plan.id === "STUDENT_PASS" || plan.id === "STUDENT_PRO"}
+                badge={planBadge(plan)}
+              />
             ))}
           </div>
         </section>
-      )}
+      ) : null}
+
+      {viewingTutor ? (
+        <section className="pricing-section-block" aria-labelledby="tutor-plans-heading">
+          <header className="pricing-section-intro">
+            <h2 id="tutor-plans-heading" className="checkout-section-title">
+              Tutor plans
+            </h2>
+            <p className="muted pricing-addons-lead">
+              List free with {BUSINESS.tutorFreeActiveListings} live Teaching Profile. Need another
+              subject live? Add Extra Active. Growing fast? Tutor Pro unlocks up to{" "}
+              {BUSINESS.tutorProActiveListings} live profiles plus ranking and unlimited enquiry
+              reveals.
+            </p>
+          </header>
+
+          <ol className="pricing-path" aria-label="Tutor growth path">
+            <li>
+              <strong>Free</strong>
+              <span>{BUSINESS.tutorFreeActiveListings} live profile</span>
+            </li>
+            <li>
+              <strong>Extra Active</strong>
+              <span>+1 live · up to 3 total</span>
+            </li>
+            <li>
+              <strong>Tutor Pro</strong>
+              <span>Up to {BUSINESS.tutorProActiveListings} live + growth tools</span>
+            </li>
+          </ol>
+
+          <div className="pricing-grid" style={{ marginBottom: "1.5rem" }}>
+            <article className="plan">
+              <div className="plan-body">
+                <span className="plan-badge plan-badge-soft">Always free</span>
+                <h3>Tutor Free</h3>
+                <p className="muted">Complete your profile and appear in search worldwide.</p>
+                <div className="price-block">
+                  <div className="price">Free</div>
+                </div>
+                <ul>
+                  <li>Appear in search when your profile is complete</li>
+                  <li>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</li>
+                  <li>Receive &amp; reply to student messages</li>
+                  <li>Monthly enquiry allowance when you message first</li>
+                  <li>Keep 100% of lesson fees</li>
+                </ul>
+              </div>
+              <div className="plan-cta">
+                {signedIn ? (
+                  <Link href="/become-a-tutor" className="btn btn-block btn-secondary">
+                    Tutor tools
+                  </Link>
+                ) : (
+                  <Link href="/register?role=tutor" className="btn btn-block btn-secondary">
+                    Join free as tutor
+                  </Link>
+                )}
+              </div>
+            </article>
+
+            {capacityAddOn ? (
+              <PlanCard
+                plan={capacityAddOn}
+                {...sharedProps}
+                featured={false}
+                badge={planBadge(capacityAddOn)}
+              />
+            ) : null}
+
+            {tutorCore.map((plan) => (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                {...sharedProps}
+                featured={plan.id === "TUTOR_BASIC"}
+                badge={planBadge(plan)}
+              />
+            ))}
+          </div>
+
+          {visibilityAddOns.length > 0 ? (
+            <div className="pricing-addons-section">
+              <header className="pricing-section-intro">
+                <h3 className="checkout-section-title">Optional extras</h3>
+                <p className="muted pricing-addons-lead">
+                  Visibility and verification only — these do not add live Teaching Profile capacity.
+                  Prefer Tutor Pro or Extra Active when you need more subjects live.
+                </p>
+              </header>
+              <div className="pricing-grid pricing-addons">
+                {visibilityAddOns.map((plan) => (
+                  <PlanCard
+                    key={plan.id}
+                    plan={plan}
+                    {...sharedProps}
+                    featured={plan.id === "VERIFIED_TUTOR"}
+                    badge={planBadge(plan)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <aside className="panel pricing-coming-soon">
-        <h2 className="checkout-section-title">Coming soon</h2>
-        <p className="muted">
-          One-time booking fees, group class listings, and resource uploads are not sold yet. Listing
-          Boost is available now — open your tutor dashboard, pick a Teaching Profile, and boost that
-          profile.
-        </p>
+        <h2 className="checkout-section-title">Good to know</h2>
+        <ul className="pricing-notes-list">
+          <li>No shopping cart — pick a plan and checkout in one step{paidCheckoutLive ? " on Safepay" : ""}.</li>
+          <li>
+            Listing Boost is bought per Teaching Profile from your{" "}
+            <Link href="/dashboard/tutor?tab=profile#teaching-listings">tutor dashboard</Link>.
+          </li>
+          <li>
+            Still comparing?{" "}
+            <Link href="/free-vs-paid">Free vs paid guide</Link> ·{" "}
+            <Link href="/help">Help &amp; FAQ</Link>
+          </li>
+        </ul>
       </aside>
     </div>
   );
