@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { TutorProfileForm } from "@/components/TutorProfileForm";
 import { TutorAdsManager } from "@/components/TutorAdsManager";
+import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { CheckoutNotice } from "@/components/CheckoutNotice";
 import { TutorPlanPanel } from "@/components/TutorPlanPanel";
 import { ProfileBoostPanel } from "@/components/ProfileBoostPanel";
@@ -241,8 +242,8 @@ export default async function TutorDashboardPage({
                   <h2>{profileComplete ? "My profile" : "Set up your tutor profile"}</h2>
                   <p className="muted">
                     {profileComplete
-                      ? "Your photo, bio, and verification. Subjects are Teaching Profiles below."
-                      : "Four short steps, then one Teaching Profile to go live."}
+                      ? "Photo, bio, and extras — Teaching Profiles for each subject are below."
+                      : "Finish the steps below, then add a Teaching Profile to go live."}
                   </p>
                 </div>
                 <div className="tutor-profile-status-pills">
@@ -265,7 +266,6 @@ export default async function TutorDashboardPage({
                 emailVerified={Boolean(user.emailVerified)}
                 listingActive={user.tutorProfile.active}
                 verified={user.tutorProfile.verified}
-                trustBadge={badgeProgress?.current || "NEW"}
                 currency={currency}
                 startStep={
                   sp.verify === "1" && !user.tutorProfile.verified
@@ -285,23 +285,31 @@ export default async function TutorDashboardPage({
                 hasValidTeachingProfile={user.tutorProfile.subjectProfiles.some(isValidActiveTeachingProfile)}
                 hasAnyTeachingProfile={user.tutorProfile.subjectProfiles.length > 0}
               />
-            </section>
-          ) : null}
 
-            {user.tutorProfile ? (
-              <section className="panel" id="teaching-listings">
-                <h2 id="teaching-listings-section">My Teaching Profiles</h2>
-                <p className="muted teaching-listings-intro">
-                  One block per subject. Start with subject, title, city, and rate — levels are optional.
-                </p>
+              <div className="tutor-workspace-subjects" id="teaching-listings">
+                <header className="teaching-listings-head">
+                  <div>
+                    <h2 id="teaching-listings-section">Teaching Profiles</h2>
+                    <p className="muted">One subject per profile — students find you by subject and rate.</p>
+                  </div>
+                </header>
                 <TutorAdsManager
                   subjects={catalogSubjects}
                   extraLevels={extraLevels}
                   currency={currency}
                   paidCheckoutLive={paidCheckoutLive}
                 />
-              </section>
-            ) : null}
+              </div>
+
+              {user.tutorProfile.active ? (
+                <ProfileImprovePanel
+                  listingLive={user.tutorProfile.active}
+                  verified={user.tutorProfile.verified}
+                  trustBadge={badgeProgress?.current || "NEW"}
+                />
+              ) : null}
+            </section>
+          ) : null}
           </div>
         )}
       </div>

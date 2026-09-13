@@ -630,8 +630,8 @@ export function TutorAdsManager({
   const activeCount =
     entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length;
   const capacityLine = entitlement?.unlimited
-    ? "Legacy Unlimited — no active Teaching Profile limit. Boost does not add capacity."
-    : `Free: ${freeCap} active · Extra Active: up to 3 · Tutor Pro: up to ${paidCap} · Boost does not add capacity.`;
+    ? "Unlimited live slots (legacy)."
+    : `Free ${freeCap} live · Extra Active up to 3 · Pro up to ${paidCap}`;
   const rateMinLocal = minHourlyRateInput(currency);
   const rateStep = hourlyRateInputStep(currency);
 
@@ -958,9 +958,7 @@ export function TutorAdsManager({
       <div className="teaching-listings-summary">
         <div className="teaching-listings-summary-copy">
           <p className="teaching-listings-capacity">{capacityLine}</p>
-          <p className="teaching-listings-currency">
-            Rates in <strong>{currency}</strong> · students see their local currency
-          </p>
+          <p className="teaching-listings-currency">Rates in {currency}</p>
         </div>
         <p className="teaching-listings-meter" aria-label="Active Teaching Profiles">
           Active <strong>{activeCount}</strong>
@@ -973,19 +971,9 @@ export function TutorAdsManager({
 
       {leftoverTags.length > 0 && (
         <p className="field-hint teaching-listings-leftover" role="status">
-          Old tags not yet profiles: {leftoverTags.join(", ")}. Add a Teaching Profile if you still
-          teach them.
+          Still need profiles for: {leftoverTags.join(", ")}.
         </p>
       )}
-
-      <details className="listing-quality-tips">
-        <summary>Tips for stronger Teaching Profiles</summary>
-        <ul>
-          <li>Clear title students search for (e.g. “Cambridge O Level Chemistry 5070”).</li>
-          <li>Put boards, levels, and syllabus codes on this one profile — not a second subject row.</li>
-          <li>Set a subject-specific rate. Boost raises rank in matching search; it does not add capacity.</li>
-        </ul>
-      </details>
 
       {createControls}
 
@@ -1005,7 +993,7 @@ export function TutorAdsManager({
       <div className="teaching-listings-list">
         {listings.length === 0 && !showCreate && (
           <div className="teaching-listings-empty">
-            <p>No Teaching Profiles yet. Publish one so students can find you for that subject.</p>
+            <p>No subjects live yet — add one to appear in search.</p>
           </div>
         )}
         {listings.map((listing) => {

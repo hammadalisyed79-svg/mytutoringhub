@@ -28,10 +28,8 @@ import {
   type AvailabilitySlot,
 } from "@/lib/availability";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
-import { ProfileImprovePanel } from "@/components/ProfileImprovePanel";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
 import { VerificationForm } from "@/components/VerificationForm";
-import type { TutorTrustBadge } from "@/lib/tutor-badges";
 import {
   TUTOR_WIZARD_STEP_IDS,
   type TutorWizardExtraId,
@@ -187,7 +185,6 @@ export function TutorProfileForm({
   emailVerified = true,
   listingActive = false,
   verified = false,
-  trustBadge = "NEW",
   startStep,
   currency = "PKR",
   hasValidTeachingProfile = false,
@@ -201,7 +198,6 @@ export function TutorProfileForm({
   /** Whether the listing is currently public (DB active flag). */
   listingActive?: boolean;
   verified?: boolean;
-  trustBadge?: TutorTrustBadge | string;
   /** Jump to a setup step, or open an extras block on Save (`verify`). */
   startStep?: TutorWizardStepId | TutorWizardExtraId;
   /** Visitor/tutor location currency for rate entry (stored as PKR). */
@@ -962,10 +958,10 @@ export function TutorProfileForm({
           )}
           <p className="field-hint" style={{ margin: "0.45rem 0 0" }}>
             {hasValidTeachingProfile
-              ? "Your Teaching Profile is active in search. Manage subjects below."
+              ? "Live in search — manage subjects in Teaching Profiles below."
               : manageProfilesOnly
-                ? "Activate a Teaching Profile under My Teaching Profiles to appear in search."
-                : "Next: add one Teaching Profile below (subject + rate) so students can find you."}
+                ? "Activate a subject below to appear in search."
+                : "Next: add a Teaching Profile below to go live."}
           </p>
         </div>
       ) : null}
@@ -1176,16 +1172,9 @@ export function TutorProfileForm({
 
       {currentStep.id === "finish" && (
         <>
-          <p>
-            <a href="#teaching-listings" className="btn btn-sm">
-              {manageProfilesOnly ? "Go to Teaching Profiles" : "Add Teaching Profile"}
-            </a>
-          </p>
-
           <div className="tutor-profile-extras">
             <p className="muted" style={{ marginBottom: "0.35rem" }}>
-              Optional extras — open a block and use <strong>Save</strong> inside it (no need to scroll to
-              the bottom).
+              Optional extras — save inside each block you open.
             </p>
             <div className="profile-finish-save-top">
               <button
@@ -1398,14 +1387,6 @@ export function TutorProfileForm({
               </details>
             ))}
           </div>
-
-          {listingActive ? (
-            <ProfileImprovePanel
-              listingLive={listingActive}
-              verified={verified}
-              trustBadge={trustBadge}
-            />
-          ) : null}
         </>
       )}
 

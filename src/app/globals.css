@@ -3379,6 +3379,40 @@ select:focus {
   scroll-margin-top: 5rem;
 }
 
+.tutor-workspace-subjects {
+  margin-top: 1.75rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+
+.teaching-listings-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.teaching-listings-head h2 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+  letter-spacing: -0.02em;
+  color: var(--brand-deep);
+}
+
+.teaching-listings-head .muted {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.95rem;
+}
+
+.tutor-workspace-subjects .profile-improve {
+  margin-top: 1.5rem;
+}
+
 .tutor-profile-workspace-head {
   display: flex;
   align-items: flex-start;
