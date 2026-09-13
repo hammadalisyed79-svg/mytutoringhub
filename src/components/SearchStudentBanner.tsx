@@ -28,7 +28,7 @@ export async function SearchStudentBanner({ userId, role }: { userId: string; ro
           {nearLimit && (
             <>
               {" "}
-              <Link href="/pricing">Upgrade to Student Pass</Link> before your limit resets.
+              <Link href="/pricing?plan=STUDENT_PASS">Upgrade to Student Pass</Link> before your limit resets.
             </>
           )}
         </p>

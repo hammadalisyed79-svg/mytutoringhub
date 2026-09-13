@@ -310,7 +310,7 @@ export default function CountdownPage() {
           </h2>
           <p style={{ margin: "0 0 0.85rem", fontSize: "0.95rem" }}>{EXAM_PREP_CTA}</p>
           <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>
-            <Link href="/pricing" className="btn btn-sm">
+            <Link href="/pricing?plan=STUDENT_PASS" className="btn btn-sm">
               Student Pass
             </Link>
             <Link href="/past-papers" className="btn btn-secondary btn-sm">

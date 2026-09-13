@@ -37,7 +37,7 @@ export default async function StudentPlanPage() {
         <section className="panel panel-actions" style={{ marginTop: "1.25rem" }}>
           <h2 className="panel-actions-title">Manage plan</h2>
           <div className="panel-actions-row">
-            <Link href="/pricing" className="btn">
+            <Link href={summary.planTier === "free" ? "/pricing?plan=STUDENT_PASS" : "/pricing"} className="btn">
               {summary.planTier === "free" ? "Upgrade plan" : "View pricing"}
             </Link>
             <Link href="/dashboard/student" className="btn btn-secondary">

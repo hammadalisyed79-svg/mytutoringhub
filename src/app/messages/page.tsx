@@ -152,13 +152,28 @@ export default async function MessagesPage({ searchParams }: { searchParams: Sea
             </p>
             <p>
               {session.user.role === "TUTOR" ? (
-                <Link href="/ads" className="btn">
-                  Browse student requests
-                </Link>
+                <>
+                  <Link href="/ads" className="btn">
+                    Browse student requests
+                  </Link>{" "}
+                  <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-secondary">
+                    View Tutor Pro
+                  </Link>
+                </>
               ) : (
-                <Link href="/search" className="btn">
-                  Find tutors
-                </Link>
+                <>
+                  <Link href="/search" className="btn">
+                    Find tutors
+                  </Link>
+                  {!hasUnlimited ? (
+                    <>
+                      {" "}
+                      <Link href="/pricing?plan=STUDENT_PASS" className="btn btn-secondary">
+                        Get Student Pass
+                      </Link>
+                    </>
+                  ) : null}
+                </>
               )}
             </p>
           </div>

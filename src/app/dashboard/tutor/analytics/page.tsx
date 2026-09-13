@@ -425,6 +425,13 @@ export default async function TutorAnalyticsPage() {
                   : "Listed in search for free. Tutor Pro adds priority ranking and unlimited enquiry reveals."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
+            {listed && !hasPaidPlan ? (
+              <p style={{ margin: "0.65rem 0 0" }}>
+                <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-sm">
+                  View Tutor Pro
+                </Link>
+              </p>
+            ) : null}
           </section>
         </div>
 
@@ -495,20 +502,25 @@ export default async function TutorAnalyticsPage() {
               priority ranking and unlimited enquiry reveals — verification, highlight, and boost stay
               on Pricing (boost each subject profile from your dashboard).
             </p>
-            <Link
-              href="/dashboard/tutor"
-              style={{
-                background: "var(--brand)",
-                color: "#fff",
-                borderRadius: "var(--radius-sm)",
-                padding: "0.4em 1.1em",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                display: "inline-block",
-              }}
-            >
-              Edit tutor profile →
-            </Link>
+            <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>
+              <Link
+                href="/dashboard/tutor"
+                style={{
+                  background: "var(--brand)",
+                  color: "#fff",
+                  borderRadius: "var(--radius-sm)",
+                  padding: "0.4em 1.1em",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  display: "inline-block",
+                }}
+              >
+                Edit tutor profile →
+              </Link>
+              <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-secondary btn-sm">
+                View Tutor Pro
+              </Link>
+            </div>
           </section>
         )}
       </div>

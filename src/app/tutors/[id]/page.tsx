@@ -104,7 +104,8 @@ function ProfileCtaButtons({
         View contact options
       </Link>
       <p className="muted profile-cta-hint">
-        Switch to a student account with a Student Pass to message {tutorFirstName}.
+        Switch to a student account with a Student Pass to message {tutorFirstName}.{" "}
+        <Link href="/pricing?plan=STUDENT_PASS">View Student Pass</Link>
       </p>
     </div>
   );
@@ -338,7 +339,7 @@ export default async function TutorProfilePage({ params }: Params) {
               <>
                 you add subjects and a headline (or photo) on your{" "}
                 <Link href="/dashboard">dashboard</Link>. Tutor Pro adds priority ranking, not
-                basic visibility.
+                basic visibility — <Link href="/pricing?plan=TUTOR_BASIC">view Tutor Pro</Link>
               </>
             ) : (
               "the profile is complete enough to list"
@@ -840,8 +841,8 @@ export default async function TutorProfilePage({ params }: Params) {
                 </div>
               ) : (
                 <p className="muted">
-                  Switch to a student account to send a message. Free accounts get {studentFreeContactsShort()};
-                  Student Pass unlocks unlimited messaging.
+                  Switch to a student account to send a message. Free accounts get {studentFreeContactsShort()};{" "}
+                  <Link href="/pricing?plan=STUDENT_PASS">Student Pass</Link> unlocks unlimited messaging.
                 </p>
               )}
               <p className="muted profile-fee-note">

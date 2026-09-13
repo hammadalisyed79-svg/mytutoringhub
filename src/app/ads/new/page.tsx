@@ -69,7 +69,7 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
         {!allowed ? (
           <div className="panel">
             <p>An active Student Pass is required to post a request.</p>
-            <Link href="/pricing" className="btn">
+            <Link href="/pricing?plan=STUDENT_PASS" className="btn">
               Get Student Pass
             </Link>
           </div>

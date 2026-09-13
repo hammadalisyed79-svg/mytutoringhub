@@ -115,6 +115,38 @@ const EMPTY_CAPS: TeachingProfileEditorValues = {
   syllabusCodes: [],
 };
 
+function CapacityUpgradeActions({
+  currency,
+  paidCheckoutLive,
+  canBuyExtraActive = true,
+  secondaryHref = "/pricing?plan=TUTOR_BASIC",
+  secondaryLabel = "View Tutor Pro",
+}: {
+  currency: CurrencyCode;
+  paidCheckoutLive: boolean;
+  canBuyExtraActive?: boolean;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}) {
+  return (
+    <div className="teaching-listings-upgrade-actions">
+      {canBuyExtraActive ? (
+        <SubscribeButton
+          plan="EXTRA_ACTIVE"
+          planLabel="Extra Active Profile"
+          currency={currency}
+          billing="monthly"
+          label="Add Extra Active (monthly)"
+          paidCheckoutLive={paidCheckoutLive}
+        />
+      ) : null}
+      <Link className="btn btn-sm" href={secondaryHref}>
+        {secondaryLabel}
+      </Link>
+    </div>
+  );
+}
+
 function TeachingDescriptionAiHelp({
   description,
   subject,
@@ -472,7 +504,7 @@ export function TutorAdsManager({
     }
     flashSuccess(
       data.createdPaused
-        ? "Teaching Profile saved as Paused. Upgrade to Tutor Pro to activate more than one in search."
+        ? "Teaching Profile saved as Paused. Add Extra Active (monthly) or Tutor Pro to run more live in search."
         : "Teaching Profile published — students can find it in search.",
     );
     if (data.createdPaused) {
@@ -547,7 +579,11 @@ export function TutorAdsManager({
     setBusyId(null);
     if (!res.ok) {
       flashError(data.error || "Could not update status");
-      if (data.code === "UPGRADE_REQUIRED" || data.upgradeRequired) {
+      if (
+        data.code === "UPGRADE_REQUIRED" ||
+        data.code === "SWITCH_LIMIT" ||
+        data.upgradeRequired
+      ) {
         setUpgradeNotice(data.error || UPGRADE_FOR_MORE_PROFILES_MESSAGE);
       }
       return;
@@ -853,41 +889,23 @@ export function TutorAdsManager({
       {entitlement?.upgradeRequired || upgradeNotice ? (
         <div className="panel teaching-listings-upgrade" role="status">
           <p>{upgradeNotice || entitlement?.upgradeMessage || UPGRADE_FOR_MORE_PROFILES_MESSAGE}</p>
-          <div className="teaching-listings-upgrade-actions">
-            {entitlement?.canBuyExtraActive !== false ? (
-              <SubscribeButton
-                plan="EXTRA_ACTIVE"
-                planLabel="Extra Active Profile"
-                currency={currency}
-                billing="monthly"
-                label="Add Extra Active (monthly)"
-                paidCheckoutLive={paidCheckoutLive}
-              />
-            ) : null}
-            <Link className="btn btn-sm" href="/pricing?plan=TUTOR_BASIC">
-              View Tutor Pro
-            </Link>
-          </div>
+          <CapacityUpgradeActions
+            currency={currency}
+            paidCheckoutLive={paidCheckoutLive}
+            canBuyExtraActive={entitlement?.canBuyExtraActive !== false}
+          />
         </div>
       ) : null}
       {entitlement && !entitlement.canCreate ? (
         <div className="panel teaching-listings-upgrade">
           <p>{entitlement.createReason}</p>
-          <div className="teaching-listings-upgrade-actions">
-            {entitlement.canBuyExtraActive ? (
-              <SubscribeButton
-                plan="EXTRA_ACTIVE"
-                planLabel="Extra Active Profile"
-                currency={currency}
-                billing="monthly"
-                label="Add Extra Active (monthly)"
-                paidCheckoutLive={paidCheckoutLive}
-              />
-            ) : null}
-            <Link className="btn btn-sm btn-secondary" href="/pricing">
-              View plans
-            </Link>
-          </div>
+          <CapacityUpgradeActions
+            currency={currency}
+            paidCheckoutLive={paidCheckoutLive}
+            canBuyExtraActive={Boolean(entitlement.canBuyExtraActive)}
+            secondaryHref="/pricing?plan=TUTOR_BASIC"
+            secondaryLabel="View plans"
+          />
         </div>
       ) : (
         <>
@@ -903,8 +921,14 @@ export function TutorAdsManager({
           </button>
           {entitlement?.createPaused ? (
             <p className="muted teaching-listings-catalog-hint">
-              At your active limit — new subjects save as Paused. Add Extra Active (monthly) or Tutor
-              Pro to run more live.
+              At your active limit — new subjects save as Paused.{" "}
+              {entitlement.canBuyExtraActive !== false ? (
+                <>
+                  <Link href="/pricing?plan=EXTRA_ACTIVE">Add Extra Active</Link>
+                  {" or "}
+                </>
+              ) : null}
+              <Link href="/pricing?plan=TUTOR_BASIC">View Tutor Pro</Link> to run more live.
             </p>
           ) : null}
         </>
@@ -1069,6 +1093,20 @@ export function TutorAdsManager({
                   Delete
                 </button>
               </div>
+
+              {listing.status !== "ACTIVE" && entitlement?.upgradeRequired ? (
+                <p className="muted teaching-listings-catalog-hint" role="status">
+                  At your active limit.{" "}
+                  {entitlement.canBuyExtraActive !== false ? (
+                    <>
+                      <Link href="/pricing?plan=EXTRA_ACTIVE">Add Extra Active</Link>
+                      {" or "}
+                    </>
+                  ) : null}
+                  <Link href="/pricing?plan=TUTOR_BASIC">View Tutor Pro</Link> to activate this
+                  profile — or use the upgrade options above.
+                </p>
+              ) : null}
 
               {listing.status === "ACTIVE" && (
                 <div className="teaching-listing-boost-row">

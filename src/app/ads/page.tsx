@@ -175,7 +175,13 @@ export default async function AdsPage() {
                 <Link href="/ads/new" className="btn">
                   Post a request
                 </Link>
-              ) : session?.user?.role === "TUTOR" ? null : (
+              ) : session?.user?.role === "TUTOR" ? (
+                <p>
+                  <Link href="/pricing?plan=TUTOR_BASIC" className="btn">
+                    View Tutor Pro
+                  </Link>
+                </p>
+              ) : (
                 <Link href="/register?role=student" className="btn">
                   Join as student
                 </Link>

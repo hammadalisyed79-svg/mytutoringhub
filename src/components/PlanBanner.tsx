@@ -12,7 +12,7 @@ export type PlanBannerProps = {
 };
 
 export function PlanBanner({
-  role: _role,
+  role,
   planName,
   planTier,
   usageUsed,
@@ -23,6 +23,8 @@ export function PlanBanner({
   const pct = usageLimit > 0 ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
   const barTone =
     pct >= 90 ? "is-warn" : planTier === "elite" ? "is-elite" : "is-default";
+  const pricingHref =
+    role === "TUTOR" ? "/pricing?plan=TUTOR_BASIC" : "/pricing?plan=STUDENT_PASS";
 
   return (
     <div className="plan-banner">
@@ -52,11 +54,11 @@ export function PlanBanner({
 
       <div className="plan-banner-actions">
         {planTier === "free" ? (
-          <Link href="/pricing" className="btn btn-sm">
+          <Link href={pricingHref} className="btn btn-sm">
             Upgrade plan
           </Link>
         ) : (
-          <Link href="/pricing" className="plan-banner-link">
+          <Link href={pricingHref} className="plan-banner-link">
             Manage plan →
           </Link>
         )}

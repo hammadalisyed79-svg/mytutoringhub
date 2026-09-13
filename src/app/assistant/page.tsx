@@ -50,7 +50,7 @@ export default async function AssistantPage() {
             plan.
           </p>
           <p>
-            <Link className="btn" href="/pricing">
+            <Link className="btn" href="/pricing?plan=STUDENT_PRO">
               Get Student Pro
             </Link>
           </p>

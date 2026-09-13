@@ -161,7 +161,8 @@ export default function SettingsPage() {
             <div className="panel" style={{ borderColor: "var(--brand)", background: "rgba(15, 90, 70, 0.06)" }}>
               <p style={{ marginTop: 0 }}>
                 Your email is not verified yet. Messaging and ads stay locked until you confirm the
-                link we sent. Student Pro is also required for the AI study assistant.
+                link we sent. Student Pro is also required for the AI study assistant.{" "}
+                <Link href="/pricing?plan=STUDENT_PRO">View Student Pro</Link>
               </p>
               <ResendVerificationButton email={email} />
             </div>
