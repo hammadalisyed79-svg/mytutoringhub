@@ -104,7 +104,43 @@ export async function PATCH(req: Request) {
 export async function DELETE() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role === "ADMIN") {
+    return NextResponse.json({ error: "Admin accounts cannot be self-deactivated here." }, { status: 403 });
+  }
   const id = session.user.id;
+
+  const tutor = await prisma.tutorProfile.findUnique({
+    where: { userId: id },
+    select: { id: true },
+  });
+
+  if (tutor) {
+    await prisma.subjectProfile.deleteMany({ where: { tutorProfileId: tutor.id } });
+    await prisma.tutorAd.deleteMany({ where: { tutorProfileId: tutor.id } }).catch(() => undefined);
+    await prisma.tutorProfile.update({
+      where: { id: tutor.id },
+      data: {
+        active: false,
+        forceActive: false,
+        bio: "",
+        headline: null,
+        photoUrl: null,
+        subjects: "",
+        expertise: null,
+        qualifications: null,
+        teachingMethod: null,
+        languages: null,
+        levels: null,
+        availability: null,
+        videoUrl: null,
+        introVideoUrl: null,
+        phone: null,
+      },
+    });
+  }
+
+  await prisma.studentAd.updateMany({ where: { userId: id }, data: { status: "HIDDEN" } });
+
   await prisma.user.update({
     where: { id },
     data: {
@@ -113,9 +149,9 @@ export async function DELETE() {
       passwordHash: await bcrypt.hash(`deleted-${id}`, 10),
       phone: null,
       suspended: true,
+      role: "STUDENT",
     },
   });
-  await prisma.tutorProfile.updateMany({ where: { userId: id }, data: { active: false } });
-  await prisma.studentAd.updateMany({ where: { userId: id }, data: { status: "HIDDEN" } });
+
   return NextResponse.json({ ok: true });
 }

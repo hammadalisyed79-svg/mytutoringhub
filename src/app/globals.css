@@ -3238,6 +3238,20 @@ select:focus {
   margin-top: 1.25rem;
 }
 
+.settings-danger-zone {
+  margin-top: 1.75rem;
+  border-color: rgba(140, 40, 40, 0.28);
+  background: rgba(140, 40, 40, 0.04);
+}
+
+.settings-danger-zone h2 {
+  margin-top: 0;
+}
+
+.settings-danger-confirm {
+  margin-top: 0.75rem;
+}
+
 .tutor-dashboard-more > summary {
   cursor: pointer;
   list-style: none;

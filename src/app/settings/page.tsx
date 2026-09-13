@@ -25,6 +25,9 @@ export default function SettingsPage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [deactivateConfirm, setDeactivateConfirm] = useState("");
+  const [deactivating, setDeactivating] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -76,14 +79,26 @@ export default function SettingsPage() {
     router.refresh();
   }
 
-  async function deleteAccount() {
-    if (!confirm("Delete your account? This cannot be undone.")) return;
-    const res = await fetch("/api/settings", { method: "DELETE" });
-    if (!res.ok) {
-      setError("Could not delete account");
+  async function deactivateAccount() {
+    setError("");
+    if (deactivateConfirm.trim().toUpperCase() !== "DELETE") {
+      setError("Type DELETE to confirm account deactivation.");
       return;
     }
-    await signOut({ callbackUrl: "/" });
+    setDeactivating(true);
+    try {
+      const res = await fetch("/api/settings", { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError((data as { error?: string }).error || "Could not deactivate account.");
+        return;
+      }
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      setError("Could not deactivate account. Try again.");
+    } finally {
+      setDeactivating(false);
+    }
   }
 
   return (
@@ -200,14 +215,66 @@ export default function SettingsPage() {
           </button>
         </form>
         <BlockedUsersPanel />
-        <button
-          className="btn btn-secondary"
-          type="button"
-          style={{ marginTop: "1.5rem" }}
-          onClick={deleteAccount}
-        >
-          Delete account
-        </button>
+
+        <section className="panel settings-danger-zone" aria-labelledby="settings-danger-title">
+          <h2 id="settings-danger-title">Deactivate account</h2>
+          <p className="muted">
+            This permanently deactivates your login. Your public tutor profile, Teaching Profiles,
+            student requests, and saved account details are removed and <strong>cannot be restored</strong>.
+            No searchable record of your listings will remain.
+          </p>
+          {!deactivateOpen ? (
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => {
+                setError("");
+                setDeactivateOpen(true);
+              }}
+            >
+              Deactivate account…
+            </button>
+          ) : (
+            <div className="stack-form settings-danger-confirm">
+              <p className="form-error" role="alert">
+                Warning: no records will be saved for recovery. Type <strong>DELETE</strong> to continue.
+              </p>
+              <label>
+                Confirmation
+                <input
+                  value={deactivateConfirm}
+                  onChange={(e) => setDeactivateConfirm(e.target.value)}
+                  placeholder="Type DELETE"
+                  autoComplete="off"
+                  disabled={deactivating}
+                />
+              </label>
+              {error && <p className="form-error">{error}</p>}
+              <div className="panel-actions-row">
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  disabled={deactivating}
+                  onClick={() => {
+                    setDeactivateOpen(false);
+                    setDeactivateConfirm("");
+                    setError("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn"
+                  type="button"
+                  disabled={deactivating || deactivateConfirm.trim().toUpperCase() !== "DELETE"}
+                  onClick={() => void deactivateAccount()}
+                >
+                  {deactivating ? "Deactivating…" : "Deactivate permanently"}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

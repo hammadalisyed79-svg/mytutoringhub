@@ -502,3 +502,45 @@ export async function PATCH(req: Request) {
 
   return NextResponse.json(serializeListing(listed));
 }
+
+/** Permanently delete one Teaching Profile owned by the signed-in tutor. */
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "TUTOR") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let id = "";
+  try {
+    const url = new URL(req.url);
+    id = url.searchParams.get("id") || "";
+    if (!id) {
+      const body = await req.json().catch(() => ({}));
+      id = typeof body?.id === "string" ? body.id : "";
+    }
+  } catch {
+    id = "";
+  }
+  if (!id) return NextResponse.json({ error: "Missing Teaching Profile id." }, { status: 400 });
+
+  const profile = await prisma.tutorProfile.findUnique({ where: { userId: session.user.id } });
+  if (!profile) return NextResponse.json({ error: "No profile" }, { status: 404 });
+
+  const row = await prisma.subjectProfile.findFirst({
+    where: { id, tutorProfileId: profile.id },
+    select: { id: true, subject: true },
+  });
+  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  await prisma.subjectProfile.delete({ where: { id: row.id } });
+  await prisma.tutorAd
+    .deleteMany({
+      where: { tutorProfileId: profile.id, subject: row.subject },
+    })
+    .catch(() => undefined);
+
+  await syncDerivedMasterSubjects(profile.id);
+  await syncTutorBadges(session.user.id);
+
+  return NextResponse.json({ ok: true, deletedId: row.id });
+}

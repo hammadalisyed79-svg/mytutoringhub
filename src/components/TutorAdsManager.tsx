@@ -558,6 +558,26 @@ export function TutorAdsManager({
     router.refresh();
   }
 
+  async function deleteListing(id: string, title: string) {
+    const ok = window.confirm(
+      `Delete “${title}”? This Teaching Profile is removed permanently and cannot be recovered.`,
+    );
+    if (!ok) return;
+    clearFeedback();
+    setBusyId(id);
+    const res = await fetch(`/api/tutor-ads?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    setBusyId(null);
+    if (!res.ok) {
+      flashError((data as { error?: string }).error || "Could not delete Teaching Profile.");
+      return;
+    }
+    if (editingId === id) setEditingId(null);
+    flashSuccess("Teaching Profile deleted.");
+    load();
+    router.refresh();
+  }
+
   const freeCap = entitlement?.freeCapAfterPromo ?? 1;
   const paidCap = entitlement?.paidCap ?? 10;
   const capLabel = entitlement?.unlimited
@@ -1011,6 +1031,14 @@ export function TutorAdsManager({
                   onClick={() => setEditingId(editing ? null : listing.id)}
                 >
                   {editing ? "Close" : "Edit"}
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  disabled={busyId === listing.id}
+                  onClick={() => void deleteListing(listing.id, listing.title || listing.subject)}
+                >
+                  Delete
                 </button>
               </div>
 
