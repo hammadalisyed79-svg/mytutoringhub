@@ -11,10 +11,11 @@ import {
 import {
   AI_SUPPORT_KIND,
   AI_SUPPORT_RATE_LIMIT,
-  AI_SUPPORT_SYSTEM,
   AI_WINDOW_MS,
+  buildAiSupportSystemPrompt,
 } from "@/lib/ai-support";
 import { getSiteSettings } from "@/lib/site-settings";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 import type { Role } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
     userId: session.user.id,
     kind: AI_SUPPORT_KIND,
     message,
-    systemPrompt: AI_SUPPORT_SYSTEM,
+    systemPrompt: buildAiSupportSystemPrompt({ paidCheckoutLive: isPaidCheckoutLive() }),
     rateLimit: AI_SUPPORT_RATE_LIMIT,
   });
 

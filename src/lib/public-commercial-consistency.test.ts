@@ -32,6 +32,7 @@ import {
   isSubjectProfilePromoActive,
 } from "@/lib/subject-profile-entitlements";
 import { TUTOR_COMPARE_ROWS, FREE_VS_PAID_FAQS } from "@/lib/free-vs-paid";
+import { buildAiSupportSystemPrompt, buildAiStudySystemPrompt } from "@/lib/ai-support";
 import { DEFAULT_PAST_PAPER_FEE_PKR } from "@/lib/past-papers";
 
 const root = join(process.cwd(), "src");
@@ -218,9 +219,34 @@ assert.doesNotMatch(proFaq!.a, /Extra Active/);
 
 const aiSupport = readSrc("lib/ai-support.ts");
 assert.match(aiSupport, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
+assert.match(aiSupport, /buildAiSupportSystemPrompt/);
+assert.match(aiSupport, /paidCheckoutLive/);
+assert.match(aiSupport, /Teaching Profile/);
+assert.match(aiSupport, /Listing Boost/);
+assert.match(aiSupport, /Priority Verification Review/);
+assert.match(aiSupport, /Access until/);
+assert.match(aiSupport, /Science and Computer Science/);
 assert.doesNotMatch(aiSupport, /Extra Active/);
-assert.doesNotMatch(aiSupport, /Hub Points/);
 assert.doesNotMatch(aiSupport, /Tutor Basic/i);
+
+const supportLive = buildAiSupportSystemPrompt({ paidCheckoutLive: true });
+const supportSoon = buildAiSupportSystemPrompt({ paidCheckoutLive: false });
+assert.match(supportLive, /Safepay checkout is LIVE/);
+assert.match(supportSoon, /may still be launching/);
+assert.match(supportLive, new RegExp(`${BUSINESS.studentFreeContactsPerMonth} new tutor contacts`));
+assert.match(supportLive, new RegExp(`${BUSINESS.studentPassPaperDownloadsPerMonth} past paper`));
+assert.match(supportLive, new RegExp(`up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles`));
+assert.match(supportLive, new RegExp(`PKR ${DEFAULT_PAST_PAPER_FEE_PKR}`));
+assert.doesNotMatch(
+  supportLive,
+  /unlimited past papers with Student Pass|faster responses with Student Pass/i,
+);
+assert.match(supportLive, /badge is earned, not purchased|Never say users can buy the Identity Verified badge/i);
+
+const studyPrompt = buildAiStudySystemPrompt();
+assert.match(studyPrompt, /Student Pro/);
+assert.match(studyPrompt, /\/search/);
+assert.match(studyPrompt, /\/support/);
 
 assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /30 September 2026/);
 assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Listing Boost and Priority Verification Review are separate paid add-ons/);

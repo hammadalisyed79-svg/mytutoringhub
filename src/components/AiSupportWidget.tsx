@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { AiChatPanel } from "@/components/AiChatPanel";
-import { AI_SUPPORT_WELCOME } from "@/lib/ai-support";
+import { AI_SUPPORT_PLACEHOLDER, AI_SUPPORT_WELCOME } from "@/lib/ai-support";
 
 type Props = {
   configured: boolean;
@@ -48,7 +48,7 @@ export function AiSupportWidget({ configured, aiDisabled = false }: Props) {
             <div>
               <strong>Support</strong>
               <p className="muted ai-support-panel-sub">
-                Plans, messaging, verification &amp; account help
+                Plans, messaging, Teaching Profiles, papers &amp; billing
               </p>
             </div>
             <button
@@ -65,7 +65,7 @@ export function AiSupportWidget({ configured, aiDisabled = false }: Props) {
             initiallyConfigured={configured}
             assistantLabel="Support"
             emptyHint={AI_SUPPORT_WELCOME}
-            placeholder="Ask about plans, verification, messaging…"
+            placeholder={AI_SUPPORT_PLACEHOLDER}
             compact
             unconfiguredMessage="AI support is unavailable. Email admin@mytutoringhub.com or visit Help."
           />

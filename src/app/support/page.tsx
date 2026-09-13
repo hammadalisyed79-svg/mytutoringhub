@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AiChatPanel } from "@/components/AiChatPanel";
-import { AI_SUPPORT_WELCOME } from "@/lib/ai-support";
+import { AI_SUPPORT_PLACEHOLDER, AI_SUPPORT_WELCOME } from "@/lib/ai-support";
 import { getSiteSettings } from "@/lib/site-settings";
 import { privateMetadata } from "@/lib/seo";
 
@@ -39,16 +39,17 @@ export default async function SupportPage() {
       <div className="container narrow-prose">
         <h1 className="page-title">Support</h1>
         <p className="section-lead">
-          Instant answers about Student Pass, Student Pro, Tutor Pro, messaging, verification,
-          payments, and how the platform works. For homework help, use the{" "}
-          <Link href="/assistant">Study assistant</Link> (Student Pro).
+          Instant answers about Student Pass, Student Pro, Tutor Pro, messaging limits, Teaching
+          Profiles, student requests, past papers, verification, Safepay billing, and how the
+          platform works. For homework help, use the{" "}
+          <Link href="/assistant">Study assistant</Link> (Student Pro for students).
         </p>
         <AiChatPanel
           apiPath="/api/ai/support"
           initiallyConfigured={configured}
           assistantLabel="Support"
           emptyHint={AI_SUPPORT_WELCOME}
-          placeholder="How do I verify my email? What does Student Pass include?"
+          placeholder={AI_SUPPORT_PLACEHOLDER}
           unconfiguredMessage="AI support needs OPENAI_API_KEY. Email admin@mytutoringhub.com meanwhile."
         />
         <p className="muted" style={{ marginTop: "1rem" }}>
