@@ -463,7 +463,11 @@ export function TutorProfileForm({
     const payload = draftPayloadForStep(stepId);
     if (!payload) return true;
     setDraftSaving(true);
-    if (!opts?.silent) setDraftNote("");
+    if (!opts?.silent) {
+      setError("");
+      setMsg("");
+      setDraftNote("");
+    }
     try {
       const res = await fetch("/api/profile/tutor", {
         method: "PATCH",
@@ -476,12 +480,72 @@ export function TutorProfileForm({
         return false;
       }
       if (!opts?.silent) {
-        setDraftNote("Progress saved — not public until you finish and save.");
+        setDraftNote("Step saved. Continue when ready — or open optional extras below.");
+        setMsg("Step saved.");
       }
       return true;
     } catch {
       setError("Could not save this step. Check your connection and try again.");
       return false;
+    } finally {
+      setDraftSaving(false);
+    }
+  }
+
+  function draftPayloadForExtra(blockId: TutorWizardExtraId): Record<string, unknown> | null {
+    switch (blockId) {
+      case "details":
+        return {
+          expertise: joinCsv(expertiseList),
+          levels: joinCsv(levelList),
+          languages: joinCsv(languageList),
+          experienceYears: experienceYears === "" ? null : Number(experienceYears),
+          teachingMethod: teachingMethod.trim(),
+          wizardStep: "details",
+        };
+      case "schedule":
+        return {
+          availability: serializeAvailability(slots),
+          offersFreeTrial,
+          wizardStep: "schedule",
+        };
+      case "contact":
+        return {
+          introVideoUrl: introVideoUrl.trim(),
+          phone: phone.trim(),
+          wizardStep: "contact",
+        };
+      case "verify":
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  async function saveExtraBlock(blockId: TutorWizardExtraId) {
+    const payload = draftPayloadForExtra(blockId);
+    if (!payload) return;
+    setError("");
+    setMsg("");
+    setDraftNote("");
+    setDraftSaving(true);
+    try {
+      const res = await fetch("/api/profile/tutor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError((data as { error?: string }).error || "Could not save this section. Try again.");
+        return;
+      }
+      const label = EXTRA_BLOCKS.find((b) => b.id === blockId)?.title || "Section";
+      setMsg(`${label} saved.`);
+      setDraftNote(`${label} saved.`);
+      router.refresh();
+    } catch {
+      setError("Could not save this section. Check your connection and try again.");
     } finally {
       setDraftSaving(false);
     }
@@ -498,6 +562,22 @@ export function TutorProfileForm({
     const saved = await saveDraft(currentStep.id);
     if (!saved) return;
     setStep((s) => Math.min(s + 1, steps.length - 1));
+  }
+
+  async function saveCurrentStep() {
+    setError("");
+    setDraftNote("");
+    setMsg("");
+    if (currentStep.id === "finish") {
+      await save();
+      return;
+    }
+    const problem = validateStep(currentStep.id);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    await saveDraft(currentStep.id);
   }
 
   function goBack() {
@@ -785,12 +865,12 @@ export function TutorProfileForm({
   );
 
   const wizardActions = (
-    <div className="guided-search-actions profile-wizard-actions">
+    <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky">
       <button
         type="button"
         className="btn btn-secondary"
         onClick={goBack}
-        disabled={step === 0 || draftSaving}
+        disabled={step === 0 || draftSaving || saving}
         aria-disabled={step === 0}
       >
         Back
@@ -798,17 +878,57 @@ export function TutorProfileForm({
       <div className="profile-wizard-actions-right">
         {draftNote ? <p className="profile-wizard-draft-note muted">{draftNote}</p> : null}
         {currentStep.id === "finish" ? (
-          <button className="btn" type="button" disabled={uploading || saving || draftSaving} onClick={() => void save()}>
+          <button
+            className="btn"
+            type="button"
+            disabled={uploading || saving || draftSaving}
+            onClick={() => void save()}
+          >
             {saving ? "Saving…" : "Save profile"}
           </button>
         ) : (
-          <button className="btn" type="button" disabled={draftSaving || uploading} onClick={() => void goNext()}>
-            {draftSaving ? "Saving…" : "Next"}
-          </button>
+          <>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              disabled={draftSaving || uploading || saving}
+              onClick={() => void saveCurrentStep()}
+            >
+              {draftSaving ? "Saving…" : "Save step"}
+            </button>
+            <button
+              className="btn"
+              type="button"
+              disabled={draftSaving || uploading || saving}
+              onClick={() => void goNext()}
+            >
+              {draftSaving ? "Saving…" : "Save & next"}
+            </button>
+          </>
         )}
       </div>
     </div>
   );
+
+  function extraBlockSaveRow(blockId: TutorWizardExtraId) {
+    if (blockId === "verify") return null;
+    const label = EXTRA_BLOCKS.find((b) => b.id === blockId)?.title || "section";
+    return (
+      <div className="profile-extra-save-row">
+        <button
+          type="button"
+          className="btn btn-sm"
+          disabled={draftSaving || saving}
+          onClick={() => void saveExtraBlock(blockId)}
+        >
+          {draftSaving ? "Saving…" : `Save ${label}`}
+        </button>
+        <p className="muted field-hint" style={{ margin: 0 }}>
+          Saves this section only — you do not need to scroll to the bottom.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -1064,8 +1184,22 @@ export function TutorProfileForm({
 
           <div className="tutor-profile-extras">
             <p className="muted" style={{ marginBottom: "0.35rem" }}>
-              Optional extras — open any block, then Save profile.
+              Optional extras — open a block and use <strong>Save</strong> inside it (no need to scroll to
+              the bottom).
             </p>
+            <div className="profile-finish-save-top">
+              <button
+                type="button"
+                className="btn"
+                disabled={uploading || saving || draftSaving}
+                onClick={() => void save()}
+              >
+                {saving ? "Saving…" : "Save profile"}
+              </button>
+              <p className="muted field-hint" style={{ margin: 0 }}>
+                Saves your full profile. Each optional block also has its own Save.
+              </p>
+            </div>
             {EXTRA_BLOCKS.map((block) => (
               <details
                 key={block.id}
@@ -1154,6 +1288,7 @@ export function TutorProfileForm({
                         inPerson={inPerson}
                         onApply={setTeachingMethod}
                       />
+                      {extraBlockSaveRow("details")}
                     </>
                   ) : null}
                   {block.id === "schedule" ? (
@@ -1225,6 +1360,7 @@ export function TutorProfileForm({
                         />{" "}
                         Free first lesson
                       </label>
+                      {extraBlockSaveRow("schedule")}
                     </>
                   ) : null}
                   {block.id === "contact" ? (
@@ -1248,6 +1384,7 @@ export function TutorProfileForm({
                           hint="Private — never shown on your public profile. Students message you through the platform; phone is for admin and verification only."
                         />
                       </label>
+                      {extraBlockSaveRow("contact")}
                     </>
                   ) : null}
                   {block.id === "verify" ? (

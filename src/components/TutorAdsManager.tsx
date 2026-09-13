@@ -340,6 +340,9 @@ function EditTeachingProfileForm({
       <button className="btn btn-sm" type="submit" disabled={busy}>
         Save changes
       </button>
+      <p className="muted field-hint" style={{ margin: "0.35rem 0 0" }}>
+        Saves this Teaching Profile only.
+      </p>
     </form>
   );
 }
@@ -874,13 +877,22 @@ export function TutorAdsManager({
               Skip for now
             </button>
             <button className="btn btn-sm" type="submit">
-              Publish Teaching Profile
+              Save &amp; publish
             </button>
           </>
         ) : (
-          <button className="btn btn-sm" type="submit">
-            Next
-          </button>
+          <>
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => void create({ skipOptional: true })}
+            >
+              Save essentials now
+            </button>
+            <button className="btn btn-sm" type="submit">
+              Save &amp; next
+            </button>
+          </>
         )}
       </div>
     </form>

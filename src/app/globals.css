@@ -11422,6 +11422,43 @@ img {
   border-top: 1px solid var(--line);
 }
 
+.profile-wizard-actions--sticky {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 252, 247, 0.97);
+  box-shadow: 0 -8px 24px rgba(12, 24, 21, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.profile-finish-save-top,
+.profile-extra-save-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0.35rem 0 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(var(--brand-rgb), 0.1);
+}
+
+.profile-finish-save-top {
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(var(--brand-rgb), 0.04);
+}
+
+.profile-extra-save-row {
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+}
+
 .profile-wizard-actions-right {
   display: flex;
   flex-wrap: wrap;
