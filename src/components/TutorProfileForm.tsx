@@ -1167,7 +1167,7 @@ export function TutorProfileForm({
                 ? "You already have Teaching Profiles. Activate one under My Teaching Profiles to appear in search (Free includes 1 active)."
                 : "Create your first Teaching Profile under My Teaching Profiles below — one subject students can search for."}
           </p>
-          <p className="field-hint">
+          <p>
             <a href="#teaching-listings" className="btn btn-sm">
               {manageProfilesOnly ? "Go to Teaching Profiles" : "Add Teaching Profile"}
             </a>

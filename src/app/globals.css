@@ -184,9 +184,9 @@ body {
   opacity: 1;
 }
 
-/* â€”â€” Readable inline links â€”â€” */
+/* —— Readable inline links (never override .btn text color) —— */
 .muted a:not(.btn):not(.btn-secondary):not(.btn-sm),
-.field-hint a,
+.field-hint a:not(.btn):not(.btn-secondary):not(.btn-sm),
 p a:not(.btn):not(.btn-secondary):not(.btn-sm),
 .panel p a:not(.btn):not(.btn-secondary):not(.link-btn),
 .sub-list a,
@@ -204,7 +204,7 @@ p a:not(.btn):not(.btn-secondary):not(.btn-sm),
 }
 
 .muted a:not(.btn):not(.btn-secondary):not(.btn-sm):hover,
-.field-hint a:hover,
+.field-hint a:not(.btn):not(.btn-secondary):not(.btn-sm):hover,
 p a:not(.btn):hover,
 .panel p a:not(.btn):not(.btn-secondary):not(.link-btn):hover,
 .sub-list a:hover,
@@ -218,8 +218,11 @@ p a:not(.btn):hover,
 }
 
 .muted .btn,
-.muted a.btn {
+.muted a.btn,
+.field-hint .btn,
+.field-hint a.btn {
   color: var(--white);
+  text-decoration: none;
 }
 
 h1, h2, h3 {
