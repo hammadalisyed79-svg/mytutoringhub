@@ -14598,11 +14598,11 @@ html {
 }
 
 .home-page .hero.hero-clean .hero-search-bar {
-  background: #fff;
-  border-color: rgba(12, 24, 21, 0.1);
+  background: var(--surface-raised);
+  border-color: rgba(var(--brand-rgb), 0.14);
   box-shadow:
     0 1px 2px rgba(12, 24, 21, 0.05),
-    0 16px 40px rgba(10, 92, 80, 0.08);
+    0 16px 40px rgba(var(--brand-rgb), 0.08);
 }
 
 .home-page .product-trio-section {
