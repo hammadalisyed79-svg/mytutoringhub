@@ -30,7 +30,7 @@ export function EmailVerificationBanner({
       {oauthOnly ? (
         <p className="muted">
           You signed in with {via}, but we still need you to confirm{" "}
-          <strong>{email}</strong> before messaging, Teaching Profiles, and Hub Points unlock.
+          <strong>{email}</strong> before messaging and Teaching Profiles unlock.
           Use the button below — we will send a fresh confirmation link (valid 24 hours).
         </p>
       ) : (

@@ -567,7 +567,7 @@ export function AdminPlanPricesForm({
                   rows={2}
                   defaultValue={plan.promoNote || ""}
                   maxLength={280}
-                  placeholder="Launch offer: Tutor Pro free until 30 September 2026. Free listing stays 1 Teaching Profile. Extra Active and boosts remain paid."
+                  placeholder="Launch offer: Tutor Pro free until 30 September 2026. Free listing stays 1 Teaching Profile. Listing Boost and Priority Verification remain paid."
                 />
               </label>
             </div>

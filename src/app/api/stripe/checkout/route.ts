@@ -54,6 +54,23 @@ export async function POST(req: Request) {
   const def = PLANS.find((p) => p.id === plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
+  if (
+    plan === "EXTRA_ACTIVE" ||
+    plan === "HIGHLIGHTED_AD" ||
+    plan === "EXTRA_PROFILE_ADS" ||
+    plan === "UNLIMITED_ADS"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          plan === "HIGHLIGHTED_AD"
+            ? "Listing Highlight is no longer sold. Use Listing Boost for a Teaching Profile."
+            : "This add-on is no longer sold. Tutor Pro unlocks up to 10 active Teaching Profiles.",
+      },
+      { status: 410 },
+    );
+  }
+
   if (session.user.role === "STUDENT" && def.audience !== "student") {
     return NextResponse.json({ error: "This plan is for tutors" }, { status: 400 });
   }
@@ -61,37 +78,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
-  if (plan === "EXTRA_ACTIVE") {
-    const { countExtraActiveSlots, EXTRA_ACTIVE_SLOT_MAX } = await import(
-      "@/lib/subject-profile-entitlements"
-    );
-    const { hasPaidTutorPlan } = await import("@/lib/subscription");
-    if (await hasPaidTutorPlan(session.user.id)) {
-      return NextResponse.json(
-        {
-          error:
-            "Tutor Pro already includes up to 10 active Teaching Profiles. Extra Active is only for Free tutors.",
-        },
-        { status: 400 },
-      );
-    }
-    const slots = await countExtraActiveSlots(session.user.id);
-    if (slots >= EXTRA_ACTIVE_SLOT_MAX) {
-      return NextResponse.json(
-        {
-          error: `You already have ${EXTRA_ACTIVE_SLOT_MAX} Extra Active slots (3 live profiles max). Upgrade to Tutor Pro for up to 10.`,
-        },
-        { status: 400 },
-      );
-    }
-  }
-
   let subjectProfileId: string | undefined;
   let subjectProfileNote: string | null = null;
   if (rawListingId) {
-    if (plan !== "AD_BOOST" && plan !== "HIGHLIGHTED_AD") {
+    if (plan !== "AD_BOOST") {
       return NextResponse.json(
-        { error: "subjectProfileId is only valid for Boost or Highlight" },
+        { error: "subjectProfileId is only valid for Listing Boost" },
         { status: 400 },
       );
     }
@@ -104,9 +96,9 @@ export async function POST(req: Request) {
     }
     subjectProfileId = listing.id;
     subjectProfileNote = encodeSubjectProfileNote(listing.id);
-  } else if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
+  } else if (plan === "AD_BOOST") {
     return NextResponse.json(
-      { error: "Choose which subject profile to boost or highlight" },
+      { error: "Choose which Teaching Profile to boost" },
       { status: 400 },
     );
   }
@@ -116,10 +108,7 @@ export async function POST(req: Request) {
 
   if (!stripeConfigured() || !priceLooksReal(priceId)) {
     const until = new Date(Date.now() + 30 * 86400000);
-    const tracker =
-      plan === "EXTRA_ACTIVE"
-        ? `dev_${session.user.id}_${plan}_${Date.now()}`
-        : `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`;
+    const tracker = `dev_${session.user.id}_${plan}_${subjectProfileId || "account"}`;
     await prisma.subscription.upsert({
       where: {
         stripeSubscriptionId: tracker,
@@ -135,13 +124,12 @@ export async function POST(req: Request) {
         status: "ACTIVE",
         stripeSubscriptionId: tracker,
         currentPeriodEnd: until,
-        billingPeriod: plan === "EXTRA_ACTIVE" ? "monthly" : undefined,
         notes: subjectProfileNote,
       },
     });
     if (session.user.role === "TUTOR") {
       await syncTutorBadges(session.user.id);
-      if (subjectProfileId && (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD")) {
+      if (subjectProfileId && plan === "AD_BOOST") {
         await applyVisibilityToSubjectProfile({
           userId: session.user.id,
           subjectProfileId,

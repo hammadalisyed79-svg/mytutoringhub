@@ -8,7 +8,9 @@ import { join } from "node:path";
 import { BUSINESS } from "@/lib/business-rules";
 import { formatPlanPrice } from "@/lib/currency";
 import {
+  EXAM_PREP_CTA,
   IDENTITY_VERIFIED_LINE,
+  STUDENT_REQUESTS_LINE,
   TUTOR_FREE_LISTING_LINE,
   TUTOR_PRO_LISTING_LINE,
   TUTOR_PRO_LAUNCH_OFFER_LINE,
@@ -46,6 +48,11 @@ assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
 assert.match(TUTOR_FREE_LISTING_LINE, /1 active Teaching Profile/);
 assert.doesNotMatch(TUTOR_FREE_LISTING_LINE, /Extra Active/);
 assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 active Teaching Profiles/);
+assert.doesNotMatch(TUTOR_PRO_LISTING_LINE, /analytics|enhanced student-request/i);
+assert.match(EXAM_PREP_CTA, /Student Pass unlocks unlimited tutor messages/);
+assert.match(EXAM_PREP_CTA, /10 past paper downloads per month/);
+assert.doesNotMatch(EXAM_PREP_CTA, /unlimited tutor messages and past papers with Student Pass/i);
+assert.doesNotMatch(STUDENT_REQUESTS_LINE, /faster responses/i);
 
 // 3–4. No retired listing-cap cliffs in public app sources
 const publicSurfaces = [

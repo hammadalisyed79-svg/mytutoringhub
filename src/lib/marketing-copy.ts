@@ -29,7 +29,7 @@ export const TUTOR_FREE_LISTING_LINE =
   `Complete your profile to appear in search for free. Free tutors get ${BUSINESS.tutorFreeActiveListings} active Teaching Profile, enquiries, and 100% of lesson fees. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles plus growth tools.`;
 
 export const TUTOR_PRO_LISTING_LINE =
-  `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking, unlimited enquiry reveals, enhanced student-request access, and analytics.`;
+  `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking among matching students, and unlimited enquiry reveals when you message first.`;
 
 /** Public label for the Tutor Pro complimentary window (gated by plans.promoUntil). */
 export const TUTOR_PRO_LAUNCH_OFFER_LABEL = "Launch offer";
@@ -58,10 +58,10 @@ export const GEO_CURRENCY_LINE =
   "Rates shown in your local currency · tutors online or in your city · GCSE, IGCSE, A-Level, Matric, and more";
 
 export const STUDENT_REQUESTS_LINE =
-  "Post what you need — matching tutors can reply. Serious requests get faster responses with Student Pass.";
+  "Post what you need — matching tutors can reply. Student Pass is required to post requests.";
 
 export const EXAM_PREP_CTA =
-  "Exams coming up? Unlock unlimited tutor messages and past papers with Student Pass.";
+  `Exams coming up? Student Pass unlocks unlimited tutor messages and ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro adds unlimited eligible papers and the AI study assistant.`;
 
 /** Soft invite — no Hub Points / referral rewards promotion on public sales surfaces. */
 export const REFERRAL_LINE =

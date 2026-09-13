@@ -116,7 +116,7 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
     return [
       {
         title: "Tutor Pro",
-        description: "Ranking boost, analytics, and up to 10 Teaching Profiles",
+        description: "Up to 10 Teaching Profiles, ranking, and unlimited enquiry reveals",
         href: "/pricing?plan=TUTOR_BASIC",
         badge: "Popular",
       },

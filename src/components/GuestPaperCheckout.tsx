@@ -47,7 +47,8 @@ export function GuestPaperCheckout({
         </button>
         <p className="muted paper-buy-note">
           No account needed — pay with card.{" "}
-          <Link href="/login">Sign in</Link> for free Student Pass downloads.
+          <Link href="/login">Sign in</Link> with Student Pass or Pro for included downloads
+          (Pass: 10/month).
         </p>
       </div>
     );

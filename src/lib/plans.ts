@@ -101,7 +101,6 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
       "Up to 10 active Teaching Profiles",
       "Stronger placement among relevant matches (never overrides subject fit)",
       "Unlimited enquiry reveals when you message students first",
-      "Enhanced student-request access and analytics",
       "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",

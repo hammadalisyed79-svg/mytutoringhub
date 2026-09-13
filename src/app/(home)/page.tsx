@@ -126,7 +126,7 @@ export default async function HomePage() {
                 03
               </span>
               <strong>Study support</strong>
-              <span className="muted">Countdown, progress, and AI tools</span>
+              <span className="muted">Countdown, progress, and AI tools (Pro)</span>
             </Link>
           </div>
         </div>

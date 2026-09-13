@@ -91,7 +91,7 @@ export function StudentPlanPanel({
                     <span className="tutor-plan-item-eyebrow">{visual.eyebrow}</span>
                     <strong className="tutor-plan-item-name">{name}</strong>
                     <span className="tutor-plan-item-renewal">
-                      Renews {formatRenewal(corePlan.currentPeriodEnd)}
+                      Access until {formatRenewal(corePlan.currentPeriodEnd)}
                     </span>
                   </div>
                   <Link className="tutor-plan-item-slip" href={`/receipt/${corePlan.id}`}>

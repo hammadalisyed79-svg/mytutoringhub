@@ -101,6 +101,25 @@ export async function POST(req: Request) {
   const def = await getLivePlan(plan);
   if (!def) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
+  // Locked catalogue: Extra Active / legacy packs / Profile Highlight off new public sales.
+  if (
+    plan === "EXTRA_ACTIVE" ||
+    plan === "HIGHLIGHTED_AD" ||
+    plan === "EXTRA_PROFILE_ADS" ||
+    plan === "UNLIMITED_ADS"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          plan === "HIGHLIGHTED_AD"
+            ? "Listing Highlight is no longer sold. Use Listing Boost for a Teaching Profile."
+            : "This add-on is no longer sold. Tutor Pro unlocks up to 10 active Teaching Profiles.",
+        manageUrl: "/pricing?audience=tutor",
+      },
+      { status: 410 },
+    );
+  }
+
   if (session.user.role === "STUDENT" && def.audience !== "student") {
     return NextResponse.json({ error: "This plan is for tutors" }, { status: 400 });
   }
@@ -168,37 +187,12 @@ export async function POST(req: Request) {
     }
   }
 
-  if (plan === "EXTRA_ACTIVE") {
-    const { countExtraActiveSlots, EXTRA_ACTIVE_SLOT_MAX } = await import(
-      "@/lib/subject-profile-entitlements"
-    );
-    const { hasPaidTutorPlan } = await import("@/lib/subscription");
-    if (await hasPaidTutorPlan(session.user.id)) {
-      return NextResponse.json(
-        {
-          error:
-            "Tutor Pro already includes up to 10 active Teaching Profiles. Extra Active is only for Free tutors.",
-        },
-        { status: 400 },
-      );
-    }
-    const slots = await countExtraActiveSlots(session.user.id);
-    if (slots >= EXTRA_ACTIVE_SLOT_MAX) {
-      return NextResponse.json(
-        {
-          error: `You already have ${EXTRA_ACTIVE_SLOT_MAX} Extra Active slots (3 live profiles max). Upgrade to Tutor Pro for up to 10.`,
-        },
-        { status: 400 },
-      );
-    }
-  }
-
   let checkoutNotes: string | null = null;
   let listingIdForRedirect: string | undefined;
   if (body.subjectProfileId) {
-    if (plan !== "AD_BOOST" && plan !== "HIGHLIGHTED_AD") {
+    if (plan !== "AD_BOOST") {
       return NextResponse.json(
-        { error: "subjectProfileId is only valid for Boost or Highlight" },
+        { error: "subjectProfileId is only valid for Listing Boost" },
         { status: 400 },
       );
     }
@@ -213,9 +207,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Subject profile not found" }, { status: 404 });
     }
     listingIdForRedirect = listing.id;
-  } else if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
+  } else if (plan === "AD_BOOST") {
     return NextResponse.json(
-      { error: "Choose which subject profile to boost or highlight" },
+      { error: "Choose which Teaching Profile to boost" },
       { status: 400 },
     );
   }
@@ -263,9 +257,7 @@ export async function POST(req: Request) {
   const annualPricePkr = def.annualChargePricePkr;
   const canAnnualBoost =
     plan === "AD_BOOST" && billing === "annual" && annualPricePkr != null;
-  const recurringAddOn = plan === "EXTRA_ACTIVE";
-  const canAnnualExtra = recurringAddOn && billing === "annual" && annualPricePkr != null;
-  const basePricePkr = canAnnualBoost || canAnnualExtra
+  const basePricePkr = canAnnualBoost
     ? annualPricePkr!
     : billing === "annual" && !def.isAddOn && annualPricePkr != null
       ? annualPricePkr
@@ -282,28 +274,20 @@ export async function POST(req: Request) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
   }
-  // Core add-ons are one-shot; EXTRA_ACTIVE is monthly/annual; annual Listing Boost = 365-day window.
+  // Core add-ons are one-shot; annual Listing Boost = 365-day window.
   const billingPeriod = canAnnualBoost
     ? "annual"
-    : recurringAddOn
-      ? billing === "annual"
-        ? "annual"
-        : "monthly"
+    : def.isAddOn
+      ? "once"
+      : billing;
+  const orderId = `${
+    canAnnualBoost
+      ? "ann"
       : def.isAddOn
         ? "once"
-        : billing;
-  const orderId = `${
-    canAnnualBoost || canAnnualExtra
-      ? "ann"
-      : recurringAddOn
-        ? billing === "annual"
+        : billing === "annual"
           ? "ann"
           : "mth"
-        : def.isAddOn
-          ? "once"
-          : billing === "annual"
-            ? "ann"
-            : "mth"
   }_${plan}_${Date.now()}`;
 
   try {
