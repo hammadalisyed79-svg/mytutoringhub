@@ -9,7 +9,6 @@ import { isBoostActive } from "@/lib/subscription";
 import { SearchFiltersForm } from "@/components/SearchFiltersForm";
 import { GuidedTutorSearch } from "@/components/GuidedTutorSearch";
 import { SearchStudentBanner } from "@/components/SearchStudentBanner";
-import { ValuePropStrip } from "@/components/ValuePropStrip";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { isDefaultTutorBio, TUTOR_VERIFY_PROFILE_MESSAGE } from "@/lib/tutor-listing-copy";
 import { curriculumBoards, curriculumCodeOptions, curriculumLevels } from "@/lib/curriculum";
@@ -247,10 +246,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         <header className="page-hero search-page-hero">
           <div className="page-hero-copy">
             <h1 className="page-title">Find private tutors</h1>
-            <p className="section-lead">{VALUE_PROPOSITION}</p>
+            <p className="section-lead">Search by subject, location, and level — then contact the right tutor.</p>
           </div>
         </header>
-        <ValuePropStrip />
 
         {session?.user?.role === "STUDENT" && (
           <SearchStudentBanner userId={session.user.id} role={session.user.role} />
@@ -343,13 +341,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             )}
             <p className="hero-ctas" style={{ flexWrap: "wrap" }}>
               <Link href={studentRequestHref(sp)} className="btn">
-                Post your requirement
+                Post a request
               </Link>
               <Link href="/search?mode=online" className="btn btn-secondary">
                 Browse online tutors
-              </Link>
-              <Link href="/search" className="btn btn-secondary">
-                Clear filters
               </Link>
             </p>
           </div>
@@ -542,6 +537,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             )}
           </nav>
         )}
+
+        <section className="panel search-request-fallback" style={{ marginTop: "1.5rem" }}>
+          <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Can&apos;t find the right tutor?</h2>
+          <p className="muted">Post what you need — matching tutors can reply.</p>
+          <Link href={studentRequestHref(sp)} className="btn btn-secondary btn-sm">
+            Post a request
+          </Link>
+        </section>
           </>
         )}
       </div>

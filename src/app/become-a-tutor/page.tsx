@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { BecomeTutorForm } from "@/components/BecomeTutorForm";
 import { InviteTutorShare } from "@/components/InviteTutorShare";
-import { TUTOR_FREE_LISTING_LINE, NO_LESSON_COMMISSION_LINE, TUTOR_PRO_LAUNCH_OFFER_UNTIL } from "@/lib/marketing-copy";
+import {
+  TUTOR_FREE_LISTING_LINE,
+  NO_LESSON_COMMISSION_LINE,
+  TUTOR_PRO_LAUNCH_OFFER_UNTIL,
+} from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
 import { pageMetadata } from "@/lib/seo";
@@ -37,27 +41,22 @@ export default async function BecomeATutorPage({
   return (
     <div className="page">
       <div className="container become-tutor-page">
-        <h1 className="page-title">Create your tutor profile</h1>
+        <h1 className="page-title">Start teaching</h1>
         <p className="section-lead">
-          Reach students online or in person, set your own rate, and keep lesson fees between you and
-          your students. {NO_LESSON_COMMISSION_LINE}
+          Reach students worldwide. Set your rate. Keep 100% of lesson fees.{" "}
+          {NO_LESSON_COMMISSION_LINE}
         </p>
 
         <ul className="become-tutor-benefits">
           <li>
-            <strong>Same login</strong> — add a tutor profile without creating a second account. Switch
-            between student and tutor mode anytime; your tutor profile stays saved.
+            <strong>List free</strong> — {BUSINESS.tutorFreeActiveListings} active Teaching Profile
+            when your profile is complete.
           </li>
           <li>
-            <strong>Free Teaching Profiles</strong> in search when your profile meets the eligibility
-            requirements (photo, subjects, bio, rate, and more).
+            <strong>No lesson commission</strong> — students pay you directly.
           </li>
           <li>
-            <strong>Set your own rate</strong> — online, in person, or both.
-          </li>
-          <li>
-            <strong>No lesson commission</strong> — platform plans are optional upgrades for
-            visibility and enquiry tools.
+            <strong>Same login</strong> — students can add tutor mode without a second account.
           </li>
         </ul>
 
@@ -67,54 +66,53 @@ export default async function BecomeATutorPage({
             <h3>{isStudent ? "Add tutor mode" : "Create your account"}</h3>
             <p className="muted">
               {isStudent
-                ? "Keep the same login. We add a tutor profile you can edit anytime — and you can switch back to student tools whenever you need them."
-                : "Sign up in minutes — you can finish profile details after email verification."}
+                ? "Keep the same login and switch between student and tutor anytime."
+                : "Sign up in minutes — finish details after email verification."}
             </p>
           </div>
           <div className="step">
             <span>2</span>
-            <h3>Add your teaching information</h3>
+            <h3>Publish a Teaching Profile</h3>
             <p className="muted">{TUTOR_FREE_LISTING_LINE}</p>
           </div>
           <div className="step">
             <span>3</span>
-            <h3>Create and manage Teaching Profiles</h3>
-            <p className="muted">
-              Eligible tutors appear in search with Teaching Profiles for the subjects they teach.
-              Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile
-              permanently with ordinary search visibility. Under the Launch offer, Tutor Pro is
-              complimentary until {TUTOR_PRO_LAUNCH_OFFER_UNTIL} — up to{" "}
-              {BUSINESS.tutorProActiveListings} Teaching Profiles plus ranking and unlimited enquiry
-              reveals; after that date, list price applies. Listing Boost is an optional visibility
-              add-on and does not increase capacity. Identity Verified is earned after review —
-              Priority Verification Review only jumps the queue.
-            </p>
+            <h3>Connect with students</h3>
+            <p className="muted">Reply to messages and grow with optional Tutor Pro tools.</p>
           </div>
         </div>
+
+        <section className="panel" style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Free vs Tutor Pro</h2>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Free: {BUSINESS.tutorFreeActiveListings} active Teaching Profile. Tutor Pro: up to{" "}
+            {BUSINESS.tutorProActiveListings}, plus ranking and unlimited enquiry reveals
+            {TUTOR_PRO_LAUNCH_OFFER_UNTIL
+              ? ` (complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL})`
+              : ""}
+            . Listing Boost is a separate visibility add-on.
+          </p>
+        </section>
 
         <div className="hero-ctas">
           {isStudent ? (
             <BecomeTutorForm />
           ) : (
             <Link href={signupHref} className="btn">
-              Create your tutor profile
+              Start teaching
             </Link>
           )}
-        </div>
-        <p className="muted" style={{ marginTop: "1rem" }}>
-          We do not promise a specific number of students. Visibility depends on your Teaching
-          Profiles, location, and how complete your main profile is.
-        </p>
-        <p style={{ marginTop: "0.75rem" }}>
           <Link href="/pricing?plan=TUTOR_BASIC" className="btn btn-secondary">
-            See optional tutor plans
+            View tutor plans
           </Link>
+        </div>
+
+        <p className="muted" style={{ marginTop: "1.25rem" }}>
+          Identity Verified is earned after admin review — Priority Verification Review only jumps
+          the queue.
         </p>
 
-        <InviteTutorShare
-          referrerId={session?.user?.id}
-          referrerName={session?.user?.name}
-        />
+        <InviteTutorShare referrerId={session?.user?.id} referrerName={session?.user?.name} />
       </div>
     </div>
   );

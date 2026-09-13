@@ -6816,6 +6816,19 @@ select:focus {
   gap: 0.65rem;
 }
 
+.help-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+}
+
+.help-toc a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .faq-item {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);

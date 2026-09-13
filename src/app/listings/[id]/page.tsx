@@ -54,10 +54,7 @@ function ListingCta({
     return (
       <div className="profile-cta-stack">
         <a className="btn btn-block" href="#message-tutor">
-          Message Tutor
-        </a>
-        <a className="btn btn-secondary btn-block" href="#message-tutor">
-          Ask about availability
+          Contact tutor
         </a>
       </div>
     );
@@ -548,6 +545,56 @@ export default async function SubjectListingPage({ params }: Params) {
                 )}
               </section>
 
+              <section className="profile-content-card" id="message-tutor">
+                <h2>Contact {firstName}</h2>
+                <p className="profile-rate-lg profile-rate-inline">{hourlyLabel}</p>
+                {availability ? <p className="muted">{availability}</p> : null}
+                {canMessage ? (
+                  <ContactTutorForm
+                    recipientId={tutor.userId}
+                    tutorName={tutorName}
+                    emailVerified={Boolean(viewer?.emailVerified)}
+                    viewerEmail={viewer?.email}
+                    subjectProfileId={listing.id}
+                    contactUsed={
+                      contactSummary?.planTier === "free" ? contactSummary.usageUsed : undefined
+                    }
+                    contactLimit={
+                      contactSummary?.planTier === "free" ? contactSummary.usageLimit : undefined
+                    }
+                    currency={currency}
+                    priceLabel={passMonthly}
+                    annualPriceLabel={passAnnual}
+                    paidCheckoutLive={Boolean(paidCheckoutLive)}
+                  />
+                ) : !session ? (
+                  <div className="profile-book-cta">
+                    <p className="muted">
+                      <Link href={`/register?role=student&next=${encodeURIComponent(listingPath(listing.id))}`}>
+                        Create a free student account
+                      </Link>{" "}
+                      to message {tutorName}.
+                    </p>
+                    <Link
+                      href={`/login?callbackUrl=${encodeURIComponent(listingPath(listing.id))}`}
+                      className="btn btn-secondary btn-block"
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                ) : isOwner ? (
+                  <p className="muted">
+                    Students message you from this page. Keep your Teaching Profile details up to date
+                    so enquiries convert.
+                  </p>
+                ) : (
+                  <p className="muted">
+                    Switch to a student account to message tutors, or{" "}
+                    <Link href={`/tutors/${tutor.id}`}>view the full profile</Link>.
+                  </p>
+                )}
+              </section>
+
               {(tutor.qualifications || tutor.headline) && (
                 <section className="profile-content-card">
                   <h2>About {firstName}</h2>
@@ -579,54 +626,6 @@ export default async function SubjectListingPage({ params }: Params) {
                   )}
                 </section>
               )}
-
-              <section className="profile-content-card" id="message-tutor">
-                <h2>Contact {firstName}</h2>
-                <p className="profile-rate-lg profile-rate-inline">{hourlyLabel}</p>
-                {availability ? <p className="muted">{availability}</p> : null}
-                {canMessage ? (
-                  <ContactTutorForm
-                    recipientId={tutor.userId}
-                    tutorName={tutorName}
-                    emailVerified={Boolean(viewer?.emailVerified)}
-                    viewerEmail={viewer?.email}
-                    subjectProfileId={listing.id}
-                    contactUsed={
-                      contactSummary?.planTier === "free" ? contactSummary.usageUsed : undefined
-                    }
-                    contactLimit={
-                      contactSummary?.planTier === "free" ? contactSummary.usageLimit : undefined
-                    }
-                    currency={currency}
-                    priceLabel={passMonthly}
-                    annualPriceLabel={passAnnual}
-                    paidCheckoutLive={Boolean(paidCheckoutLive)}
-                  />
-                ) : !session ? (
-                  <div className="profile-book-cta">
-                    <p className="muted">
-                      <Link href="/register?role=student">Create a free student account</Link> to message{" "}
-                      {tutorName}.
-                    </p>
-                    <Link
-                      href={`/login?callbackUrl=${encodeURIComponent(listingPath(listing.id))}`}
-                      className="btn btn-secondary btn-block"
-                    >
-                      Sign in
-                    </Link>
-                  </div>
-                ) : isOwner ? (
-                  <p className="muted">
-                    Students message you from this page. Keep your Teaching Profile details up to date
-                    so enquiries convert.
-                  </p>
-                ) : (
-                  <p className="muted">
-                    Switch to a student account to message tutors, or{" "}
-                    <Link href={`/tutors/${tutor.id}`}>view the full profile</Link>.
-                  </p>
-                )}
-              </section>
 
               <section className="profile-content-card" id="reviews">
                 <h2>Reviews</h2>
@@ -667,7 +666,7 @@ export default async function SubjectListingPage({ params }: Params) {
                   ? `More ${listing.subject} tutors nearby.`
                   : similarMode === "same_subject_broad"
                     ? `More ${listing.subject} tutors (wider area / online).`
-                    : "No matching subject tutors nearby — here are other tutors in this area."}
+                    : "Other tutors in this area."}
               </p>
               <div className="tutor-grid similar-tutors">
                 {similar.map((t) => {

@@ -12,7 +12,6 @@ import { pageMetadata } from "@/lib/seo";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
-import { BUSINESS } from "@/lib/business-rules";
 
 export const dynamic = "force-dynamic";
 
@@ -84,33 +83,12 @@ export default async function PricingPage({
       <div className="container">
         <div className="checkout-hero">
           <div>
-            <p className="eyebrow">Simple plans</p>
             <h1 className="page-title">Plans &amp; pricing</h1>
             <p className="section-lead">
-              Start free. Upgrade only when you need more contacts, more live Teaching Profiles, or
-              growth tools. Prices shown in <strong>{currency}</strong>. We never take a cut of
-              lesson fees.
+              Start free. Upgrade when you need more. Prices shown in <strong>{currency}</strong>.
+              No commission on lesson fees.
             </p>
-            <ul className="pricing-hero-bullets">
-              <li>
-                <strong>Students:</strong> {BUSINESS.studentFreeContactsPerMonth} free contacts/month —
-                Pass unlocks unlimited messaging
-              </li>
-              <li>
-                <strong>Tutors:</strong> {BUSINESS.tutorFreeActiveListings} active Teaching Profile
-                free · Tutor Pro up to {BUSINESS.tutorProActiveListings}
-              </li>
-              <li>
-                <Link href="/free-vs-paid">Compare free vs paid</Link> if you want the full feature
-                table
-              </li>
-            </ul>
           </div>
-          <ol className="checkout-steps" aria-label="How checkout works">
-            <li className={session?.user ? "is-done" : "is-current"}>1. Create a free account</li>
-            <li className={session?.user ? "is-current" : ""}>2. Choose a plan</li>
-            <li>{paidCheckoutLive ? "3. Pay securely on Safepay" : "3. Confirm activation"}</li>
-          </ol>
         </div>
 
         {!paidCheckoutLive && <PaymentsComingSoonBanner />}
@@ -118,17 +96,15 @@ export default async function PricingPage({
         <div className="checkout-trust-bar">
           {paidCheckoutLive ? (
             <>
-              <span>Encrypted checkout</span>
-              <span>Email confirmation</span>
-              <span>Works worldwide</span>
-              <span>No cart — one-step checkout</span>
+              <span>Secure checkout with Safepay</span>
+              <span>Email receipt</span>
+              <span>No lesson commission</span>
             </>
           ) : (
             <>
               <span>Free Teaching Profiles</span>
               <span>Launch offer on Tutor Pro</span>
-              <span>Bank transfer accepted</span>
-              <span>Plans activated within 24h</span>
+              <span>No lesson commission</span>
             </>
           )}
         </div>

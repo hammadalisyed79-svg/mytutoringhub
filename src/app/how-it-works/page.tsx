@@ -18,113 +18,89 @@ export default async function HowItWorksPage() {
   const studentCta =
     role === "STUDENT" || role === "TUTOR" || role === "ADMIN"
       ? { href: "/search", label: "Find a tutor" }
-      : { href: "/register?role=student", label: "I need a tutor" };
+      : { href: "/register?role=student", label: "Join free" };
   const tutorCta =
     role === "TUTOR"
-      ? { href: "/dashboard", label: "Open tutor dashboard" }
-      : { href: "/become-a-tutor", label: "Become a tutor" };
+      ? { href: "/dashboard/tutor", label: "Open dashboard" }
+      : { href: "/become-a-tutor", label: "Start teaching" };
 
   return (
     <div className="page">
       <div className="container">
-        <h1 className="page-title">How to find a private tutor</h1>
-        <p className="section-lead">{VALUE_PROPOSITION}</p>
+        <h1 className="page-title">How it works</h1>
+        <p className="section-lead">
+          Find a tutor, message them, and arrange lessons directly — no lesson commission.
+        </p>
 
-        <div className="steps" style={{ marginBottom: "2.5rem" }}>
-          <div className="step">
-            <span>1</span>
-            <h3>Search</h3>
-            <p className="muted">
-              Filter by subject, country, city, level, language, and Identity Verified tutors.
-            </p>
+        <section aria-labelledby="hiw-students">
+          <h2 id="hiw-students">For students</h2>
+          <div className="steps" style={{ marginBottom: "1.5rem" }}>
+            <div className="step">
+              <span>1</span>
+              <h3>Search</h3>
+              <p className="muted">Filter by subject, location, and level.</p>
+            </div>
+            <div className="step">
+              <span>2</span>
+              <h3>Contact</h3>
+              <p className="muted">
+                Message tutors ({studentFreeContactsShort()} free, or unlimited with Student Pass).
+              </p>
+            </div>
+            <div className="step">
+              <span>3</span>
+              <h3>Learn</h3>
+              <p className="muted">Agree schedule and pay your tutor directly.</p>
+            </div>
           </div>
-          <div className="step">
-            <span>2</span>
-            <h3>Contact tutors</h3>
-            <p className="muted">
-              Free accounts get {studentFreeContactsShort()}; Student Pass unlocks unlimited
-              messaging, request ads, and included past paper downloads. Student Pro adds unlimited
-              papers and the AI study assistant.
+          {role !== "TUTOR" ? (
+            <p className="section-actions">
+              <Link href={studentCta.href} className="btn">
+                {studentCta.label}
+              </Link>
             </p>
+          ) : null}
+        </section>
+
+        <section aria-labelledby="hiw-tutors" style={{ marginTop: "2.5rem" }}>
+          <h2 id="hiw-tutors">For tutors</h2>
+          <div className="steps" style={{ marginBottom: "1.5rem" }}>
+            <div className="step">
+              <span>1</span>
+              <h3>Create profile</h3>
+              <p className="muted">Photo, bio, and how you teach.</p>
+            </div>
+            <div className="step">
+              <span>2</span>
+              <h3>Publish Teaching Profiles</h3>
+              <p className="muted">
+                One active Teaching Profile free; Tutor Pro unlocks up to{" "}
+                {BUSINESS.tutorProActiveListings}.
+              </p>
+            </div>
+            <div className="step">
+              <span>3</span>
+              <h3>Connect with students</h3>
+              <p className="muted">Reply to messages and keep 100% of lesson fees.</p>
+            </div>
           </div>
-          <div className="step">
-            <span>3</span>
-            <h3>Learn</h3>
+          {role !== "STUDENT" ? (
+            <p className="section-actions">
+              <Link href={tutorCta.href} className="btn">
+                {tutorCta.label}
+              </Link>
+            </p>
+          ) : (
             <p className="muted">
-              Agree on schedule and pay your tutor directly for lessons — we don’t take a lesson
-              commission.
+              Want to teach as well? <Link href="/become-a-tutor">Add a tutor profile</Link> on this
+              account.
             </p>
-          </div>
-        </div>
+          )}
+        </section>
 
-        {role !== "TUTOR" && (
-          <section className="panel" style={{ marginBottom: "1.5rem" }}>
-            <h2>For students & parents</h2>
-            <ul className="check-list">
-              <li>Browse Identity Verified, featured, and boosted Teaching Profiles</li>
-              <li>Message tutors free ({studentFreeContactsShort()}) or unlimited with Student Pass</li>
-              <li>Student Pro unlocks the AI study assistant</li>
-              <li>Download past papers by subject</li>
-              <li>Manage your name and password in Settings</li>
-            </ul>
-            <Link href={studentCta.href} className="btn" style={{ marginTop: "1rem" }}>
-              {studentCta.label}
-            </Link>
-            <p style={{ marginTop: "0.75rem" }}>
-              <Link href="/pricing?plan=STUDENT_PASS">Compare student plans</Link>
-            </p>
-          </section>
-        )}
-
-        {role !== "STUDENT" && (
-          <section className="panel">
-            <h2>For tutors</h2>
-            <ul className="check-list">
-              <li>
-                Complete your account profile (photo, headline, bio) to appear in search for free
-              </li>
-              <li>
-                Publish a Teaching Profile for each subject you teach — students see separate search
-                cards
-              </li>
-              <li>
-                Free tutors get {BUSINESS.tutorFreeActiveListings} active Teaching Profile in
-                search permanently. Under the Launch offer, Tutor Pro is complimentary until 30
-                September 2026 — up to {BUSINESS.tutorProActiveListings} live profiles plus
-                relevance-first ranking and unlimited enquiry reveals; after that date, list price
-                applies. Listing Boost is optional and does not add Teaching Profile capacity.
-              </li>
-              <li>
-                Upload a government photo ID for verification; a qualification certificate is
-                recommended — the badge is earned after review
-              </li>
-              <li>
-                Optional 30-Day or 365-Day Listing Boost on each Teaching Profile from your
-                dashboard (one-time; does not increase capacity) — paid on Safepay when checkout is
-                live
-              </li>
-            </ul>
-            <Link href={tutorCta.href} className="btn" style={{ marginTop: "1rem" }}>
-              {tutorCta.label}
-            </Link>
-            <p style={{ marginTop: "0.75rem" }}>
-              <Link href="/pricing?plan=TUTOR_BASIC">Compare tutor plans</Link>
-            </p>
-          </section>
-        )}
-
-        {role === "STUDENT" && (
-          <p className="muted" style={{ marginTop: "1.5rem" }}>
-            Want to teach as well? <Link href="/become-a-tutor">Add a tutor profile</Link> on this
-            account — you can switch between student and tutor mode anytime.
-          </p>
-        )}
-        {role === "TUTOR" && (
-          <p className="muted" style={{ marginTop: "1.5rem" }}>
-            Also looking for a tutor? Use <strong>Student mode</strong> in the header — your tutor
-            profile and Teaching Profiles stay saved.
-          </p>
-        )}
+        <p className="muted" style={{ marginTop: "2rem" }}>
+          Plan details live on <Link href="/pricing">Plans &amp; pricing</Link>.
+        </p>
       </div>
     </div>
   );

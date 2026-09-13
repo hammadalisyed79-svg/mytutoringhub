@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
-import { BUSINESS, NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
-import {
-  STUDENT_FREE_CONTACTS_LINE,
-  TUTOR_FREE_LISTING_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_LINE,
-} from "@/lib/marketing-copy";
+import { NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
 
 export const metadata = pageMetadata({
   title: "About My Tutoring Hub – Private Tutors Marketplace",
@@ -23,47 +18,40 @@ export default function AboutPage() {
           A marketplace for private lessons — boards, languages, and exam prep, online or in person.
         </p>
         <div className="legal-body">
+          <h2>What we are</h2>
           <p>
-            My Tutoring Hub connects students and families with independent tutors. We do not run a
-            tuition centre and we do not take a commission on lesson fees. {NO_LESSON_COMMISSION_LINE}{" "}
-            You arrange schedule and payment directly with the other person.
+            My Tutoring Hub connects students and families with independent tutors worldwide. We do
+            not run a tuition centre. {NO_LESSON_COMMISSION_LINE} You arrange schedule and payment
+            directly with the other person.
           </p>
-          <h2>How the platform is funded</h2>
+          <h2>How the marketplace works</h2>
           <p>
-            Search and registration are free. {STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks
-            unlimited messaging and student request ads; Student Pro adds unlimited past papers and the
-            AI study assistant. {TUTOR_FREE_LISTING_LINE} Tutor Pro improves growth tools; optional
-            Listing Boost helps visibility. Identity verification is a trust review — the badge is
-            earned after approval. Platform subscriptions are billed through Safepay.
+            Search and join are free. Optional Student and Tutor plans unlock messaging capacity,
+            Teaching Profile tools, Past Papers, and study features. Platform products are billed
+            through Safepay — lesson fees never are.
           </p>
-          <h2>Launch offer</h2>
-          <p>{TUTOR_PRO_LAUNCH_OFFER_LINE}</p>
+          <h2>Trust</h2>
           <p>
-            <Link href="/pricing?plan=TUTOR_BASIC">View plans</Link>
-            {" · "}
-            Free tutors keep {BUSINESS.tutorFreeActiveListings} live Teaching Profile whether or not
-            they activate Tutor Pro.
+            Identity Verified is earned after admin review. You can report listings. Reviews are
+            moderated before they go public. Confirmations come from{" "}
+            <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.
           </p>
-          <h2>Trust &amp; safety</h2>
-          <p>
-            Confirmations and receipts come from{" "}
-            <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>. You can report a
-            profile or student ad from the listing. Reviews are moderated before they go public.
+          <p className="section-actions" style={{ marginTop: "1.5rem" }}>
+            <Link href="/search" className="btn">
+              Find a tutor
+            </Link>
+            <Link href="/become-a-tutor" className="btn btn-secondary" style={{ marginLeft: "0.5rem" }}>
+              Become a tutor
+            </Link>
           </p>
-          <p>
+          <p className="muted" style={{ marginTop: "1rem" }}>
             <Link href="/how-it-works">How it works</Link>
             {" · "}
-            <Link href="/pricing">Pricing</Link>
+            <Link href="/pricing">View plans</Link>
             {" · "}
             <Link href="/help">Help</Link>
             {" · "}
             <Link href="/contact">Contact</Link>
-            {" · "}
-            <Link href="/terms">Terms</Link>
-            {" · "}
-            <Link href="/privacy">Privacy</Link>
-            {" · "}
-            <Link href="/refund">Refunds</Link>
           </p>
         </div>
       </div>

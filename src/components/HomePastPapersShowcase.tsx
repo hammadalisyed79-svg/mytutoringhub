@@ -38,15 +38,11 @@ export async function HomePastPapersShowcase({ pinnedCountry }: { pinnedCountry?
             {pastPaperLabel} past papers. And tutors when you need help.
           </h2>
           <p className="section-lead">
-            Filter by board, qualification, subject, year, and session — then find a tutor who
-            teaches that exam track.
+            Filter by board, qualification, subject, year, and session.
           </p>
           <div className="hero-ctas">
             <Link href="/past-papers" className="btn">
               Browse Past Papers
-            </Link>
-            <Link href="/search" className="btn btn-secondary">
-              Find an exam tutor
             </Link>
           </div>
         </div>

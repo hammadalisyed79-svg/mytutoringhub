@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { STUDENT_REQUESTS_LINE, VALUE_PROPOSITION } from "@/lib/marketing-copy";
+import { STUDENT_REQUESTS_LINE } from "@/lib/marketing-copy";
 import { pageMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
@@ -144,7 +144,11 @@ export default async function AdsPage() {
         <header className="panel page-hero">
           <div className="page-hero-copy">
             <h1 className="page-title">Student requests</h1>
-            <p className="muted">{STUDENT_REQUESTS_LINE}</p>
+            <p className="section-lead">
+              {session?.user?.role === "TUTOR"
+                ? "Students looking for tutors — reply when you are a good fit."
+                : "Tell tutors what you need."}
+            </p>
           </div>
           {session?.user?.role === "STUDENT" && (
             <div className="page-hero-actions">
@@ -155,12 +159,11 @@ export default async function AdsPage() {
           )}
         </header>
 
-        <p className="muted ads-board-note">
-          {VALUE_PROPOSITION}
-          {tutorMatch && tutorMatch.subjects.length > 0
-            ? " Requests matching your Teaching Profiles appear first."
-            : ""}
-        </p>
+        {tutorMatch && tutorMatch.subjects.length > 0 ? (
+          <p className="muted ads-board-note">
+            Requests matching your Teaching Profiles appear first.
+          </p>
+        ) : null}
 
         <div className="results">
           {sortedAds.length === 0 && (
