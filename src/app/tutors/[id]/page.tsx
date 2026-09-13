@@ -660,7 +660,9 @@ export default async function TutorProfilePage({ params }: Params) {
                   Add your weekly availability so students know when you can teach.
                 </p>
               ) : (
-                <p className="muted">Contact this tutor to discuss lesson times.</p>
+                <p className="muted">
+                  Availability isn’t listed yet — message to arrange a time that works.
+                </p>
               )}
             </section>
 
