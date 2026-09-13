@@ -333,6 +333,7 @@ export function TutorAdsManager({
   const [showCreate, setShowCreate] = useState(false);
   const [createStep, setCreateStep] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [createSubject, setCreateSubject] = useState("");
   const [createTitle, setCreateTitle] = useState("");
   const [createHeadline, setCreateHeadline] = useState("");
@@ -558,11 +559,9 @@ export function TutorAdsManager({
     router.refresh();
   }
 
-  async function deleteListing(id: string, title: string) {
-    const ok = window.confirm(
-      `Delete “${title}”? This Teaching Profile is removed permanently and cannot be recovered.`,
-    );
-    if (!ok) return;
+  async function deleteListing() {
+    if (!deleteTarget) return;
+    const { id } = deleteTarget;
     clearFeedback();
     setBusyId(id);
     const res = await fetch(`/api/tutor-ads?id=${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -572,6 +571,7 @@ export function TutorAdsManager({
       flashError((data as { error?: string }).error || "Could not delete Teaching Profile.");
       return;
     }
+    setDeleteTarget(null);
     if (editingId === id) setEditingId(null);
     flashSuccess("Teaching Profile deleted.");
     load();
@@ -1002,84 +1002,76 @@ export function TutorAdsManager({
                 </p>
               )}
 
-              <div className="teaching-listing-manage">
-                <label className="teaching-listing-manage-label">
-                  <span className="visually-hidden">Manage {listing.title}</span>
-                  <select
-                    value=""
-                    disabled={busyId === listing.id}
-                    aria-label={`Manage ${listing.title}`}
-                    onChange={(e) => {
-                      const action = e.target.value;
-                      e.target.value = "";
-                      if (!action) return;
-                      if (action === "preview") {
-                        window.open(listingPath(listing.id), "_blank", "noopener,noreferrer");
-                        return;
-                      }
-                      if (action === "pause") {
-                        void setStatus(listing.id, "PAUSED");
-                        return;
-                      }
-                      if (action === "activate") {
-                        void setStatus(listing.id, "ACTIVE");
-                        return;
-                      }
-                      if (action === "edit") {
-                        setEditingId(editing ? null : listing.id);
-                        return;
-                      }
-                      if (action === "delete") {
-                        void deleteListing(listing.id, listing.title || listing.subject);
-                      }
-                    }}
-                  >
-                    <option value="">Manage…</option>
-                    <option value="preview">
-                      {listing.status === "ACTIVE" ? "View listing" : "Preview"}
-                    </option>
-                    {listing.status === "ACTIVE" ? (
-                      <option value="pause">Pause</option>
-                    ) : (
-                      <option value="activate">Activate</option>
-                    )}
-                    <option value="edit">{editing ? "Close editor" : "Edit"}</option>
-                    <option value="delete">Delete</option>
-                  </select>
-                </label>
-
+              <div className="teaching-listing-actions">
+                <Link className="btn btn-secondary btn-sm" href={listingPath(listing.id)} target="_blank">
+                  {listing.status === "ACTIVE" ? "View" : "Preview"}
+                </Link>
                 {listing.status === "ACTIVE" ? (
-                  <details className="teaching-listing-boost-details">
-                    <summary>Boost (optional)</summary>
-                    <div className="teaching-listing-boost-row">
-                      <SubscribeButton
-                        plan="AD_BOOST"
-                        planLabel="Listing Boost"
-                        currency={currency}
-                        label={boosted ? "Extend 30-Day Listing Boost" : "30-Day Listing Boost"}
-                        featured
-                        oneTime
-                        paidCheckoutLive={paidCheckoutLive}
-                        subjectProfileId={listing.id}
-                      />
-                      <SubscribeButton
-                        plan="AD_BOOST"
-                        planLabel="Listing Boost (annual)"
-                        currency={currency}
-                        billing="annual"
-                        label={
-                          boosted
-                            ? "Extend 365-Day Listing Boost (save 20%)"
-                            : "365-Day Listing Boost (save 20%)"
-                        }
-                        oneTime
-                        paidCheckoutLive={paidCheckoutLive}
-                        subjectProfileId={listing.id}
-                      />
-                    </div>
-                  </details>
-                ) : null}
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    type="button"
+                    disabled={busyId === listing.id}
+                    onClick={() => setStatus(listing.id, "PAUSED")}
+                  >
+                    Pause
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    type="button"
+                    disabled={busyId === listing.id}
+                    onClick={() => setStatus(listing.id, "ACTIVE")}
+                  >
+                    Activate
+                  </button>
+                )}
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={() => setEditingId(editing ? null : listing.id)}
+                >
+                  {editing ? "Close" : "Edit"}
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  disabled={busyId === listing.id}
+                  onClick={() =>
+                    setDeleteTarget({ id: listing.id, title: listing.title || listing.subject })
+                  }
+                >
+                  Delete
+                </button>
               </div>
+
+              {listing.status === "ACTIVE" && (
+                <div className="teaching-listing-boost-row">
+                  <SubscribeButton
+                    plan="AD_BOOST"
+                    planLabel="Listing Boost"
+                    currency={currency}
+                    label={boosted ? "Extend 30-Day Listing Boost" : "30-Day Listing Boost"}
+                    featured
+                    oneTime
+                    paidCheckoutLive={paidCheckoutLive}
+                    subjectProfileId={listing.id}
+                  />
+                  <SubscribeButton
+                    plan="AD_BOOST"
+                    planLabel="Listing Boost (annual)"
+                    currency={currency}
+                    billing="annual"
+                    label={
+                      boosted
+                        ? "Extend 365-Day Listing Boost (save 20%)"
+                        : "365-Day Listing Boost (save 20%)"
+                    }
+                    oneTime
+                    paidCheckoutLive={paidCheckoutLive}
+                    subjectProfileId={listing.id}
+                  />
+                </div>
+              )}
 
               {editing && (
                 <EditTeachingProfileForm
@@ -1097,6 +1089,49 @@ export function TutorAdsManager({
           );
         })}
       </div>
+
+      {deleteTarget ? (
+        <div
+          className="teaching-listing-delete-overlay"
+          role="presentation"
+          onClick={() => {
+            if (busyId !== deleteTarget.id) setDeleteTarget(null);
+          }}
+        >
+          <div
+            className="panel teaching-listing-delete-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-tp-title"
+            aria-describedby="delete-tp-desc"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-tp-title">Delete Teaching Profile?</h3>
+            <p id="delete-tp-desc">
+              You are about to delete <strong>{deleteTarget.title}</strong>. This cannot be undone —
+              the profile is removed from search and <strong>no record will be saved</strong> for recovery.
+            </p>
+            <div className="teaching-listing-delete-actions">
+              <button
+                className="btn btn-secondary btn-sm"
+                type="button"
+                disabled={busyId === deleteTarget.id}
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm"
+                type="button"
+                disabled={busyId === deleteTarget.id}
+                onClick={() => void deleteListing()}
+              >
+                {busyId === deleteTarget.id ? "Deleting…" : "Delete permanently"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
