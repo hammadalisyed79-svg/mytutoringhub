@@ -171,13 +171,26 @@ assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);
 assert.match(ANNUAL_SAVE_LABEL, /Save 20% with annual billing/);
 
 const overridden = applyPlanOverrides({
-  TUTOR_BASIC: { name: "Tutor Basic" },
+  TUTOR_BASIC: {
+    name: "Tutor Basic",
+    description:
+      "Relevance-first ranking, unlimited enquiry reveals, and up to 10 active Teaching Profiles. Free tutors keep up to 3 Teaching Profiles with organic search visibility.",
+  },
   VERIFIED_TUTOR: { name: "Verified Tutor" },
   AD_BOOST: { name: "Profile Boost" },
 });
 assert.equal(overridden.find((p) => p.id === "TUTOR_BASIC")!.name, "Tutor Pro");
 assert.equal(overridden.find((p) => p.id === "VERIFIED_TUTOR")!.name, "Priority Verification Review");
 assert.equal(overridden.find((p) => p.id === "AD_BOOST")!.name, "Listing Boost");
+assert.doesNotMatch(
+  overridden.find((p) => p.id === "TUTOR_BASIC")!.description,
+  /up to 3 Teaching Profiles|Extra Active/i,
+);
+assert.match(
+  overridden.find((p) => p.id === "TUTOR_BASIC")!.description,
+  /up to 10 live Teaching Profiles/i,
+);
+assert.equal(overridden.find((p) => p.id === "VERIFIED_TUTOR")!.pricePkr, 2999);
 
 const terms = readSrc("app/terms/page.tsx");
 assert.match(terms, /Access remains active[\s\S]*for the purchased period/i);

@@ -259,16 +259,42 @@ export function applyPlanOverrides(
     if (plan.id === "AD_BOOST" && /^(ad\s*boost|profile\s*boost)$/i.test(name)) {
       name = "Listing Boost";
     }
+
+    const overDesc = over?.description?.trim() || "";
+    const overNote = over?.promoNote?.trim() || "";
+    const retiredCopy =
+      /Extra Active|Tutor Basic|Profile Boost|up to 3 Teaching Profiles|keep up to 3/i;
+    // Public catalogue copy stays locked to DEFAULT_PLANS when overrides drift.
+    const lockPublicCopy =
+      plan.id === "TUTOR_BASIC" ||
+      plan.id === "VERIFIED_TUTOR" ||
+      plan.id === "AD_BOOST" ||
+      plan.id === "STUDENT_PASS" ||
+      plan.id === "STUDENT_PRO" ||
+      retiredCopy.test(overDesc) ||
+      retiredCopy.test(overNote);
+
+    const lockedPrice =
+      plan.id === "VERIFIED_TUTOR" ||
+      plan.id === "AD_BOOST" ||
+      plan.id === "TUTOR_BASIC" ||
+      plan.id === "STUDENT_PASS" ||
+      plan.id === "STUDENT_PRO";
+
     return {
       ...plan,
-      pricePkr: Number.isFinite(price) && price >= 0 ? Math.round(price) : plan.pricePkr,
+      pricePkr: lockedPrice
+        ? plan.pricePkr
+        : Number.isFinite(price) && price >= 0
+          ? Math.round(price)
+          : plan.pricePkr,
       name,
-      description: over?.description?.trim() || plan.description,
+      description: lockPublicCopy ? plan.description : overDesc || plan.description,
       promoEnabled: over?.promoEnabled ?? plan.promoEnabled ?? false,
       promoPricePkr: Number.isFinite(promoPrice) && promoPrice >= 0 ? Math.round(promoPrice) : plan.promoPricePkr,
       promoUntil: over?.promoUntil || plan.promoUntil,
       promoLabel: over?.promoLabel?.trim() || plan.promoLabel,
-      promoNote: over?.promoNote?.trim() || plan.promoNote,
+      promoNote: lockPublicCopy ? plan.promoNote : overNote || plan.promoNote,
     };
   });
 }
