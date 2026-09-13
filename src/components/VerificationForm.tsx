@@ -189,10 +189,30 @@ export function VerificationForm({
 
   function validateCurrentDoc(): string | null {
     if (!activeSlot || activeSlot.key !== "id" || idLocked) return null;
-    if (!files.id.front) return "Upload your ID photo page / front to continue, or skip verification from the profile wizard.";
-    if (needsIdBack && !files.id.back) return "This ID type needs the back side as well.";
+    if (!files.id.front) {
+      return idType === "Passport"
+        ? "Upload the passport photo page before continuing."
+        : "Upload the front of your ID before continuing.";
+    }
+    if (needsIdBack && !files.id.back) {
+      return `Upload the back of your ${idType} before continuing.`;
+    }
     return null;
   }
+
+  const idReady =
+    idLocked ||
+    (Boolean(files.id.front.trim()) && (!needsIdBack || Boolean(files.id.back.trim())));
+  const reviewBlockReason = onReview
+    ? verificationSubmitError({
+        idType,
+        id: idLocked ? { front: "", back: "" } : files.id,
+        qualification: accepted.locked.has("qualification") ? emptySides() : files.qualification,
+        teaching: accepted.locked.has("teaching") ? emptySides() : files.teaching,
+        skipId: idLocked,
+      })
+    : null;
+  const currentDocBlocked = Boolean(validateCurrentDoc());
 
   function goNextDoc() {
     setError("");
@@ -218,8 +238,13 @@ export function VerificationForm({
     const current = files[slot.key];
     const showBack = slot.key === "id" ? needsIdBack : true;
     const backRequired = slot.key === "id" && needsIdBack;
+    const frontRequired = slot.key === "id" || Boolean(current.back);
+    const frontMissing = !locked && frontRequired && !current.front;
+    const backMissing = !locked && backRequired && !current.back;
     return (
-      <div className={`verify-doc ${locked ? "is-locked" : ""}`}>
+      <div
+        className={`verify-doc${locked ? " is-locked" : ""}${frontMissing || backMissing ? " is-incomplete" : ""}`}
+      >
         <div className="verify-doc-head">
           <h3 className="verify-doc-title">
             {slot.title}
@@ -237,6 +262,11 @@ export function VerificationForm({
             ) : null}
           </h3>
           <p className="field-hint">{slot.help}</p>
+          {!locked && slot.key === "id" && (frontMissing || backMissing) ? (
+            <p className="verify-incomplete-note" role="status">
+              Required uploads are marked in red — attach them before you continue.
+            </p>
+          ) : null}
         </div>
 
         {locked ? (
@@ -276,7 +306,7 @@ export function VerificationForm({
             <div className="verify-sides">
               <SideUpload
                 label={slot.key === "id" && idType === "Passport" ? "Photo page" : "Front"}
-                required={slot.key === "id" || Boolean(current.back)}
+                required={frontRequired}
                 url={current.front}
                 busy={busyKey === `${slot.key}-front`}
                 onChange={(e) => onFile(slot.key, "front", e)}
@@ -320,14 +350,33 @@ export function VerificationForm({
               const current = files[slot.key];
               const locked = accepted.locked.has(slot.key);
               const attached = locked || Boolean(current.front);
+              const needsBack =
+                slot.key === "id" && !locked && needsIdBack && !current.back && Boolean(current.front);
+              const incomplete = slot.required
+                ? !(locked || (Boolean(current.front) && (!needsIdBack || Boolean(current.back))))
+                : needsBack;
               return (
-                <li key={slot.key}>
-                  {attached ? "✓" : "○"} {slot.title}
-                  {!attached && !slot.required ? " (skipped)" : ""}
+                <li
+                  key={slot.key}
+                  className={attached && !needsBack ? "is-done" : incomplete ? "is-needed" : "is-skipped"}
+                >
+                  {attached && !needsBack ? "✓" : incomplete ? "!" : "○"} {slot.title}
+                  {incomplete && slot.required
+                    ? " — required, not complete"
+                    : !attached && !slot.required
+                      ? " (skipped)"
+                      : needsBack
+                        ? " — back side still needed"
+                        : ""}
                 </li>
               );
             })}
           </ul>
+          {!idReady ? (
+            <p className="form-error" role="alert">
+              Government photo ID must be fully uploaded before you can submit.
+            </p>
+          ) : null}
           <label>
             Notes for reviewers
             <textarea
@@ -366,13 +415,20 @@ export function VerificationForm({
             <button
               className="btn"
               type={embedded ? "button" : "submit"}
-              disabled={busyKey !== null}
+              disabled={busyKey !== null || Boolean(reviewBlockReason) || !idReady}
+              title={reviewBlockReason || (!idReady ? "Upload required ID first" : undefined)}
               onClick={embedded ? () => void submit() : undefined}
             >
               {pending ? "Update request" : "Submit for review"}
             </button>
           ) : (
-            <button type="button" className="btn" onClick={goNextDoc}>
+            <button
+              type="button"
+              className="btn"
+              disabled={currentDocBlocked}
+              title={currentDocBlocked ? "Upload required files first" : undefined}
+              onClick={goNextDoc}
+            >
               Next
             </button>
           )}
@@ -443,9 +499,10 @@ function SideUpload({
   optionalHint?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const incomplete = required && !url;
   return (
-    <div className="verify-side">
-      <strong>
+    <div className={`verify-side${incomplete ? " is-incomplete" : url ? " is-ready" : ""}`}>
+      <strong className={incomplete ? "verify-side-label-incomplete" : undefined}>
         {label}
         {required ? (
           <>
@@ -459,7 +516,14 @@ function SideUpload({
         )}
       </strong>
       {optionalHint && !required && <p className="field-hint">{optionalHint}</p>}
-      <label className="btn btn-secondary btn-sm profile-upload-btn">
+      {incomplete ? (
+        <p className="verify-side-status" role="status">
+          Not uploaded yet
+        </p>
+      ) : null}
+      <label
+        className={`btn btn-secondary btn-sm profile-upload-btn${incomplete ? " is-needed" : ""}`}
+      >
         {busy ? "Uploading…" : url ? `Replace ${label.toLowerCase()}` : `Upload ${label.toLowerCase()}`}
         <input type="file" accept="image/*,application/pdf" hidden disabled={busy} onChange={onChange} />
       </label>

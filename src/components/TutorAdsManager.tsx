@@ -23,8 +23,10 @@ import { scoreListingQuality } from "@/lib/listing-quality";
 import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDuplicateNotice";
 import { TeachingProfileCapabilityFields } from "@/components/TeachingProfileCapabilityFields";
 import { TutorBioAiHelp } from "@/components/TutorBioAiHelp";
+import { SuggestField } from "@/components/SuggestField";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
 import { UPGRADE_FOR_MORE_PROFILES_MESSAGE } from "@/lib/teaching-profile-cap";
+import { suggestSubjects } from "@/lib/search-smart";
 
 const FEEDBACK_FLASH_KEY = "mth:tutor-ads-feedback";
 
@@ -383,6 +385,18 @@ export function TutorAdsManager({
   const [createInPerson, setCreateInPerson] = useState(false);
 
   const subjectChoices = useMemo(() => teachingProfileSubjectChoices(subjects), [subjects]);
+  const subjectSuggestOptions = useMemo(() => {
+    const ranked = suggestSubjects(createSubject, subjectChoices, 12);
+    const needle = createSubject.trim().toLowerCase();
+    const exact = needle
+      ? subjectChoices.filter((name) => name.toLowerCase().includes(needle)).slice(0, 12)
+      : subjectChoices.slice(0, 12);
+    const merged = [...ranked];
+    for (const name of exact) {
+      if (!merged.some((row) => row.toLowerCase() === name.toLowerCase())) merged.push(name);
+    }
+    return merged.slice(0, 12).map((name) => ({ value: name, label: name }));
+  }, [createSubject, subjectChoices]);
 
   function load() {
     fetch("/api/tutor-ads")
@@ -698,38 +712,18 @@ export function TutorAdsManager({
 
       {createStep === 0 ? (
         <>
-          <label>
-            <span>
-              Subject{" "}
-              <abbr className="req" title="Required">
-                *
-              </abbr>
-            </span>
-            <select
-              name="subject"
-              value={createSubject}
-              onChange={(e) => setCreateSubject(e.target.value)}
-            >
-              <option value="" disabled>
-                What do you teach?
-              </option>
-              {subjectChoices.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Or type a subject
-            <input
-              name="subjectCustom"
-              placeholder="e.g. Further Mathematics"
-              onChange={(e) => {
-                if (e.target.value.trim()) setCreateSubject(e.target.value);
-              }}
-            />
-          </label>
+          <SuggestField
+            name="subject"
+            label="Subject"
+            required
+            value={createSubject}
+            onChange={setCreateSubject}
+            options={subjectSuggestOptions}
+            placeholder="Type to search — e.g. Maths, Chemistry"
+          />
+          <p className="field-hint">
+            Start typing to filter the catalog. You can also enter a subject that is not listed.
+          </p>
           <label>
             <span>
               Profile title{" "}

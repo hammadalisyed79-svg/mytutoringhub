@@ -3566,6 +3566,15 @@ select:focus {
   color: #15803d;
 }
 
+.tutor-workspace-block-btn.is-incomplete {
+  color: #b91c1c;
+}
+
+.tutor-workspace-block-btn.is-incomplete .tutor-workspace-block-num {
+  background: rgba(185, 28, 28, 0.1);
+  color: #b91c1c;
+}
+
 .tutor-workspace-block-num {
   display: inline-flex;
   align-items: center;
@@ -8352,6 +8361,36 @@ select:focus {
   margin: 0;
 }
 
+.catalog-add--suggest {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.catalog-add--suggest .suggest input {
+  min-height: 2.75rem;
+  font-size: 1rem;
+}
+
+.teaching-listing-create .suggest {
+  margin-bottom: 0.15rem;
+}
+
+.teaching-listing-create .suggest input {
+  min-height: 2.85rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .suggest-list {
+    max-height: min(50vh, 16rem);
+  }
+
+  .catalog-add--suggest .suggest input,
+  .teaching-listing-create .suggest input {
+    font-size: 16px; /* avoid iOS zoom on focus */
+  }
+}
+
 .catalog-add-row select {
   flex: 1;
   min-width: 12rem;
@@ -8434,7 +8473,8 @@ a.chip-btn {
 }
 
 .profile-complete-list .is-needed {
-  color: var(--accent);
+  color: #b91c1c;
+  font-weight: 600;
 }
 
 .profile-photo-editor {
@@ -8648,6 +8688,51 @@ a.chip-btn {
   display: grid;
   gap: 0.4rem;
   align-content: start;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
+.verify-side.is-incomplete {
+  border-color: var(--danger-border, rgba(185, 28, 28, 0.35));
+  background: var(--danger-bg, rgba(185, 28, 28, 0.05));
+}
+
+.verify-side.is-ready {
+  border-color: rgba(var(--brand-rgb), 0.28);
+  background: rgba(var(--brand-rgb), 0.04);
+}
+
+.verify-side-label-incomplete,
+.verify-side-status,
+.verify-incomplete-note {
+  color: #b91c1c;
+}
+
+.verify-side-status,
+.verify-incomplete-note {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.profile-upload-btn.is-needed {
+  border-color: rgba(185, 28, 28, 0.45);
+  color: #b91c1c;
+}
+
+.verify-doc.is-incomplete .verify-doc-title .req {
+  color: #b91c1c;
+}
+
+.verify-review-list .is-needed {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.verify-review-list .is-done {
+  color: var(--brand-deep);
 }
 
 .verify-doc.is-locked {
@@ -11695,7 +11780,8 @@ img {
 }
 
 .profile-complete-list .is-needed {
-  color: var(--ink);
+  color: #b91c1c;
+  font-weight: 600;
 }
 
 .profile-wizard-step:hover {
@@ -11711,7 +11797,8 @@ img {
 }
 
 .profile-wizard-step.is-pending {
-  color: #9a3412;
+  color: #b91c1c;
+  font-weight: 600;
 }
 
 .profile-wizard-step.is-skipped {

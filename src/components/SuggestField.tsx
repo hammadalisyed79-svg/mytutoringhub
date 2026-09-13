@@ -17,6 +17,7 @@ export function SuggestField({
   placeholder,
   spellCheck = false,
   hideLabel = false,
+  required = false,
 }: {
   name: string;
   label: string;
@@ -26,6 +27,7 @@ export function SuggestField({
   placeholder?: string;
   spellCheck?: boolean;
   hideLabel?: boolean;
+  required?: boolean;
 }) {
   const id = useId();
   const listId = `${id}-list`;
@@ -50,6 +52,14 @@ export function SuggestField({
     <div className="suggest" ref={wrapRef}>
       <label htmlFor={id} className={hideLabel ? "sr-only" : undefined}>
         {label}
+        {required ? (
+          <>
+            {" "}
+            <abbr className="req" title="Required">
+              *
+            </abbr>
+          </>
+        ) : null}
       </label>
       <input
         id={id}
@@ -58,10 +68,13 @@ export function SuggestField({
         placeholder={placeholder}
         autoComplete="off"
         spellCheck={spellCheck}
+        required={required}
         role="combobox"
         aria-expanded={open}
         aria-controls={listId}
         aria-autocomplete="list"
+        inputMode="search"
+        enterKeyHint="search"
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           onChange(e.target.value);

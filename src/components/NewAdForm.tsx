@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatHourly, type CurrencyCode } from "@/lib/currency";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
+import { SuggestField } from "@/components/SuggestField";
+import { suggestSubjects } from "@/lib/search-smart";
 
 export type NewAdFormInitial = {
   subject?: string;
@@ -37,6 +39,15 @@ export function NewAdForm({
     (initial?.subject && subjects.find((s) => s.toLowerCase() === initial.subject!.toLowerCase())) ||
     subjects[0] ||
     "Mathematics";
+  const [subject, setSubject] = useState(subjectDefault);
+  const subjectOptions = useMemo(
+    () =>
+      suggestSubjects(subject, subjects, 12).map((name) => ({
+        value: name,
+        label: name,
+      })),
+    [subject, subjects],
+  );
   const titleDefault = initial?.subject
     ? `${initial.subject}${initial.level ? ` ${initial.level}` : ""} tutor needed`.trim()
     : "";
@@ -56,7 +67,7 @@ export function NewAdForm({
     const fd = new FormData(e.currentTarget);
     const payload = {
       title: String(fd.get("title")),
-      subject: String(fd.get("subject")),
+      subject: subject.trim() || String(fd.get("subject")),
       level: String(fd.get("level")),
       board: String(fd.get("board") || "") || null,
       syllabusCode: String(fd.get("syllabusCode") || "") || null,
@@ -111,20 +122,15 @@ export function NewAdForm({
           defaultValue={titleDefault}
         />
       </label>
-      <label>
-        <span>
-          Subject <abbr className="req" title="Required">
-            *
-          </abbr>
-        </span>
-        <select name="subject" required defaultValue={subjectDefault}>
-          {subjects.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </label>
+      <SuggestField
+        name="subject"
+        label="Subject"
+        required
+        value={subject}
+        onChange={setSubject}
+        options={subjectOptions}
+        placeholder="Type to search subjects…"
+      />
       <label>
         <span>
           Level <abbr className="req" title="Required">

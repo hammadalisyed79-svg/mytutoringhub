@@ -166,13 +166,14 @@ export function TutorProfileWorkspace({
               (row.id === "setup" && setupComplete) ||
               (row.id === "subjects" && hasAnyTeachingProfile) ||
               (row.optional && TUTOR_WORKSPACE_BLOCK_IDS.indexOf(row.id) < blockIndex);
+            const incomplete = !done && !active && (!row.optional || TUTOR_WORKSPACE_BLOCK_IDS.indexOf(row.id) < blockIndex);
             return (
               <li key={row.id}>
                 <button
                   type="button"
-                  className={`tutor-workspace-block-btn${active ? " is-active" : ""}${done ? " is-done" : ""}`}
+                  className={`tutor-workspace-block-btn${active ? " is-active" : ""}${done ? " is-done" : ""}${incomplete ? " is-incomplete" : ""}`}
                   aria-current={active ? "step" : undefined}
-                  aria-label={`${row.number}. ${row.title}${row.optional ? " (optional)" : ""}`}
+                  aria-label={`${row.number}. ${row.title}${row.optional ? " (optional)" : ""}${incomplete ? " — incomplete" : ""}`}
                   title={row.hint}
                   onClick={() => goTo(row.id)}
                 >

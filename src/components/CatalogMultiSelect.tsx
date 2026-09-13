@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SuggestField } from "@/components/SuggestField";
 import { groupByLetter } from "@/lib/tutor-catalog";
 
 type Props = {
@@ -17,7 +18,7 @@ type Props = {
   extraGroupLabel?: string;
   searchable?: boolean;
   directory?: boolean;
-  /** Hide the option chip cloud — selected chips + dropdown only. */
+  /** Hide the option chip cloud — selected chips + typeahead only. */
   dropdownOnly?: boolean;
   max?: number;
   addLabel?: string;
@@ -47,8 +48,10 @@ export function CatalogMultiSelect({
   emptyHint,
 }: Props) {
   const [query, setQuery] = useState("");
-  const [pick, setPick] = useState("");
+  const [draft, setDraft] = useState("");
   const atMax = selected.length >= max;
+  const poolSize = options.length + extraOptions.length;
+  const showSearch = searchable ?? poolSize >= 8;
 
   const listed = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -68,29 +71,41 @@ export function CatalogMultiSelect({
   );
 
   const remainingCore = useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const needle = draft.trim().toLowerCase();
     return options.filter((name) => {
       if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) return false;
       if (!needle) return true;
       return name.toLowerCase().includes(needle);
     });
-  }, [options, selected, query]);
+  }, [options, selected, draft]);
 
   const remaining = useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const needle = draft.trim().toLowerCase();
     return [...options, ...extraOptions].filter((name) => {
       if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) return false;
       if (!needle) return true;
       return name.toLowerCase().includes(needle);
     });
-  }, [options, extraOptions, selected, query]);
+  }, [options, extraOptions, selected, draft]);
 
-  const useGroupedMenu = Boolean(optionsGroupLabel || extraGroupLabel) && extras.length > 0;
-  const addChoices = useGroupedMenu
-    ? remaining
-    : extras.length && !dropdownOnly
-      ? extras
-      : remaining;
+  const suggestOptions = useMemo(() => {
+    const useGrouped = Boolean(optionsGroupLabel || extraGroupLabel) && extras.length > 0;
+    const source = useGrouped ? remaining : remainingCore.length ? remainingCore : remaining;
+    return source.slice(0, 12).map((name) => {
+      const isExtra = extras.some((item) => item.toLowerCase() === name.toLowerCase());
+      return {
+        value: name,
+        label: name,
+        hint: isExtra ? extraGroupLabel || "More" : optionsGroupLabel || undefined,
+      };
+    });
+  }, [
+    extras,
+    extraGroupLabel,
+    optionsGroupLabel,
+    remaining,
+    remainingCore,
+  ]);
 
   function toggle(name: string) {
     if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) {
@@ -101,10 +116,12 @@ export function CatalogMultiSelect({
     onChange(addUnique(selected, name));
   }
 
-  function addFromSelect() {
-    if (!pick || atMax) return;
-    onChange(addUnique(selected, pick));
-    setPick("");
+  function addValue(raw: string) {
+    const token = raw.trim();
+    if (!token || atMax) return;
+    onChange(addUnique(selected, token));
+    setDraft("");
+    setQuery("");
   }
 
   return (
@@ -132,13 +149,15 @@ export function CatalogMultiSelect({
         </div>
       )}
 
-      {searchable && (
+      {showSearch && !dropdownOnly && (
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Search ${label.toLowerCase()}…`}
           aria-label={`Search ${label}`}
+          inputMode="search"
+          enterKeyHint="search"
         />
       )}
 
@@ -183,49 +202,35 @@ export function CatalogMultiSelect({
           </div>
         ))}
 
-      {addChoices.length > 0 || selected.length > 0 || dropdownOnly ? (
-        <div className="catalog-add">
-          <label>
-            {addLabel}
-            <span className="catalog-add-row">
-              <select value={pick} onChange={(e) => setPick(e.target.value)} disabled={atMax}>
-                <option value="">{atMax ? `Maximum ${max}` : "Select to add…"}</option>
-                {useGroupedMenu ? (
-                  <>
-                    {remainingCore.length > 0 ? (
-                      <optgroup label={optionsGroupLabel || "Priority"}>
-                        {remainingCore.map((name) => (
-                          <option key={`core-${name}`} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ) : null}
-                    {extras.length > 0 ? (
-                      <optgroup label={extraGroupLabel || "More"}>
-                        {extras.map((name) => (
-                          <option key={`extra-${name}`} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ) : null}
-                  </>
-                ) : (
-                  addChoices.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))
-                )}
-              </select>
-              <button className="btn btn-secondary btn-sm" type="button" onClick={addFromSelect} disabled={!pick || atMax}>
-                Add
-              </button>
-            </span>
-          </label>
+      {!atMax ? (
+        <div className="catalog-add catalog-add--suggest">
+          <SuggestField
+            name={`add-${label.toLowerCase().replace(/\s+/g, "-")}`}
+            label={addLabel}
+            value={draft}
+            onChange={(value, option) => {
+              if (option) {
+                addValue(option.value);
+                return;
+              }
+              setDraft(value);
+            }}
+            options={suggestOptions}
+            placeholder={`Type to find ${label.toLowerCase()}…`}
+          />
+          {draft.trim() ? (
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => addValue(draft)}
+            >
+              Add “{draft.trim()}”
+            </button>
+          ) : null}
         </div>
-      ) : null}
+      ) : (
+        <p className="muted">Maximum {max} selected.</p>
+      )}
     </fieldset>
   );
 }
