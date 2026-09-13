@@ -63,7 +63,7 @@ const EXTRA_META: Record<TutorWizardExtraId, { title: string; hint: string }> = 
   },
   verify: {
     title: "ID verification",
-    hint: "Optional — trust badge after admin review. Not required to go live.",
+    hint: "Optional trust badge after admin review.",
   },
 };
 
@@ -87,6 +87,7 @@ export function TutorProfileExtraStep({
   const router = useRouter();
   const meta = EXTRA_META[blockId];
   const blockMeta = TUTOR_WORKSPACE_BLOCKS.find((b) => b.id === blockId);
+  const isVerify = blockId === "verify";
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
   const languageCatalog = useMemo(
     () => tutorLanguageOptions(initial.country || ""),
@@ -184,8 +185,10 @@ export function TutorProfileExtraStep({
   return (
     <div className="tutor-workspace-block-panel stack-form">
       <header className="tutor-workspace-block-intro">
-        <p className="eyebrow">{blockMeta?.optional ? "Optional" : "Stage"} · {blockMeta?.number}/6</p>
-        <h3>{meta.title}</h3>
+        <p className="eyebrow">
+          {blockMeta?.optional ? "Optional" : "Stage"} · {blockMeta?.number}/6
+        </p>
+        <h3 className="tutor-workspace-heading">{meta.title}</h3>
         <p className="muted">{meta.hint}</p>
       </header>
 
@@ -368,32 +371,43 @@ export function TutorProfileExtraStep({
         verified ? (
           <p className="success">You are verified.</p>
         ) : (
-          <VerificationForm embedded compact />
+          <VerificationForm
+            embedded
+            compact
+            onFinishLater={onSkip}
+          />
         )
       ) : null}
 
       {error ? <p className="form-error">{error}</p> : null}
       {msg ? <p className="success">{msg}</p> : null}
 
-      <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky">
-        <button type="button" className="btn btn-secondary" onClick={onBack} disabled={saving}>
-          Back
-        </button>
-        <div className="profile-wizard-actions-right">
-          <button type="button" className="btn btn-secondary" onClick={onSkip} disabled={saving}>
-            Skip
+      {!isVerify ? (
+        <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
+          <button type="button" className="btn btn-secondary" onClick={onBack} disabled={saving}>
+            Back
           </button>
-          {blockId === "verify" ? (
-            <button type="button" className="btn" onClick={onSavedNext}>
-              Done
+          <div className="profile-wizard-actions-right">
+            <button type="button" className="btn btn-secondary" onClick={onSkip} disabled={saving}>
+              Skip
             </button>
-          ) : (
             <button type="button" className="btn" disabled={saving} onClick={() => void saveAndNext()}>
               {saving ? "Saving…" : "Save & next"}
             </button>
-          )}
+          </div>
         </div>
-      </div>
+      ) : verified ? (
+        <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
+          <button type="button" className="btn btn-secondary" onClick={onBack}>
+            Back
+          </button>
+          <div className="profile-wizard-actions-right">
+            <button type="button" className="btn" onClick={onSavedNext}>
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

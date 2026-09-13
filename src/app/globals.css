@@ -2954,6 +2954,85 @@ select:focus {
 
 .tutor-dashboard-page .page-title {
   margin-bottom: 0.35rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: var(--brand-deep);
+}
+
+.tutor-dashboard-hero {
+  padding: clamp(1.15rem, 3vw, 1.65rem);
+  background:
+    radial-gradient(circle at top left, rgba(var(--brand-rgb), 0.12), transparent 42%),
+    rgba(255, 252, 247, 0.96);
+}
+
+.tutor-dashboard-lead {
+  max-width: 38rem;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.tutor-dashboard-page h2,
+.tutor-dashboard-card h2,
+.tutor-workspace-heading,
+.verify-doc-title,
+.profile-wizard-chrome--luxe .guided-search-title {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.03em;
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+
+.tutor-dashboard-page h2,
+.tutor-dashboard-card h2 {
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  margin: 0 0 0.4rem;
+}
+
+.tutor-workspace-heading {
+  font-size: clamp(1.55rem, 3vw, 2rem) !important;
+  margin: 0.15rem 0 0.4rem !important;
+  line-height: 1.15;
+}
+
+.verify-doc-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.65rem;
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+  line-height: 1.2;
+}
+
+.verify-optional-tag {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.verify-side-optional {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: 0.35rem;
+}
+
+.verify-compact-lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+}
+
+.verify-form-compact .guided-search-step {
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--brand-deep);
 }
 
 .page-hero {
@@ -6397,9 +6476,10 @@ select:focus {
   background: #fff;
 }
 
-.verify-doc h3 {
+.verify-doc h3,
+.verify-doc-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
 }
 
 .verify-doc-head .field-hint {

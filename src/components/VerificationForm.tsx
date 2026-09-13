@@ -28,19 +28,19 @@ const SLOTS: {
     key: "id",
     title: "Government photo ID",
     required: true,
-    help: "Passport, national ID / CNIC, or driving licence. Name and photo must be readable.",
+    help: "Passport, national ID, or driving licence — name and photo readable.",
   },
   {
     key: "qualification",
     title: "Highest qualification",
     required: false,
-    help: "Degree, board certificate, A Levels, or equivalent — recommended. Add the back if the document has two sides.",
+    help: "Degree or board certificate. Upload both sides if it is a two-sided card.",
   },
   {
     key: "teaching",
-    title: "Teaching or subject certificate",
+    title: "Teaching certificate",
     required: false,
-    help: "Optional. CELTA, teaching licence, or a subject credential. Add the back if it is a two-sided card.",
+    help: "CELTA, licence, or subject credential — optional.",
   },
 ];
 
@@ -53,11 +53,14 @@ function emptySides(): Sides {
 export function VerificationForm({
   embedded = false,
   compact = false,
+  onFinishLater,
 }: {
   /** Render without nested <form> so it can sit inside the profile wizard. */
   embedded?: boolean;
   /** Shorter copy when the parent wizard chrome already explains the step. */
   compact?: boolean;
+  /** When set (workspace flow), show Finish later instead of relying on a second action row. */
+  onFinishLater?: () => void;
 }) {
   const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
@@ -162,8 +165,8 @@ export function VerificationForm({
     }
     setMsg(
       pending
-        ? "Pending request updated. We only use these files to review your badge."
-        : "Verification request submitted. We only use these files to review your badge.",
+        ? "Request updated — files stay private for badge review."
+        : "Submitted for review — files stay private.",
     );
     if (!pending) {
       setFiles({ id: emptySides(), qualification: emptySides(), teaching: emptySides() });
@@ -218,19 +221,20 @@ export function VerificationForm({
     return (
       <div className={`verify-doc ${locked ? "is-locked" : ""}`}>
         <div className="verify-doc-head">
-          <h3>
-            {slot.title}{" "}
+          <h3 className="verify-doc-title">
+            {slot.title}
             {slot.required && !idLocked && slot.key === "id" ? (
-              <abbr className="req" title="Required">
-                *
-              </abbr>
+              <>
+                {" "}
+                <abbr className="req" title="Required">
+                  *
+                </abbr>
+              </>
             ) : locked ? (
               <span className="badge">Accepted</span>
-            ) : (
-              <span className="muted" style={{ fontSize: "0.8rem", fontWeight: 500 }}>
-                {slot.required ? "Required for badge" : "Recommended"}
-              </span>
-            )}
+            ) : !slot.required ? (
+              <span className="verify-optional-tag">Optional</span>
+            ) : null}
           </h3>
           <p className="field-hint">{slot.help}</p>
         </div>
@@ -283,7 +287,7 @@ export function VerificationForm({
                   required={backRequired}
                   url={current.back}
                   busy={busyKey === `${slot.key}-back`}
-                  optionalHint={slot.key !== "id" ? "Required if this document has two sides" : undefined}
+                  optionalHint={slot.key !== "id" ? "Only if the document has two sides" : undefined}
                   onChange={(e) => onFile(slot.key, "back", e)}
                 />
               )}
@@ -340,10 +344,14 @@ export function VerificationForm({
       {error && <p className="form-error">{error}</p>}
       {msg && <p className="success">{msg}</p>}
 
-      <div className="guided-search-actions profile-wizard-actions">
+      <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--luxe">
         {docStep > 0 ? (
           <button type="button" className="btn btn-secondary" onClick={() => setDocStep((s) => s - 1)}>
             Back
+          </button>
+        ) : onFinishLater ? (
+          <button type="button" className="btn btn-secondary" onClick={onFinishLater}>
+            Finish later
           </button>
         ) : (
           <span />
@@ -351,7 +359,7 @@ export function VerificationForm({
         <div className="profile-wizard-actions-right">
           {activeSlot && !activeSlot.required ? (
             <button type="button" className="btn btn-secondary" onClick={skipDoc}>
-              Skip for now
+              Skip
             </button>
           ) : null}
           {onReview ? (
@@ -361,7 +369,7 @@ export function VerificationForm({
               disabled={busyKey !== null}
               onClick={embedded ? () => void submit() : undefined}
             >
-              {pending ? "Update pending request" : "Submit for review"}
+              {pending ? "Update request" : "Submit for review"}
             </button>
           ) : (
             <button type="button" className="btn" onClick={goNextDoc}>
@@ -378,17 +386,14 @@ export function VerificationForm({
       {!compact && (
         <div className="verify-summary">
           <p className="muted" style={{ marginTop: 0 }}>
-            Upload one document at a time. Clear photos or PDFs, max 2MB each. Accepted files cannot
-            be changed.
+            Clear photos or PDFs · max 2MB · accepted files cannot be changed.
           </p>
         </div>
       )}
 
-      {compact && (
-        <p className="muted" style={{ marginTop: 0 }}>
-          One document per screen. Skip optional certificates. You can finish verification later.
-        </p>
-      )}
+      {compact && onFinishLater ? null : compact ? (
+        <p className="muted verify-compact-lead">Upload one document at a time. Skip anything optional.</p>
+      ) : null}
 
       {canSubmitMore &&
         (embedded ? (
@@ -450,7 +455,7 @@ function SideUpload({
             </abbr>
           </>
         ) : (
-          <span className="muted"> (if needed)</span>
+          <span className="muted verify-side-optional">Optional</span>
         )}
       </strong>
       {optionalHint && !required && <p className="field-hint">{optionalHint}</p>}

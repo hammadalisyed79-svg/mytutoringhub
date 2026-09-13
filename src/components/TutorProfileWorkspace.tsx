@@ -209,7 +209,9 @@ export function TutorProfileWorkspace({
         {block === "subjects" ? (
           <div className="tutor-workspace-block-panel" id="teaching-listings">
             <header className="tutor-workspace-block-intro">
-              <h3 id="teaching-listings-section">Teaching Profiles</h3>
+              <h3 className="tutor-workspace-heading" id="teaching-listings-section">
+                Teaching Profiles
+              </h3>
               <p className="muted">One subject each — students find you by subject and rate.</p>
             </header>
             <TutorAdsManager

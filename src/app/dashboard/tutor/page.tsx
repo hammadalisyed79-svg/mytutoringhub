@@ -105,26 +105,27 @@ export default async function TutorDashboardPage({
         ) : null}
         <header className="panel page-hero tutor-dashboard-hero">
           <div className="page-hero-copy">
+            <p className="eyebrow">Tutor dashboard</p>
             <h1 className="page-title">Hi, {user.name}</h1>
-            <p className="muted">
+            <p className="muted tutor-dashboard-lead">
               {statusView?.status === "LIVE"
-                ? "Your profile is live — manage Teaching Profiles and reply to students."
-                : "Quick setup: photo → about you → location → qualifications → one Teaching Profile."}
+                ? "Your listing is live. Grow with subjects, messages, and requests."
+                : "Build a polished profile, publish a subject, then go live in search."}
             </p>
           </div>
           <div className="page-hero-actions">
-            <Link className="btn btn-sm" href="/messages">
+            <Link className="btn" href="/messages">
               Messages{inbox.unread > 0 ? ` (${inbox.unread})` : ""}
             </Link>
             {profileComplete ? (
-              <Link className="btn btn-secondary btn-sm" href="/ads">
+              <Link className="btn btn-secondary" href="/ads">
                 Student requests
               </Link>
             ) : null}
             <SwitchProfileButton
               target="STUDENT"
               label="Student mode"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-secondary"
               busyLabel="Switching…"
             />
           </div>
