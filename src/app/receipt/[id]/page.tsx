@@ -3,7 +3,6 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPlan, getLivePlan } from "@/lib/plans";
-import { formatSafepayPriceId } from "@/lib/currency";
 import { Logo } from "@/components/Logo";
 import { PrintButton } from "@/components/PrintButton";
 import { ConversionBeacon } from "@/components/ConversionBeacon";
@@ -12,8 +11,18 @@ import {
   purchaseEventForPlan,
   parseSafepayStoredAmount,
 } from "@/lib/analytics-conversions";
+import {
+  isComplimentaryReceipt,
+  receiptAmountLabel,
+  receiptFooterNote,
+  receiptKicker,
+  receiptLineDescription,
+  receiptPrintLabel,
+  receiptStatusLabel,
+  receiptSuccessMessage,
+} from "@/lib/receipt-copy";
 
-export const metadata = { title: "Payment receipt" };
+export const metadata = { title: "Receipt" };
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -31,7 +40,29 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const livePlan = await getLivePlan(sub.plan);
   const planName = livePlan?.name || getPlan(sub.plan as never)?.name || sub.plan;
   const isOneTimeAddOn = Boolean(livePlan?.isAddOn || getPlan(sub.plan as never)?.isAddOn);
-  const amount = formatSafepayPriceId(sub.stripePriceId) || "Paid via Safepay";
+
+  const complimentary = isComplimentaryReceipt({
+    stripePriceId: sub.stripePriceId,
+    stripeSubscriptionId: sub.stripeSubscriptionId,
+  });
+  const promoLabel = complimentary
+    ? livePlan?.promoLabel || getPlan(sub.plan as never)?.promoLabel || null
+    : null;
+  const periodEnd = sub.currentPeriodEnd;
+  const amount = receiptAmountLabel({
+    complimentary,
+    stripePriceId: sub.stripePriceId,
+    promoLabel,
+  });
+  const lineDescription = receiptLineDescription({
+    planName,
+    complimentary,
+    promoLabel,
+    periodEnd,
+    isOneTimeAddOn,
+    plan: sub.plan,
+    billingPeriod: sub.billingPeriod,
+  });
   const paidAt = sub.updatedAt;
   const orderRef = sub.stripeSubscriptionId?.startsWith("track_")
     ? sub.stripeSubscriptionId
@@ -40,33 +71,16 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const priceMatch = parseSafepayStoredAmount(sub.stripePriceId);
   const currency = priceMatch.currency || "PKR";
   const major = priceMatch.major;
-  const complimentary =
-    priceMatch.complimentary ||
-    Boolean(livePlan?.isComplimentary) ||
-    /complimentary|promo|manual/i.test(sub.stripeSubscriptionId || "");
   const purchase = purchaseEventForPlan(sub.plan, {
     complimentary,
     value: complimentary ? 0 : major,
   });
   const paymentSource = complimentary
-    ? /manual/i.test(sub.stripeSubscriptionId || "")
+    ? /manual/i.test(sub.stripeSubscriptionId || "") ||
+      /manual/i.test(sub.stripePriceId || "")
       ? ("manual" as const)
       : ("complimentary" as const)
     : ("safepay" as const);
-
-  const boostWindowDays =
-    sub.plan === "AD_BOOST" && sub.billingPeriod === "annual" ? 365 : 30;
-  const billingDescription = isOneTimeAddOn
-    ? sub.plan === "AD_BOOST"
-      ? `One-time purchase — ${boostWindowDays}-day Listing Boost window`
-      : sub.plan === "HIGHLIGHTED_AD"
-        ? "One-time purchase — 30-day visibility window (legacy Highlight)"
-      : sub.plan === "VERIFIED_TUTOR"
-        ? "One-time purchase — identity review queue priority"
-        : "One-time purchase"
-    : sub.billingPeriod === "annual"
-      ? "Annual plan — billed for the period purchased"
-      : "Monthly plan — billed for the period purchased";
 
   return (
     <div className="page">
@@ -88,10 +102,10 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         ) : null}
         <div className="receipt-actions no-print">
           <p className="success" style={{ margin: 0 }}>
-            Payment successful. Save or print this slip for your records.
+            {receiptSuccessMessage({ complimentary, planName })}
           </p>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-            <PrintButton />
+            <PrintButton label={receiptPrintLabel(complimentary)} />
             <Link href="/dashboard" className="btn btn-secondary btn-sm">
               Back to dashboard
             </Link>
@@ -102,13 +116,13 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <header className="receipt-head">
             <Logo />
             <div>
-              <p className="receipt-kicker">Payment receipt</p>
+              <p className="receipt-kicker">{receiptKicker(complimentary)}</p>
               <h1>My Tutoring Hub</h1>
               <p className="muted">www.mytutoringhub.com</p>
             </div>
           </header>
 
-          <p className="receipt-status">PAID</p>
+          <p className="receipt-status">{receiptStatusLabel(complimentary)}</p>
 
           <dl className="receipt-meta">
             <div>
@@ -150,20 +164,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             </thead>
             <tbody>
               <tr>
-                <td>
-                  {planName} — {billingDescription}
-                  {sub.currentPeriodEnd
-                    ? ` (until ${sub.currentPeriodEnd.toLocaleDateString()})`
-                    : ""}
-                </td>
+                <td>{lineDescription}</td>
                 <td>{amount}</td>
               </tr>
             </tbody>
           </table>
 
           <p className="muted" style={{ fontSize: "0.9rem" }}>
-            Lesson fees are paid directly to tutors. This receipt is only for the My Tutoring Hub
-            platform plan. Payments processed by Safepay.
+            {receiptFooterNote(complimentary)}
           </p>
           <p className="muted" style={{ fontSize: "0.85rem" }}>
             Questions: admin@mytutoringhub.com
