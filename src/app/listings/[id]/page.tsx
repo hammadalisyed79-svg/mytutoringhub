@@ -677,7 +677,7 @@ export default async function SubjectListingPage({ params }: Params) {
                           </span>
                           <div className="tc-actions">
                             <Link href={listingPath(t.id)} className="btn btn-sm">
-                              View Teaching Profile
+                              View profile
                             </Link>
                           </div>
                         </div>

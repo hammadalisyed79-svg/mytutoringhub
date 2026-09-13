@@ -244,8 +244,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             />
           </>
         ) : null}
-        <h1 className="page-title">Find private tutors</h1>
-        <p className="section-lead">{VALUE_PROPOSITION}</p>
+        <header className="page-hero search-page-hero">
+          <div className="page-hero-copy">
+            <h1 className="page-title">Find private tutors</h1>
+            <p className="section-lead">{VALUE_PROPOSITION}</p>
+          </div>
+        </header>
         <ValuePropStrip />
 
         {session?.user?.role === "STUDENT" && (
@@ -499,7 +503,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
                   <div className="tc-card-actions">
                     <Link href={listingPath(t.id)} className="btn btn-sm">
-                      View Teaching Profile
+                      View profile
                     </Link>
                     {session?.user ? (
                       <Link href={`/messages?to=${t.user.id}`} className="btn btn-secondary btn-sm">

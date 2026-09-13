@@ -73,6 +73,14 @@ export default async function HomePage() {
                 sign in to contact a tutor.
               </p>
             </div>
+          </div>
+
+          <div className="hero-search-shell">
+            <HeroSearch
+              placeholder={region.searchPlaceholder}
+              suggestedCountry={region.countryName}
+              subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
+            />
             <nav className="hero-bookmarks" aria-label="Start here">
               <Link href="/search" className="hero-bookmark">
                 Find a tutor
@@ -84,14 +92,6 @@ export default async function HomePage() {
                 Study with tools
               </Link>
             </nav>
-          </div>
-
-          <div className="hero-search-shell">
-            <HeroSearch
-              placeholder={region.searchPlaceholder}
-              suggestedCountry={region.countryName}
-              subjects={[...new Set([...POPULAR_SUBJECTS, ...catalogSubjectNames()])].slice(0, 80)}
-            />
           </div>
 
           <div className="hero-split-foot">
