@@ -195,17 +195,21 @@ export default async function AdsPage() {
             const score = tutorMatch ? requestMatchScore(ad, tutorMatch) : 0;
             return (
               <article key={ad.id} className={`ad-row${score >= 40 ? " ad-row--match" : ""}`}>
-                <div className="meta">
+                <div className="ad-row-meta meta">
                   <span className="badge">{ad.subject}</span>
                   {score >= 40 && <span className="badge badge-verified">Matches you</span>}
-                  <span>{ad.level}</span>
-                  {ad.board && <span>{ad.board}</span>}
-                  {ad.syllabusCode && <span>{ad.syllabusCode}</span>}
-                  <span>{ad.location}</span>
-                  {ad.budget != null && <span>Budget {formatHourly(ad.budget, currency)}</span>}
+                  <span className="ad-row-chip">{ad.level}</span>
+                  {ad.board && <span className="ad-row-chip">{ad.board}</span>}
+                  {ad.syllabusCode && <span className="ad-row-chip">{ad.syllabusCode}</span>}
+                  <span className="ad-row-chip">{ad.location}</span>
+                  {ad.budget != null && (
+                    <span className="ad-row-chip ad-row-chip--budget">
+                      Budget {formatHourly(ad.budget, currency)}
+                    </span>
+                  )}
                 </div>
-                <h2 style={{ margin: "0.2rem 0", fontSize: "1.2rem" }}>{ad.title}</h2>
-                <p style={{ margin: 0 }}>{ad.description}</p>
+                <h2 className="ad-row-title">{ad.title}</h2>
+                <p className="ad-row-desc">{ad.description}</p>
                 <div className="ad-row-footer">
                   <span className="ad-row-poster">
                     {[ad.online ? "Online" : null, ad.inPerson ? "In person" : null]

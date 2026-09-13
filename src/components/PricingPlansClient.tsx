@@ -265,7 +265,7 @@ function PlanCard({
         {plan.promoNote && plan.isPromoActive && plan.id !== "TUTOR_BASIC" ? (
           <p className="promo-note">{plan.promoNote}</p>
         ) : null}
-        <ul>
+        <ul className="plan-features">
           {plan.features.map((f) => (
             <li key={f}>{f}</li>
           ))}
@@ -388,10 +388,10 @@ export function PricingPlansClient({
 
       {hasAnnual ? (
         <div className="pricing-billing-bar">
-          <div className="billing-toggle" role="group" aria-label="Billing period">
+          <div className="pricing-audience-tabs billing-period-tabs" role="group" aria-label="Billing period">
             <button
               type="button"
-              className={`btn btn-sm ${billing === "monthly" ? "" : "btn-secondary"}`}
+              className={`pricing-audience-tab${billing === "monthly" ? " is-active" : ""}`}
               aria-pressed={billing === "monthly"}
               onClick={() => setBilling("monthly")}
             >
@@ -399,7 +399,7 @@ export function PricingPlansClient({
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${billing === "annual" ? "" : "btn-secondary"}`}
+              className={`pricing-audience-tab${billing === "annual" ? " is-active" : ""}`}
               aria-pressed={billing === "annual"}
               onClick={() => setBilling("annual")}
             >
@@ -431,7 +431,7 @@ export function PricingPlansClient({
                 <div className="price-block">
                   <div className="price">Free</div>
                 </div>
-                <ul>
+                <ul className="plan-features">
                   <li>Search &amp; browse tutors worldwide</li>
                   <li>{STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month</li>
                   <li>Unlimited replies in existing chats</li>
@@ -459,7 +459,7 @@ export function PricingPlansClient({
                 key={plan.id}
                 plan={plan}
                 {...sharedProps}
-                featured={plan.id === "STUDENT_PASS" || plan.id === "STUDENT_PRO"}
+                featured={plan.id === "STUDENT_PASS"}
                 badge={planBadge(plan)}
               />
             ))}
@@ -514,7 +514,7 @@ export function PricingPlansClient({
                 <div className="price-block">
                   <div className="price">Free</div>
                 </div>
-                <ul>
+                <ul className="plan-features">
                   <li>Appear in search when your profile is complete</li>
                   <li>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</li>
                   <li>Receive &amp; reply to student messages</li>
