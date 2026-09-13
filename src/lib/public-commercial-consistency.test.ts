@@ -61,7 +61,6 @@ const publicSurfaces = [
   "app/refund/page.tsx",
   "lib/marketing-copy.ts",
   "lib/free-vs-paid.ts",
-  "lib/plans.ts",
   "lib/ai-support.ts",
   "components/PricingPlansClient.tsx",
   "components/LaunchOfferBlock.tsx",
