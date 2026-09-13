@@ -122,17 +122,31 @@ function CapacityUpgradeActions({
   paidCheckoutLive,
   canBuyExtraActive = true,
   secondaryHref = "/pricing?plan=TUTOR_BASIC",
-  secondaryLabel = "View Tutor Pro",
+  secondaryLabel = "Compare plans",
+  returnUrl = "/dashboard/tutor?tab=profile#teaching-listings",
 }: {
   currency: CurrencyCode;
   paidCheckoutLive: boolean;
   canBuyExtraActive?: boolean;
   secondaryHref?: string;
   secondaryLabel?: string;
+  returnUrl?: string;
 }) {
+  void canBuyExtraActive;
   return (
     <div className="teaching-listings-upgrade-actions">
-      <Link className="btn btn-sm" href={secondaryHref}>
+      <SubscribeButton
+        plan="TUTOR_BASIC"
+        planLabel="Tutor Pro"
+        currency={currency}
+        label="Activate Tutor Pro"
+        featured
+        paidCheckoutLive={paidCheckoutLive}
+        returnUrl={returnUrl}
+        trigger="teaching_profile_limit"
+        sourcePage="teaching_profiles"
+      />
+      <Link className="btn btn-sm btn-secondary" href={secondaryHref}>
         {secondaryLabel}
       </Link>
     </div>
@@ -1086,11 +1100,14 @@ export function TutorAdsManager({
                     plan="AD_BOOST"
                     planLabel="Listing Boost"
                     currency={currency}
-                    label={boosted ? "Extend 30-Day Listing Boost" : "30-Day Listing Boost"}
+                    label={boosted ? "Extend 30-Day Listing Boost · PKR 999" : "30-Day Listing Boost · One-time"}
                     featured
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
                     subjectProfileId={listing.id}
+                    returnUrl={`/dashboard/tutor?tab=profile&listing=${encodeURIComponent(listing.id)}#teaching-listings`}
+                    trigger="listing_boost"
+                    sourcePage="teaching_profiles"
                   />
                   <SubscribeButton
                     plan="AD_BOOST"
@@ -1099,12 +1116,15 @@ export function TutorAdsManager({
                     billing="annual"
                     label={
                       boosted
-                        ? "Extend 365-Day Listing Boost (save 20%)"
-                        : "365-Day Listing Boost (save 20%)"
+                        ? "Extend 365-Day Listing Boost · save 20%"
+                        : "365-Day Listing Boost · One-time · save 20%"
                     }
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
                     subjectProfileId={listing.id}
+                    returnUrl={`/dashboard/tutor?tab=profile&listing=${encodeURIComponent(listing.id)}#teaching-listings`}
+                    trigger="listing_boost"
+                    sourcePage="teaching_profiles"
                   />
                 </div>
               )}

@@ -18,8 +18,11 @@ import {
   getTrustBadgesForProfiles,
 } from "@/lib/tutor-badges";
 import { ReportButton, BlockUserButton } from "@/components/ReportButton";
-import { formatHourly } from "@/lib/currency";
+import { formatHourly, formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { getPlanDashboardSummary } from "@/lib/plan-limits";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { getLivePlan } from "@/lib/plans";
 import { listingPath } from "@/lib/subject-profile";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
@@ -262,6 +265,22 @@ export default async function TutorProfilePage({ params }: Params) {
   // Phone is never public — owner/admin may see it for account context only.
   const showPhone = Boolean(tutor.phone && (isOwner || isAdmin));
   const canMessage = session?.user?.role === "STUDENT";
+  const [contactSummary, paidCheckoutLive, studentPass] =
+    canMessage && session?.user
+      ? await Promise.all([
+          getPlanDashboardSummary(session.user.id, "STUDENT"),
+          Promise.resolve(isPaidCheckoutLive()),
+          getLivePlan("STUDENT_PASS"),
+        ])
+      : [null, true, null];
+  const passMonthly =
+    studentPass && currency
+      ? formatPlanPrice(studentPass.listPricePkr, currency)
+      : "PKR 1,999/mo";
+  const passAnnual =
+    studentPass?.annualPricePkr && currency
+      ? formatPlanPrice(studentPass.annualPricePkr, currency, "year")
+      : "PKR 19,190/yr";
   const viewer =
     canMessage && session?.user
       ? await prisma.user.findUnique({
@@ -826,6 +845,16 @@ export default async function TutorProfilePage({ params }: Params) {
                     rateLabel: formatHourly(listing.rate, currency),
                   }))}
                   subjectProfileId={tutor.subjectProfiles[0]?.id}
+                  contactUsed={
+                    contactSummary?.planTier === "free" ? contactSummary.usageUsed : undefined
+                  }
+                  contactLimit={
+                    contactSummary?.planTier === "free" ? contactSummary.usageLimit : undefined
+                  }
+                  currency={currency}
+                  priceLabel={passMonthly}
+                  annualPriceLabel={passAnnual}
+                  paidCheckoutLive={Boolean(paidCheckoutLive)}
                 />
               ) : isOwner ? (
                 <p className="muted">Students can message you from this page ({studentFreeContactsShort()} free, or unlimited with Student Pass).</p>
@@ -834,7 +863,10 @@ export default async function TutorProfilePage({ params }: Params) {
                   <p className="muted">
                     Create a free student account to message this tutor ({studentFreeContactsShort()} included).
                   </p>
-                  <Link href="/register?role=student" className="btn btn-block">
+                  <Link
+                    href={`/register?role=student&next=${encodeURIComponent(`/tutors/${tutor.id}`)}`}
+                    className="btn btn-block"
+                  >
                     Join as student
                   </Link>
                   <p className="muted">

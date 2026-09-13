@@ -296,6 +296,9 @@ export function TutorProfileWorkspace({
             listingLive={initial.active}
             verified={initial.verified}
             trustBadge={trustBadge}
+            currency={currency}
+            paidCheckoutLive={paidCheckoutLive}
+            showPriorityCheckout={!initial.verified}
           />
         ) : null}
       </div>

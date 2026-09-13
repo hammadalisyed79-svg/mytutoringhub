@@ -13,11 +13,13 @@ function RegisterFormInner({
   microsoftEnabled = false,
   initialRole,
   onSwitchToLogin,
+  nextPath,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
   initialRole?: RegisterRole;
   onSwitchToLogin?: () => void;
+  nextPath?: string;
 }) {
   const searchParams = useSearchParams();
   const defaultRole =
@@ -26,6 +28,7 @@ function RegisterFormInner({
   const [role, setRole] = useState<RegisterRole>(defaultRole);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const preservedNext = nextPath || searchParams.get("next") || "";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,7 +60,10 @@ function RegisterFormInner({
       `reg_${userId}`,
     );
     // Do not auto-login — email must be verified first.
-    window.location.href = `/login?verify=sent&email=${encodeURIComponent(payload.email)}`;
+    const nextQs = preservedNext
+      ? `&next=${encodeURIComponent(preservedNext)}`
+      : "";
+    window.location.href = `/login?verify=sent&email=${encodeURIComponent(payload.email)}${nextQs}`;
   }
 
   return (
@@ -96,6 +102,7 @@ function RegisterFormInner({
         disabled={loading}
         googleEnabled={googleEnabled}
         microsoftEnabled={microsoftEnabled}
+        callbackUrl={preservedNext || "/dashboard"}
       />
 
       <form className="auth-form auth-form-flat" onSubmit={onSubmit}>
@@ -151,11 +158,13 @@ export function RegisterForm({
   microsoftEnabled = false,
   initialRole,
   onSwitchToLogin,
+  nextPath,
 }: {
   googleEnabled?: boolean;
   microsoftEnabled?: boolean;
   initialRole?: RegisterRole;
   onSwitchToLogin?: () => void;
+  nextPath?: string;
 }) {
   return (
     <Suspense fallback={<p className="muted">Loading…</p>}>
@@ -164,6 +173,7 @@ export function RegisterForm({
         microsoftEnabled={microsoftEnabled}
         initialRole={initialRole}
         onSwitchToLogin={onSwitchToLogin}
+        nextPath={nextPath}
       />
     </Suspense>
   );

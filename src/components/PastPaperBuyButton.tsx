@@ -112,7 +112,7 @@ export function PastPaperBuyButton({
     return (
       <div className="paper-access">
         <span className="muted paper-access-label">Available with plan</span>
-        <a className="btn btn-sm" href="/login">
+        <a className="btn btn-sm" href={`/login?next=${encodeURIComponent("/past-papers")}`}>
           Sign in · {actionLabel}
         </a>
       </div>
@@ -168,20 +168,64 @@ export function PastPaperBuyButton({
 
   if (upgradeUrl) {
     return (
-      <div className="paper-access">
+      <div className="paper-access paper-access-choices">
         <p className="form-error" style={{ marginTop: 0 }}>
           {error}
         </p>
-        <p style={{ margin: "0.5rem 0 0", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <Link href={upgradeUrl} className="btn btn-sm">
-            View Student Pro
-          </Link>
+        <p className="muted" style={{ margin: "0.35rem 0" }}>
+          Choose how to continue:
+        </p>
+        <div className="paper-choice-row">
           {feePkr > 0 ? (
-            <button className="btn btn-sm btn-secondary" type="button" onClick={buy} disabled={busy}>
+            <button className="btn btn-sm" type="button" onClick={buy} disabled={busy}>
               {busy ? "Opening…" : `Buy this paper · ${feeLabel}`}
             </button>
           ) : null}
-        </p>
+          <Link href="/pricing?plan=STUDENT_PRO" className="btn btn-sm btn-secondary">
+            Student Pro · unlimited papers
+          </Link>
+          <Link href="/pricing?plan=STUDENT_PASS" className="btn btn-sm btn-secondary">
+            Student Pass · 10/month
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "available_with_plan" || status === "individually_purchasable") {
+    return (
+      <div className="paper-buy paper-access paper-access-choices">
+        <span className="muted paper-access-label">{statusLabel}</span>
+        <div className="paper-choice-row">
+          {feePkr > 0 ? (
+            <button className="btn btn-sm" type="button" onClick={buy} disabled={busy}>
+              {busy ? "Opening…" : `Buy this paper · ${feeLabel}`}
+            </button>
+          ) : (
+            <button className="btn btn-sm" type="button" onClick={buy} disabled={busy}>
+              {busy ? "Opening…" : actionLabel}
+            </button>
+          )}
+          <Link
+            href="/pricing?plan=STUDENT_PASS"
+            className="btn btn-sm btn-secondary"
+            onClick={() =>
+              fireConversionEvent("product_view", { plan: "STUDENT_PASS", trigger: "past_paper_buy" })
+            }
+          >
+            Pass · 10/month
+          </Link>
+          <Link
+            href="/pricing?plan=STUDENT_PRO"
+            className="btn btn-sm btn-secondary"
+            onClick={() =>
+              fireConversionEvent("product_view", { plan: "STUDENT_PRO", trigger: "past_paper_buy" })
+            }
+          >
+            Pro · unlimited
+          </Link>
+        </div>
+        {error ? <p className="form-error">{error}</p> : null}
       </div>
     );
   }

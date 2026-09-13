@@ -1861,6 +1861,81 @@ body.auth-modal-open .nav-backdrop {
   font-size: 0.82rem;
 }
 
+.contextual-upgrade {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  padding: 1rem 1.1rem;
+}
+
+.contextual-upgrade-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.contextual-upgrade-product {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.contextual-upgrade-price {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.contextual-upgrade-billing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.contextual-upgrade-billing button {
+  border: 1px solid var(--border, #d5dde8);
+  background: var(--surface, #fff);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.contextual-upgrade-billing button.is-active {
+  border-color: var(--brand, #1f4b7a);
+  background: color-mix(in srgb, var(--brand, #1f4b7a) 8%, white);
+  font-weight: 600;
+}
+
+.contextual-upgrade-benefits {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.contextual-upgrade-later {
+  margin: 0;
+  text-align: center;
+}
+
+.paper-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
+}
+
+.contact-quota-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.teaching-listings-upgrade-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
 .manual-activation-overlay {
   position: fixed;
   inset: 0;

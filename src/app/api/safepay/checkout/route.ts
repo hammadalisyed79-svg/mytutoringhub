@@ -20,8 +20,13 @@ import {
 } from "@/lib/safepay";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
 import { computeMaxRedeemablePoints, getHubPointsBalanceSafe } from "@/lib/hub-points";
-import { encodeSubjectProfileNote } from "@/lib/listing-checkout";
+import { encodeCheckoutNotes } from "@/lib/listing-checkout";
 import { trackProductEvent } from "@/lib/product-events";
+import {
+  NON_STACKABLE_CHECKOUT_PLANS,
+  type PurchaseTrigger,
+} from "@/lib/purchase-context";
+import { safeReturnPath } from "@/lib/safe-return-url";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -44,6 +49,24 @@ const schema = z.object({
   useHubPoints: z.boolean().optional().default(false),
   /** Bind Boost / Highlight to one subject listing. */
   subjectProfileId: z.string().min(1).optional(),
+  /** Resume this same-origin path after successful payment. */
+  returnUrl: z.string().max(500).optional(),
+  trigger: z
+    .enum([
+      "contact_limit",
+      "past_paper_limit",
+      "past_paper_buy",
+      "ai_feature",
+      "request_ad",
+      "reveal_limit",
+      "teaching_profile_limit",
+      "listing_boost",
+      "verification",
+      "pricing",
+      "messages",
+      "manual",
+    ])
+    .optional(),
 });
 
 function resolveCountry(req: Request, bodyCountry?: string): string | null {
@@ -85,6 +108,66 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan is for students" }, { status: 400 });
   }
 
+  if ((NON_STACKABLE_CHECKOUT_PLANS as string[]).includes(plan)) {
+    const { hasActivePlan, hasAnyActivePlan } = await import("@/lib/subscription");
+    if (plan === "STUDENT_PASS") {
+      if (await hasActivePlan(session.user.id, "STUDENT_PRO")) {
+        return NextResponse.json(
+          {
+            error: "You already have Student Pro, which includes Pass benefits.",
+            manageUrl: "/dashboard",
+          },
+          { status: 409 },
+        );
+      }
+      if (await hasActivePlan(session.user.id, "STUDENT_PASS")) {
+        return NextResponse.json(
+          {
+            error: "Student Pass is already active on your account.",
+            manageUrl: "/dashboard",
+          },
+          { status: 409 },
+        );
+      }
+    } else if (plan === "STUDENT_PRO") {
+      if (await hasActivePlan(session.user.id, "STUDENT_PRO")) {
+        return NextResponse.json(
+          {
+            error: "Student Pro is already active on your account.",
+            manageUrl: "/dashboard",
+          },
+          { status: 409 },
+        );
+      }
+    } else if (plan === "TUTOR_BASIC") {
+      if (
+        await hasAnyActivePlan(session.user.id, [
+          "TUTOR_BASIC",
+          "EXTRA_PROFILE_ADS",
+          "UNLIMITED_ADS",
+        ])
+      ) {
+        return NextResponse.json(
+          {
+            error: "Tutor Pro (or an equivalent plan) is already active.",
+            manageUrl: "/dashboard/tutor",
+          },
+          { status: 409 },
+        );
+      }
+    } else if (plan === "VERIFIED_TUTOR") {
+      if (await hasActivePlan(session.user.id, "VERIFIED_TUTOR")) {
+        return NextResponse.json(
+          {
+            error: "Priority Verification Review is already active for your account.",
+            manageUrl: "/dashboard/tutor?tab=profile&verify=1",
+          },
+          { status: 409 },
+        );
+      }
+    }
+  }
+
   if (plan === "EXTRA_ACTIVE") {
     const { countExtraActiveSlots, EXTRA_ACTIVE_SLOT_MAX } = await import(
       "@/lib/subject-profile-entitlements"
@@ -110,7 +193,8 @@ export async function POST(req: Request) {
     }
   }
 
-  let subjectProfileNote: string | null = null;
+  let checkoutNotes: string | null = null;
+  let listingIdForRedirect: string | undefined;
   if (body.subjectProfileId) {
     if (plan !== "AD_BOOST" && plan !== "HIGHLIGHTED_AD") {
       return NextResponse.json(
@@ -128,7 +212,7 @@ export async function POST(req: Request) {
     if (!listing) {
       return NextResponse.json({ error: "Subject profile not found" }, { status: 404 });
     }
-    subjectProfileNote = encodeSubjectProfileNote(listing.id);
+    listingIdForRedirect = listing.id;
   } else if (plan === "AD_BOOST" || plan === "HIGHLIGHTED_AD") {
     return NextResponse.json(
       { error: "Choose which subject profile to boost or highlight" },
@@ -136,15 +220,30 @@ export async function POST(req: Request) {
     );
   }
 
+  const safeReturn = body.returnUrl ? safeReturnPath(body.returnUrl, "") : "";
+  const defaultBoostReturn = listingIdForRedirect
+    ? `/dashboard/tutor?tab=profile&listing=${encodeURIComponent(listingIdForRedirect)}#teaching-listings`
+    : "";
+  checkoutNotes = encodeCheckoutNotes({
+    subjectProfileId: listingIdForRedirect,
+    returnUrl: safeReturn || defaultBoostReturn || undefined,
+    trigger: body.trigger as PurchaseTrigger | undefined,
+  });
+
   const appUrl = checkoutAppUrl(req);
 
   if (def.isComplimentary) {
     const granted = await grantComplimentaryPlan({ userId: session.user.id, plan: def });
+    const destPath =
+      safeReturn ||
+      (session.user.role === "TUTOR"
+        ? "/dashboard/tutor?tab=profile#teaching-listings"
+        : "/dashboard");
     return NextResponse.json({
       granted: true,
       complimentary: true,
       alreadyActive: granted.alreadyActive,
-      url: `${appUrl}/dashboard?checkout=success&plan=${plan}`,
+      url: `${appUrl}${destPath}${destPath.includes("?") ? "&" : "?"}checkout=success&plan=${plan}`,
     });
   }
 
@@ -211,12 +310,17 @@ export async function POST(req: Request) {
     const listingQs = body.subjectProfileId
       ? `&listing=${encodeURIComponent(body.subjectProfileId)}`
       : "";
+    const returnQs = safeReturn ? `&returnUrl=${encodeURIComponent(safeReturn)}` : "";
+    const cancelPath = safeReturn || defaultBoostReturn || "/pricing";
+    const cancelUrl = cancelPath.startsWith("/pricing")
+      ? `${appUrl}/pricing?checkout=cancel&plan=${plan}`
+      : `${appUrl}${cancelPath}${cancelPath.includes("?") ? "&" : "?"}checkout=cancel&plan=${plan}`;
     const { url, tracker } = await createSafepayHostedCheckout({
       amount,
       currency,
       orderId,
-      redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}&billing=${billing}${listingQs}`,
-      cancelUrl: `${appUrl}/pricing?checkout=cancel&plan=${plan}`,
+      redirectUrl: `${appUrl}/api/safepay/complete?plan=${plan}&billing=${billing}${listingQs}${returnQs}`,
+      cancelUrl,
     });
 
     await reconcileUserSafepayPayments(session.user.id);
@@ -239,7 +343,7 @@ export async function POST(req: Request) {
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod,
         pointsRedeemedPkr,
-        ...(subjectProfileNote ? { notes: subjectProfileNote } : {}),
+        ...(checkoutNotes ? { notes: checkoutNotes } : {}),
       },
       create: {
         userId: session.user.id,
@@ -249,7 +353,7 @@ export async function POST(req: Request) {
         stripePriceId: `safepay_${currency}_${amount}`,
         billingPeriod,
         pointsRedeemedPkr,
-        notes: subjectProfileNote,
+        notes: checkoutNotes,
       },
     });
 
@@ -260,6 +364,7 @@ export async function POST(req: Request) {
       currency,
       amount,
       subjectProfileId: body.subjectProfileId,
+      trigger: body.trigger,
     });
 
     return NextResponse.json({

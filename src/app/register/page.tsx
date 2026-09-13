@@ -13,12 +13,25 @@ export const metadata = privateMetadata(
   "Create your free My Tutoring Hub account. Students find private tutors; tutors reach students worldwide. Sign up with Google, Microsoft, or email.",
 );
 
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; role?: string; intent?: string }>;
+}) {
   await connection();
+  const sp = await searchParams;
+  const { safeReturnPath } = await import("@/lib/safe-return-url");
+  const nextPath = safeReturnPath(sp.next, "");
   const session = await auth();
   if (session?.user) {
-    if (session.user.onboardingComplete === false) redirect("/register/complete");
-    redirect(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
+    if (session.user.onboardingComplete === false) {
+      redirect(
+        nextPath
+          ? `/register/complete?next=${encodeURIComponent(nextPath)}`
+          : "/register/complete",
+      );
+    }
+    redirect(nextPath || (session.user.role === "ADMIN" ? "/admin" : "/dashboard"));
   }
   const settings = await getSiteSettings();
   const googleEnabled = true;
@@ -32,7 +45,11 @@ export default async function RegisterPage() {
           <Link href="/login">log in</Link> if you already have an account.
         </p>
       ) : (
-        <RegisterForm googleEnabled={googleEnabled} microsoftEnabled={microsoftEnabled} />
+        <RegisterForm
+          googleEnabled={googleEnabled}
+          microsoftEnabled={microsoftEnabled}
+          nextPath={nextPath || undefined}
+        />
       )}
     </AuthModalFrame>
   );

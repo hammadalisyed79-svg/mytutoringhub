@@ -2,16 +2,26 @@
 
 import Link from "next/link";
 import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
+import { SubscribeButton } from "@/components/SubscribeButton";
 import type { TutorTrustBadge } from "@/lib/tutor-badges";
 
 export function ProfileImprovePanel({
   listingLive,
   verified,
   trustBadge = "NEW",
+  currency,
+  paidCheckoutLive = true,
+  priorityPriceLabel = "PKR 2,999",
+  showPriorityCheckout = false,
 }: {
   listingLive: boolean;
   verified: boolean;
   trustBadge?: TutorTrustBadge | string;
+  currency?: string;
+  paidCheckoutLive?: boolean;
+  priorityPriceLabel?: string;
+  /** When true, show inline Priority Verification purchase (pending / eligible). */
+  showPriorityCheckout?: boolean;
 }) {
   return (
     <section className="profile-improve panel">
@@ -40,9 +50,30 @@ export function ProfileImprovePanel({
           {verified ? (
             <span className="badge badge-verified">✓ Verified</span>
           ) : (
-            <Link href="/dashboard/tutor?tab=profile&verify=1" className="btn btn-secondary btn-sm">
-              Upload ID
-            </Link>
+            <>
+              <Link href="/dashboard/tutor?tab=profile&verify=1" className="btn btn-secondary btn-sm">
+                Upload ID
+              </Link>
+              {showPriorityCheckout ? (
+                <div className="profile-improve-priority">
+                  <p className="muted" style={{ marginTop: "0.75rem", marginBottom: "0.35rem" }}>
+                    Optional: move your request into the priority review queue ({priorityPriceLabel}{" "}
+                    one-time). Priority Review does not guarantee approval.
+                  </p>
+                  <SubscribeButton
+                    plan="VERIFIED_TUTOR"
+                    planLabel="Priority Verification Review"
+                    currency={currency}
+                    label="Get Priority Review"
+                    oneTime
+                    paidCheckoutLive={paidCheckoutLive}
+                    returnUrl="/dashboard/tutor?tab=profile&verify=1"
+                    trigger="verification"
+                    sourcePage="profile_improve"
+                  />
+                </div>
+              ) : null}
+            </>
           )}
         </article>
 

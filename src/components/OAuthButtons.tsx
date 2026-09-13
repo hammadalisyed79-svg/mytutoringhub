@@ -28,8 +28,10 @@ export function OAuthButtons({
   const [error, setError] = useState("");
   const google = googleEnabled !== false;
   const microsoft = Boolean(microsoftEnabled);
-  const oauthReturn =
-    intent === "login" ? safeReturnPath(callbackUrl, "/dashboard") : "/dashboard";
+  const oauthReturn = safeReturnPath(
+    callbackUrl,
+    intent === "login" ? "/dashboard" : "/dashboard",
+  );
 
   async function startOAuth(provider: ProviderId) {
     setError("");

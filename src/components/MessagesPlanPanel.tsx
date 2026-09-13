@@ -57,11 +57,18 @@ function CompactPlanCard({
           label={
             plan.isComplimentary
               ? `Activate ${plan.name} free`
-              : `Pay with Safepay · ${plan.name}`
+              : plan.id === "STUDENT_PASS"
+                ? "Get Student Pass"
+                : plan.id === "TUTOR_BASIC"
+                  ? "Activate Tutor Pro"
+                  : `Pay with Safepay · ${plan.name}`
           }
           featured={featured}
           complimentary={plan.isComplimentary}
           paidCheckoutLive={paidCheckoutLive}
+          returnUrl="/messages"
+          trigger={plan.id === "TUTOR_BASIC" ? "reveal_limit" : "contact_limit"}
+          sourcePage="messages"
         />
       </div>
     </article>

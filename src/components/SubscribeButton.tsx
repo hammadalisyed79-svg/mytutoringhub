@@ -6,6 +6,7 @@ import { manualActivationCtaLabel, manualActivationNote } from "@/lib/payments-s
 import type { SubscriptionPlan } from "@/lib/types";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
 import { checkoutStartedEventForPlan } from "@/lib/analytics-conversions";
+import type { PurchaseTrigger } from "@/lib/purchase-context";
 
 export function SubscribeButton({
   plan,
@@ -20,6 +21,9 @@ export function SubscribeButton({
   hubPointsBalance = 0,
   listPricePkr,
   subjectProfileId,
+  returnUrl,
+  trigger,
+  sourcePage,
 }: {
   plan: SubscriptionPlan;
   planLabel?: string;
@@ -34,6 +38,10 @@ export function SubscribeButton({
   listPricePkr?: number;
   /** Required for AD_BOOST / HIGHLIGHTED_AD — binds purchase to one listing. */
   subjectProfileId?: string;
+  /** After payment, resume this same-origin path. */
+  returnUrl?: string;
+  trigger?: PurchaseTrigger;
+  sourcePage?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,12 +66,26 @@ export function SubscribeButton({
     setLoading(true);
     setError("");
 
+    fireConversionEvent(
+      "purchase_intent",
+      {
+        plan,
+        billing_period: billing || (oneTime ? "once" : "monthly"),
+        currency: currency || "PKR",
+        trigger: trigger || undefined,
+        source_page: sourcePage || undefined,
+      },
+      `intent_${plan}_${Date.now()}`,
+    );
+
     const payload = {
       plan,
       currency,
       billing: billing ?? "monthly",
       useHubPoints: useHubPoints && hubPointsBalance > 0,
       ...(subjectProfileId ? { subjectProfileId } : {}),
+      ...(returnUrl ? { returnUrl } : {}),
+      ...(trigger ? { trigger } : {}),
     };
 
     let res = await fetch("/api/safepay/checkout", {
@@ -76,7 +98,11 @@ export function SubscribeButton({
       res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, ...(subjectProfileId ? { subjectProfileId } : {}) }),
+        body: JSON.stringify({
+          plan,
+          ...(subjectProfileId ? { subjectProfileId } : {}),
+          ...(returnUrl ? { returnUrl } : {}),
+        }),
       });
     }
 
@@ -90,14 +116,19 @@ export function SubscribeButton({
       currency?: string;
       amount?: number;
       tracker?: string;
+      alreadyActive?: boolean;
+      manageUrl?: string;
     };
     setLoading(false);
     if (!res.ok) {
+      if (res.status === 409 && data.manageUrl) {
+        setError(data.error || "You already have this plan.");
+        return;
+      }
       setError(data.error || "Could not start checkout");
       return;
     }
 
-    // Checkout started ≠ purchase. Fire only after host accepts the session.
     const checkoutEvent = checkoutStartedEventForPlan(data.plan || plan);
     if (checkoutEvent && (data.url || data.granted)) {
       fireConversionEvent(
@@ -107,13 +138,29 @@ export function SubscribeButton({
           billing_period: data.billing || billing || "monthly",
           currency: data.currency || currency || "PKR",
           payment_source: data.complimentary ? "complimentary" : "safepay",
+          trigger: trigger || undefined,
+          source_page: sourcePage || undefined,
         },
         `checkout_${data.tracker || data.plan || plan}_${Date.now()}`,
       );
     }
 
-    if (data.url) window.location.href = data.url;
-    else if (data.granted) window.location.href = "/dashboard?checkout=success";
+    if (data.url) {
+      fireConversionEvent(
+        "checkout_redirected",
+        { plan: data.plan || plan, trigger: trigger || undefined },
+        `redirect_${data.tracker || plan}_${Date.now()}`,
+      );
+      window.location.href = data.url;
+    } else if (data.granted) {
+      const dest =
+        returnUrl && returnUrl.startsWith("/") && !returnUrl.startsWith("//")
+          ? returnUrl
+          : "/dashboard?checkout=success";
+      window.location.href = dest.includes("?")
+        ? `${dest}&checkout=success&plan=${encodeURIComponent(plan)}`
+        : `${dest}?checkout=success&plan=${encodeURIComponent(plan)}`;
+    }
   }
 
   return (
@@ -144,10 +191,20 @@ export function SubscribeButton({
         {complimentary
           ? "No payment required for Launch offer · Listing Boost and Priority Verification remain paid"
           : oneTime
-            ? "One-time payment · Receipt emailed · Boost extends if already active"
-            : "Encrypted checkout · Receipt emailed · Access lasts for the period you purchase (no auto-renew unless stated at checkout)"}
+            ? "Secure checkout with Safepay · One-time payment · Receipt emailed"
+            : "Secure checkout with Safepay · Access lasts for the period you purchase (no auto-renew unless stated at checkout)"}
       </p>
-      {error && <p className="form-error">{error}</p>}
+      {error && (
+        <p className="form-error">
+          {error}
+          {error.toLowerCase().includes("already") ? (
+            <>
+              {" "}
+              <a href="/dashboard">Manage plan</a>
+            </>
+          ) : null}
+        </p>
+      )}
     </div>
   );
 }

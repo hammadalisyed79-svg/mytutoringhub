@@ -5,12 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { canPostAd } from "@/lib/subscription";
 import { NewAdForm } from "@/components/NewAdForm";
 import type { Role } from "@/lib/types";
-import Link from "next/link";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { loginUrlWithNext } from "@/lib/safe-return-url";
 import { privateMetadata } from "@/lib/seo";
+import { ContextualUpgradePanel } from "@/components/ContextualUpgradePanel";
+import { getLivePlan } from "@/lib/plans";
+import { formatPlanPrice } from "@/lib/currency";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
 
 export const metadata = privateMetadata(
   "Post a request – My Tutoring Hub",
@@ -51,6 +54,12 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
   const allowed = await canPostAd(session.user.id, session.user.role as Role);
   const region = getVisitorRegion(await headers());
   const currency = await getVisitorCurrency();
+  const paidCheckoutLive = isPaidCheckoutLive();
+  const pass = await getLivePlan("STUDENT_PASS");
+  const passMonthly = pass ? formatPlanPrice(pass.listPricePkr, currency) : "PKR 1,999/mo";
+  const passAnnual = pass?.annualPricePkr
+    ? formatPlanPrice(pass.annualPricePkr, currency, "year")
+    : "PKR 19,190/yr";
   const subjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
   const subjectNames = mergeSubjectNames(
     subjects.map((s) => s.name),
@@ -67,12 +76,28 @@ export default async function NewAdPage({ searchParams }: { searchParams: Search
           <strong>{currency}</strong> on the board.
         </p>
         {!allowed ? (
-          <div className="panel">
-            <p>An active Student Pass is required to post a request.</p>
-            <Link href="/pricing?plan=STUDENT_PASS" className="btn">
-              Get Student Pass
-            </Link>
-          </div>
+          <ContextualUpgradePanel
+            title="Post tutor requests with Student Pass"
+            lead="Student Free can browse and message within the monthly contact limit. Pass unlocks request posting."
+            plan="STUDENT_PASS"
+            planLabel="Student Pass"
+            priceLabel={passMonthly}
+            billingLabel="Billed monthly"
+            annualOption={{ monthlyLabel: passMonthly, annualLabel: passAnnual }}
+            benefits={[
+              "Unlimited tutor contacts",
+              "Post tutor requests",
+              "10 eligible Past Paper downloads/month",
+            ]}
+            ctaLabel="Get Student Pass"
+            maybeLaterHref="/ads"
+            maybeLaterLabel="Maybe later"
+            currency={currency}
+            paidCheckoutLive={paidCheckoutLive}
+            returnUrl={returnPath}
+            trigger="request_ad"
+            sourcePage="ads_new"
+          />
         ) : (
           <NewAdForm
             subjects={subjectNames}

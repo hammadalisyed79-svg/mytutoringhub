@@ -21,13 +21,22 @@ import {
   receiptStatusLabel,
   receiptSuccessMessage,
 } from "@/lib/receipt-copy";
+import { parsePurchaseNotes, purchaseContinueCta } from "@/lib/purchase-context";
+import { safeReturnPath } from "@/lib/safe-return-url";
 
 export const metadata = { title: "Receipt" };
 
-export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReceiptPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ continue?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const { id } = await params;
+  const sp = await searchParams;
 
   const sub = await prisma.subscription.findUnique({
     where: { id },
@@ -82,6 +91,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       : ("complimentary" as const)
     : ("safepay" as const);
 
+  const notes = parsePurchaseNotes(sub.notes);
+  const continueFromQs = sp.continue ? safeReturnPath(sp.continue, "") : "";
+  const continueCta = purchaseContinueCta({
+    plan: sub.plan,
+    returnUrl: continueFromQs || notes.returnUrl,
+    subjectProfileId: notes.subjectProfileId,
+  });
+
   return (
     <div className="page">
       <div className="container">
@@ -105,9 +122,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             {receiptSuccessMessage({ complimentary, planName })}
           </p>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <Link href={continueCta.href} className="btn btn-sm">
+              {continueCta.label}
+            </Link>
             <PrintButton label={receiptPrintLabel(complimentary)} />
             <Link href="/dashboard" className="btn btn-secondary btn-sm">
-              Back to dashboard
+              Dashboard
             </Link>
           </div>
         </div>

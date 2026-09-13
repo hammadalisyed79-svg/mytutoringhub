@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
+import { ContextualUpgradePanel } from "@/components/ContextualUpgradePanel";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
 
 type ContactError = {
@@ -28,28 +29,56 @@ export function ContactTutorForm({
   viewerEmail,
   subjectProfileId,
   listings,
+  contactUsed,
+  contactLimit,
+  currency,
+  priceLabel = "PKR 1,999/month",
+  annualPriceLabel = "PKR 19,190/year",
+  paidCheckoutLive = true,
 }: {
   recipientId: string;
   tutorName: string;
   emailVerified?: boolean;
   viewerEmail?: string | null;
-  /** Teaching listing id — stored on conversation as relatedAdId for analytics. */
   subjectProfileId?: string;
-  /** When messaging from the tutor hub, let students pick which lesson they mean. */
   listings?: ListingOption[];
+  /** Free-tier contacts used this month (omit when unlimited). */
+  contactUsed?: number;
+  contactLimit?: number;
+  currency?: string;
+  priceLabel?: string;
+  annualPriceLabel?: string;
+  paidCheckoutLive?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const returnUrl =
+    typeof pathname === "string" && pathname.startsWith("/")
+      ? `${pathname}#message-tutor`
+      : undefined;
   const [body, setBody] = useState("");
   const [listingId, setListingId] = useState(subjectProfileId || listings?.[0]?.id || "");
   const [error, setError] = useState<ContactError | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  const freeLimit =
+    typeof contactLimit === "number" && contactLimit > 0 ? contactLimit : null;
+  const used = typeof contactUsed === "number" ? contactUsed : null;
+  const remaining =
+    freeLimit != null && used != null ? Math.max(0, freeLimit - used) : null;
+  const nearLimit = remaining === 1;
+  const showPassUpsell =
+    !dismissed &&
+    ((error?.error === "limit_exceeded") ||
+      (freeLimit != null && used != null && used >= freeLimit));
 
   if (!emailVerified) {
     return (
       <div className="contact-form contact-form-embedded">
         <h3>Message {tutorName}</h3>
         <p className="muted">
-          Verify your email before messaging tutors. Free accounts get 3 new contacts per month;
+          Verify your email before messaging tutors. Free accounts get 3 new tutor contacts per month;
           Student Pass unlocks unlimited messaging.
         </p>
         <ResendVerificationButton email={viewerEmail || undefined} />
@@ -100,65 +129,69 @@ export function ContactTutorForm({
           { listingId: related || undefined },
           `contact_limit_${recipientId}`,
         );
-        fireConversionEvent(
-          "student_pass_upsell_view",
-          { listingId: related || undefined, source: "contact_form" },
-          `pass_upsell_${recipientId}`,
-        );
+        setDismissed(false);
+        setError({
+          error: "limit_exceeded",
+          message: data.message || "You've used your free tutor contacts this month.",
+          upgradeUrl: data.upgradeUrl,
+          used: data.used,
+          limit: data.limit,
+        });
+        return;
       }
       setError({
         error: data.error || "send_failed",
-        message:
-          data.message ||
-          (typeof data.error === "string" &&
-          data.error !== "limit_exceeded" &&
-          data.error !== "email_unverified"
-            ? data.error
-            : "Could not send message"),
+        message: data.message || "Could not send message",
         upgradeUrl: data.upgradeUrl,
-        used: data.used,
-        limit: data.limit,
       });
       return;
     }
-    if (data.conversationId) {
+    if (data.isNewContact) {
       fireConversionEvent(
         "student_tutor_contact",
         { listingId: related || undefined },
-        `contact_${data.conversationId}`,
+        `contact_ok_${data.conversationId || recipientId}`,
       );
-      fireConversionEvent(
-        "tutor_enquiry_received",
-        { listingId: related || undefined },
-        `enquiry_${data.conversationId}`,
-      );
-      if (data.isNewContact !== false) {
-        fireConversionEvent(
-          "new_conversation",
-          { listingId: related || undefined },
-          `new_convo_${data.conversationId}`,
-        );
-      }
     }
     router.push(`/messages/${data.conversationId}`);
   }
 
   const isLimit = error?.error === "limit_exceeded";
-  const isUnverified = error?.error === "email_unverified";
-  const remaining =
-    isLimit && typeof error.limit === "number" && error.limit >= 0 && typeof error.used === "number"
-      ? Math.max(0, error.limit - error.used)
-      : null;
+  const limitUsed = error?.used ?? used ?? freeLimit ?? 3;
+  const limitMax = error?.limit ?? freeLimit ?? 3;
 
-  if (isUnverified) {
+  if (showPassUpsell || isLimit) {
     return (
       <div className="contact-form contact-form-embedded">
         <h3>Message {tutorName}</h3>
-        <p className="muted">{error.message || "Verify your email to send messages."}</p>
-        <ResendVerificationButton email={viewerEmail || undefined} />
-        <p className="muted" style={{ marginTop: "0.75rem" }}>
-          <Link href={error.upgradeUrl || "/pricing?verify=1"}>Open pricing / verify</Link>
+        <p className="muted" style={{ marginBottom: "0.75rem" }}>
+          You&apos;ve used your {limitMax} free tutor contacts this month.
         </p>
+        <ContextualUpgradePanel
+          title="Get Student Pass"
+          lead="Unlimited new tutor contacts so you can keep messaging."
+          plan="STUDENT_PASS"
+          planLabel="Student Pass"
+          priceLabel={priceLabel}
+          billingLabel="Billed monthly"
+          annualOption={{
+            monthlyLabel: priceLabel,
+            annualLabel: annualPriceLabel,
+          }}
+          benefits={[
+            "Unlimited tutor contacts",
+            "Post tutor requests",
+            "10 eligible Past Paper downloads/month",
+          ]}
+          ctaLabel="Get Student Pass"
+          maybeLaterHref={returnUrl || pathname || "/search"}
+          maybeLaterLabel="Maybe later"
+          currency={currency}
+          paidCheckoutLive={paidCheckoutLive}
+          returnUrl={returnUrl}
+          trigger="contact_limit"
+          sourcePage="tutor_contact"
+        />
       </div>
     );
   }
@@ -166,17 +199,22 @@ export function ContactTutorForm({
   return (
     <form className="contact-form contact-form-embedded" onSubmit={send}>
       <h3>Message {tutorName}</h3>
-      <p className="muted">
-        Lesson fees are arranged directly with your tutor in a currency you both agree on.
-      </p>
-      {listings && listings.length > 0 && (
-        <label className="contact-listing-pick">
-          <span>Regarding</span>
+      {nearLimit ? (
+        <p className="muted contact-quota-hint">
+          1 free tutor contact remaining this month.
+        </p>
+      ) : remaining != null && remaining > 1 && remaining < (freeLimit || 3) ? (
+        <p className="muted contact-quota-hint">
+          {remaining} free tutor contacts remaining this month.
+        </p>
+      ) : null}
+      {listings && listings.length > 1 && (
+        <label>
+          About which lesson?
           <select
             value={listingId}
             onChange={(e) => setListingId(e.target.value)}
-            required
-            aria-label="Which lesson is this about"
+            aria-label="Teaching Profile for this message"
           >
             {listings.map((row) => (
               <option key={row.id} value={row.id}>
@@ -197,22 +235,11 @@ export function ContactTutorForm({
         aria-label={`Message to ${tutorName}`}
       />
       {error && (
-        <div className="form-error" role="alert" style={{ display: "grid", gap: "0.5rem" }}>
-          <p style={{ margin: 0 }}>
-            {isLimit
-              ? error.message || `You've used all ${error.limit ?? 3} tutor contacts this month.`
-              : error.message || "Could not send message"}
-          </p>
-          {isLimit && remaining != null && (
-            <p className="muted" style={{ margin: 0 }}>
-              Contacts remaining this month: {remaining} of {error.limit}.
-            </p>
-          )}
-          {isLimit && (
-            <p style={{ margin: 0 }}>
-              <Link href={error.upgradeUrl || "/pricing?plan=STUDENT_PASS"} className="btn btn-sm">
-                Upgrade to Student Pass
-              </Link>
+        <div className="form-error" role="alert">
+          <p style={{ margin: 0 }}>{error.message || "Could not send message"}</p>
+          {error.error === "email_unverified" && (
+            <p style={{ margin: "0.5rem 0 0" }}>
+              <Link href={error.upgradeUrl || "/pricing?verify=1"}>Open pricing / verify</Link>
             </p>
           )}
         </div>

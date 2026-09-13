@@ -8,7 +8,7 @@ import { TutorTrustBadgePill } from "@/components/TutorTrustBadgePill";
 import { JsonLd } from "@/components/JsonLd";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatHourly } from "@/lib/currency";
+import { formatHourly, formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { listingPath, teachingProfileDocumentTitle } from "@/lib/subject-profile";
@@ -33,6 +33,9 @@ import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { TrackTutorView } from "@/components/RecentAndSavedTutors";
 import { ReportButton, BlockUserButton } from "@/components/ReportButton";
 import { getTutorProfileCompletion } from "@/lib/tutor-profile-completion";
+import { getPlanDashboardSummary } from "@/lib/plan-limits";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { getLivePlan } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -243,6 +246,21 @@ export default async function SubjectListingPage({ params }: Params) {
           select: { emailVerified: true, email: true },
         })
       : null;
+  const [contactSummary, paidCheckoutLive, studentPass] = canMessage && session?.user
+    ? await Promise.all([
+        getPlanDashboardSummary(session.user.id, "STUDENT"),
+        Promise.resolve(isPaidCheckoutLive()),
+        getLivePlan("STUDENT_PASS"),
+      ])
+    : [null, true, null];
+  const passMonthly =
+    studentPass && currency
+      ? formatPlanPrice(studentPass.listPricePkr, currency)
+      : "PKR 1,999/mo";
+  const passAnnual =
+    studentPass?.annualPricePkr && currency
+      ? formatPlanPrice(studentPass.annualPricePkr, currency, "year")
+      : "PKR 19,190/yr";
   const tutorName = tutor.user.name?.trim() || "Tutor";
   const initial = tutorName.slice(0, 1).toUpperCase();
   const hourlyLabel = formatHourly(listing.rate, currency);
@@ -573,6 +591,16 @@ export default async function SubjectListingPage({ params }: Params) {
                     emailVerified={Boolean(viewer?.emailVerified)}
                     viewerEmail={viewer?.email}
                     subjectProfileId={listing.id}
+                    contactUsed={
+                      contactSummary?.planTier === "free" ? contactSummary.usageUsed : undefined
+                    }
+                    contactLimit={
+                      contactSummary?.planTier === "free" ? contactSummary.usageLimit : undefined
+                    }
+                    currency={currency}
+                    priceLabel={passMonthly}
+                    annualPriceLabel={passAnnual}
+                    paidCheckoutLive={Boolean(paidCheckoutLive)}
                   />
                 ) : !session ? (
                   <div className="profile-book-cta">

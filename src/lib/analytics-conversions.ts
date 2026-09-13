@@ -50,7 +50,15 @@ export type ConversionEventName =
   // Conversation
   | "new_conversation"
   | "first_tutor_reply"
-  | "first_student_reply";
+  | "first_student_reply"
+  // Zero-friction purchase funnel (aliases / complements of existing events)
+  | "product_view"
+  | "upgrade_prompt_view"
+  | "purchase_intent"
+  | "checkout_redirected"
+  | "payment_success"
+  | "payment_failed"
+  | "entitlement_activated";
 
 export type ConversionParams = Record<string, string | number | boolean | null | undefined>;
 

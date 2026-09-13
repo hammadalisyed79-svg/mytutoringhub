@@ -3,10 +3,16 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StudyAssistantChat } from "@/components/StudyAssistantChat";
+import { ContextualUpgradePanel } from "@/components/ContextualUpgradePanel";
 import { getSiteSettings } from "@/lib/site-settings";
 import { canUseStudyAssistant } from "@/lib/subscription";
 import type { Role } from "@/lib/types";
 import { privateMetadata } from "@/lib/seo";
+import { getLivePlan } from "@/lib/plans";
+import { formatPlanPrice } from "@/lib/currency";
+import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { isPaidCheckoutLive } from "@/lib/payments-status";
+import { loginUrlWithNext } from "@/lib/safe-return-url";
 
 export const metadata = privateMetadata(
   "Study assistant",
@@ -15,7 +21,7 @@ export const metadata = privateMetadata(
 
 export default async function AssistantPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect(loginUrlWithNext("/assistant"));
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -38,26 +44,47 @@ export default async function AssistantPage() {
     );
   }
 
-  // Student Pro unlocks AI for students; tutors/admins allowed (see canUseStudyAssistant).
   if (!(await canUseStudyAssistant(session.user.id, session.user.role as Role))) {
+    const currency = await getVisitorCurrency();
+    const pro = await getLivePlan("STUDENT_PRO");
+    const proMonthly = pro ? formatPlanPrice(pro.listPricePkr, currency) : "PKR 3,499/mo";
+    const proAnnual = pro?.annualPricePkr
+      ? formatPlanPrice(pro.annualPricePkr, currency, "year")
+      : "PKR 33,590/yr";
     return (
       <div className="page">
         <div className="container narrow-prose">
           <h1 className="page-title">Study assistant</h1>
           <p className="section-lead">
-            The AI study assistant is included with Student Pro. Free study tools (progress log and
-            exam countdown) stay in this browser only — no cloud sync — and do not require a paid
-            plan.
+            Free study tools (progress log and exam countdown) stay available without a paid plan.
           </p>
-          <p>
-            <Link className="btn" href="/pricing?plan=STUDENT_PRO">
-              Get Student Pro
-            </Link>
-          </p>
+          <ContextualUpgradePanel
+            title="Unlock AI Study Assistant with Student Pro"
+            plan="STUDENT_PRO"
+            planLabel="Student Pro"
+            priceLabel={proMonthly}
+            billingLabel="Billed monthly"
+            annualOption={{ monthlyLabel: proMonthly, annualLabel: proAnnual }}
+            benefits={[
+              "AI Study Assistant",
+              "Unlimited eligible Past Papers",
+              "All Student Pass benefits (unlimited contacts + request ads)",
+            ]}
+            ctaLabel="Get Student Pro"
+            maybeLaterHref="/study/progress"
+            maybeLaterLabel="Use free study tools instead"
+            currency={currency}
+            paidCheckoutLive={isPaidCheckoutLive()}
+            returnUrl="/assistant"
+            trigger="ai_feature"
+            sourcePage="assistant"
+          />
           <p className="muted" style={{ marginTop: "1rem" }}>
             <Link href="/study/progress">Study log (free)</Link>
             {" · "}
             <Link href="/study/countdown">Exam countdown (free)</Link>
+            {" · "}
+            <Link href="/pricing?plan=STUDENT_PRO">Compare all plans</Link>
           </p>
         </div>
       </div>

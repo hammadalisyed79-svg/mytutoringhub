@@ -92,16 +92,21 @@ function PlanActions({
   }
 
   if (plan.audience === "student") {
+    const next = `/pricing?plan=${plan.id}`;
     return (
-      <Link href="/register?role=student" className="btn btn-block">
+      <Link
+        href={`/register?role=student&next=${encodeURIComponent(next)}`}
+        className="btn btn-block"
+      >
         Join as student
       </Link>
     );
   }
 
+  const next = `/pricing?plan=${plan.id}${subjectProfileId ? `&subjectProfileId=${encodeURIComponent(subjectProfileId)}` : ""}`;
   return (
     <Link
-      href="/register?role=tutor"
+      href={`/register?role=tutor&next=${encodeURIComponent(next)}`}
       className={`btn btn-block ${plan.isAddOn && !featured ? "btn-secondary" : ""}`}
     >
       Join as tutor
@@ -439,7 +444,10 @@ export function PricingPlansClient({
                     Find tutors
                   </Link>
                 ) : (
-                  <Link href="/register?role=student" className="btn btn-block btn-secondary">
+                  <Link
+                    href={`/register?role=student&next=${encodeURIComponent("/pricing?plan=STUDENT_PASS")}`}
+                    className="btn btn-block btn-secondary"
+                  >
                     Join free as student
                   </Link>
                 )}
@@ -520,7 +528,10 @@ export function PricingPlansClient({
                     Tutor tools
                   </Link>
                 ) : (
-                  <Link href="/register?role=tutor" className="btn btn-block btn-secondary">
+                  <Link
+                    href={`/register?role=tutor&next=${encodeURIComponent("/pricing?plan=TUTOR_BASIC")}`}
+                    className="btn btn-block btn-secondary"
+                  >
                     Join free as tutor
                   </Link>
                 )}
