@@ -243,7 +243,7 @@ function PlanCard({
   badge?: string | null;
 }) {
   const planBilling =
-    plan.id === "AD_BOOST" || plan.id === "EXTRA_ACTIVE" ? billing : plan.isAddOn ? "monthly" : billing;
+    plan.id === "AD_BOOST" ? billing : plan.isAddOn ? "monthly" : billing;
 
   return (
     <article className={`plan${featured ? " plan-featured" : ""}`}>
@@ -289,7 +289,6 @@ function planBadge(plan: ResolvedPlan): string | null {
   if (plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC") return "Most popular";
   if (plan.id === "STUDENT_PRO") return "Includes AI";
   if (plan.id === "VERIFIED_TUTOR") return "Recommended";
-  if (plan.id === "EXTRA_ACTIVE") return "Add capacity";
   return null;
 }
 
@@ -318,14 +317,7 @@ export function PricingPlansClient({
     [corePlans],
   );
   const tutorCore = useMemo(() => corePlans.filter((p) => p.audience === "tutor"), [corePlans]);
-  const capacityAddOn = useMemo(
-    () => addOns.find((p) => p.id === "EXTRA_ACTIVE") ?? null,
-    [addOns],
-  );
-  const visibilityAddOns = useMemo(
-    () => addOns.filter((p) => p.id !== "EXTRA_ACTIVE"),
-    [addOns],
-  );
+  const visibilityAddOns = useMemo(() => addOns, [addOns]);
 
   const tutorProOffer = useMemo(
     () => tutorCore.find((p) => p.id === "TUTOR_BASIC" && p.isPromoActive) ?? null,
@@ -349,7 +341,7 @@ export function PricingPlansClient({
     corePlans.some((p) => !p.isAddOn && p.annualChargePricePkr != null) ||
     addOns.some(
       (p) =>
-        (p.id === "AD_BOOST" || p.id === "EXTRA_ACTIVE") && p.annualChargePricePkr != null,
+        (p.id === "AD_BOOST") && p.annualChargePricePkr != null,
     );
 
   const viewingStudent = bothAudiences ? audience === "student" : showStudent;
@@ -474,10 +466,9 @@ export function PricingPlansClient({
               Tutor plans
             </h2>
             <p className="muted pricing-addons-lead">
-              List free with {BUSINESS.tutorFreeActiveListings} live Teaching Profile. Need another
-              subject live? Add Extra Active (paid capacity). Growing fast? Tutor Pro unlocks up to{" "}
-              {BUSINESS.tutorProActiveListings} live profiles plus ranking and unlimited enquiry
-              reveals
+              List free with {BUSINESS.tutorFreeActiveListings} active Teaching Profile. Tutor Pro
+              unlocks up to {BUSINESS.tutorProActiveListings} active Teaching Profiles plus ranking
+              and unlimited enquiry reveals
               {tutorProOffer?.isComplimentary
                 ? " — complimentary under the Launch offer until the stated date"
                 : ""}
@@ -498,15 +489,11 @@ export function PricingPlansClient({
           <ol className="pricing-path" aria-label="Tutor growth path">
             <li>
               <strong>Free</strong>
-              <span>{BUSINESS.tutorFreeActiveListings} live profile</span>
-            </li>
-            <li>
-              <strong>Extra Active</strong>
-              <span>+1 live · up to 3 total</span>
+              <span>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</span>
             </li>
             <li>
               <strong>Tutor Pro</strong>
-              <span>Up to {BUSINESS.tutorProActiveListings} live + growth tools</span>
+              <span>Up to {BUSINESS.tutorProActiveListings} active + growth tools</span>
             </li>
           </ol>
 
@@ -540,15 +527,6 @@ export function PricingPlansClient({
               </div>
             </article>
 
-            {capacityAddOn ? (
-              <PlanCard
-                plan={capacityAddOn}
-                {...sharedProps}
-                featured={false}
-                badge={planBadge(capacityAddOn)}
-              />
-            ) : null}
-
             {tutorCore.map((plan) => (
               <PlanCard
                 key={plan.id}
@@ -565,8 +543,8 @@ export function PricingPlansClient({
               <header className="pricing-section-intro">
                 <h3 className="checkout-section-title">Optional extras</h3>
                 <p className="muted pricing-addons-lead">
-                  Visibility and verification only — these do not add live Teaching Profile capacity.
-                  Prefer Tutor Pro or Extra Active when you need more subjects live.
+                  Listing Boost and Priority Verification Review — these do not add Teaching Profile
+                  capacity. Prefer Tutor Pro when you need more subjects live.
                 </p>
               </header>
               <div className="pricing-grid pricing-addons">

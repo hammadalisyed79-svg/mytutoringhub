@@ -31,11 +31,12 @@ export default function RefundPage() {
           </p>
           <h2>3. Subscriptions &amp; renewal</h2>
           <p>
-            Monthly and annual plans are billed for the period you purchase. Recurring card renewal
-            is not assumed: if your plan renews automatically we will say so clearly at checkout;
-            otherwise email us before the next billing date to stop further charges. Complimentary
-            or promotional plans (for example Tutor Pro during a launch window) end on the stated
-            date; paid add-ons are never included unless purchased separately.
+            Monthly and annual plans are billed for the period you purchase. Access remains active
+            for the purchased period. Automatic renewal only applies if recurring billing is
+            explicitly offered and authorized at checkout; otherwise email us before the next
+            billing date to stop further charges. Complimentary or promotional plans (for example
+            Tutor Pro during a launch window) end on the stated date; paid add-ons are never
+            included unless purchased separately.
           </p>
           <h2>4. Cancellation</h2>
           <p>

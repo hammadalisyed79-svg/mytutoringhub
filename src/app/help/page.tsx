@@ -13,10 +13,6 @@ export const metadata = pageMetadata({
 
 const FAQS = [
   {
-    q: "What are Hub Points?",
-    a: "Hub Points are platform credit — each point converts to your local currency on Pricing. Tutors earn 200 points when their profile goes live in search. Everyone earns 50 points per successful referral when the invitee completes the milestone. Redeem up to 50% off subscriptions and tutor add-ons on Pricing.",
-  },
-  {
     q: "What is free vs paid on My Tutoring Hub?",
     a: `Search and join are free. ${STUDENT_FREE_CONTACTS_LINE} ${TUTOR_FREE_LISTING_LINE} We never take a lesson commission. See the full Free vs paid guide for tables and FAQs.`,
   },
@@ -42,7 +38,7 @@ const FAQS = [
   },
   {
     q: "How do payments work?",
-    a: "Platform plans (Student Pass, Student Pro, Tutor Pro) are billed for the period you purchase through Safepay when live. Listing Boost, Extra Active, and Priority Verification Review are separate paid products. Until card checkout is activated, the Tutor Pro Launch offer and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately.",
+    a: "Platform plans (Student Pass, Student Pro, Tutor Pro) are billed for the period you purchase through Safepay when live. Access remains active for the purchased period. Automatic renewal only applies if recurring billing is explicitly offered and authorized at checkout. Listing Boost and Priority Verification Review are separate one-time paid products. Until card checkout is activated, the Tutor Pro Launch offer and free Teaching Profiles work without payment — email admin@mytutoringhub.com for manual plan activation. You receive a receipt email after a successful payment. Lesson payments are arranged privately and are never processed through Safepay.",
   },
   {
     q: "Is Tutor Pro free?",

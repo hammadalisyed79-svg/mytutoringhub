@@ -49,7 +49,7 @@ export function PlanBanner({
       ) : null}
 
       {renewsOn && planTier !== "free" ? (
-        <span className="plan-banner-renewal">Renews {renewsOn}</span>
+        <span className="plan-banner-renewal">Access until {renewsOn}</span>
       ) : null}
 
       <div className="plan-banner-actions">

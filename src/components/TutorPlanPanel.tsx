@@ -107,7 +107,7 @@ export function TutorPlanPanel({
                     <span className="tutor-plan-item-eyebrow">{visual.eyebrow}</span>
                     <strong className="tutor-plan-item-name">{name}</strong>
                     <span className="tutor-plan-item-renewal">
-                      Renews {formatRenewal(sub.currentPeriodEnd)}
+                      Access until {formatRenewal(sub.currentPeriodEnd)}
                     </span>
                   </div>
                   <Link className="tutor-plan-item-slip" href={`/receipt/${sub.id}`}>
@@ -126,7 +126,7 @@ export function TutorPlanPanel({
                   Free listing includes {BUSINESS.tutorFreeActiveListings} live Teaching Profile.
                   Activate Tutor Pro free until {untilLabel}: up to{" "}
                   {BUSINESS.tutorProActiveListings} live profiles, ranking, and unlimited enquiry
-                  reveals. Extra Active (+1 capacity) and Listing Boost stay separate paid products.
+                  reveals. Listing Boost stays a separate paid add-on and does not add capacity.
                 </p>
               </>
             ) : (

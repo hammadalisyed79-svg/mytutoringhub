@@ -54,21 +54,16 @@ export default function PrivacyPage() {
           <h2>7. Cookies and analytics</h2>
           <p>
             We use essential cookies for authentication and session security. We also use Vercel
-            Analytics for anonymized page-view counts (no advertising cookies).
+            Analytics for anonymized page-view counts. When measurement IDs are configured, we may
+            also load Google Analytics (GA4) and related conversion tags for product analytics —
+            see our live site configuration. We do not invent consent banners here; cookie and
+            advertising-consent wording requiring legal approval is tracked internally.
           </p>
           <h2>8. Contact &amp; data controller</h2>
           <p>
             My Tutoring Hub operates at{" "}
             <a href="https://www.mytutoringhub.com">www.mytutoringhub.com</a>. Privacy requests:{" "}
             <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.
-          </p>
-          <h2>9. Legal review backlog</h2>
-          <p>
-            The following items are documented for legal counsel review and do not block Marketplace
-            V2 shipping: minors / parent or guardian consent, international privacy transfers,
-            retention schedules, identity-verification document handling, and payment-processor
-            disclosures. A dedicated Child Safety &amp; Safeguarding Policy is a high-priority
-            post-V2 deliverable — this site does not claim that policy already exists.
           </p>
           <p>
             See also our{" "}

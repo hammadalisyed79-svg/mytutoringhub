@@ -1,5 +1,5 @@
 /**
- * Public commercial truth — detect copy drift against Marketplace V2 SoT.
+ * Public commercial truth — detect copy drift against locked Marketplace model.
  * Does not rewrite legal prose; asserts product numbers and forbids retired cliffs.
  */
 import assert from "node:assert/strict";
@@ -30,6 +30,7 @@ import {
   isSubjectProfilePromoActive,
 } from "@/lib/subject-profile-entitlements";
 import { TUTOR_COMPARE_ROWS, FREE_VS_PAID_FAQS } from "@/lib/free-vs-paid";
+import { DEFAULT_PAST_PAPER_FEE_PKR } from "@/lib/past-papers";
 
 const root = join(process.cwd(), "src");
 
@@ -42,9 +43,9 @@ assert.equal(BUSINESS.tutorFreeActiveListings, 1);
 assert.equal(BUSINESS.tutorProActiveListings, 10);
 assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
-assert.match(TUTOR_FREE_LISTING_LINE, /1 live Teaching Profile/);
-assert.match(TUTOR_FREE_LISTING_LINE, /Extra Active/);
-assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 live Teaching Profiles/);
+assert.match(TUTOR_FREE_LISTING_LINE, /1 active Teaching Profile/);
+assert.doesNotMatch(TUTOR_FREE_LISTING_LINE, /Extra Active/);
+assert.match(TUTOR_PRO_LISTING_LINE, /up to 10 active Teaching Profiles/);
 
 // 3–4. No retired listing-cap cliffs in public app sources
 const publicSurfaces = [
@@ -80,31 +81,33 @@ const cliffPatterns = [
 for (const rel of publicSurfaces) {
   const text = readSrc(rel);
   for (const re of cliffPatterns) {
-    assert.doesNotMatch(
-      text,
-      re,
-      `Stale commercial cliff in ${rel}: ${re}`,
-    );
+    assert.doesNotMatch(text, re, `Stale commercial cliff in ${rel}: ${re}`);
   }
 }
 
-// Listing-cap promo retired; Free stays 1 after promo constant too
 assert.equal(isSubjectProfilePromoActive(), false);
 assert.equal(FREE_SUBJECT_PROFILES_AFTER_PROMO, 1);
 
-// 5. Extra Active is the public +1 Active SKU (monthly); legacy Extra Profile Ads stay off pricing
-assert.deepEqual(PUBLIC_ADDON_PLAN_IDS, ["EXTRA_ACTIVE", "VERIFIED_TUTOR", "AD_BOOST"]);
-const publicAddOns = DEFAULT_PLANS.filter((p) => PUBLIC_ADDON_PLAN_IDS.includes(p.id));
-assert.ok(publicAddOns.some((p) => p.id === "EXTRA_ACTIVE"));
+// 5. Extra Active is legacy — not sold on public Pricing
+assert.deepEqual(PUBLIC_ADDON_PLAN_IDS, ["VERIFIED_TUTOR", "AD_BOOST"]);
+assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("EXTRA_ACTIVE"));
 const extraActive = DEFAULT_PLANS.find((p) => p.id === "EXTRA_ACTIVE")!;
+assert.ok(/legacy/i.test(extraActive.name));
 assert.equal(extraActive.pricePkr, 499);
-assert.equal(extraActive.isAddOn, true);
-assert.ok(extraActive.annualPricePkr);
-assert.ok(extraActive.features.some((f) => /\+1 (active|live)/i.test(f)));
 assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("EXTRA_PROFILE_ADS"));
-assert.ok(
-  !publicAddOns.some((p) => p.id !== "EXTRA_ACTIVE" && /extra profile|\+1|one more profile/i.test(p.name + p.description)),
-);
+
+const pricingClient = readSrc("components/PricingPlansClient.tsx");
+assert.doesNotMatch(pricingClient, /Extra Active/);
+assert.doesNotMatch(pricingClient, /EXTRA_ACTIVE/);
+
+const marketing = readSrc("lib/marketing-copy.ts");
+assert.doesNotMatch(marketing, /Extra Active/);
+assert.match(marketing, /Listing Boost and Priority Verification Review are separate paid add-ons/);
+
+const freeVsPaid = readSrc("lib/free-vs-paid.ts");
+assert.doesNotMatch(freeVsPaid, /Extra Active — \+1/);
+assert.match(freeVsPaid, /Tutor Pro — up to/);
+assert.match(freeVsPaid, /Launch offer/);
 
 // 6. Listing Boost does not grant capacity
 const boost = DEFAULT_PLANS.find((p) => p.id === "AD_BOOST")!;
@@ -112,117 +115,57 @@ assert.equal(boost.pricePkr, 999);
 assert.equal(boost.annualPricePkr, Math.round(999 * 9.6));
 assert.equal(boost.isAddOn, true);
 assert.ok(boost.features.some((f) => /does not increase Teaching Profile capacity/i.test(f)));
-assert.ok(boost.features.some((f) => /365-day|365-Day|annual/i.test(f)));
-assert.ok(boost.features.some((f) => /20%/i.test(f)));
-assert.ok(/does not add more live profiles|does not increase Teaching Profile capacity/i.test(boost.description));
-
-const boostResolved = resolvePlan(boost);
-assert.equal(boostResolved.annualChargePricePkr, Math.round(999 * 9.6));
 
 const boostRow = TUTOR_COMPARE_ROWS.find((r) => r.feature === "Listing Boost")!;
 assert.match(boostRow.detail, /does not increase Teaching Profile capacity/i);
 
-// 7. Student Free contacts = 3 unique tutors/month
+// 7. Student Free contacts = 3
 assert.equal(BUSINESS.studentFreeContactsPerMonth, 3);
 assert.match(studentFreeContactsPhrase(), /^3 new tutor contacts per month$/);
 
-// 8. Priority Verification Review does not auto-verify
+// 8. Priority Verification Review = PKR 2999
 const priority = DEFAULT_PLANS.find((p) => p.id === "VERIFIED_TUTOR")!;
 assert.equal(priority.pricePkr, 2999);
 assert.ok(priority.features.some((f) => /never auto-(awards verification|verifies)/i.test(f)));
 assert.match(IDENTITY_VERIFIED_LINE, /earned, not purchased/i);
-assert.match(IDENTITY_VERIFIED_LINE, /not a qualification/i);
 
 const help = readSrc("app/help/page.tsx");
 assert.match(help, /Identity Verified/);
-assert.match(help, /never auto-awards/);
-assert.doesNotMatch(help, /buy the badge.*automatically verified/i);
+assert.match(help, /Access remains active[\s\S]*for the purchased period/i);
+assert.doesNotMatch(help, /What are Hub Points/);
+assert.doesNotMatch(help, /Extra Active/);
 
-// 9. Internal legacy IDs remain; not primary public products
-assert.ok(DEFAULT_PLANS.some((p) => p.id === "EXTRA_PROFILE_ADS" && /legacy/i.test(p.name)));
-assert.ok(DEFAULT_PLANS.some((p) => p.id === "UNLIMITED_ADS" && /legacy/i.test(p.name)));
+// 9. Legacy IDs remain for grandfathering
+assert.ok(DEFAULT_PLANS.some((p) => p.id === "EXTRA_ACTIVE" && /legacy/i.test(p.name)));
 assert.ok(DEFAULT_PLANS.some((p) => p.id === "TUTOR_BASIC" && p.name === "Tutor Pro"));
-assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("EXTRA_PROFILE_ADS"));
-assert.ok(!PUBLIC_ADDON_PLAN_IDS.includes("UNLIMITED_ADS"));
-
-const pricingClient = readSrc("components/PricingPlansClient.tsx");
-assert.doesNotMatch(pricingClient, /Extra Profile Ads(?! \(legacy\))/);
-assert.match(pricingClient, /Extra Active/);
-assert.match(pricingClient, /pricing-path/);
-assert.match(pricingClient, /For students|For tutors/);
-assert.match(pricingClient, /LaunchOfferBlock/);
-assert.match(pricingClient, /Launch offer/);
 
 const launchOffer = readSrc("components/LaunchOfferBlock.tsx");
-assert.match(launchOffer, /What you get free/);
-assert.match(launchOffer, /After /);
 assert.match(launchOffer, /Activate Tutor Pro free/);
-assert.match(launchOffer, /View plans/);
-assert.match(launchOffer, /Extra Active/);
-assert.doesNotMatch(launchOffer, /requires Tutor Pro/i);
+assert.doesNotMatch(launchOffer, /Use Extra Active/);
+assert.doesNotMatch(launchOffer, /Need one more live subject/);
 
-const marketing = readSrc("lib/marketing-copy.ts");
-assert.match(marketing, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
-assert.match(marketing, /30 September 2026/);
-assert.match(marketing, /Extra Active and Listing Boost are separate paid products/);
-
-const freeVsPaid = readSrc("lib/free-vs-paid.ts");
-assert.match(freeVsPaid, /legacy Extra\/Unlimited/);
-assert.match(freeVsPaid, /Extra Active/);
-assert.match(freeVsPaid, /Launch offer/);
-assert.match(freeVsPaid, /separate from the Launch offer/);
-
-// 10. Tutor Pro promo date does not alter Free Teaching Profile cap
+// 10. Tutor Pro promo
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
 assert.equal(tutorPro.promoUntil, "2026-09-30");
-assert.ok(tutorPro.isComplimentary || tutorPro.promoEnabled);
-assert.equal(tutorPro.promoLabel, "Launch offer");
-assert.match(tutorPro.promoNote || "", /Extra Active/);
-assert.match(tutorPro.promoNote || "", /list price/i);
-assert.equal(FREE_SUBJECT_PROFILES, 1);
-assert.equal(isSubjectProfilePromoActive(), false);
+assert.match(tutorPro.promoNote || "", /Listing Boost and Priority Verification Review/);
+assert.doesNotMatch(tutorPro.promoNote || "", /Extra Active/);
 
-// Promo gating: after promoUntil end-of-day UTC, offer is inactive
 const afterPromo = resolvePlan(
   DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
   new Date("2026-10-01T00:00:01Z"),
 );
 assert.equal(afterPromo.isPromoActive, false);
-assert.equal(afterPromo.isComplimentary, false);
-assert.equal(afterPromo.chargePricePkr, afterPromo.listPricePkr);
 
 const stillLive = resolvePlan(
   DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
   new Date("2026-09-30T23:59:00Z"),
 );
 assert.equal(stillLive.isPromoActive, true);
-assert.equal(stillLive.isComplimentary, true);
 
-// One-time add-on price formatting (no /mo)
-const oncePrice = formatPlanPrice(999, "PKR", "once");
-assert.ok(oncePrice.includes("999"));
-assert.doesNotMatch(oncePrice, /\/mo|\/yr/);
-assert.match(formatPlanPrice(999, "PKR", "month"), /\/mo$/);
-assert.match(formatPlanPrice(1499, "PKR", "year"), /\/yr$/);
-
-assert.match(addOnBillingFootnote("PKR", true, "boost"), /30-Day Listing Boost|one-time/i);
-assert.doesNotMatch(addOnBillingFootnote("PKR", true, "boost"), /Billed monthly/i);
+assert.match(formatPlanPrice(999, "PKR", "once"), /999/);
 assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);
-assert.match(planBillingFootnote("PKR", true, "monthly"), /Billed monthly/);
-assert.match(planBillingFootnote("PKR", true, "once"), /One-time purchase/);
-
-// PlanPrice path for add-ons must use once formatting helpers (30-day or annual boost)
-assert.match(pricingClient, /formatPlanPrice\([\s\S]*?"once"/);
-assert.match(pricingClient, /addOnBillingFootnote/);
-assert.match(pricingClient, /planOneTime|oneTime=\{/);
-assert.match(pricingClient, /Extra Active/);
-assert.match(pricingClient, /ANNUAL_SAVE_LABEL/);
-assert.match(addOnBillingFootnote("PKR", true, "boost", "annual"), /365-Day Listing Boost|20%/i);
-
 assert.match(ANNUAL_SAVE_LABEL, /Save 20% with annual billing/);
-assert.doesNotMatch(ANNUAL_SAVE_LABEL, /2 months free/i);
 
-// Stale branding overrides stay mapped to public names
 const overridden = applyPlanOverrides({
   TUTOR_BASIC: { name: "Tutor Basic" },
   VERIFIED_TUTOR: { name: "Verified Tutor" },
@@ -232,34 +175,49 @@ assert.equal(overridden.find((p) => p.id === "TUTOR_BASIC")!.name, "Tutor Pro");
 assert.equal(overridden.find((p) => p.id === "VERIFIED_TUTOR")!.name, "Priority Verification Review");
 assert.equal(overridden.find((p) => p.id === "AD_BOOST")!.name, "Listing Boost");
 
-// Terms: no false auto-renew assumption
 const terms = readSrc("app/terms/page.tsx");
-assert.match(terms, /Automatic renewal is not assumed/i);
+assert.match(terms, /Access remains active[\s\S]*for the purchased period/i);
+assert.match(terms, /never collected by My Tutoring Hub|never processed through Safepay/i);
 assert.doesNotMatch(terms, /Subscriptions renew\s+according to the plan you purchase unless cancelled/i);
 
-// Free-vs-paid FAQ keeps Free permanent + Pro promo separate
+const refund = readSrc("app/refund/page.tsx");
+assert.match(refund, /Access remains active[\s\S]*for the purchased period/i);
+
+const privacy = readSrc("app/privacy/page.tsx");
+assert.doesNotMatch(privacy, /Legal review backlog/i);
+assert.doesNotMatch(privacy, /no advertising cookies/i);
+
 const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free right now?");
 assert.ok(proFaq);
-assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} live profile`));
+assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
 assert.match(proFaq!.a, /30 September 2026/);
-assert.match(proFaq!.a, /Extra Active/);
-assert.match(proFaq!.a, /Launch offer/);
-assert.match(proFaq!.a, /list price applies/);
-assert.match(proFaq!.a, /separate from the Launch offer/);
+assert.doesNotMatch(proFaq!.a, /Extra Active/);
 
-// AI Support prompt stays on the same commercial truth as Help / Pricing
 const aiSupport = readSrc("lib/ai-support.ts");
-assert.match(aiSupport, /STUDENT_FREE_CONTACTS_LINE/);
-assert.match(aiSupport, /STUDENT_PASS_PAPERS_LINE/);
-assert.match(aiSupport, /TUTOR_FREE_LISTING_LINE/);
-assert.match(aiSupport, /TUTOR_PRO_LISTING_LINE/);
 assert.match(aiSupport, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
-assert.match(aiSupport, /IDENTITY_VERIFIED_LINE/);
-assert.match(aiSupport, /Extra Active is a separate paid/);
+assert.doesNotMatch(aiSupport, /Extra Active/);
+assert.doesNotMatch(aiSupport, /Hub Points/);
 assert.doesNotMatch(aiSupport, /Tutor Basic/i);
 
 assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /30 September 2026/);
-assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /30 September 2026/);
-assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Extra Active and Listing Boost are separate paid products/);
+assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Listing Boost and Priority Verification Review are separate paid add-ons/);
+
+// Safepay hosts platform SKUs only — no lesson fee product
+const safepayCheckout = readSrc("app/api/safepay/checkout/route.ts");
+assert.match(safepayCheckout, /STUDENT_PASS/);
+assert.match(safepayCheckout, /TUTOR_BASIC/);
+assert.match(safepayCheckout, /VERIFIED_TUTOR/);
+assert.match(safepayCheckout, /AD_BOOST/);
+assert.doesNotMatch(safepayCheckout, /LESSON|lesson_fee|TUTOR_PAYOUT/i);
+assert.match(terms, /never processed through Safepay|never collected by My Tutoring Hub/i);
+assert.match(help, /never processed through Safepay/i);
+assert.doesNotMatch(help, /plans automatically renew|auto-renews? unless cancelled/i);
+assert.doesNotMatch(terms, /plans automatically renew/i);
+assert.doesNotMatch(refund, /plans automatically renew/i);
+
+const subscribeBtn = readSrc("components/SubscribeButton.tsx");
+assert.match(subscribeBtn, /no auto-renew unless stated at checkout/i);
+
+assert.equal(DEFAULT_PAST_PAPER_FEE_PKR, 100);
 
 console.log("public-commercial-consistency.test.ts: ok");

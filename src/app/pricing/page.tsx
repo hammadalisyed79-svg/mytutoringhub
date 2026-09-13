@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
   title: "Plans & Pricing – Student Pass, Student Pro & Tutor Subscriptions",
-  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free; Extra Active adds live subjects; Tutor Pro adds growth tools. No lesson commission.`,
+  description: `${STUDENT_FREE_CONTACTS_LINE} ${STUDENT_PASS_PAPERS_LINE} Tutors list free with 1 active Teaching Profile; Tutor Pro adds up to 10. No lesson commission.`,
   path: "/pricing",
 });
 
@@ -155,7 +155,7 @@ export default async function PricingPage({
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
             {paidCheckoutLive
               ? "Join free, then pay from the plan you pick. Signed-in accounts start checkout here — no trip back to register."
-              : "Join free first. The Tutor Pro Launch offer activates without payment; Extra Active and other paid plans can be confirmed by email until card checkout is live."}
+              : "Join free first. The Tutor Pro Launch offer activates without payment; paid plans can be confirmed by email until card checkout is live."}
           </p>
         )}
 

@@ -13,7 +13,8 @@ export function PaymentsComingSoonBanner() {
       <strong>Secure checkout launching soon</strong>
       <p>
         Free Teaching Profiles work now with no payment. During the Launch offer, Tutor Pro also
-        activates free — see Tutor plans for details. For Student Pass, Extra Active, and other paid
+        activates free — see Tutor plans for details. For Student Pass, Student Pro, Tutor Pro, and
+        other paid
         upgrades, use Contact billing after you pay; we activate within 24 hours. Support:{" "}
         {PAYMENTS_SUPPORT_EMAIL}.
       </p>

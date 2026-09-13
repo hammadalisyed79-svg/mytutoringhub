@@ -142,7 +142,7 @@ export function SubscribeButton({
       </button>
       <p className="checkout-trust muted">
         {complimentary
-          ? "No payment required for Launch offer · Extra Active and boosts remain paid"
+          ? "No payment required for Launch offer · Listing Boost and Priority Verification remain paid"
           : oneTime
             ? "One-time payment · Receipt emailed · Boost extends if already active"
             : "Encrypted checkout · Receipt emailed · Access lasts for the period you purchase (no auto-renew unless stated at checkout)"}

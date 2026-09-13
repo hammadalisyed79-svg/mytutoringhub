@@ -85,10 +85,9 @@ export default async function BecomeATutorPage({
               permanently with ordinary search visibility. Under the Launch offer, Tutor Pro is
               complimentary until {TUTOR_PRO_LAUNCH_OFFER_UNTIL} — up to{" "}
               {BUSINESS.tutorProActiveListings} Teaching Profiles plus ranking and unlimited enquiry
-              reveals; after that date, list price applies. Extra Active adds paid live capacity
-              (separate from the Launch offer). Listing Boost is an optional visibility add-on and
-              does not increase capacity. Identity Verified is earned after review — Priority
-              Verification Review only jumps the queue.
+              reveals; after that date, list price applies. Listing Boost is an optional visibility
+              add-on and does not increase capacity. Identity Verified is earned after review —
+              Priority Verification Review only jumps the queue.
             </p>
           </div>
         </div>

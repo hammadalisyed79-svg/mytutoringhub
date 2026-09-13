@@ -38,8 +38,9 @@ export default function TermsPage() {
             search without a paid plan. Tutor Pro and optional upgrades (Priority Verification
             Review, Listing Boost per Teaching Profile, legacy listing packs) improve ranking and
             visibility tools. Monthly and annual plans are billed for the period you purchase.
-            Automatic renewal is not assumed: if a plan renews automatically we will say so clearly
-            at checkout; otherwise email us before the next billing date to stop further charges.
+            Access remains active for the purchased period. Automatic renewal only applies if
+            recurring billing is explicitly offered and authorized at checkout; otherwise email us
+            before the next billing date to stop further charges.
             Limited-time offers (for example complimentary Tutor Pro until a stated date) end
             automatically; free tutors keep {BUSINESS.tutorFreeActiveListings} active Teaching
             Profile with ordinary search visibility, and Tutor Pro unlocks up
@@ -49,7 +50,8 @@ export default function TermsPage() {
             after successful identity review — Priority Verification Review only prioritises the queue
             and never auto-awards the badge. Platform subscriptions are processed by Safepay when card
             checkout is live; until then paid plans are activated manually after payment confirmation.
-            Lesson fees stay off-platform and are never collected by My Tutoring Hub.
+            Lesson fees stay off-platform and are never collected by My Tutoring Hub or processed
+            through Safepay.
           </p>
           <h2>4. Conduct</h2>
           <p>

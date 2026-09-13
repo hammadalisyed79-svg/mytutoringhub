@@ -250,12 +250,14 @@ export default async function TutorProfilePage({ params }: Params) {
   const availabilityLines = formatAvailabilityLines(tutor.availability);
   const experienceLabel = formatExperienceYears(tutor.experienceYears);
   const videoSrc = embedVideoSrc(tutor.introVideoUrl || tutor.videoUrl);
-  const similar = await similarTutors({
+  const similarResult = await similarTutors({
     excludeTutorProfileId: tutor.id,
     subjects: tutor.subjects,
     location: tutor.location,
     take: 4,
   });
+  const similar = similarResult.cards;
+  const similarMode = similarResult.mode;
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
   // Phone is never public — owner/admin may see it for account context only.
   const showPhone = Boolean(tutor.phone && (isOwner || isAdmin));
@@ -855,8 +857,14 @@ export default async function TutorProfilePage({ params }: Params) {
 
         {similar.length > 0 && (
           <section className="profile-similar">
-            <h2 className="profile-section-title">Similar tutors</h2>
-            <p className="muted">More tutors in the same subject or city.</p>
+            <h2 className="profile-section-title">
+              {similarMode === "generic" ? "Other tutors nearby" : "Similar tutors"}
+            </h2>
+            <p className="muted">
+              {similarMode === "generic"
+                ? "No close subject matches — here are other tutors in this area."
+                : "More tutors in the same subject or city."}
+            </p>
             <div className="tutor-grid similar-tutors">
               {similar.map((t) => {
                 const tAvg =

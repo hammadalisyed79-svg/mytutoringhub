@@ -79,7 +79,7 @@ export async function canSwitchTeachingProfileActive(
     return {
       ok: false,
       code: SWITCH_LIMIT_CODE,
-      reason: `Free plans can change the live Teaching Profile ${TEACHING_PROFILE_FREE_SWITCHES_PER_MONTH} times per month after setup. Add Extra Active or Tutor Pro, or try again next month.`,
+      reason: `Free plans can change the live Teaching Profile ${TEACHING_PROFILE_FREE_SWITCHES_PER_MONTH} times per month after setup. Upgrade to Tutor Pro for more flexibility, or try again next month.`,
     };
   }
   return { ok: true };

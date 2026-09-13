@@ -81,8 +81,16 @@ const emptyListing = {
   assert.equal(listingMatchesExpandedSubject(neet, "Biology"), false);
   assert.equal(listingMatchesExpandedSubject(psle, "Biology"), false);
   assert.equal(listingMatchesExpandedSubject(maths, "Mathematics"), true);
-  assert.equal(listingMatchesExpandedSubject({ subject: "Commerce" }, "Business"), true);
-  assert.equal(listingMatchesExpandedSubject({ subject: "Business Studies" }, "Business"), true);
+assert.equal(listingMatchesExpandedSubject({ subject: "Commerce" }, "Business"), true);
+assert.equal(listingMatchesExpandedSubject({ subject: "Business Studies" }, "Business"), true);
+assert.equal(
+  listingMatchesExpandedSubject({ subject: "Computer Science", canonicalSubject: "Computer Science" }, "Science"),
+  false,
+);
+assert.equal(
+  listingMatchesExpandedSubject({ subject: "Science", canonicalSubject: "Science" }, "Science"),
+  true,
+);
 }
 
 {

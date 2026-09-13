@@ -24,7 +24,8 @@ assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 1, activeCount: 1
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 2, activeCount: 1 }), false);
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 2, activeCount: 2 }), true);
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 10, activeCount: 10 }), false);
-assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Extra Active|Tutor Pro/);
+assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Tutor Pro/);
+assert.doesNotMatch(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Extra Active/);
 
 assert.equal(
   resolveSubjectProfileActiveCap({

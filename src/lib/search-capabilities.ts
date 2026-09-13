@@ -115,8 +115,7 @@ export function listingMatchesCanonicalSubject(
 
 /**
  * Subject-scoped Teaching Profile match (search filter).
- * Uses listing subject / canonicalSubject only — not parent expertise or free-text titles
- * (those previously pulled every listing for a multi-subject tutor into Biology, etc.).
+ * Uses canonical subject identity only — never raw substring (Science ≠ Computer Science).
  */
 export function listingMatchesExpandedSubject(
   listing: SearchCapabilityListing,
@@ -124,13 +123,11 @@ export function listingMatchesExpandedSubject(
 ): boolean {
   const want = (subject || "").trim();
   if (!want) return true;
-  return expandSubjectTerms(want).some((term) => {
-    if (sameCanonicalSubject(listing.subject, term)) return true;
-    if (sameCanonicalSubject(listing.canonicalSubject, term)) return true;
-    if (containsInsensitive(listing.subject, term)) return true;
-    if (containsInsensitive(listing.canonicalSubject, term)) return true;
-    return false;
-  });
+  return expandSubjectTerms(want).some(
+    (term) =>
+      sameCanonicalSubject(listing.subject, term) ||
+      sameCanonicalSubject(listing.canonicalSubject, term),
+  );
 }
 
 function containsClause(value: string) {

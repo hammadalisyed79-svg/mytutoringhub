@@ -283,13 +283,15 @@ export default async function SubjectListingPage({ params }: Params) {
   const showOwnerChecklist = Boolean(isOwner && ownerCompletion && !ownerCompletion.complete);
   const firstName = tutorName.split(/\s+/)[0] || tutorName;
 
-  const similar = await similarTutors({
+  const similarResult = await similarTutors({
     id: listing.id,
     excludeTutorProfileId: tutor.id,
     subjects: listing.subject,
     location: listing.location || tutor.location,
     take: 4,
   });
+  const similar = similarResult.cards;
+  const similarMode = similarResult.mode;
   const similarBadges = await getTrustBadgesForProfiles(similar.map((t) => t.tutorProfileId));
 
   if (isPublicListing) {
@@ -627,8 +629,18 @@ export default async function SubjectListingPage({ params }: Params) {
 
           {similar.length > 0 && (
             <section className="profile-similar">
-              <h2 className="profile-section-title">Similar Teaching Profiles</h2>
-              <p className="muted">More {listing.subject} tutors nearby.</p>
+              <h2 className="profile-section-title">
+                {similarMode === "generic"
+                  ? "Other tutors nearby"
+                  : `Similar ${listing.subject} Teaching Profiles`}
+              </h2>
+              <p className="muted">
+                {similarMode === "same_subject"
+                  ? `More ${listing.subject} tutors nearby.`
+                  : similarMode === "same_subject_broad"
+                    ? `More ${listing.subject} tutors (wider area / online).`
+                    : "No matching subject tutors nearby — here are other tutors in this area."}
+              </p>
               <div className="tutor-grid similar-tutors">
                 {similar.map((t) => {
                   const tAvg =

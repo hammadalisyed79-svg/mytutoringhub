@@ -92,7 +92,7 @@ export default async function HowItWorksPage() {
                 search permanently. Under the Launch offer, Tutor Pro is complimentary until 30
                 September 2026 — up to {BUSINESS.tutorProActiveListings} live profiles plus
                 relevance-first ranking and unlimited enquiry reveals; after that date, list price
-                applies. Extra Active is paid capacity (+1 live), separate from the Launch offer.
+                applies. Listing Boost is optional and does not add Teaching Profile capacity.
               </li>
               <li>
                 Upload a government photo ID for verification; a qualification certificate is

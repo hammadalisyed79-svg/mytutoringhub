@@ -132,16 +132,6 @@ function CapacityUpgradeActions({
 }) {
   return (
     <div className="teaching-listings-upgrade-actions">
-      {canBuyExtraActive ? (
-        <SubscribeButton
-          plan="EXTRA_ACTIVE"
-          planLabel="Extra Active Profile"
-          currency={currency}
-          billing="monthly"
-          label="Add Extra Active (monthly)"
-          paidCheckoutLive={paidCheckoutLive}
-        />
-      ) : null}
       <Link className="btn btn-sm" href={secondaryHref}>
         {secondaryLabel}
       </Link>
@@ -521,7 +511,7 @@ export function TutorAdsManager({
     }
     flashSuccess(
       data.createdPaused
-        ? "Teaching Profile saved as Paused. Add Extra Active (monthly) or Tutor Pro to run more live in search."
+        ? "Teaching Profile saved as Paused. Upgrade to Tutor Pro to run more live in search."
         : "Teaching Profile published — students can find it in search.",
     );
     if (data.createdPaused) {
@@ -645,7 +635,7 @@ export function TutorAdsManager({
     entitlement?.activeCount ?? listings.filter((l) => l.status === "ACTIVE").length;
   const capacityLine = entitlement?.unlimited
     ? "Unlimited live slots (legacy)."
-    : `Free ${freeCap} live · Extra Active up to 3 · Pro up to ${paidCap}`;
+    : `Free ${freeCap} live · Pro up to ${paidCap}`;
   const rateMinLocal = minHourlyRateInput(currency);
   const rateStep = hourlyRateInputStep(currency);
 
@@ -928,12 +918,6 @@ export function TutorAdsManager({
           {entitlement?.createPaused ? (
             <p className="muted teaching-listings-catalog-hint">
               At your active limit — new subjects save as Paused.{" "}
-              {entitlement.canBuyExtraActive !== false ? (
-                <>
-                  <Link href="/pricing?plan=EXTRA_ACTIVE">Add Extra Active</Link>
-                  {" or "}
-                </>
-              ) : null}
               <Link href="/pricing?plan=TUTOR_BASIC">View Tutor Pro</Link> to run more live.
             </p>
           ) : null}
@@ -1091,12 +1075,6 @@ export function TutorAdsManager({
               {listing.status !== "ACTIVE" && entitlement?.upgradeRequired ? (
                 <p className="muted teaching-listings-catalog-hint" role="status">
                   At your active limit.{" "}
-                  {entitlement.canBuyExtraActive !== false ? (
-                    <>
-                      <Link href="/pricing?plan=EXTRA_ACTIVE">Add Extra Active</Link>
-                      {" or "}
-                    </>
-                  ) : null}
                   <Link href="/pricing?plan=TUTOR_BASIC">View Tutor Pro</Link> to activate this
                   profile — or use the upgrade options above.
                 </p>

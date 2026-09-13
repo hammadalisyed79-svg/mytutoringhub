@@ -10,7 +10,7 @@ import { formatPromoUntil, type ResolvedPlan } from "@/lib/plans";
 
 /**
  * Single strong Launch offer presentation for Tutor Pro complimentary window.
- * Extra Active / Listing Boost stay out of the primary CTA — they are separate paid products.
+ * Listing Boost / Priority Verification stay out of the primary CTA.
  */
 export function LaunchOfferBlock({
   plan,
@@ -88,8 +88,8 @@ export function LaunchOfferBlock({
                 Free listing still includes {BUSINESS.tutorFreeActiveListings} live Teaching Profile
               </li>
               <li>
-                Extra Active (+1 live capacity) and Listing Boost stay optional paid products — not
-                part of this offer
+                Listing Boost and Priority Verification Review stay optional paid add-ons — not part
+                of this offer
               </li>
             </ul>
           </div>
@@ -119,8 +119,8 @@ export function LaunchOfferBlock({
 
       {!compact ? (
         <p className="launch-offer-footnote muted">
-          Need one more live subject without Pro? Use Extra Active — it is billed separately and is
-          not complimentary under the Launch offer.
+          Listing Boost and Priority Verification Review are separate paid add-ons and are not
+          complimentary under the Launch offer.
         </p>
       ) : null}
     </aside>

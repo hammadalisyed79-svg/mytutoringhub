@@ -18,7 +18,7 @@ import {
 } from "@/lib/subject-profile-entitlements";
 
 export const UPGRADE_FOR_MORE_PROFILES_MESSAGE =
-  "Free includes 1 active Teaching Profile. Add Extra Active (monthly, up to 3 live) or upgrade to Tutor Pro (up to 10).";
+  "Free includes 1 active Teaching Profile. Upgrade to Tutor Pro for up to 10 active Teaching Profiles.";
 
 /** True when Free/extra path is at ACTIVE cap — new rows must stay Paused. */
 export function shouldForcePausedTeachingProfileCreate(opts: {

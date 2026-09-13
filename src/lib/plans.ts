@@ -110,7 +110,7 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
     promoNote:
-      "Launch offer: Tutor Pro is free until 30 September 2026 (up to 10 live profiles, ranking, unlimited reveals). After that, list price applies. Free listing stays 1 live profile permanently. Extra Active and Listing Boost are separate paid products.",
+      "Launch offer: Tutor Pro is free until 30 September 2026 (up to 10 live profiles, ranking, unlimited reveals). After that, list price applies. Free listing stays 1 live Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",
@@ -160,17 +160,17 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
   {
     id: "EXTRA_ACTIVE",
-    name: "Extra Active Profile",
+    name: "Extra Active Profile (legacy)",
     description:
-      "Keep a second (or third) Teaching Profile live in search. Stack up to two — max 3 live without Tutor Pro.",
+      "Legacy +1 live Teaching Profile add-on. No longer sold to new customers. Existing subscribers keep their entitlement until the period ends.",
     audience: "tutor",
     pricePkr: 499,
     annualPricePkr: Math.round(499 * 9.6),
     features: [
-      "+1 live Teaching Profile while subscribed",
-      "Stack up to 2 extras (3 live total with Free)",
+      "+1 live Teaching Profile while subscribed (grandfathered)",
+      "Stack up to 2 extras (3 live total with Free) for existing holders",
       "Paused drafts stay free — only live slots count",
-      "No Tutor Pro ranking or unlimited reveals — upgrade anytime",
+      "New tutors: upgrade to Tutor Pro for up to 10 live profiles",
     ],
     envPriceId: "STRIPE_PRICE_EXTRA_ACTIVE",
     isAddOn: true,
@@ -205,14 +205,13 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
   },
 ];
 
-/** Add-ons shown on public Pricing. Legacy listing-cap SKUs stay in DB/checkout for grandfathering. */
+/** Add-ons shown on public Pricing. Legacy capacity SKUs stay in DB/checkout for grandfathering. */
 export const PUBLIC_ADDON_PLAN_IDS: SubscriptionPlan[] = [
-  "EXTRA_ACTIVE",
   "VERIFIED_TUTOR",
   "AD_BOOST",
 ];
 
-/** Monthly/annual add-ons (not one-time). */
+/** Monthly/annual add-ons (not one-time). Legacy Extra Active remains recurring for existing holders. */
 export function isRecurringAddOnPlan(planId: string): boolean {
   return planId === "EXTRA_ACTIVE";
 }

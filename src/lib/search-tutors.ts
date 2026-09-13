@@ -595,7 +595,7 @@ export async function averageRatesBySubject(subjectNames: string[]) {
   return out;
 }
 
-/** Where clause for similar listing recommendations. */
+/** Where clause for same-subject similar listing recommendations (canonical identity). */
 export function similarTutorsWhereClause(opts: {
   /** Subject listing id to exclude (preferred). */
   id?: string;
@@ -603,17 +603,35 @@ export function similarTutorsWhereClause(opts: {
   excludeTutorProfileId?: string;
   subjects: string;
   location: string;
+  /** When true, match location only (generic nearby tutors). */
+  locationOnly?: boolean;
 }) {
   const first = opts.subjects
     .split(/[,;/|]/)
     .map((s) => s.trim())
     .filter(Boolean)[0];
   const city = opts.location.split(/[/|,]/)[0]?.trim();
-  const or = [
-    ...(first ? [{ subject: { contains: first, mode: "insensitive" as const } }] : []),
-    ...(city ? [{ location: { contains: city, mode: "insensitive" as const } }] : []),
-  ];
-  if (or.length === 0) return null;
+
+  if (opts.locationOnly) {
+    if (!city) return null;
+    return {
+      status: "ACTIVE" as const,
+      ...(opts.id ? { id: { not: opts.id } } : {}),
+      ...(opts.excludeTutorProfileId
+        ? { tutorProfileId: { not: opts.excludeTutorProfileId } }
+        : {}),
+      location: { contains: city, mode: "insensitive" as const },
+      tutorProfile: publicListedTutorWhere(),
+    };
+  }
+
+  if (!first) return null;
+
+  const terms = expandSubjectTerms(first);
+  const subjectOr = terms.flatMap((term) => [
+    { subject: { equals: term, mode: "insensitive" as const } },
+    { canonicalSubject: { equals: term, mode: "insensitive" as const } },
+  ]);
 
   return {
     status: "ACTIVE" as const,
@@ -621,7 +639,8 @@ export function similarTutorsWhereClause(opts: {
     ...(opts.excludeTutorProfileId
       ? { tutorProfileId: { not: opts.excludeTutorProfileId } }
       : {}),
-    OR: or,
+    OR: subjectOr,
+    ...(city ? { location: { contains: city, mode: "insensitive" as const } } : {}),
     tutorProfile: publicListedTutorWhere(),
   };
 }
@@ -632,40 +651,68 @@ export async function similarTutors(opts: {
   subjects: string;
   location: string;
   take?: number;
-}) {
-  const where = similarTutorsWhereClause(opts);
-  if (!where) return [];
-
+}): Promise<{ cards: SearchListingCard[]; mode: "same_subject" | "same_subject_broad" | "generic" }> {
   const take = opts.take ?? 4;
-  // Over-fetch so per-tutor dedupe still fills the rail when one tutor has many listings.
-  const rows = await prisma.subjectProfile.findMany({
-    where,
-    select: {
-      id: true,
-      subject: true,
-      title: true,
-      headline: true,
-      description: true,
-      level: true,
-      location: true,
-      country: true,
-      online: true,
-      inPerson: true,
-      rate: true,
-      status: true,
-      highlightedUntil: true,
-      boostUntil: true,
-      tutorProfile: { select: LISTING_PARENT_SELECT },
-    },
-    take: Math.max(take * 6, 24),
-    orderBy: [{ rate: "asc" }],
-  });
 
-  const cards = (rows as ListingRow[])
-    .filter(isPublicListing)
-    .map((row) => toSearchCard(row));
-  // Similar rails: never show the same teacher twice (even for distinct subject listings).
-  return dedupeByTutorProfileId(cards, take);
+  async function fetchWhere(
+    where: NonNullable<ReturnType<typeof similarTutorsWhereClause>>,
+  ) {
+    const rows = await prisma.subjectProfile.findMany({
+      where,
+      select: {
+        id: true,
+        subject: true,
+        canonicalSubject: true,
+        title: true,
+        headline: true,
+        description: true,
+        level: true,
+        location: true,
+        country: true,
+        online: true,
+        inPerson: true,
+        rate: true,
+        status: true,
+        highlightedUntil: true,
+        boostUntil: true,
+        tutorProfile: { select: LISTING_PARENT_SELECT },
+      },
+      take: Math.max(take * 8, 32),
+      orderBy: [{ rate: "asc" }],
+    });
+    const first = opts.subjects
+      .split(/[,;/|]/)
+      .map((s) => s.trim())
+      .filter(Boolean)[0];
+    const cards = (rows as ListingRow[])
+      .filter(isPublicListing)
+      .filter((row) => !first || listingMatchesExpandedSubject(row, first))
+      .map((row) => toSearchCard(row));
+    return dedupeByTutorProfileId(cards, take);
+  }
+
+  // 1) Same canonical subject + same city when possible
+  const localWhere = similarTutorsWhereClause(opts);
+  if (localWhere) {
+    const local = await fetchWhere(localWhere);
+    if (local.length > 0) return { cards: local, mode: "same_subject" };
+  }
+
+  // 2) Same subject, any location / online fallback
+  const broadWhere = similarTutorsWhereClause({ ...opts, location: "" });
+  if (broadWhere) {
+    const broad = await fetchWhere(broadWhere);
+    if (broad.length > 0) return { cards: broad, mode: "same_subject_broad" };
+  }
+
+  // 3) Generic nearby tutors — caller must label as alternatives, not "Similar {Subject}"
+  const genericWhere = similarTutorsWhereClause({ ...opts, locationOnly: true });
+  if (genericWhere) {
+    const generic = await fetchWhere(genericWhere);
+    if (generic.length > 0) return { cards: generic, mode: "generic" };
+  }
+
+  return { cards: [], mode: "generic" };
 }
 
 export function slugify(input: string) {

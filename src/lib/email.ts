@@ -539,7 +539,7 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
     title: "Grow with Tutor Pro",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Your profile is live. Under the <strong>Launch offer</strong>, <strong>Tutor Pro</strong> is complimentary until <strong>30 September 2026</strong> — up to 10 live Teaching Profiles, relevance-first ranking, and unlimited enquiry reveals.</p>
-<p>After that date, list price applies. Free listing still includes <strong>1 live Teaching Profile</strong> permanently. Extra Active (+1 live capacity) and Listing Boost stay separate paid products.</p>`,
+<p>After that date, list price applies. Free listing still includes <strong>1 live Teaching Profile</strong> permanently. Listing Boost and Priority Verification Review stay separate paid add-ons.</p>`,
     cta: { label: "Activate Tutor Pro free", href: opts.pricingUrl },
   });
 }
@@ -557,9 +557,9 @@ export function tutorSecondProfileEmailHtml(opts: {
     title: "Add a second subject profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
 <p>Tutors who list more than one subject get discovered for each subject separately.${subjectHint}</p>
-<p>Create another Teaching Profile from your dashboard — free tutors run 1 active profile; Extra Active adds +1 (up to 3); Tutor Pro unlocks up to 10.</p>`,
+<p>Create another Teaching Profile from your dashboard — free tutors run 1 active profile; Tutor Pro unlocks up to 10.</p>`,
     cta: { label: "Add a subject profile", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
-    footer: `<a href="${appUrl}/pricing?plan=EXTRA_ACTIVE">Add Extra Active</a> · <a href="${appUrl}/pricing?plan=TUTOR_BASIC">View Tutor Pro</a> · Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
+    footer: `<a href="${appUrl}/pricing?plan=TUTOR_BASIC">View Tutor Pro</a> · Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
   });
 }
 

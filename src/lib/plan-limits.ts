@@ -209,7 +209,7 @@ export async function getPlanDashboardSummary(
         ? "You have unlimited contacts and the AI study assistant."
         : hasPass
           ? "Upgrade to Student Pro for unlimited past papers and the AI study assistant."
-          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Earn Hub Points from referrals. Upgrade for unlimited messaging and past papers.`,
+          : `Free includes ${STUDENT_FREE_CONTACT_LIMIT} new tutor contacts per month. Upgrade for unlimited messaging and past papers.`,
     };
   }
 

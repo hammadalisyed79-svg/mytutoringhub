@@ -161,11 +161,18 @@ export function scoreSuggestion(query: string, candidate: string) {
   if (!q || !c) return 0;
   if (c === q) return 100;
   if (c.startsWith(q)) return 90 - Math.min(q.length, 20);
-  if (c.includes(` ${q}`) || c.includes(q)) return 70;
+  // Substring only when identities align — never Science → Computer Science.
+  if ((c.includes(` ${q}`) || c.includes(q)) && foldKeysEqual(q, c)) return 70;
   const dist = levenshtein(q, c.slice(0, Math.max(q.length, 1)));
   const maxDist = q.length <= 4 ? 1 : 2;
   if (dist <= maxDist) return 55 - dist * 10;
   return 0;
+}
+
+function foldKeysEqual(a: string, b: string) {
+  const fa = a.replace(/[^a-z0-9]+/g, " ").trim();
+  const fb = b.replace(/[^a-z0-9]+/g, " ").trim();
+  return Boolean(fa) && fa === fb;
 }
 
 export function cityChoices() {
@@ -264,7 +271,11 @@ export function resolveSubjectName(input: string | undefined, subjectNames: stri
     .map((name) => ({ name, score: scoreSuggestion(raw, name) }))
     .filter((row) => row.score > 0)
     .sort((a, b) => b.score - a.score);
-  if (ranked[0] && ranked[0].score >= 70) return { value: ranked[0].name, matched: true };
+  // Prefer exact/prefix. Never accept weak substring (Science ≠ Computer Science).
+  if (ranked[0] && ranked[0].score >= 90) return { value: ranked[0].name, matched: true };
+  if (ranked[0] && ranked[0].score >= 70 && foldKeysEqual(norm(raw), norm(ranked[0].name))) {
+    return { value: ranked[0].name, matched: true };
+  }
   return { value: raw, matched: false };
 }
 
@@ -390,8 +401,18 @@ export function relatedSubjects(subject: string, subjectNames: string[]) {
   if (languages.some((name) => name.toLowerCase() === subject.toLowerCase())) {
     return languages.filter((name) => name.toLowerCase() !== subject.toLowerCase()).slice(0, 4);
   }
-  const stem = subject.split(" ")[0];
+  const stem = norm(subject).split(" ")[0] || "";
+  if (!stem) return [];
   return subjectNames
-    .filter((name) => name !== subject && name.toLowerCase().includes(stem.toLowerCase()))
+    .filter((name) => {
+      if (name === subject) return false;
+      const n = norm(name);
+      // Same stem as first token only — never Science → Computer Science.
+      if (n === stem) return false;
+      const tokens = n.split(" ");
+      if (tokens[0] !== stem) return false;
+      if (tokens.length > 1 && stem.length <= 8) return false;
+      return true;
+    })
     .slice(0, 4);
 }
