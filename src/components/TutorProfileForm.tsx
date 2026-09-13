@@ -1190,7 +1190,7 @@ export function TutorProfileForm({
                 label="Subject"
                 required
                 searchable
-                directory
+                dropdownOnly
                 max={1}
                 selected={firstSubject ? [firstSubject] : []}
                 onChange={(next) => {
@@ -1200,7 +1200,7 @@ export function TutorProfileForm({
                 }}
                 options={listedSubjects}
                 addLabel="Add subject"
-                hint="One canonical subject per Teaching Profile (for example Mathematics, not GCSE Maths)."
+                hint="One canonical subject per Teaching Profile (for example Mathematics, not GCSE Maths). Search, then add from the list."
               />
 
               <label>
