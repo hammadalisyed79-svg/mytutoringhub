@@ -121,7 +121,7 @@ const EXTRA_BLOCKS: { id: TutorWizardExtraId; title: string; hint: string }[] = 
   {
     id: "contact",
     title: "Contact & video",
-    hint: "Phone and intro video",
+    hint: "Private phone and intro video",
   },
   {
     id: "verify",
@@ -216,8 +216,8 @@ export function TutorProfileForm({
   const photoInput = useRef<HTMLInputElement>(null);
   const countries = useMemo(() => tutorCountries(), []);
   const levelCatalog = useMemo(() => tutorLevelOptions(extraLevels), [extraLevels]);
-  const languageCatalog = useMemo(() => tutorLanguageOptions(), []);
   const [country, setCountry] = useState(inferTutorCountry(initial.location, initial.country));
+  const languageCatalog = useMemo(() => tutorLanguageOptions(country), [country]);
 
   /** Rate currency follows teaching country (Germany → EUR); falls back to visitor currency. */
   const rateCurrency = useMemo(() => {
@@ -1100,10 +1100,13 @@ export function TutorProfileForm({
                       />
                       <CatalogMultiSelect
                         label="Languages"
+                        hint="Regional languages for your teaching country appear first. Add international languages from the menu if you prefer."
                         selected={languageList}
                         onChange={setLanguageList}
                         options={languageCatalog.core}
                         extraOptions={languageCatalog.more}
+                        optionsGroupLabel="Regional (priority)"
+                        extraGroupLabel="International (preference)"
                         max={8}
                         addLabel="Add languages"
                       />
@@ -1219,7 +1222,7 @@ export function TutorProfileForm({
                           value={phone}
                           onChange={setPhone}
                           defaultCountryCode={defaultPhoneCountry}
-                          hint="Shown publicly only after verification."
+                          hint="Private — never shown on your public profile. Students message you through the platform; phone is for admin and verification only."
                         />
                       </label>
                     </>

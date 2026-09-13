@@ -11,6 +11,10 @@ type Props = {
   onChange: (next: string[]) => void;
   options: string[];
   extraOptions?: string[];
+  /** Optgroup label for priority/core options in the add menu. */
+  optionsGroupLabel?: string;
+  /** Optgroup label for preference/extra options in the add menu. */
+  extraGroupLabel?: string;
   searchable?: boolean;
   directory?: boolean;
   /** Hide the option chip cloud — selected chips + dropdown only. */
@@ -33,6 +37,8 @@ export function CatalogMultiSelect({
   onChange,
   options,
   extraOptions = [],
+  optionsGroupLabel,
+  extraGroupLabel,
   searchable,
   directory,
   dropdownOnly = false,
@@ -61,6 +67,15 @@ export function CatalogMultiSelect({
     [extraOptions, options, selected],
   );
 
+  const remainingCore = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return options.filter((name) => {
+      if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) return false;
+      if (!needle) return true;
+      return name.toLowerCase().includes(needle);
+    });
+  }, [options, selected, query]);
+
   const remaining = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return [...options, ...extraOptions].filter((name) => {
@@ -70,7 +85,12 @@ export function CatalogMultiSelect({
     });
   }, [options, extraOptions, selected, query]);
 
-  const addChoices = extras.length && !dropdownOnly ? extras : remaining;
+  const useGroupedMenu = Boolean(optionsGroupLabel || extraGroupLabel) && extras.length > 0;
+  const addChoices = useGroupedMenu
+    ? remaining
+    : extras.length && !dropdownOnly
+      ? extras
+      : remaining;
 
   function toggle(name: string) {
     if (selected.some((item) => item.toLowerCase() === name.toLowerCase())) {
@@ -170,11 +190,34 @@ export function CatalogMultiSelect({
             <span className="catalog-add-row">
               <select value={pick} onChange={(e) => setPick(e.target.value)} disabled={atMax}>
                 <option value="">{atMax ? `Maximum ${max}` : "Select to add…"}</option>
-                {addChoices.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
+                {useGroupedMenu ? (
+                  <>
+                    {remainingCore.length > 0 ? (
+                      <optgroup label={optionsGroupLabel || "Priority"}>
+                        {remainingCore.map((name) => (
+                          <option key={`core-${name}`} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : null}
+                    {extras.length > 0 ? (
+                      <optgroup label={extraGroupLabel || "More"}>
+                        {extras.map((name) => (
+                          <option key={`extra-${name}`} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : null}
+                  </>
+                ) : (
+                  addChoices.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))
+                )}
               </select>
               <button className="btn btn-secondary btn-sm" type="button" onClick={addFromSelect} disabled={!pick || atMax}>
                 Add

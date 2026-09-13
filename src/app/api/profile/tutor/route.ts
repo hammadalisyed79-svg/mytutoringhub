@@ -164,7 +164,7 @@ export async function PUT(req: Request) {
 
     const firstProfileSubject = data.firstTeachingProfile?.subject?.trim() || "";
     const levelCatalog = tutorLevelOptions(curriculumLevels());
-    const languageCatalog = tutorLanguageOptions();
+    const languageCatalog = tutorLanguageOptions(data.country);
     const skillCatalog = [
       ...expertiseForSubjects([
         ...splitCsv(existing?.subjects),
@@ -503,7 +503,9 @@ export async function PATCH(req: Request) {
         ) || null;
     }
     if (data.languages !== undefined) {
-      const languageCatalog = tutorLanguageOptions();
+      const languageCatalog = tutorLanguageOptions(
+        String(data.country || patch.country || existing.country || ""),
+      );
       patch.languages =
         joinCsv(
           pickKnown(splitCsv(data.languages), [

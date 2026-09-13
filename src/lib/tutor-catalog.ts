@@ -19,6 +19,7 @@ export const TUTOR_CORE_LEVELS = [
   "Exam prep",
 ] as const;
 
+/** Default priority when country is unknown — Pakistan-first marketplace. */
 export const TUTOR_CORE_LANGUAGES = [
   "English",
   "Urdu",
@@ -29,13 +30,101 @@ export const TUTOR_CORE_LANGUAGES = [
   "Hindi",
 ] as const;
 
+/** Widely useful teaching languages shown after regional priority. */
+export const INTERNATIONAL_LANGUAGES = [
+  "English",
+  "Arabic",
+  "French",
+  "Spanish",
+  "German",
+  "Mandarin",
+  "Chinese",
+  "Portuguese",
+  "Russian",
+  "Japanese",
+  "Korean",
+  "Italian",
+  "Dutch",
+  "Turkish",
+] as const;
+
+/**
+ * Regional teaching languages by ISO country code.
+ * English is prepended in `tutorLanguageOptions` when useful as a lingua franca.
+ */
+const REGIONAL_LANGUAGES_BY_COUNTRY: Record<string, readonly string[]> = {
+  PK: ["Urdu", "Punjabi", "Pashto", "Sindhi", "Balochi", "Saraiki", "Kashmiri", "Arabic", "Hindi"],
+  IN: ["Hindi", "Bengali", "Tamil", "Telugu", "Gujarati", "Punjabi", "Urdu", "Marathi", "Kannada", "Malayalam"],
+  BD: ["Bengali", "Urdu", "Hindi", "Arabic"],
+  LK: ["Sinhala", "Tamil", "English"],
+  AE: ["Arabic", "Urdu", "Hindi", "Tagalog", "Malayalam", "Persian"],
+  SA: ["Arabic", "Urdu", "Hindi", "Tagalog", "Malayalam"],
+  QA: ["Arabic", "Urdu", "Hindi", "Tagalog"],
+  KW: ["Arabic", "Urdu", "Hindi", "Tagalog"],
+  OM: ["Arabic", "Urdu", "Hindi", "Tagalog"],
+  BH: ["Arabic", "Urdu", "Hindi", "Tagalog"],
+  EG: ["Arabic", "French", "English"],
+  TR: ["Turkish", "Arabic", "Kurdish", "English"],
+  MY: ["Malay", "Mandarin", "Chinese", "Tamil", "English"],
+  SG: ["English", "Mandarin", "Chinese", "Malay", "Tamil"],
+  ID: ["Indonesian", "English", "Javanese", "Arabic"],
+  PH: ["Tagalog", "English", "Cebuano"],
+  HK: ["Cantonese", "Mandarin", "Chinese", "English"],
+  CN: ["Mandarin", "Chinese", "Cantonese", "English"],
+  TW: ["Mandarin", "Chinese", "Taiwanese", "English"],
+  TH: ["Thai", "English", "Mandarin"],
+  VN: ["Vietnamese", "English", "Mandarin"],
+  JP: ["Japanese", "English"],
+  KR: ["Korean", "English"],
+  GB: ["English", "Welsh", "Scottish Gaelic", "Urdu", "Polish", "Punjabi", "Arabic"],
+  IE: ["English", "Irish", "Polish"],
+  US: ["English", "Spanish", "Mandarin", "Chinese", "French", "Tagalog", "Vietnamese", "Korean", "Arabic"],
+  CA: ["English", "French", "Punjabi", "Mandarin", "Chinese", "Spanish", "Arabic", "Tagalog"],
+  AU: ["English", "Mandarin", "Chinese", "Arabic", "Vietnamese", "Punjabi", "Hindi"],
+  NZ: ["English", "Māori", "Mandarin", "Chinese", "Samoan"],
+  ZA: ["English", "Afrikaans", "Zulu", "Xhosa", "Sotho"],
+  NG: ["English", "Yoruba", "Hausa", "Igbo", "French", "Arabic"],
+  FR: ["French", "English", "Arabic", "Spanish", "Portuguese"],
+  DE: ["German", "English", "Turkish", "Arabic", "Polish", "Russian"],
+  NL: ["Dutch", "English", "German", "French", "Arabic", "Turkish"],
+  IT: ["Italian", "English", "French", "Spanish", "Arabic"],
+  ES: ["Spanish", "English", "Catalan", "French", "Arabic"],
+  PT: ["Portuguese", "English", "Spanish", "French"],
+  BR: ["Portuguese", "English", "Spanish"],
+  MX: ["Spanish", "English"],
+  IR: ["Persian", "English", "Arabic", "Azerbaijani", "Kurdish"],
+  AF: ["Pashto", "Dari", "Persian", "English", "Urdu"],
+};
+
 const EXTRA_LANGUAGES = [
   ...SEARCH_LANGUAGES,
+  ...INTERNATIONAL_LANGUAGES,
   "Balochi",
   "Saraiki",
   "Kashmiri",
   "Persian",
-  "Turkish",
+  "Dari",
+  "Kurdish",
+  "Marathi",
+  "Kannada",
+  "Malayalam",
+  "Sinhala",
+  "Welsh",
+  "Scottish Gaelic",
+  "Irish",
+  "Māori",
+  "Samoan",
+  "Catalan",
+  "Taiwanese",
+  "Javanese",
+  "Cebuano",
+  "Yoruba",
+  "Hausa",
+  "Igbo",
+  "Zulu",
+  "Xhosa",
+  "Sotho",
+  "Azerbaijani",
   "French",
   "Spanish",
   "German",
@@ -260,6 +349,8 @@ function uniquePreserveOrder(values: string[]) {
   return out;
 }
 
+export { uniquePreserveOrder };
+
 export function citiesForCountry(countryName: string) {
   const country = TOP_COUNTRIES.find((row) => row.name === countryName);
   // Alphabetical for profile dropdowns / letter grouping.
@@ -366,13 +457,45 @@ export function tutorQualificationOptions(extraQualifications: string[] = []) {
   return { core, more };
 }
 
-export function tutorLanguageOptions() {
-  return {
-    core: [...TUTOR_CORE_LANGUAGES],
-    more: uniqueSorted(EXTRA_LANGUAGES).filter(
-      (lang) => !TUTOR_CORE_LANGUAGES.some((core) => core.toLowerCase() === lang.toLowerCase()),
-    ),
-  };
+function countryCodeForLanguageRegion(country?: string | null) {
+  const raw = (country || "").trim();
+  if (!raw) return "";
+  if (/^[A-Za-z]{2}$/.test(raw)) return raw.toUpperCase();
+  const match = TOP_COUNTRIES.find((row) => row.name.toLowerCase() === raw.toLowerCase());
+  return match?.code || "";
+}
+
+/** Regional languages for a teaching/search country (priority chips). */
+export function regionalLanguagesForCountry(country?: string | null): string[] {
+  const code = countryCodeForLanguageRegion(country);
+  if (code && REGIONAL_LANGUAGES_BY_COUNTRY[code]) {
+    return uniquePreserveOrder([...REGIONAL_LANGUAGES_BY_COUNTRY[code]]);
+  }
+  return [...TUTOR_CORE_LANGUAGES];
+}
+
+/**
+ * Language picker lists: regional languages first (priority), international + others as preference.
+ * English is kept near the front for every market as a teaching lingua franca.
+ */
+export function tutorLanguageOptions(country?: string | null) {
+  const regional = regionalLanguagesForCountry(country);
+  const core = uniquePreserveOrder([
+    "English",
+    ...regional.filter((lang) => lang.toLowerCase() !== "english"),
+  ]);
+  const more = uniqueSorted([
+    ...INTERNATIONAL_LANGUAGES,
+    ...EXTRA_LANGUAGES,
+    ...SEARCH_LANGUAGES,
+  ]).filter((lang) => !core.some((item) => item.toLowerCase() === lang.toLowerCase()));
+  return { core, more };
+}
+
+/** Search suggest order: regional priority, then international preference. */
+export function searchLanguagesForCountry(country?: string | null) {
+  const { core, more } = tutorLanguageOptions(country);
+  return uniquePreserveOrder([...core, ...more, ...SEARCH_LANGUAGES]);
 }
 
 export function expertiseForSubject(subject: string) {

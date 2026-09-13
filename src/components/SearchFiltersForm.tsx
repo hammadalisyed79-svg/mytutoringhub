@@ -17,6 +17,7 @@ import {
   citiesForSearchCountry,
   cityBelongsToCountry,
   inferTutorCountry,
+  searchLanguagesForCountry,
 } from "@/lib/tutor-catalog";
 import { SuggestField, type SuggestOption } from "@/components/SuggestField";
 
@@ -127,12 +128,11 @@ export function SearchFiltersForm({
   }, [level, levels]);
 
   const languageOptions = useMemo(() => {
+    const pool = searchLanguagesForCountry(country || pinnedCountry);
     const needle = language.trim().toLowerCase();
-    const filtered = needle
-      ? SEARCH_LANGUAGES.filter((item) => item.toLowerCase().includes(needle))
-      : SEARCH_LANGUAGES;
-    return filtered.slice(0, 8).map((item) => ({ value: item, label: item }));
-  }, [language]);
+    const filtered = needle ? pool.filter((item) => item.toLowerCase().includes(needle)) : pool;
+    return filtered.slice(0, 10).map((item) => ({ value: item, label: item }));
+  }, [language, country, pinnedCountry]);
 
   const cityPlaceholder = country
     ? `${(cityPool || []).find((city) => city !== "Online") || "City"}, Online…`
