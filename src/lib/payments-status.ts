@@ -159,8 +159,8 @@ export function getPaymentsReadiness(): {
  * Never returns the secret key. Never reads DB — env vars only (safest).
  */
 export function getSafepayCredentialStatus() {
-  const apiKey = (process.env.SAFEPAY_API_KEY || "").trim();
-  const secret = (process.env.SAFEPAY_SECRET_KEY || "").trim();
+  const apiKey = (process.env.SAFEPAY_API_KEY || "").trim().replace(/^["']|["']$/g, "");
+  const secret = (process.env.SAFEPAY_SECRET_KEY || "").trim().replace(/^["']|["']$/g, "");
   const intent = (process.env.SAFEPAY_INTENT || "CYBERSOURCE").trim();
   const webhook =
     (process.env.SAFEPAY_WEBHOOK_SECRET || "").trim() ||

@@ -1,8 +1,14 @@
 import Safepay from "@sfpy/node-core";
 
+/** Trim + strip wrapping quotes — Vercel pastes often include trailing newlines. */
+export function readSafepayEnv(name: "SAFEPAY_API_KEY" | "SAFEPAY_SECRET_KEY") {
+  const raw = process.env[name] ?? "";
+  return raw.trim().replace(/^["']|["']$/g, "");
+}
+
 export function safepayConfigured() {
-  const secret = process.env.SAFEPAY_SECRET_KEY || "";
-  const apiKey = process.env.SAFEPAY_API_KEY || "";
+  const secret = readSafepayEnv("SAFEPAY_SECRET_KEY");
+  const apiKey = readSafepayEnv("SAFEPAY_API_KEY");
   return Boolean(secret && apiKey && !secret.includes("replace") && !apiKey.includes("replace"));
 }
 
@@ -18,9 +24,33 @@ export function getSafepayApiHost(env: "sandbox" | "production" = getSafepayEnv(
     : "https://sandbox.api.getsafepay.com";
 }
 
+/** Safe diagnostics for admin ping — never returns raw secrets. */
+export function getSafepayKeyDiagnostics() {
+  const rawSecret = process.env.SAFEPAY_SECRET_KEY ?? "";
+  const rawApi = process.env.SAFEPAY_API_KEY ?? "";
+  const secret = readSafepayEnv("SAFEPAY_SECRET_KEY");
+  const apiKey = readSafepayEnv("SAFEPAY_API_KEY");
+  const env = getSafepayEnv();
+  return {
+    env,
+    host: getSafepayApiHost(env),
+    apiKeyLength: apiKey.length,
+    apiKeyLooksPublic: apiKey.startsWith("sec_"),
+    secretLength: secret.length,
+    secretLooksLikeApiKey: secret.startsWith("sec_"),
+    secretHadWhitespace: rawSecret !== secret,
+    apiKeyHadWhitespace: rawApi !== apiKey,
+  };
+}
+
 export function getSafepayClient() {
-  const secret = process.env.SAFEPAY_SECRET_KEY;
+  const secret = readSafepayEnv("SAFEPAY_SECRET_KEY");
   if (!secret) throw new Error("SAFEPAY_SECRET_KEY is not set");
+  if (secret.startsWith("sec_")) {
+    throw new Error(
+      "SAFEPAY_SECRET_KEY looks like the public API key (sec_…). Paste the Secret/Secure key instead.",
+    );
+  }
 
   return new Safepay(secret, {
     authType: "secret",
@@ -93,7 +123,8 @@ export async function createSafepayHostedCheckout(opts: {
   redirectUrl: string;
   cancelUrl: string;
 }) {
-  const apiKey = process.env.SAFEPAY_API_KEY!;
+  const apiKey = readSafepayEnv("SAFEPAY_API_KEY");
+  if (!apiKey) throw new Error("SAFEPAY_API_KEY is not set");
   const safepay = getSafepayClient();
   const env = getSafepayEnv();
 
