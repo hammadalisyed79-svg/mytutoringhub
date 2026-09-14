@@ -116,7 +116,7 @@ SAFEPAY_SECRET_KEY=…           # live secret — never share
 SAFEPAY_INTENT=CYBERSOURCE
 NEXT_PUBLIC_APP_URL=https://www.mytutoringhub.com
 CRON_SECRET=<long-random>
-SAFEPAY_WEBHOOK_SECRET=<long-random>`}</pre>
+SAFEPAY_WEBHOOK_SECRET=…       # Safepay Endpoints → View shared secret (HMAC)`}</pre>
           </li>
           <li>
             In Safepay, allowlist origins / return URLs:
@@ -130,10 +130,12 @@ SAFEPAY_WEBHOOK_SECRET=<long-random>`}</pre>
             </ul>
           </li>
           <li>
-            Webhook (if available):{" "}
-            <code>POST https://www.mytutoringhub.com/api/safepay/webhook</code> with{" "}
-            <code>Authorization: Bearer &lt;SAFEPAY_WEBHOOK_SECRET&gt;</code> and body{" "}
-            <code>{`{ "tracker": "track_…" }`}</code>.
+            Safepay dashboard → Developers → Endpoints: URL{" "}
+            <code>https://www.mytutoringhub.com/api/safepay/webhook</code>. Set{" "}
+            <code>SAFEPAY_WEBHOOK_SECRET</code> to that endpoint’s{" "}
+            <strong>shared secret</strong> (used for <code>X-SFPY-SIGNATURE</code> HMAC). Subscribe
+            to <code>payment.succeeded</code> (v2). Dashboard “send test event” should then return
+            200.
           </li>
           <li>
             <strong>Redeploy</strong> Production (env changes do not apply until redeploy).

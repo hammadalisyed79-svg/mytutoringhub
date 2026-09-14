@@ -63,9 +63,10 @@ export function PaymentsReadinessPanel() {
               <code>vercel.json</code>)
             </li>
             <li>
-              Set <code>SAFEPAY_WEBHOOK_SECRET</code> (or reuse <code>CRON_SECRET</code>) and
-              configure Safepay to POST paid events to{" "}
-              <code>/api/safepay/webhook</code> with <code>Authorization: Bearer …</code>
+              Set <code>SAFEPAY_WEBHOOK_SECRET</code> to the Safepay Endpoints{" "}
+              <strong>shared secret</strong>, add endpoint{" "}
+              <code>https://www.mytutoringhub.com/api/safepay/webhook</code>, subscribe to{" "}
+              <code>payment.succeeded</code>
             </li>
             <li>Redeploy Production, then run <strong>Test Safepay connection</strong> below</li>
             <li>

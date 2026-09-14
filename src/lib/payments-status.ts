@@ -141,7 +141,7 @@ export function getPaymentsReadiness(): {
       ok: Boolean(
         process.env.SAFEPAY_WEBHOOK_SECRET?.trim() || process.env.CRON_SECRET?.trim(),
       ),
-      hint: "POST /api/safepay/webhook with Authorization: Bearer …",
+      hint: "Use Safepay Endpoints “shared secret” so X-SFPY-SIGNATURE HMAC verifies",
     },
   ];
 

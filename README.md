@@ -55,7 +55,7 @@ Production checklist (also on **Admin → Payments**):
 
 1. `SAFEPAY_ENV=production`, `SAFEPAY_API_KEY`, `SAFEPAY_SECRET_KEY`, `NEXT_PUBLIC_APP_URL=https://www.mytutoringhub.com`
 2. `CRON_SECRET` — Vercel crons send `Authorization: Bearer <CRON_SECRET>` (digests, hourly reconcile)
-3. `SAFEPAY_WEBHOOK_SECRET` (or reuse `CRON_SECRET`) — Safepay POSTs to `/api/safepay/webhook` with `{ "tracker": "track_…" }`
+3. `SAFEPAY_WEBHOOK_SECRET` — Safepay Endpoints **shared secret** (HMAC `X-SFPY-SIGNATURE`). Endpoint URL: `/api/safepay/webhook`. Subscribe to `payment.succeeded`.
 4. Hourly backup: `/api/safepay/reconcile` polls recent `INCOMPLETE` tracker rows
 
 Manual bank transfers: **Admin → Payments → Force complete** (requires an audit `adminNote`).
