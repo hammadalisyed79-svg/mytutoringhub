@@ -73,7 +73,10 @@ async function startSafepayPaperCheckout(opts: {
   }
 
   const preferred = resolveCurrency(opts.req);
-  const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
+  const forceSandboxPkr =
+    getSafepayEnv() === "sandbox" &&
+    /^(1|true|yes)$/i.test((process.env.SAFEPAY_SANDBOX_FORCE_PKR || "").trim());
+  const currency: CurrencyCode = forceSandboxPkr ? "PKR" : preferred;
   const amountMajor = pkrToCurrency(opts.feePkr, currency);
   const amount = toSafepayMinorUnits(amountMajor, currency);
   if (!Number.isFinite(amount) || amount <= 0) {

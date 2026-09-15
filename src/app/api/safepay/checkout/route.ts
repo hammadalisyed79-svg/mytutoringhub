@@ -248,10 +248,13 @@ export async function POST(req: Request) {
     );
   }
 
-  // Sandbox Cybersource 3DS dummy cards are most reliable in PKR.
-  // Production/live uses the visitor or preferred currency (never forced to PKR).
+  // Charge in the visitor/preferred currency (same as Pricing + receipt).
+  // Optional escape hatch: SAFEPAY_SANDBOX_FORCE_PKR=1 if sandbox test cards fail on EUR/USD.
   const preferred = resolveCurrency(req, body.currency, body.country);
-  const currency: CurrencyCode = getSafepayEnv() === "sandbox" ? "PKR" : preferred;
+  const forceSandboxPkr =
+    getSafepayEnv() === "sandbox" &&
+    /^(1|true|yes)$/i.test((process.env.SAFEPAY_SANDBOX_FORCE_PKR || "").trim());
+  const currency: CurrencyCode = forceSandboxPkr ? "PKR" : preferred;
 
   // Annual amounts come from plans.ts (canonical PKR); geo conversion via currency helpers.
   const annualPricePkr = def.annualChargePricePkr;

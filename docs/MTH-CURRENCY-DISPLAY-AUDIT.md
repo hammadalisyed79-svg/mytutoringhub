@@ -17,5 +17,9 @@ Visitor-facing money uses `getVisitorCurrency()` + format helpers. Amounts stay 
 
 ## Unchanged (intentional)
 - Admin plan/revenue screens in PKR
-- Safepay sandbox checkout may charge PKR for test cards
 - Internal catalogue / enforcement remains PKR-based
+- Optional `SAFEPAY_SANDBOX_FORCE_PKR=1` only if sandbox test cards fail on non-PKR
+
+## Checkout / receipt
+- Charge currency = visitor preferred currency (EUR, USD, …) in sandbox and production
+- Receipt amount comes from stored `safepay_{CURRENCY}_{minor}` (what Safepay was charged)
