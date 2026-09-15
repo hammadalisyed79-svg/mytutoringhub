@@ -74,8 +74,13 @@ function requestMatchScore(
   return score;
 }
 
-export default async function AdsPage() {
+export default async function AdsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ posted?: string }>;
+}) {
   const session = await auth();
+  const sp = await searchParams;
   const currency = await getVisitorCurrency();
   const ads = await prisma.studentAd.findMany({
     where: { status: "OPEN" },
@@ -158,6 +163,15 @@ export default async function AdsPage() {
             </div>
           )}
         </header>
+
+        {sp.posted === "1" ? (
+          <p className="success panel" role="status">
+            Request posted. Matching tutors can see it on this board and reply in Messages.{" "}
+            <Link href="/ads/new">Post another</Link>
+            {" · "}
+            <Link href="/dashboard/student">Dashboard</Link>
+          </p>
+        ) : null}
 
         {tutorMatch && tutorMatch.subjects.length > 0 ? (
           <p className="muted ads-board-note">

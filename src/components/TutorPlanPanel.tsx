@@ -20,6 +20,7 @@ function planVisual(planId: string) {
     case "VERIFIED_TUTOR":
       return { icon: "✦", eyebrow: "Trust & verification" };
     case "HIGHLIGHTED_AD":
+    case "AD_BOOST":
       return { icon: "◆", eyebrow: "Visibility boost" };
     default:
       return { icon: "◆", eyebrow: "Tutor add-on" };
@@ -51,12 +52,11 @@ export function TutorPlanPanel({
   /** Live Tutor Pro plan — used to gate Launch offer CTA by promoUntil. */
   tutorProPlan?: ResolvedPlan | null;
 }) {
-  const activePlans = corePlan
-    ? [
-        corePlan,
-        ...addOnSubs.filter((sub) => sub.id !== corePlan.id),
-      ]
-    : [];
+  const activePlans = [
+    ...(corePlan ? [corePlan] : []),
+    ...addOnSubs.filter((sub) => !corePlan || sub.id !== corePlan.id),
+  ];
+  const hasBenefits = activePlans.length > 0;
 
   const launchActive = Boolean(tutorProPlan?.isPromoActive && tutorProPlan?.isComplimentary);
   const untilLabel = tutorProPlan?.promoEndsAt
@@ -79,13 +79,15 @@ export function TutorPlanPanel({
               Your plan
             </h2>
             <p className="tutor-plan-lead">
-              {corePlan
+              {hasBenefits
                 ? `${activePlans.length} active benefit${activePlans.length === 1 ? "" : "s"} on your account`
                 : "Complete your profile for free search visibility — upgrade when you are ready"}
             </p>
           </div>
           {corePlan ? (
             <span className="tutor-plan-status-pill">Active</span>
+          ) : hasBenefits ? (
+            <span className="tutor-plan-status-pill">Add-ons active</span>
           ) : (
             <span className="tutor-plan-status-pill tutor-plan-status-pill--draft">Free tier</span>
           )}
@@ -93,11 +95,15 @@ export function TutorPlanPanel({
       </div>
 
       <div className="tutor-plan-body">
-        {corePlan ? (
+        {hasBenefits ? (
           <ul className="tutor-plan-list">
             {activePlans.map((sub) => {
               const name = getPlan(sub.plan as never)?.name || sub.plan;
               const visual = planVisual(sub.plan);
+              const listingHref =
+                sub.plan === "AD_BOOST" || sub.plan === "HIGHLIGHTED_AD"
+                  ? "/dashboard/tutor?tab=profile#teaching-listings"
+                  : null;
               return (
                 <li key={sub.id} className="tutor-plan-item">
                   <span className="tutor-plan-item-icon" aria-hidden>
@@ -110,9 +116,16 @@ export function TutorPlanPanel({
                       Access until {formatRenewal(sub.currentPeriodEnd)}
                     </span>
                   </div>
-                  <Link className="tutor-plan-item-slip" href={`/receipt/${sub.id}`}>
-                    View slip
-                  </Link>
+                  <div className="tutor-plan-item-actions">
+                    {listingHref ? (
+                      <Link className="tutor-plan-item-slip" href={listingHref}>
+                        Open listing
+                      </Link>
+                    ) : null}
+                    <Link className="tutor-plan-item-slip" href={`/receipt/${sub.id}`}>
+                      View slip
+                    </Link>
+                  </div>
                 </li>
               );
             })}

@@ -8,14 +8,14 @@ export function checkoutNotice(
     case "success":
       return {
         tone: "ok",
-        text: "Payment confirmed. Your plan is active. Open Dashboard → View slip for your receipt.",
+        text: "Payment confirmed. Your receipt slip opened after checkout — or open Dashboard → View slip anytime.",
       };
     case "pending":
       return {
         tone: "info",
         text: state
-          ? `Payment is still processing (${friendlyTrackerState(state)}). If you were charged, your plan will activate shortly. You can retry from Pricing if nothing appears on your dashboard.`
-          : "Payment is still processing. If you were charged, your plan will activate shortly. You can retry from Pricing if nothing appears on your dashboard.",
+          ? `Payment is still processing (${friendlyTrackerState(state)}). If you were charged, open Dashboard and tap Confirm next to the unfinished checkout, or paste your tracker on Recover payment.`
+          : "Payment is still processing. If you were charged, open Dashboard and tap Confirm next to the unfinished checkout, or paste your tracker on Recover payment.",
       };
     case "error":
       return {

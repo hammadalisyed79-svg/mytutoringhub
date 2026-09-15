@@ -207,11 +207,11 @@ export function ContactTutorForm({
       <h3>Message {tutorName}</h3>
       {nearLimit ? (
         <p className="muted contact-quota-hint">
-          1 free tutor contact remaining this month.
+          1 free tutor contact remaining this month · Student Pass unlocks unlimited.
         </p>
-      ) : remaining != null && remaining > 1 && remaining < (freeLimit || 3) ? (
+      ) : remaining != null && remaining > 0 ? (
         <p className="muted contact-quota-hint">
-          {remaining} free tutor contacts remaining this month.
+          {remaining} of {freeLimit} free tutor contacts remaining this month.
         </p>
       ) : null}
       {listings && listings.length > 1 && (

@@ -278,23 +278,34 @@ export default async function PastPapersPage({
                 payment_source: "safepay",
               }}
             />
-            <p className="success panel">
-              Payment received.{" "}
+            <p className="success panel" role="status">
+              <strong>Payment confirmed.</strong> Save this page or your email for your records.
               {sp.key ? (
-                <a
-                  href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
-                    sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
-                  }`}
-                >
-                  Download your paper
-                </a>
+                <>
+                  {" "}
+                  Order ref: <code>{sp.key}</code>.{" "}
+                  <a
+                    className="btn btn-sm"
+                    href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
+                      sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
+                    }`}
+                  >
+                    Download your paper
+                  </a>
+                </>
               ) : (
-                "Your paper is unlocked."
+                " Your paper is unlocked on this account."
               )}
               {sp.token && !session?.user ? (
                 <>
                   {" "}
                   <span className="muted">We also emailed your download link.</span>
+                </>
+              ) : null}
+              {session?.user ? (
+                <>
+                  {" "}
+                  <Link href="/dashboard/student">Back to dashboard</Link>
                 </>
               ) : null}
             </p>

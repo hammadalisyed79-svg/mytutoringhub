@@ -113,7 +113,7 @@ export function NewAdForm({
         `request_${data.id}`,
       );
     }
-    router.push("/ads");
+    router.push("/ads?posted=1");
     router.refresh();
   }
 

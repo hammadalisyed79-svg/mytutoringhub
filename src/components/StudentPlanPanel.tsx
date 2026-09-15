@@ -64,7 +64,9 @@ export function StudentPlanPanel({
             </h2>
             <p className="tutor-plan-lead">
               {corePlan
-                ? "Your Student Pass benefits are active on this account"
+                ? corePlan.plan === "STUDENT_PRO"
+                  ? "Your Student Pro benefits are active on this account"
+                  : "Your Student Pass benefits are active on this account"
                 : `${STUDENT_FREE_CONTACTS_LINE} Upgrade for unlimited contacts and study tools.`}
             </p>
           </div>
