@@ -21,6 +21,7 @@ import {
   roleDashboardPath,
   isTutorDashboardProfileComplete,
   getDbUserRole,
+  tutorDashboardTabHref,
 } from "@/lib/dashboard-home";
 import { resolveTutorWizardResumeStep } from "@/lib/tutor-wizard";
 import { isValidActiveTeachingProfile } from "@/lib/teaching-profile-write";
@@ -29,6 +30,7 @@ import { TeachingProfileDuplicateNotice } from "@/components/TeachingProfileDupl
 import { TutorDashboardTabs } from "@/components/TutorDashboardTabs";
 import { PageConversion } from "@/components/PageConversion";
 import { TutorDashboardShortcuts } from "@/components/TutorDashboardShortcuts";
+import { TutorGrowthNextSteps } from "@/components/TutorGrowthNextSteps";
 import { TutorProfileStatusCard } from "@/components/TutorProfileStatusCard";
 import { PostVerifyTutorChecklist } from "@/components/PostVerifyChecklist";
 import { SwitchProfileButton } from "@/components/SwitchProfileButton";
@@ -173,17 +175,11 @@ export default async function TutorDashboardPage({
 
         {profileComplete && activeTab === "growth" ? (
           <>
-            <section className="panel tutor-student-requests-panel">
-              <h2>Students looking for tutors</h2>
-              <p className="muted">
-                Browse open requests that match subjects you teach.
-              </p>
-              <div className="panel-actions-row">
-                <Link className="btn btn-secondary" href="/ads">
-                  View student requests
-                </Link>
-              </div>
-            </section>
+            <TutorGrowthNextSteps
+              liveInSearch={statusView?.status === "LIVE"}
+              unread={inbox.unread}
+              sp={sp}
+            />
 
             <div className="tutor-dashboard-overview">
               <PointsWalletPanel summary={hubPoints} role="TUTOR" />
@@ -207,9 +203,26 @@ export default async function TutorDashboardPage({
             <details className="panel tutor-dashboard-more">
               <summary>
                 <strong>More tools</strong>
-                <span className="muted"> — badges, invite, boost, recommendations</span>
+                <span className="muted"> — plan, boost, badges, invite, settings</span>
               </summary>
               <div className="tutor-dashboard-stack" style={{ marginTop: "0.85rem" }}>
+                <div className="panel-actions-row" style={{ marginBottom: "0.75rem" }}>
+                  <Link className="btn btn-secondary btn-sm" href="/dashboard/tutor/plan">
+                    Your plan
+                  </Link>
+                  <Link className="btn btn-secondary btn-sm" href="/pricing?plan=AD_BOOST">
+                    Listing Boost
+                  </Link>
+                  <Link className="btn btn-secondary btn-sm" href="/settings">
+                    Settings
+                  </Link>
+                  <Link
+                    className="btn btn-secondary btn-sm"
+                    href={tutorDashboardTabHref(sp, "profile")}
+                  >
+                    Edit profile
+                  </Link>
+                </div>
                 {badgeProgress ? (
                   <div className="tutor-dashboard-timeline">
                     <TutorBadgeProgressPanel progress={badgeProgress} layout="horizontal" />

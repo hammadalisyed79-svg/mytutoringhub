@@ -185,7 +185,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
   const summary = [
     total.toLocaleString(),
-    total === 1 ? "Teaching Profile" : "Teaching Profiles",
+    total === 1 ? "tutor" : "tutors",
     resolved.subject ? `for ${resolved.subject}` : "",
     locationRelaxed
       ? keptCountry && resolved.country
@@ -302,8 +302,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             {tutorCapApplied && (
               <p className="search-note muted">
                 {maxPerTutor === 1
-                  ? "One Teaching Profile per tutor is shown for this subject. Other matching profiles appear under Also teaches or on the tutor’s listings."
-                  : "Up to 2 Teaching Profiles per tutor are shown on each page. Extra profiles appear on later pages or on the tutor’s own listings."}
+                  ? "One listing per tutor is shown for this subject. Other matching subjects appear under Also teaches or on the tutor’s profile."
+                  : "Up to 2 listings per tutor are shown on each page. Extra subjects appear on later pages or on the tutor’s profile."}
               </p>
             )}
             <RecentAndSavedTutors />

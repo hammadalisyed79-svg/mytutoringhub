@@ -233,7 +233,7 @@ export default async function PastPapersPage({
       <div className="container">
         <h1 className="page-title">Past papers</h1>
         <p className="section-lead">
-          Browse by country, board, qualification, subject, year and session.{" "}
+          Pick a country to browse, or search by board and subject.{" "}
           {feePkr === 0 ? (
             <>
               Downloads are <strong>free</strong> for signed-in users.
@@ -326,6 +326,40 @@ export default async function PastPapersPage({
           <PastPaperQuotaBanner used={0} limit={0} includedInPlan={false} />
         ) : null}
 
+        {!country && !subject && !searching ? (
+          <>
+            {(pinnedCountry === "PK" || pinnedCountry === "AE") && (
+              <section className="panel" style={{ marginTop: "1rem" }}>
+                <h2 style={{ marginTop: 0 }}>Popular in your region</h2>
+                <div className="hero-ctas">
+                  {pinnedCountry === "PK" ? (
+                    <>
+                      <Link href={hrefWith({ country: "Pakistan", board: "FBISE" })} className="btn btn-secondary">
+                        Pakistan · FBISE
+                      </Link>
+                      <Link href={hrefWith({ board: "Cambridge IGCSE" })} className="btn btn-secondary">
+                        Cambridge IGCSE
+                      </Link>
+                    </>
+                  ) : (
+                    <Link href={hrefWith({ country: "United Arab Emirates" })} className="btn btn-secondary">
+                      Browse UAE boards
+                    </Link>
+                  )}
+                </div>
+              </section>
+            )}
+            <h2 className="past-paper-browse-title">Pick a country</h2>
+            <div className="subject-directory" style={{ marginTop: "0.75rem" }}>
+              {countries.map((name) => (
+                <Link key={name} href={hrefWith({ country: name })} className="subject-tile">
+                  <span className="subject-tile-name">{name}</span>
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : null}
+
         <PastPaperSearchForm
           tree={filterTree}
           pinnedCountry={pinnedCountry}
@@ -409,43 +443,12 @@ export default async function PastPapersPage({
             />
           </section>
         ) : !country && !subject ? (
-          <>
-            {(pinnedCountry === "PK" || pinnedCountry === "AE") && (
-              <section className="panel" style={{ marginTop: "1rem" }}>
-                <h2 style={{ marginTop: 0 }}>Popular in your region</h2>
-                <div className="hero-ctas">
-                  {pinnedCountry === "PK" ? (
-                    <>
-                      <Link href={hrefWith({ country: "Pakistan", board: "FBISE" })} className="btn btn-secondary">
-                        Pakistan · FBISE
-                      </Link>
-                      <Link href={hrefWith({ board: "Cambridge IGCSE" })} className="btn btn-secondary">
-                        Cambridge IGCSE
-                      </Link>
-                    </>
-                  ) : (
-                    <Link href={hrefWith({ country: "United Arab Emirates" })} className="btn btn-secondary">
-                      Browse UAE boards
-                    </Link>
-                  )}
-                </div>
-              </section>
-            )}
-            <div className="subject-directory" style={{ marginTop: "1rem" }}>
-            {countries.map((name) => (
-              <Link key={name} href={hrefWith({ country: name })} className="subject-tile">
-                <span className="subject-tile-name">{name}</span>
-                <span className="subject-tile-rate">Country</span>
-              </Link>
-            ))}
-            </div>
-          </>
+          null
         ) : country && !board ? (
           <div className="subject-directory" style={{ marginTop: "1rem" }}>
             {boardsForCountry.map((name) => (
               <Link key={name} href={hrefWith({ country, board: name })} className="subject-tile">
                 <span className="subject-tile-name">{name}</span>
-                <span className="subject-tile-rate">Board</span>
               </Link>
             ))}
           </div>
@@ -454,7 +457,6 @@ export default async function PastPapersPage({
             {levels.map((name) => (
               <Link key={name} href={hrefWith({ country, board, level: name })} className="subject-tile">
                 <span className="subject-tile-name">{name}</span>
-                <span className="subject-tile-rate">Qualification</span>
               </Link>
             ))}
           </div>
@@ -468,7 +470,6 @@ export default async function PastPapersPage({
               >
                 <span className="subject-code">{row.code}</span>
                 <span className="subject-tile-name">{row.subject}</span>
-                <span className="subject-tile-rate">Subject</span>
               </Link>
             ))}
           </div>

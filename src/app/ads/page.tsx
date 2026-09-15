@@ -152,16 +152,27 @@ export default async function AdsPage({
             <p className="section-lead">
               {session?.user?.role === "TUTOR"
                 ? "Students looking for tutors — reply when you are a good fit."
-                : "Tell tutors what you need."}
+                : session?.user?.role === "STUDENT"
+                  ? "Tell tutors what you need — matching tutors can reply."
+                  : "Browse open requests. Join free to post what you need — matching tutors can reply."}
             </p>
           </div>
-          {session?.user?.role === "STUDENT" && (
-            <div className="page-hero-actions">
+          <div className="page-hero-actions">
+            {session?.user?.role === "STUDENT" ? (
               <Link href="/ads/new" className="btn btn-sm">
                 Post a request
               </Link>
-            </div>
-          )}
+            ) : !session?.user ? (
+              <>
+                <Link href="/register?role=student&next=/ads/new" className="btn btn-sm">
+                  Join free to post
+                </Link>
+                <Link href="/login?next=/ads/new" className="btn btn-secondary btn-sm">
+                  Log in
+                </Link>
+              </>
+            ) : null}
+          </div>
         </header>
 
         {sp.posted === "1" ? (
@@ -175,7 +186,7 @@ export default async function AdsPage({
 
         {tutorMatch && tutorMatch.subjects.length > 0 ? (
           <p className="muted ads-board-note">
-            Requests matching your Teaching Profiles appear first.
+            Requests matching your subjects appear first.
           </p>
         ) : null}
 

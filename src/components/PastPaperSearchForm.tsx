@@ -32,6 +32,17 @@ export type PastPaperSearchValues = {
   documentType?: string;
 };
 
+function hasAdvancedFilters(initial: PastPaperSearchValues) {
+  return Boolean(
+    initial.level ||
+      initial.code ||
+      initial.year ||
+      initial.paper ||
+      initial.session ||
+      initial.documentType,
+  );
+}
+
 export function PastPaperSearchForm({
   tree,
   initial,
@@ -92,17 +103,24 @@ export function PastPaperSearchForm({
     setSubject("");
   }
 
+  const advancedOpen = hasAdvancedFilters(initial);
+
   return (
     <form
-      className={`panel filters filters-wide${compact ? " is-compact home-pp-search" : ""}${className ? ` ${className}` : ""}`}
+      className={`panel filters filters-wide past-paper-search-form${compact ? " is-compact home-pp-search" : ""}${className ? ` ${className}` : ""}`}
       method="get"
       action={action || undefined}
     >
       {!compact && (
-      <label>
-        Search
-        <input name="q" defaultValue={initial.q || ""} placeholder="Chemistry, 0620, paper 42" />
-      </label>
+        <p className="muted past-paper-search-lead">
+          Start with country and board — add more filters only if you need them.
+        </p>
+      )}
+      {!compact && (
+        <label>
+          Search
+          <input name="q" defaultValue={initial.q || ""} placeholder="Chemistry, 0620, paper 42" />
+        </label>
       )}
       <label>
         Country
@@ -138,23 +156,6 @@ export function PastPaperSearchForm({
         </select>
       </label>
       <label>
-        Qualification
-        <select
-          name="level"
-          value={level}
-          onChange={(event) => onLevelChange(event.target.value)}
-          disabled={!country || !board}
-          aria-label="Qualification"
-        >
-          <option value="">{board ? "Any qualification" : "Choose board first"}</option>
-          {levelOptions.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
         Subject
         <select
           name="subject"
@@ -171,51 +172,120 @@ export function PastPaperSearchForm({
           ))}
         </select>
       </label>
-      {!compact && (
-      <label>
-        Code
-        <input name="code" defaultValue={initial.code || ""} placeholder="0620 (Cambridge syllabus code)" />
-      </label>
+
+      {compact ? (
+        <>
+          <label>
+            Year
+            <select name="year" defaultValue={initial.year || ""}>
+              <option value="">Any</option>
+              {PAST_PAPER_YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Session
+            <select name="session" defaultValue={initial.session || ""}>
+              <option value="">Any</option>
+              {SESSIONS.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Document type
+            <select name="documentType" defaultValue={initial.documentType || ""}>
+              <option value="">Any</option>
+              {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {/* Keep cascading fields available but secondary for home compact */}
+          <input type="hidden" name="level" value={level} />
+        </>
+      ) : (
+        <details className="past-paper-more-filters" open={advancedOpen || undefined}>
+          <summary>More filters</summary>
+          <div className="past-paper-more-filters-grid">
+            <label>
+              Qualification
+              <select
+                name="level"
+                value={level}
+                onChange={(event) => onLevelChange(event.target.value)}
+                disabled={!country || !board}
+                aria-label="Qualification"
+              >
+                <option value="">{board ? "Any qualification" : "Choose board first"}</option>
+                {levelOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Code
+              <input
+                name="code"
+                defaultValue={initial.code || ""}
+                placeholder="0620 (Cambridge syllabus code)"
+              />
+            </label>
+            <label>
+              Year
+              <select name="year" defaultValue={initial.year || ""}>
+                <option value="">Any</option>
+                {PAST_PAPER_YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Paper code
+              <input
+                name="paper"
+                defaultValue={initial.paper || ""}
+                placeholder="Paper number"
+                aria-label="Paper / component"
+              />
+            </label>
+            <label>
+              Session
+              <select name="session" defaultValue={initial.session || ""}>
+                <option value="">Any</option>
+                {SESSIONS.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Document type
+              <select name="documentType" defaultValue={initial.documentType || ""}>
+                <option value="">Any</option>
+                {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </details>
       )}
-      <label>
-        Year
-        <select name="year" defaultValue={initial.year || ""}>
-          <option value="">Any</option>
-          {PAST_PAPER_YEARS.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-      </label>
-      {!compact && (
-      <label>
-        Paper code
-        <input name="paper" defaultValue={initial.paper || ""} placeholder="Paper number" aria-label="Paper / component" />
-      </label>
-      )}
-      <label>
-        Session
-        <select name="session" defaultValue={initial.session || ""}>
-          <option value="">Any</option>
-          {SESSIONS.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Document type
-        <select name="documentType" defaultValue={initial.documentType || ""}>
-          <option value="">Any</option>
-          {Object.entries(DOCUMENT_TYPE_LABELS).map(([id, label]) => (
-            <option key={id} value={id}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+
       <button className="btn" type="submit">
         {compact ? "Show papers" : "Search"}
       </button>
