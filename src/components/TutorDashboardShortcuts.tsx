@@ -13,7 +13,22 @@ export function TutorDashboardShortcuts({
   sp: DashboardSearchParams;
   profileHref?: string | null;
 }) {
+  const teachingProfilesHref = tutorDashboardTabHref(sp, "profile", "teaching-listings");
+  const editProfileHref = tutorDashboardTabHref(sp, "profile");
+
   const items = [
+    {
+      href: teachingProfilesHref,
+      label: "Teaching Profiles",
+      description: "Listings, rates & Listing Boost",
+      icon: "▤",
+    },
+    {
+      href: editProfileHref,
+      label: "Edit profile",
+      description: "Photo, bio & subjects",
+      icon: "✎",
+    },
     {
       href: "/ads",
       label: "Student requests",
@@ -28,16 +43,28 @@ export function TutorDashboardShortcuts({
       badge: unread > 0 ? `${unread} unread` : undefined,
     },
     {
-      href: tutorDashboardTabHref(sp, "profile"),
-      label: "Profile & listings",
-      description: "Edit & Teaching Profiles",
-      icon: "✎",
+      href: "/dashboard/tutor/plan",
+      label: "Your plan",
+      description: "Tutor Pro, slips & add-ons",
+      icon: "◆",
+    },
+    {
+      href: "/pricing?plan=AD_BOOST",
+      label: "Plans & boosts",
+      description: "Tutor Pro & Listing Boost",
+      icon: "✦",
+    },
+    {
+      href: "/dashboard/tutor/analytics",
+      label: "Analytics",
+      description: "Views & enquiries",
+      icon: "▲",
     },
     ...(profileHref
       ? [
           {
             href: profileHref,
-            label: "Student view",
+            label: "Public profile",
             description: "See how students see you",
             icon: "◐",
             external: true as const,
@@ -45,17 +72,17 @@ export function TutorDashboardShortcuts({
         ]
       : []),
     {
-      href: "/dashboard/tutor/analytics",
-      label: "Analytics",
-      description: "Views & enquiries",
-      icon: "▲",
+      href: "/settings",
+      label: "Settings",
+      description: "Account & security",
+      icon: "⚙",
     },
   ];
 
   return (
     <DashboardShortcutCards
       title="Shortcuts"
-      lead="The essentials while you grow."
+      lead="Jump to Teaching Profiles, messages, plan, and boosts."
       items={items}
     />
   );
