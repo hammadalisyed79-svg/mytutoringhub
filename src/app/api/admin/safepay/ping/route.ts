@@ -56,7 +56,9 @@ export async function GET() {
       ...base,
       ok: true,
       message: isPaidCheckoutLive()
-        ? "Safepay production keys verified. Card checkout is live."
+        ? getSafepayEnv() === "production"
+          ? "Safepay production keys verified. Card checkout is live."
+          : "Safepay keys verified in sandbox. Pay with test cards on Pricing (no real money)."
         : "Safepay keys verified in sandbox. Set SAFEPAY_ENV=production for live checkout.",
     });
   } catch (err) {

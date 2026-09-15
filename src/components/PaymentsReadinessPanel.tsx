@@ -20,14 +20,22 @@ export function PaymentsReadinessPanel() {
           <p className="muted" style={{ marginBottom: 0 }}>
             {paymentsModeLabel(readiness.mode)}
             {readiness.checkoutLive
-              ? " — the Pricing page shows Pay with Safepay automatically."
-              : " — customers see manual activation until production keys are live."}
+              ? readiness.mode === "sandbox"
+                ? " — Pricing shows Pay with Safepay (test cards)."
+                : " — Pricing shows Pay with Safepay (live)."
+              : " — customers see manual activation until Safepay keys are set."}
           </p>
         </div>
         <span
           className={`payments-readiness-pill payments-readiness-pill--${readiness.mode}`}
         >
-          {readiness.checkoutLive ? "Live" : readiness.mode === "sandbox" ? "Sandbox" : "Manual"}
+          {readiness.checkoutLive
+            ? readiness.mode === "sandbox"
+              ? "Sandbox"
+              : "Live"
+            : readiness.mode === "sandbox"
+              ? "Sandbox"
+              : "Manual"}
         </span>
       </div>
 

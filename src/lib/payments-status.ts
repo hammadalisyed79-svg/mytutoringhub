@@ -11,8 +11,13 @@ export type PaymentsReadinessCheck = {
   hint?: string;
 };
 
-/** True when Safepay production keys are set and checkout can take real payments. */
+/** True when Safepay is configured so Pay / checkout CTAs work (sandbox trial or live). */
 export function isPaidCheckoutLive() {
+  return safepayConfigured();
+}
+
+/** True when talking to live Safepay (real money). False in sandbox trial. */
+export function isSafepayProduction() {
   return safepayConfigured() && getSafepayEnv() === "production";
 }
 
@@ -119,9 +124,12 @@ export function getPaymentsReadiness(): {
     },
     {
       id: "safepay_env",
-      label: "SAFEPAY_ENV=production for live card checkout",
+      label: "SAFEPAY_ENV=production for real (live) card payments",
       ok: getSafepayEnv() === "production",
-      hint: mode === "sandbox" ? "Sandbox works for testing only — Pricing stays in manual mode" : undefined,
+      hint:
+        mode === "sandbox"
+          ? "Sandbox trial is OK for test cards — switch to production keys when KYC is approved"
+          : undefined,
     },
     {
       id: "app_url",
@@ -196,9 +204,9 @@ export function getSafepayCredentialStatus() {
 export function paymentsModeLabel(mode: PaymentsMode) {
   switch (mode) {
     case "production":
-      return "Live — card checkout enabled";
+      return "Live — real card checkout enabled";
     case "sandbox":
-      return "Sandbox — test keys only";
+      return "Sandbox trial — test cards only (no real money)";
     default:
       return "Not configured — manual activation";
   }

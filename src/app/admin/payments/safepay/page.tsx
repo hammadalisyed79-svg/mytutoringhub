@@ -66,7 +66,7 @@ export default async function AdminSafepaySetupPage() {
             <tbody>
               {[
                 ["Mode", readiness.mode],
-                ["Card checkout live on Pricing", creds.checkoutLive ? "Yes" : "No"],
+                ["Card checkout on Pricing", creds.checkoutLive ? (creds.env === "sandbox" ? "Yes (sandbox trial)" : "Yes (live)") : "No"],
                 ["SAFEPAY_ENV", creds.env],
                 ["SAFEPAY_INTENT", creds.intent],
                 ["SAFEPAY_API_KEY", creds.apiKeyPresent ? creds.apiKeyHint : "(missing)"],
@@ -148,18 +148,43 @@ SAFEPAY_WEBHOOK_SECRET=…       # Safepay Endpoints → View shared secret (HMA
       </section>
 
       <section className="panel">
-        <h2 style={{ marginTop: 0, fontSize: "1.05rem" }}>Local sandbox (optional)</h2>
+        <h2 style={{ marginTop: 0, fontSize: "1.05rem" }}>Sandbox trial (Vercel Production)</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          For localhost only. Use sandbox keys from{" "}
+          Use this while live KYC is pending. Keys from{" "}
           <a
             href="https://sandbox.api.getsafepay.com/dashboard/developers/api"
             target="_blank"
             rel="noreferrer"
           >
-            Safepay sandbox developers
+            Safepay sandbox → Developers → API
           </a>
-          . Put them in <code>.env.local</code> (gitignored). Pricing stays manual until
-          production.
+          . Set these in Vercel Production, then redeploy:
+        </p>
+        <pre
+          style={{
+            margin: "0.65rem 0",
+            padding: "0.75rem 1rem",
+            background: "var(--surface, #f3f4f6)",
+            borderRadius: 8,
+            fontSize: 12,
+            overflowX: "auto",
+          }}
+        >{`SAFEPAY_ENV=sandbox
+SAFEPAY_API_KEY=sec_…          # sandbox API key
+SAFEPAY_SECRET_KEY=…           # sandbox Secret key (not sec_)
+SAFEPAY_INTENT=CYBERSOURCE
+NEXT_PUBLIC_APP_URL=https://www.mytutoringhub.com`}</pre>
+        <p style={{ marginBottom: 0 }}>
+          Then <strong>Test Safepay connection</strong> — expect “keys verified in sandbox”. Pay on
+          Pricing with Safepay test cards (no real money). Switch back to production keys when KYC is
+          approved.
+        </p>
+      </section>
+
+      <section className="panel">
+        <h2 style={{ marginTop: 0, fontSize: "1.05rem" }}>Local sandbox (optional)</h2>
+        <p className="muted" style={{ marginTop: 0 }}>
+          For localhost only. Same sandbox keys in <code>.env.local</code> (gitignored).
         </p>
         <pre
           style={{
