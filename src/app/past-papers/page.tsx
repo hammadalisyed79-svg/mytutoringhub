@@ -278,42 +278,56 @@ export default async function PastPapersPage({
                 payment_source: "safepay",
               }}
             />
-            <p className="success panel" role="status">
-              <strong>Payment confirmed.</strong> Save this page or your email for your records.
-              {sp.key ? (
-                <>
-                  {" "}
-                  Order ref: <code>{sp.key}</code>.{" "}
+            <section className="panel paper-purchase-confirm" role="status" aria-live="polite">
+              <div className="paper-purchase-confirm-copy">
+                <p className="paper-purchase-confirm-kicker">Payment successful</p>
+                <h2 className="paper-purchase-confirm-title">Your past paper is ready</h2>
+                <p className="muted paper-purchase-confirm-lead">
+                  {sp.key
+                    ? "Download now and keep this page or your email for your records."
+                    : "This paper is unlocked on your account. Keep your email receipt for your records."}
+                </p>
+                {sp.key ? (
+                  <p className="paper-purchase-confirm-ref">
+                    <span className="muted">Order reference</span>
+                    <code>{sp.key}</code>
+                  </p>
+                ) : null}
+              </div>
+              <div className="paper-purchase-confirm-actions">
+                {sp.key ? (
                   <a
-                    className="btn btn-sm"
+                    className="btn"
                     href={`/api/past-papers/download?key=${encodeURIComponent(sp.key)}${
                       sp.token ? `&token=${encodeURIComponent(sp.token)}` : ""
                     }`}
                   >
                     Download your paper
                   </a>
-                </>
-              ) : (
-                " Your paper is unlocked on this account."
-              )}
-              {sp.token && !session?.user ? (
-                <>
-                  {" "}
-                  <span className="muted">We also emailed your download link.</span>
-                </>
-              ) : null}
-              {session?.user ? (
-                <>
-                  {" "}
-                  <Link href="/dashboard/student">Back to dashboard</Link>
-                </>
-              ) : null}
-            </p>
+                ) : null}
+                {sp.token && !session?.user ? (
+                  <p className="muted paper-purchase-confirm-note">
+                    We also emailed your download link.
+                  </p>
+                ) : null}
+                {session?.user ? (
+                  <Link href="/dashboard/student" className="btn btn-secondary">
+                    Back to dashboard
+                  </Link>
+                ) : null}
+              </div>
+            </section>
           </>
         )}
-        {sp.checkout === "cancel" && <p className="panel">Checkout cancelled. No charge was made.</p>}
+        {sp.checkout === "cancel" && (
+          <p className="panel" role="status">
+            Checkout cancelled. No charge was made.
+          </p>
+        )}
         {sp.checkout === "error" && (
-          <p className="panel form-error">Payment could not be confirmed. Try again or contact support.</p>
+          <p className="panel form-error" role="alert">
+            Payment could not be confirmed. Try again or contact support.
+          </p>
         )}
 
         {paperQuota ? (
