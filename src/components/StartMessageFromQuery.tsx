@@ -34,8 +34,8 @@ export function StartMessageFromQuery({
   const isTutor = audience === "tutor";
   const defaultUpgrade = isTutor ? "/pricing?plan=TUTOR_BASIC" : "/pricing?plan=STUDENT_PASS";
   const upgradeLabel = isTutor ? "Activate Tutor Pro" : "Upgrade to Student Pass";
-  const limitNoun = isTutor ? "enquiry reveals" : "tutor contacts";
-  const limitNounSingular = isTutor ? "enquiry reveal" : "tutor contact";
+  const limitNoun = isTutor ? "student contacts" : "tutor contacts";
+  const limitNounSingular = isTutor ? "student contact" : "tutor contact";
 
   const blockedByQuota =
     !hasUnlimited &&
@@ -184,14 +184,14 @@ export function StartMessageFromQuery({
       {hasUnlimited ? (
         <p className="muted" style={{ marginTop: 0 }}>
           {isTutor
-            ? "Your plan includes unlimited enquiry reveals this month."
+            ? "Your plan includes unlimited student contacts this month."
             : "Your plan includes unlimited tutor contacts this month."}
         </p>
       ) : typeof contactsRemaining === "number" && typeof contactsLimit === "number" ? (
         <p className="muted" style={{ marginTop: 0 }}>
           {contactsRemaining} of {contactsLimit} free {limitNounSingular}
           {contactsRemaining === 1 ? "" : "s"} left this month. Replies in an existing chat do not
-          use a {isTutor ? "reveal" : "contact"}.
+          use a contact.
         </p>
       ) : null}
       <textarea

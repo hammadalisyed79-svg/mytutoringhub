@@ -62,7 +62,7 @@ export function LaunchOfferBlock({
         </p>
       ) : (
         <p className="launch-offer-lead">
-          Ranking, unlimited enquiry reveals, and up to {BUSINESS.tutorProActiveListings} live
+          Ranking, unlimited student contacts, and up to {BUSINESS.tutorProActiveListings} live
           profiles — free until {until}.
         </p>
       )}

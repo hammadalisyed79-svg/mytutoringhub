@@ -154,7 +154,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: "limit_exceeded",
-          message: `You've used all ${check.limit} enquiry reveals this month. Activate Tutor Pro on Pricing for unlimited student messages.`,
+          message: `You've used all ${check.limit} student contacts this month. Activate Tutor Pro on Pricing for unlimited student messages.`,
           upgradeUrl: "/pricing?plan=TUTOR_BASIC",
           used: check.used,
           limit: check.limit,

@@ -98,23 +98,6 @@ export default async function StudentDashboardPage({
         <StudentDashboardShortcuts unread={inbox.unread} />
 
         <div className="student-dashboard-stack">
-          <section className="panel student-dashboard-find">
-            <div className="student-dashboard-find-copy">
-              <h2>Find a tutor</h2>
-              <p className="muted section-lead-tight">
-                Search by subject, level, and location — then message tutors that fit.
-              </p>
-            </div>
-            <div className="student-dashboard-find-actions">
-              <Link href="/search" className="btn btn-sm">
-                Search tutors
-              </Link>
-              <Link href="/ads/new" className="btn btn-secondary btn-sm">
-                Post a request
-              </Link>
-            </div>
-          </section>
-
           <section className="panel">
             <h2>{user.tutorProfile ? "Your tutor profile" : "Want to teach?"}</h2>
             <p className="muted section-lead-tight">

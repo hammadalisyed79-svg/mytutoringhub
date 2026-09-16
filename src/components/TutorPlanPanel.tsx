@@ -146,7 +146,7 @@ export function TutorPlanPanel({
               <p>
                 Complete your profile to appear in search for free with{" "}
                 {BUSINESS.tutorFreeActiveListings} Teaching Profile. Tutor Pro unlocks
-                relevance-first ranking, unlimited enquiry reveals, and up to{" "}
+                relevance-first ranking, unlimited student contacts, and up to{" "}
                 {BUSINESS.tutorProActiveListings} Teaching Profiles.
               </p>
             )}

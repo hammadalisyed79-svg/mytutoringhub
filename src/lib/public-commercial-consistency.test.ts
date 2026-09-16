@@ -181,7 +181,7 @@ const overridden = applyPlanOverrides({
   TUTOR_BASIC: {
     name: "Tutor Basic",
     description:
-      "Relevance-first ranking, unlimited enquiry reveals, and up to 10 active Teaching Profiles. Free tutors keep up to 3 Teaching Profiles with organic search visibility.",
+      "Relevance-first ranking, unlimited student contacts, and up to 10 active Teaching Profiles. Free tutors keep up to 3 Teaching Profiles with organic search visibility.",
   },
   VERIFIED_TUTOR: { name: "Verified Tutor" },
   AD_BOOST: { name: "Profile Boost" },

@@ -9,7 +9,7 @@ import { ReportButton } from "@/components/ReportButton";
 
 export const metadata = pageMetadata({
   title: "Student Requests – Find Students Who Need a Tutor",
-  description: `${STUDENT_REQUESTS_LINE} Browse open requests by subject and city. Tutors can reply within their monthly enquiry limits; Tutor Pro unlocks unlimited reveals.`,
+  description: `${STUDENT_REQUESTS_LINE} Browse open requests by subject and city. Tutors can reply within their monthly contact limits; Tutor Pro unlocks unlimited student contacts.`,
   path: "/ads",
 });
 
@@ -196,8 +196,8 @@ export default async function AdsPage({
               <h2>No open requests right now</h2>
               <p className="muted">
                 Students with a Pass can post what they need. Tutors can message students from this
-                board (free accounts include a monthly enquiry allowance; Tutor Pro unlocks
-                unlimited reveals).
+                board (free accounts include a monthly contact allowance; Tutor Pro unlocks
+                unlimited student contacts).
               </p>
               {session?.user?.role === "STUDENT" ? (
                 <Link href="/ads/new" className="btn">

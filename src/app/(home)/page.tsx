@@ -1,10 +1,7 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { HeroSearch } from "@/components/HeroSearch";
-import { HomePastPapersFallback, HomePastPapersShowcase } from "@/components/HomePastPapersShowcase";
-import { HomeProofStrip } from "@/components/HomeProofStrip";
 import { PrestigePillars } from "@/components/PrestigePillars";
 import { LoggedInWelcome } from "@/components/LoggedInWelcome";
 import { LogoMark } from "@/components/Logo";
@@ -50,7 +47,6 @@ export default async function HomePage() {
         }}
       />
 
-      {/* 1. Hero + tutor search */}
       <section className="hero hero-findtutor hero-split hero-clean" aria-labelledby="home-hero-title">
         <div className="container hero-content hero-split-inner">
           <div className="hero-clean-top">
@@ -95,11 +91,6 @@ export default async function HomePage() {
         recentHeading="Continue where you left off"
       />
 
-      <Suspense fallback={null}>
-        <HomeProofStrip />
-      </Suspense>
-
-      {/* 2. Three main benefits */}
       <section className="section product-trio-section" aria-labelledby="product-trio-title">
         <div className="container">
           <h2 id="product-trio-title" className="product-trio-title">
@@ -132,32 +123,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 3. How MTH works */}
-      <section className="section section-alt" aria-labelledby="how-it-works-title">
-        <div className="container">
-          <h2 id="how-it-works-title">How it works</h2>
-          <p className="section-lead">Search → Contact → Learn</p>
-          <div className="steps home-steps-connected">
-            <div className="step">
-              <span>1</span>
-              <h3>Search</h3>
-              <p className="muted">Find tutors by subject, exam, and location.</p>
-            </div>
-            <div className="step">
-              <span>2</span>
-              <h3>Contact</h3>
-              <p className="muted">Message tutors when you are ready.</p>
-            </div>
-            <div className="step">
-              <span>3</span>
-              <h3>Learn</h3>
-              <p className="muted">Arrange lessons and pay your tutor directly.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Popular subjects */}
       <section className="section home-popular-subjects" aria-labelledby="popular-subjects-title">
         <div className="container">
           <div className="home-popular-subjects-head">
@@ -176,63 +141,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 5. Trust / Why MTH */}
       <PrestigePillars curriculaLine={region.curriculaLine} />
 
-      {/* 6. Past Papers — one strong section */}
-      <Suspense fallback={<HomePastPapersFallback />}>
-        <HomePastPapersShowcase pinnedCountry={pinnedCountry ?? undefined} />
-      </Suspense>
-
-      {/* 7. Simple plan teaser */}
-      <section className="section home-free-summary" aria-labelledby="free-summary-title">
-        <div className="container">
-          <h2 id="free-summary-title">Start free. Upgrade when you need more.</h2>
-          <div className="home-free-summary-grid">
-            <div>
-              <h3>Students</h3>
-              <p className="muted">
-                Start free · {BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month
-              </p>
-              <p className="section-actions" style={{ marginTop: "0.75rem" }}>
-                <Link href="/pricing?audience=student" className="btn btn-secondary btn-sm">
-                  View student plans
-                </Link>
-              </p>
-            </div>
-            <div>
-              <h3>Tutors</h3>
-              <p className="muted">
-                List free · {BUSINESS.tutorFreeActiveListings} active Teaching Profile
-              </p>
-              <p className="section-actions" style={{ marginTop: "0.75rem" }}>
-                <Link href="/pricing?audience=tutor" className="btn btn-secondary btn-sm">
-                  View tutor plans
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 8. Become a Tutor */}
-      <section className="section home-tutor-recruit" aria-labelledby="home-tutor-recruit-title">
-        <div className="container home-tutor-recruit-inner">
-          <div>
-            <h2 id="home-tutor-recruit-title">Teach students worldwide</h2>
-            <p className="section-lead">
-              Create your profile free. Keep 100% of lesson fees — no commission on lessons.
-            </p>
-          </div>
-          <div className="hero-ctas">
-            <Link href="/become-a-tutor" className="btn">
-              Start teaching
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. Markets — compact */}
       <section className="section section-alt home-markets" aria-labelledby="home-markets-title">
         <div className="container">
           <h2 id="home-markets-title">Tutoring markets</h2>
@@ -241,33 +151,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 10. Student Request — end of discovery journey */}
-      <section className="section home-student-request" aria-labelledby="student-request-title">
-        <div className="container home-student-request-inner">
-          <div>
-            <h2 id="student-request-title">Still can&apos;t find the right tutor?</h2>
-            <p className="section-lead">
-              Post what you need — matching tutors can reply.
-            </p>
-          </div>
-          <div className="hero-ctas">
-            <Link href="/ads/new" className="btn btn-secondary">
-              Post a request
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 11. Final CTA */}
       <section className="section cta-band">
         <div className="container cta-band-inner">
           <div>
             <h2>Ready to start?</h2>
-            <p>Find a tutor free, or create your profile and teach worldwide.</p>
+            <p>
+              Find a tutor free, post a request, or create your profile and teach worldwide — no
+              commission on lesson fees.
+            </p>
           </div>
           <div className="hero-ctas">
             <Link href="/search" className="btn">
               Find a tutor
+            </Link>
+            <Link href="/ads/new" className="btn btn-secondary">
+              Post a request
             </Link>
             <Link href="/become-a-tutor" className="btn btn-secondary">
               Become a tutor

@@ -422,7 +422,7 @@ export default async function TutorAnalyticsPage() {
               {listed
                 ? hasPaidPlan
                   ? "Listed with paid priority. Listing Boost strengthens one Teaching Profile among relevant matches for 30 days."
-                  : "Listed in search for free. Tutor Pro adds priority ranking and unlimited enquiry reveals."
+                  : "Listed in search for free. Tutor Pro adds priority ranking and unlimited student contacts."
                 : "Complete your profile (subjects + headline or photo) to appear in search."}
             </p>
             {listed && !hasPaidPlan ? (
@@ -499,7 +499,7 @@ export default async function TutorAnalyticsPage() {
             </h2>
             <p style={{ margin: "0 0 0.75rem", fontSize: "0.9rem" }}>
               Add subjects and a headline (or photo) on your dashboard. Tutor Pro is optional for
-              priority ranking and unlimited enquiry reveals — verification, highlight, and boost stay
+              priority ranking and unlimited student contacts — verification, highlight, and boost stay
               on Pricing (boost each subject profile from your dashboard).
             </p>
             <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>

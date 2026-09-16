@@ -478,7 +478,7 @@ export function PricingPlansClient({
             <p className="muted pricing-addons-lead">
               List free with {BUSINESS.tutorFreeActiveListings} active Teaching Profile. Tutor Pro
               unlocks up to {BUSINESS.tutorProActiveListings} active Teaching Profiles plus ranking
-              and unlimited enquiry reveals
+              and unlimited student contacts when you message first
               {tutorProOffer?.isComplimentary
                 ? " — complimentary under the Launch offer until the stated date"
                 : ""}
@@ -520,7 +520,10 @@ export function PricingPlansClient({
                   <li>Appear in search when your profile is complete</li>
                   <li>{BUSINESS.tutorFreeActiveListings} active Teaching Profile</li>
                   <li>Receive &amp; reply to student messages</li>
-                  <li>{BUSINESS.tutorFreeEnquiryRevealsPerMonth} enquiry reveals per month when you message first</li>
+                  <li>
+                    {BUSINESS.tutorFreeEnquiryRevealsPerMonth} student contacts per month when you
+                    message first
+                  </li>
                   <li>Keep 100% of lesson fees</li>
                 </ul>
               </div>
@@ -579,11 +582,25 @@ export function PricingPlansClient({
       <aside className="panel pricing-coming-soon">
         <h2 className="checkout-section-title">Good to know</h2>
         <ul className="pricing-notes-list">
-          <li>No shopping cart — pick a plan and checkout in one step{paidCheckoutLive ? " on Safepay" : ""}.</li>
           <li>
-            Listing Boost is bought per Teaching Profile from your{" "}
-            <Link href="/dashboard/tutor?tab=profile#teaching-listings">tutor dashboard</Link>.
+            No shopping cart — pick a plan and checkout in one step
+            {paidCheckoutLive ? " on Safepay" : ""}.
           </li>
+          {viewingStudent ? (
+            <>
+              <li>
+                Free includes {BUSINESS.studentFreeContactsPerMonth} new tutor contacts per month.
+                Student Pass unlocks unlimited messaging; Student Pro adds study tools and papers.
+              </li>
+              <li>Lesson fees stay between you and your tutor — never charged through My Tutoring Hub.</li>
+            </>
+          ) : null}
+          {viewingTutor ? (
+            <li>
+              Listing Boost is bought per Teaching Profile from your{" "}
+              <Link href="/dashboard/tutor?tab=profile#teaching-listings">tutor dashboard</Link>.
+            </li>
+          ) : null}
           <li>
             Still comparing?{" "}
             <Link href="/free-vs-paid">Free vs paid guide</Link> ·{" "}

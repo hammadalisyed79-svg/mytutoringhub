@@ -86,7 +86,7 @@ export default async function BecomeATutorPage({
           <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Free vs Tutor Pro</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
             Free: {BUSINESS.tutorFreeActiveListings} active Teaching Profile. Tutor Pro: up to{" "}
-            {BUSINESS.tutorProActiveListings}, plus ranking and unlimited enquiry reveals
+            {BUSINESS.tutorProActiveListings}, plus ranking and unlimited student contacts
             {TUTOR_PRO_LAUNCH_OFFER_UNTIL
               ? ` (complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL})`
               : ""}

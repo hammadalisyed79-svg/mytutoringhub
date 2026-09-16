@@ -79,7 +79,7 @@ Your job: answer questions about how the website works — accounts, plans, mess
 
 ### Tutors
 - ${TUTOR_FREE_LISTING_LINE}
-- Free tutors: ${BUSINESS.tutorFreeActiveListings} active Teaching Profile; ${BUSINESS.tutorFreeEnquiryRevealsPerMonth} enquiry reveals/month when messaging students first; can receive & reply to inbound student messages; keep 100% of lesson fees.
+- Free tutors: ${BUSINESS.tutorFreeActiveListings} active Teaching Profile; ${BUSINESS.tutorFreeEnquiryRevealsPerMonth} student contacts/month when messaging students first; can receive & reply to inbound student messages; keep 100% of lesson fees.
 - ${TUTOR_PRO_LISTING_LINE}
 - Tutor Pro list price ${tutorProPrice} (annual ~20% off). Internal plan id may be TUTOR_BASIC — always call it “Tutor Pro” to users.
 - ${TUTOR_PRO_LAUNCH_OFFER_LINE}

@@ -29,7 +29,7 @@ export const TUTOR_FREE_LISTING_LINE =
   `Complete your profile to appear in search for free. Free tutors get ${BUSINESS.tutorFreeActiveListings} active Teaching Profile, enquiries, and 100% of lesson fees. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles plus growth tools.`;
 
 export const TUTOR_PRO_LISTING_LINE =
-  `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking among matching students, and unlimited enquiry reveals when you message first.`;
+  `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking among matching students, and unlimited student contacts when you message first.`;
 
 /** Public label for the Tutor Pro complimentary window (gated by plans.promoUntil). */
 export const TUTOR_PRO_LAUNCH_OFFER_LABEL = "Launch offer";
@@ -41,12 +41,12 @@ export const TUTOR_PRO_LAUNCH_OFFER_UNTIL = "30 September 2026";
 export const TUTOR_PRO_LAUNCH_BENEFITS = [
   `Up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles`,
   "Relevance-first ranking among matching students",
-  "Unlimited enquiry reveals when you message students first",
+  "Unlimited student contacts when you message students first",
 ] as const;
 
 /** One-line summary for FAQs, help, and AI support. */
 export const TUTOR_PRO_LAUNCH_OFFER_LINE =
-  `Launch offer: Tutor Pro is complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited reveals). After that date, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons — not part of this offer.`;
+  `Launch offer: Tutor Pro is complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited student contacts). After that date, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons — not part of this offer.`;
 
 export const IDENTITY_VERIFIED_LINE =
   "Identity Verified means a successful identity review — not a qualification, degree, quality, or background check. The badge is earned, not purchased; Priority Verification Review only jumps the queue.";

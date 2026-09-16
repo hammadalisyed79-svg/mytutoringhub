@@ -8,7 +8,7 @@ const ACTIVE = new Set(["ACTIVE", "TRIALING"]);
 
 const STUDENT_MESSAGING_PLANS: SubscriptionPlan[] = ["STUDENT_PASS", "STUDENT_PRO"];
 
-/** Plans that unlock unlimited enquiry reveals (when tutor messages students first). */
+/** Plans that unlock unlimited student contacts (when tutor messages students first). */
 const TUTOR_UNLIMITED_REVEAL_PLANS: SubscriptionPlan[] = [
   "TUTOR_BASIC",
   "EXTRA_PROFILE_ADS",
@@ -113,7 +113,7 @@ export async function hasStudentMessagingPass(userId: string) {
   return hasAnyActivePlan(userId, STUDENT_MESSAGING_PLANS);
 }
 
-/** Unlimited enquiry reveals — Tutor Pro or profile-pack plans only (not Boost/Highlight). */
+/** Unlimited student contacts — Tutor Pro or profile-pack plans only (not Boost/Highlight). */
 export async function hasPaidTutorPlan(userId: string) {
   return hasAnyActivePlan(userId, TUTOR_UNLIMITED_REVEAL_PLANS);
 }
