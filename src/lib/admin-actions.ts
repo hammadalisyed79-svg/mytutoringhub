@@ -40,7 +40,9 @@ const payloadSchema = z.object({
   confirmAdmin: z.boolean().optional(),
   confirmBypass: z.boolean().optional(),
   confirmEmail: z.string().email().optional(),
+  confirmPhrase: z.string().max(80).optional(),
   confirmSend: z.boolean().optional(),
+  ids: z.array(z.string().min(1)).max(50).optional(),
   plan: z.string().optional(),
   days: z.coerce.number().int().min(1).max(730).optional(),
   until: z.string().optional().nullable(),
@@ -569,6 +571,55 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       }
       break;
     }
+    case "bulk_suspend_users":
+    case "bulk_unsuspend_users": {
+      const ids = [...new Set(payload.ids || [])];
+      if (ids.length === 0) throw new AdminActionError("Select at least one user");
+      targetType = "User";
+      targetId = ids[0];
+      const suspend = action === "bulk_suspend_users";
+      const users = await prisma.user.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, email: true, role: true },
+      });
+      const skipped: string[] = [];
+      const applied: string[] = [];
+      for (const user of users) {
+        if (suspend && isCompanyAdminEmail(user.email)) {
+          skipped.push(user.email);
+          continue;
+        }
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { suspended: suspend },
+        });
+        if (suspend) {
+          await prisma.tutorProfile.updateMany({
+            where: { userId: user.id },
+            data: { active: false, forceActive: false },
+          });
+        } else if (user.role === "TUTOR") {
+          await syncTutorBadges(user.id).catch(() => undefined);
+        }
+        applied.push(user.id);
+      }
+      extra = { count: applied.length, skipped, ids: applied };
+      break;
+    }
+    case "bulk_resolve_reports":
+    case "bulk_dismiss_reports": {
+      const ids = [...new Set(payload.ids || [])];
+      if (ids.length === 0) throw new AdminActionError("Select at least one report");
+      targetType = "Report";
+      targetId = ids[0];
+      const nextStatus = action === "bulk_resolve_reports" ? "RESOLVED" : "DISMISSED";
+      const result = await prisma.report.updateMany({
+        where: { id: { in: ids }, status: "OPEN" },
+        data: { status: nextStatus },
+      });
+      extra = { count: result.count, ids, status: nextStatus };
+      break;
+    }
     case "set_email_verified": {
       const id = needId(payload.id);
       targetType = "User";
@@ -598,8 +649,14 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       if (isCompanyAdminEmail(user.email) && role !== "ADMIN") {
         throw new AdminActionError("Cannot change the company admin role");
       }
-      if (role === "ADMIN" && !payload.confirmAdmin) {
-        throw new AdminActionError("Confirm promoting this user to ADMIN");
+      if (role === "ADMIN" && user.role !== "ADMIN") {
+        if (!payload.confirmAdmin) {
+          throw new AdminActionError("Confirm promoting this user to ADMIN");
+        }
+        const phrase = (payload.confirmPhrase || "").trim().toUpperCase();
+        if (phrase !== "PROMOTE TO ADMIN") {
+          throw new AdminActionError('Type "PROMOTE TO ADMIN" to confirm promotion');
+        }
       }
       if (user.role === "ADMIN" && role !== "ADMIN") {
         const otherAdmins = await prisma.user.count({

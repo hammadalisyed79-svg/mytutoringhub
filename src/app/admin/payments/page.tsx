@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AdminActionButton, AdminGrantPlanForm } from "@/components/AdminActions";
 import { AdminNoteModalButton } from "@/components/AdminNoteModal";
 import { PaymentsReadinessPanel } from "@/components/PaymentsReadinessPanel";
-import { ADMIN_PAGE_SIZE, adminListQuery } from "@/lib/admin-list";
+import { ADMIN_PAGE_SIZE, adminExportQuery, adminListQuery } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +52,11 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
           <Link href="/admin/plans">Plans & prices</Link>. Live keys:{" "}
           <Link href="/admin/payments/safepay">Safepay setup</Link> (Vercel env — never paste secrets
           here).
+        </p>
+        <p style={{ marginTop: "0.75rem" }}>
+          <a className="btn btn-secondary btn-sm" href={`/api/admin/export?${adminExportQuery(sp, "payments")}`}>
+            Export CSV
+          </a>
         </p>
       </div>
 

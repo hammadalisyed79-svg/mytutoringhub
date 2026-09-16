@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { AdminActionButton } from "@/components/AdminActions";
 import { AdminVerificationQueueItem } from "@/components/AdminVerificationQueueItem";
+import { AdminReportsBulkList } from "@/components/AdminBulk";
+import { adminExportQuery } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +25,32 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
     }),
   ]);
 
+  const reportRows = reports.map((r) => ({
+    id: r.id,
+    status: r.status,
+    category: r.category,
+    targetType: r.targetType,
+    targetId: r.targetId,
+    reason: r.reason,
+    createdAt: r.createdAt.toISOString(),
+    reporter: r.reporter,
+  }));
+
   return (
     <>
-      <div>
-        <h1 className="page-title">Reports & safety</h1>
-        <p className="muted">Resolve reports, suspend offenders, and review tutor verification documents.</p>
+      <div className="page-hero panel" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="page-title">Reports & safety</h1>
+          <p className="muted">
+            Resolve reports, suspend offenders, and review tutor verification documents.
+          </p>
+        </div>
+        <a
+          className="btn btn-secondary btn-sm"
+          href={`/api/admin/export?${adminExportQuery({ status }, "reports")}`}
+        >
+          Export CSV
+        </a>
       </div>
 
       <section className="panel">
@@ -69,36 +90,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
       <section className="panel">
         <h2>Reports</h2>
         {reports.length === 0 && <p className="muted">No reports in this view.</p>}
-        <div className="results">
-          {reports.map((r) => (
-            <article key={r.id} className="ad-row">
-              <strong>
-                {r.status} · {r.category || "OTHER"} · {r.targetType} · {r.targetId}
-              </strong>
-              <p>
-                From{" "}
-                <Link href={`/admin/users/${r.reporter.id}`}>
-                  {r.reporter.name} ({r.reporter.email})
-                </Link>
-                : {r.reason}
-              </p>
-              <span className="muted">{r.createdAt.toLocaleString()}</span>
-              {r.status === "OPEN" && (
-                <div className="admin-actions">
-                  <AdminActionButton action="report_resolve" id={r.id} label="Resolve" />
-                  <AdminActionButton action="report_dismiss" id={r.id} label="Dismiss" />
-                  <AdminActionButton
-                    action="report_suspend"
-                    id={r.id}
-                    label="Suspend reported user"
-                    confirm="Suspend the reported user and resolve this report?"
-                    danger
-                  />
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+        {reports.length > 0 ? <AdminReportsBulkList reports={reportRows} /> : null}
       </section>
     </>
   );

@@ -150,18 +150,14 @@ export function AdminGrantPlanForm({ userId }: { userId?: string }) {
   );
 }
 
-export function AdminRoleForm({ userId, role }: { userId: string; role: string }) {
+export function AdminRoleForm({ userId, role, email }: { userId: string; role: string; email: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [nextRole, setNextRole] = useState(role);
+  const [open, setOpen] = useState(false);
+  const [phrase, setPhrase] = useState("");
 
-  async function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const nextRole = String(fd.get("role"));
-    if (nextRole === "ADMIN" && !window.confirm("Promote this user to ADMIN? They will have full site control.")) {
-      return;
-    }
-    if (nextRole !== role && !window.confirm(`Change role from ${role} to ${nextRole}?`)) return;
+  async function applyRole(confirmAdmin = false, confirmPhrase?: string) {
     setBusy(true);
     setError("");
     try {
@@ -169,7 +165,8 @@ export function AdminRoleForm({ userId, role }: { userId: string; role: string }
         action: "set_role",
         id: userId,
         role: nextRole,
-        confirmAdmin: nextRole === "ADMIN",
+        confirmAdmin,
+        confirmPhrase,
       });
       window.location.reload();
     } catch (err) {
@@ -178,33 +175,102 @@ export function AdminRoleForm({ userId, role }: { userId: string; role: string }
     }
   }
 
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (nextRole === role) return;
+    if (nextRole === "ADMIN" && role !== "ADMIN") {
+      setPhrase("");
+      setOpen(true);
+      return;
+    }
+    if (!window.confirm(`Change role from ${role} to ${nextRole}?`)) return;
+    await applyRole();
+  }
+
+  async function confirmPromote(e: FormEvent) {
+    e.preventDefault();
+    if (phrase.trim().toUpperCase() !== "PROMOTE TO ADMIN") {
+      setError('Type "PROMOTE TO ADMIN" exactly to continue.');
+      return;
+    }
+    await applyRole(true, phrase.trim());
+  }
+
   return (
-    <form className="admin-inline-form" onSubmit={submit}>
-      <select name="role" defaultValue={role}>
-        <option value="STUDENT">STUDENT</option>
-        <option value="TUTOR">TUTOR</option>
-        <option value="ADMIN">ADMIN</option>
-      </select>
-      <button className="btn btn-sm" type="submit" disabled={busy}>
-        {busy ? "Saving…" : "Change role"}
-      </button>
-      {error && <p className="form-error">{error}</p>}
-    </form>
+    <>
+      <form className="admin-inline-form" onSubmit={submit}>
+        <select name="role" value={nextRole} onChange={(e) => setNextRole(e.target.value)}>
+          <option value="STUDENT">STUDENT</option>
+          <option value="TUTOR">TUTOR</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+        <button className="btn btn-sm" type="submit" disabled={busy || nextRole === role}>
+          {busy ? "Saving…" : "Change role"}
+        </button>
+        {error && !open ? <p className="form-error">{error}</p> : null}
+      </form>
+
+      {open ? (
+        <div
+          className="admin-modal-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !busy) setOpen(false);
+          }}
+        >
+          <div className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="promote-admin-title">
+            <h2 id="promote-admin-title" className="admin-modal-title">
+              Promote to ADMIN
+            </h2>
+            <p className="muted admin-modal-lead">
+              {email} will have full site control. This cannot be casually undone.
+            </p>
+            <form onSubmit={confirmPromote} className="admin-modal-form">
+              <label className="admin-modal-label">
+                <span>Type PROMOTE TO ADMIN</span>
+                <input
+                  value={phrase}
+                  onChange={(e) => setPhrase(e.target.value)}
+                  autoFocus
+                  autoComplete="off"
+                  disabled={busy}
+                  placeholder="PROMOTE TO ADMIN"
+                />
+              </label>
+              {error ? <p className="form-error">{error}</p> : null}
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={busy}
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-sm admin-modal-danger" disabled={busy}>
+                  {busy ? "Promoting…" : "Confirm promotion"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
 export function AdminDeleteUserForm({ userId, email }: { userId: string; email: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
 
-  async function submit(e: FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    const typed = String(new FormData(e.currentTarget).get("confirmEmail") || "");
     if (typed.toLowerCase() !== email.toLowerCase()) {
       setError("Email did not match.");
       return;
     }
-    if (!window.confirm(`Permanently delete ${email}? This cannot be undone.`)) return;
     setBusy(true);
     setError("");
     try {
@@ -217,19 +283,68 @@ export function AdminDeleteUserForm({ userId, email }: { userId: string; email: 
   }
 
   return (
-    <form className="stack-form" onSubmit={submit}>
+    <>
       <p className="muted">
         Hard delete removes the account and cascaded data. Prefer suspend unless you are sure.
       </p>
-      <label>
-        Type {email} to delete
-        <input name="confirmEmail" required autoComplete="off" />
-      </label>
-      {error && <p className="form-error">{error}</p>}
-      <button className="btn btn-sm admin-danger-btn" type="submit" disabled={busy}>
-        {busy ? "Deleting…" : "Permanently delete user"}
+      <button
+        type="button"
+        className="btn btn-sm admin-danger-btn"
+        onClick={() => {
+          setTyped("");
+          setError("");
+          setOpen(true);
+        }}
+      >
+        Permanently delete user
       </button>
-    </form>
+
+      {open ? (
+        <div
+          className="admin-modal-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !busy) setOpen(false);
+          }}
+        >
+          <div className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
+            <h2 id="delete-user-title" className="admin-modal-title">
+              Delete user permanently
+            </h2>
+            <p className="muted admin-modal-lead">
+              This cannot be undone. Type the account email to confirm.
+            </p>
+            <form onSubmit={submit} className="admin-modal-form">
+              <label className="admin-modal-label">
+                <span>Type {email}</span>
+                <input
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  required
+                  autoComplete="off"
+                  autoFocus
+                  disabled={busy}
+                />
+              </label>
+              {error ? <p className="form-error">{error}</p> : null}
+              <div className="admin-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={busy}
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-sm admin-modal-danger" disabled={busy}>
+                  {busy ? "Deleting…" : "Delete forever"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

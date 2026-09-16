@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { AdminActionButton } from "@/components/AdminActions";
+import { AdminUsersBulkTable } from "@/components/AdminBulk";
+import { ADMIN_PAGE_SIZE, adminExportQuery, adminListQuery } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -13,17 +14,6 @@ type SearchParams = Promise<{
   sub?: string;
   page?: string;
 }>;
-
-const PAGE_SIZE = 40;
-
-function usersQuery(sp: Record<string, string | undefined>, page: number) {
-  const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(sp)) {
-    if (v) params.set(k, v);
-  }
-  params.set("page", String(page));
-  return params.toString();
-}
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -56,8 +46,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * ADMIN_PAGE_SIZE,
+      take: ADMIN_PAGE_SIZE,
       include: {
         subscriptions: {
           where: { status: { in: ["ACTIVE", "TRIALING"] } },
@@ -67,13 +57,33 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
       },
     }),
   ]);
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
+
+  const rows = users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    suspended: u.suspended,
+    emailVerified: Boolean(u.emailVerified),
+    plans: u.subscriptions.map((s) => s.plan).join(", "),
+    listing: u.tutorProfile
+      ? u.tutorProfile.active
+        ? " · Listing on"
+        : " · Listing off"
+      : "",
+  }));
 
   return (
     <>
-      <div>
-        <h1 className="page-title">Users</h1>
-        <p className="muted">Search, suspend, verify email, change roles, and grant plans.</p>
+      <div className="page-hero panel" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="page-title">Users</h1>
+          <p className="muted">Search, suspend, verify email, change roles, and grant plans.</p>
+        </div>
+        <a className="btn btn-secondary btn-sm" href={`/api/admin/export?${adminExportQuery(sp, "users")}`}>
+          Export CSV
+        </a>
       </div>
 
       <form className="filters filters-wide" method="get">
@@ -119,85 +129,28 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: S
         </button>
       </form>
 
-      <p className="muted">{total} user{total === 1 ? "" : "s"}</p>
+      <p className="muted">
+        {total} user{total === 1 ? "" : "s"}
+        {pages > 1 ? ` · page ${page} of ${pages}` : ""}
+      </p>
 
       {users.length === 0 && <p className="muted">No users match these filters.</p>}
 
-      <div className="table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Plan</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td>
-                  <Link href={`/admin/users/${u.id}`}>
-                    <strong>{u.name}</strong>
-                  </Link>
-                  <div className="muted">{u.email}</div>
-                </td>
-                <td>{u.role}</td>
-                <td>
-                  {u.suspended ? "Suspended" : "OK"}
-                  {u.emailVerified ? " · Email OK" : " · Unverified"}
-                  {u.tutorProfile
-                    ? u.tutorProfile.active
-                      ? " · Listing on"
-                      : " · Listing off"
-                    : ""}
-                </td>
-                <td>
-                  {u.subscriptions.length
-                    ? u.subscriptions.map((s) => s.plan).join(", ")
-                    : "—"}
-                </td>
-                <td>
-                  <div className="admin-actions">
-                    <Link href={`/admin/users/${u.id}`}>Open</Link>
-                    <AdminActionButton
-                      action={u.suspended ? "unsuspend_user" : "suspend_user"}
-                      id={u.id}
-                      label={u.suspended ? "Unsuspend" : "Suspend"}
-                      confirm={u.suspended ? "Unsuspend this user?" : "Suspend this user?"}
-                    />
-                    <AdminActionButton
-                      action="set_email_verified"
-                      id={u.id}
-                      label={u.emailVerified ? "Unverify email" : "Verify email"}
-                      extra={{ emailVerified: !u.emailVerified }}
-                    />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {users.length > 0 ? <AdminUsersBulkTable users={rows} /> : null}
 
       {pages > 1 && (
-        <p className="muted">
+        <p className="muted admin-pager">
           Page {page} of {pages}
           {page > 1 && (
             <>
               {" "}
-              <Link href={`/admin/users?${usersQuery(sp, page - 1)}`}>
-                Previous
-              </Link>
+              <Link href={`/admin/users?${adminListQuery(sp, page - 1)}`}>Previous</Link>
             </>
           )}
           {page < pages && (
             <>
               {" "}
-              <Link href={`/admin/users?${usersQuery(sp, page + 1)}`}>
-                Next
-              </Link>
+              <Link href={`/admin/users?${adminListQuery(sp, page + 1)}`}>Next</Link>
             </>
           )}
         </p>

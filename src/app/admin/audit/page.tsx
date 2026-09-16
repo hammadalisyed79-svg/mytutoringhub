@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ADMIN_PAGE_SIZE, adminListQuery } from "@/lib/admin-list";
+import { ADMIN_PAGE_SIZE, adminExportQuery, adminListQuery } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +51,11 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: S
       <div>
         <h1 className="page-title">Audit log</h1>
         <p className="muted">Every admin mutation is recorded here.</p>
+        <p style={{ marginTop: "0.75rem" }}>
+          <a className="btn btn-secondary btn-sm" href={`/api/admin/export?${adminExportQuery(sp, "audit")}`}>
+            Export CSV
+          </a>
+        </p>
       </div>
 
       <form className="filters filters-wide" method="get">

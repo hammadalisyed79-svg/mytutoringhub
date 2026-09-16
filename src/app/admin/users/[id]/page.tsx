@@ -90,7 +90,7 @@ export default async function AdminUserDetailPage({ params }: Params) {
           />
         </div>
         <h3>Role</h3>
-        <AdminRoleForm userId={user.id} role={user.role} />
+        <AdminRoleForm userId={user.id} role={user.role} email={user.email} />
       </section>
 
       <section className="panel">
