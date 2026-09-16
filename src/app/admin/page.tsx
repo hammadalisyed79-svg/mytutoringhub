@@ -1,11 +1,32 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import {
+  conversationModerationSummary,
+  scanMessages,
+} from "@/lib/message-moderation";
 
 export const dynamic = "force-dynamic";
 
 function Stat({ href, label, value }: { href: string; label: string; value: number }) {
   return (
     <Link href={href} className="admin-stat">
+      <strong>{value.toLocaleString()}</strong>
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function AttentionCard({
+  href,
+  label,
+  value,
+}: {
+  href: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <Link href={href} className={`admin-attention-card${value > 0 ? " is-alert" : ""}`}>
       <strong>{value.toLocaleString()}</strong>
       <span>{label}</span>
     </Link>
@@ -31,6 +52,7 @@ export default async function AdminOverviewPage() {
     recentUsers,
     recentPayments,
     recentReports,
+    recentConversations,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.tutorProfile.count(),
@@ -61,7 +83,19 @@ export default async function AdminOverviewPage() {
       take: 8,
       include: { reporter: { select: { name: true } } },
     }),
+    prisma.conversation.findMany({
+      orderBy: { lastMessageAt: "desc" },
+      take: 80,
+      include: {
+        messages: { orderBy: { createdAt: "desc" }, take: 30, select: { id: true, body: true } },
+      },
+    }),
   ]);
+
+  const flaggedMessages = recentConversations.filter((c) => {
+    const scans = scanMessages(c.messages);
+    return conversationModerationSummary(scans.values()).flagged;
+  }).length;
 
   return (
     <>
@@ -69,6 +103,30 @@ export default async function AdminOverviewPage() {
         <h1 className="page-title">Command center</h1>
         <p className="muted">Full control over users, listings, payments, safety, and site settings.</p>
       </div>
+
+      <section className="panel" aria-labelledby="admin-attention-title">
+        <h2 id="admin-attention-title" style={{ marginTop: 0 }}>
+          Needs attention
+        </h2>
+        <div className="admin-attention">
+          <AttentionCard
+            href="/admin/payments?status=INCOMPLETE"
+            label="Incomplete payments"
+            value={incompletePayments}
+          />
+          <AttentionCard
+            href="/admin/verifications?status=PENDING"
+            label="Pending verifications"
+            value={pendingVerification}
+          />
+          <AttentionCard href="/admin/reports" label="Open reports" value={openReports} />
+          <AttentionCard
+            href="/admin/messages?flagged=1"
+            label="Flagged chats (recent)"
+            value={flaggedMessages}
+          />
+        </div>
+      </section>
 
       <div className="admin-stat-grid">
         <Stat href="/admin/users" label="Users" value={users} />

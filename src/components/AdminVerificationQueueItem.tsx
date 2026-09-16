@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminActionButton } from "@/components/AdminActions";
+import { AdminNoteModalButton } from "@/components/AdminNoteModal";
 import { AdminVerificationDocs } from "@/components/AdminVerificationDocs";
 
 export function AdminVerificationQueueItem({
@@ -70,12 +71,16 @@ export function AdminVerificationQueueItem({
             label="Approve"
             confirm="Approve and set the verified tutor badge?"
           />
-          <AdminActionButton
+          <AdminNoteModalButton
             action="verify_reject"
             id={id}
             label="Reject"
-            promptKey="adminNote"
-            promptLabel="Optional rejection note"
+            title="Reject verification"
+            description="The tutor keeps their listing; Identity Verified is not granted."
+            noteLabel="Rejection note"
+            noteRequired={false}
+            noteMinLength={0}
+            notePlaceholder="Optional note shown to ops in the queue"
             danger
           />
         </div>

@@ -1,14 +1,50 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { ADMIN_PAGE_SIZE, adminListQuery } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminAuditPage() {
-  const logs = await prisma.adminAuditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 120,
-    include: { admin: { select: { name: true, email: true } } },
-  });
+type SearchParams = Promise<{ q?: string; action?: string; page?: string }>;
+
+export default async function AdminAuditPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const q = (sp.q || "").trim();
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  const where = {
+    ...(sp.action ? { action: sp.action } : {}),
+    ...(q
+      ? {
+          OR: [
+            { action: { contains: q, mode: "insensitive" as const } },
+            { targetType: { contains: q, mode: "insensitive" as const } },
+            { targetId: { contains: q, mode: "insensitive" as const } },
+            { detail: { contains: q, mode: "insensitive" as const } },
+            { admin: { email: { contains: q, mode: "insensitive" as const } } },
+            { admin: { name: { contains: q, mode: "insensitive" as const } } },
+          ],
+        }
+      : {}),
+  };
+
+  const [total, logs, actionRows] = await Promise.all([
+    prisma.adminAuditLog.count({ where }),
+    prisma.adminAuditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * ADMIN_PAGE_SIZE,
+      take: ADMIN_PAGE_SIZE,
+      include: { admin: { select: { name: true, email: true } } },
+    }),
+    prisma.adminAuditLog.findMany({
+      distinct: ["action"],
+      select: { action: true },
+      orderBy: { action: "asc" },
+      take: 80,
+    }),
+  ]);
+  const pages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
+  const actions = actionRows.map((r) => r.action).filter(Boolean);
 
   return (
     <>
@@ -17,7 +53,33 @@ export default async function AdminAuditPage() {
         <p className="muted">Every admin mutation is recorded here.</p>
       </div>
 
-      {logs.length === 0 && <p className="muted">No admin actions yet.</p>}
+      <form className="filters filters-wide" method="get">
+        <label>
+          Search
+          <input name="q" defaultValue={sp.q || ""} placeholder="Action, admin, target, detail" />
+        </label>
+        <label>
+          Action
+          <select name="action" defaultValue={sp.action || ""}>
+            <option value="">Any</option>
+            {actions.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="btn" type="submit">
+          Filter
+        </button>
+      </form>
+
+      <p className="muted">
+        {total} entr{total === 1 ? "y" : "ies"}
+        {pages > 1 ? ` · page ${page} of ${pages}` : ""}
+      </p>
+
+      {logs.length === 0 && <p className="muted">No admin actions match.</p>}
 
       <div className="table-wrap">
         <table className="table">
@@ -61,6 +123,24 @@ export default async function AdminAuditPage() {
           </tbody>
         </table>
       </div>
+
+      {pages > 1 && (
+        <p className="muted admin-pager">
+          Page {page} of {pages}
+          {page > 1 && (
+            <>
+              {" "}
+              <Link href={`/admin/audit?${adminListQuery(sp, page - 1)}`}>Previous</Link>
+            </>
+          )}
+          {page < pages && (
+            <>
+              {" "}
+              <Link href={`/admin/audit?${adminListQuery(sp, page + 1)}`}>Next</Link>
+            </>
+          )}
+        </p>
+      )}
     </>
   );
 }

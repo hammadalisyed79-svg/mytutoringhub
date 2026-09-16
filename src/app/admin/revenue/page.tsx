@@ -134,26 +134,18 @@ export default async function RevenuePage() {
 
   return (
     <div className="stack-lg">
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Revenue</h1>
-          <p style={{ color: "#6b7280", fontSize: 13, margin: "6px 0 0" }}>
-            Analytics — actual cash from Safepay-encoded <code>stripePriceId</code> (complimentary = 0)
-            plus paid past papers. No forecasts. Checkout recovery:{" "}
-            <Link href="/admin/payments">Payments</Link>. Plan entitlements:{" "}
-            <Link href="/admin/subscriptions">Subscriptions</Link>.{" "}
-            <Link href="/admin/revenue/funnel">Open funnel KPIs →</Link>
-          </p>
-        </div>
+      <div>
+        <h1 className="page-title">Revenue</h1>
+        <p className="muted">
+          Analytics — actual cash from Safepay-encoded <code>stripePriceId</code> (complimentary = 0)
+          plus paid past papers. No forecasts. Checkout recovery:{" "}
+          <Link href="/admin/payments">Payments</Link>. Plan entitlements:{" "}
+          <Link href="/admin/subscriptions">Subscriptions</Link>.{" "}
+          <Link href="/admin/revenue/funnel">Open funnel KPIs →</Link>
+        </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          gap: 12,
-        }}
-      >
+      <div className="admin-kpi-grid">
         {[
           { label: "Actual platform cash (MTD)", value: totalMtdCash.toLocaleString() },
           { label: "MRR (paid recurring est.)", value: mrr.toFixed(2) },
@@ -162,98 +154,75 @@ export default async function RevenuePage() {
           { label: "Cancel rate (MTD)", value: `${churnRate.toFixed(1)}%` },
           { label: "Past paper cash (MTD PKR)", value: paperTotalPkr.toLocaleString() },
         ].map((card) => (
-          <div
-            key={card.label}
-            style={{
-              background: "var(--surface, #f9fafb)",
-              border: "1px solid var(--border, #e5e7eb)",
-              borderRadius: 8,
-              padding: "14px 16px",
-            }}
-          >
-            <div style={{ fontSize: 22, fontWeight: 700 }}>{card.value}</div>
-            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{card.label}</div>
+          <div key={card.label} className="admin-kpi">
+            <strong>{card.value}</strong>
+            <span>{card.label}</span>
           </div>
         ))}
       </div>
 
-      <section>
-        <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 12 }}>
-          MTD cash by product (paid only)
-        </h2>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-              {["Product", "Cash (MTD)"].map((h) => (
-                <th key={h} style={{ padding: "8px 12px", fontWeight: 600 }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              ["Student Pass", mtdCashByPlan.STUDENT_PASS || 0],
-              ["Student Pro", mtdCashByPlan.STUDENT_PRO || 0],
-              ["Tutor Pro (paid)", mtdCashByPlan.TUTOR_BASIC || 0],
-              ["Listing Boost", mtdCashByPlan.AD_BOOST || 0],
-              ["Priority Verification", mtdCashByPlan.VERIFIED_TUTOR || 0],
-              ["Past papers", paperTotalPkr],
-            ].map(([label, value], i) => (
-              <tr
-                key={String(label)}
-                style={{
-                  borderBottom: "1px solid #f3f4f6",
-                  background: i % 2 === 0 ? "transparent" : "var(--surface, #f9fafb)",
-                }}
-              >
-                <td style={{ padding: "8px 12px" }}>{label}</td>
-                <td style={{ padding: "8px 12px", fontWeight: 600 }}>
-                  {Number(value).toLocaleString()}
-                </td>
+      <section className="panel">
+        <h2>MTD cash by product (paid only)</h2>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Cash (MTD)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {[
+                ["Student Pass", mtdCashByPlan.STUDENT_PASS || 0],
+                ["Student Pro", mtdCashByPlan.STUDENT_PRO || 0],
+                ["Tutor Pro (paid)", mtdCashByPlan.TUTOR_BASIC || 0],
+                ["Listing Boost", mtdCashByPlan.AD_BOOST || 0],
+                ["Priority Verification", mtdCashByPlan.VERIFIED_TUTOR || 0],
+                ["Past papers", paperTotalPkr],
+              ].map(([label, value]) => (
+                <tr key={String(label)}>
+                  <td>{label}</td>
+                  <td>
+                    <strong>{Number(value).toLocaleString()}</strong>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section>
-        <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 12 }}>Active plan mix</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <section className="panel">
+        <h2>Active plan mix</h2>
+        <div className="table-wrap">
+          <table className="table">
             <thead>
-              <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
+              <tr>
                 {["Plan", "Role", "Billing", "Active", "Paid", "MRR (est.)"].map((h) => (
-                  <th key={h} style={{ padding: "8px 12px", fontWeight: 600, whiteSpace: "nowrap" }}>
-                    {h}
-                  </th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {planDist.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: "24px 12px", textAlign: "center", color: "#9ca3af" }}>
+                  <td colSpan={6} className="muted" style={{ textAlign: "center" }}>
                     No active subscriptions yet.
                   </td>
                 </tr>
               )}
-              {planDist.map((p, i) => (
-                <tr
-                  key={`${p.plan}-${p.billingPeriod}-${p.role}`}
-                  style={{
-                    borderBottom: "1px solid #f3f4f6",
-                    background: i % 2 === 0 ? "transparent" : "var(--surface, #f9fafb)",
-                  }}
-                >
-                  <td style={{ padding: "8px 12px", fontWeight: 500 }}>{p.label}</td>
-                  <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>{p.role}</td>
-                  <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>
-                    {p.billingPeriod}
+              {planDist.map((p) => (
+                <tr key={`${p.plan}-${p.billingPeriod}-${p.role}`}>
+                  <td>
+                    <strong>{p.label}</strong>
                   </td>
-                  <td style={{ padding: "8px 12px" }}>{p.count}</td>
-                  <td style={{ padding: "8px 12px" }}>{p.paidCount}</td>
-                  <td style={{ padding: "8px 12px", fontWeight: 600 }}>{p.mrr.toFixed(2)}</td>
+                  <td style={{ textTransform: "capitalize" }}>{p.role}</td>
+                  <td style={{ textTransform: "capitalize" }}>{p.billingPeriod}</td>
+                  <td>{p.count}</td>
+                  <td>{p.paidCount}</td>
+                  <td>
+                    <strong>{p.mrr.toFixed(2)}</strong>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -49,26 +49,17 @@ const PLAN_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "#16a34a",
-  TRIALING: "#2563eb",
-  CANCELED: "#dc2626",
-  PAST_DUE: "#d97706",
-  INCOMPLETE: "#9ca3af",
+  ACTIVE: "active",
+  TRIALING: "trialing",
+  CANCELED: "canceled",
+  PAST_DUE: "past_due",
+  INCOMPLETE: "incomplete",
 };
 
 function statusBadge(status: string) {
+  const tone = STATUS_COLORS[status] ?? "";
   return (
-    <span
-      style={{
-        background: STATUS_COLORS[status] ?? "#6b7280",
-        color: "#fff",
-        borderRadius: 4,
-        padding: "2px 8px",
-        fontSize: 12,
-        fontWeight: 600,
-        textTransform: "capitalize",
-      }}
-    >
+    <span className={`admin-badge${tone ? ` admin-badge--${tone}` : ""}`}>
       {status.toLowerCase()}
     </span>
   );
@@ -193,10 +184,8 @@ export default function SubscriptionsPage() {
     <div className="stack-lg">
       <header className="panel page-hero">
         <div className="page-hero-copy">
-          <h1 className="page-title" style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
-            Subscriptions
-          </h1>
-          <p className="muted" style={{ margin: "6px 0 0", maxWidth: 640 }}>
+          <h1 className="page-title">Subscriptions</h1>
+          <p className="muted">
             Entitlements — who has which plan and status. For checkout recovery use{" "}
             <Link href="/admin/payments">Payments</Link>; for cash analytics use{" "}
             <Link href="/admin/revenue">Revenue</Link>. Amounts use the charged currency (PKR base
@@ -216,13 +205,7 @@ export default function SubscriptionsPage() {
         </p>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-          gap: 12,
-        }}
-      >
+      <div className="admin-kpi-grid">
         {[
           { label: "Total subscriptions", value: totalSubs },
           { label: "Active Tutor Pro", value: activeProTutors },
@@ -230,64 +213,53 @@ export default function SubscriptionsPage() {
           { label: "Active student plans", value: activeStudentPlans },
           { label: "Est. MRR (PKR)", value: formatMoney(mrrPkr, "PKR") },
         ].map((card) => (
-          <div
-            key={card.label}
-            style={{
-              background: "var(--surface, #f9fafb)",
-              border: "1px solid var(--border, #e5e7eb)",
-              borderRadius: 8,
-              padding: "14px 16px",
-            }}
-          >
-            <div style={{ fontSize: 22, fontWeight: 700 }}>{card.value}</div>
-            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{card.label}</div>
+          <div key={card.label} className="admin-kpi">
+            <strong>{card.value}</strong>
+            <span>{card.label}</span>
           </div>
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <select
-          value={filterPlan}
-          onChange={(e) => setFilterPlan(e.target.value)}
-          style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db" }}
-        >
-          <option value="">All plans</option>
-          {PLAN_OPTIONS.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-          style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db" }}
-        >
-          <option value="">All roles</option>
-          <option value="tutor">Tutor</option>
-          <option value="student">Student</option>
-        </select>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db" }}
-        >
-          <option value="">All statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="TRIALING">Trialing</option>
-          <option value="CANCELED">Canceled</option>
-          <option value="PAST_DUE">Past due</option>
-          <option value="INCOMPLETE">Incomplete</option>
-        </select>
-        <span style={{ color: "#6b7280", fontSize: 13, alignSelf: "center" }}>
+      <form className="filters filters-wide" onSubmit={(e) => e.preventDefault()}>
+        <label>
+          Plan
+          <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)}>
+            <option value="">All plans</option>
+            {PLAN_OPTIONS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Role
+          <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+            <option value="">All roles</option>
+            <option value="tutor">Tutor</option>
+            <option value="student">Student</option>
+          </select>
+        </label>
+        <label>
+          Status
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="">All statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="TRIALING">Trialing</option>
+            <option value="CANCELED">Canceled</option>
+            <option value="PAST_DUE">Past due</option>
+            <option value="INCOMPLETE">Incomplete</option>
+          </select>
+        </label>
+        <span className="muted" style={{ alignSelf: "end", paddingBottom: "0.45rem" }}>
           {loading ? "Loading…" : `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`}
         </span>
-      </div>
+      </form>
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <div className="table-wrap">
+        <table className="table">
           <thead>
-            <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
+            <tr>
               {[
                 "Name",
                 "Email",
@@ -300,36 +272,27 @@ export default function SubscriptionsPage() {
                 "End",
                 "Actions",
               ].map((h) => (
-                <th key={h} style={{ padding: "8px 12px", fontWeight: 600, whiteSpace: "nowrap" }}>
-                  {h}
-                </th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.map((sub, i) => (
-              <tr
-                key={sub.id}
-                style={{
-                  borderBottom: "1px solid #f3f4f6",
-                  background: i % 2 === 0 ? "transparent" : "var(--surface, #f9fafb)",
-                }}
-              >
-                <td style={{ padding: "8px 12px", fontWeight: 500 }}>{sub.userName}</td>
-                <td style={{ padding: "8px 12px", color: "#6b7280" }}>{sub.userEmail}</td>
-                <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>{sub.role}</td>
-                <td style={{ padding: "8px 12px" }}>{sub.planLabel}</td>
-                <td style={{ padding: "8px 12px" }}>{statusBadge(sub.status)}</td>
-                <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>
-                  {sub.billingPeriod}
+            {filtered.map((sub) => (
+              <tr key={sub.id}>
+                <td>
+                  <strong>{sub.userName}</strong>
                 </td>
-                <td style={{ padding: "8px 12px", whiteSpace: "nowrap" }}>{formatSubPrice(sub)}</td>
-                <td style={{ padding: "8px 12px" }}>{formatDate(sub.startDate)}</td>
-                <td style={{ padding: "8px 12px" }}>{formatDate(sub.endDate)}</td>
-                <td style={{ padding: "8px 12px" }}>
+                <td className="muted">{sub.userEmail}</td>
+                <td style={{ textTransform: "capitalize" }}>{sub.role}</td>
+                <td>{sub.planLabel}</td>
+                <td>{statusBadge(sub.status)}</td>
+                <td style={{ textTransform: "capitalize" }}>{sub.billingPeriod}</td>
+                <td style={{ whiteSpace: "nowrap" }}>{formatSubPrice(sub)}</td>
+                <td>{formatDate(sub.startDate)}</td>
+                <td>{formatDate(sub.endDate)}</td>
+                <td>
                   <button
-                    className="btn btn-secondary"
-                    style={{ padding: "4px 10px", fontSize: 12 }}
+                    className="btn btn-secondary btn-sm"
                     type="button"
                     onClick={() => openEdit(sub)}
                   >
@@ -340,10 +303,7 @@ export default function SubscriptionsPage() {
             ))}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td
-                  colSpan={10}
-                  style={{ padding: "24px 12px", textAlign: "center", color: "#9ca3af" }}
-                >
+                <td colSpan={10} className="muted" style={{ textAlign: "center" }}>
                   No subscriptions match the selected filters.
                 </td>
               </tr>
@@ -354,45 +314,18 @@ export default function SubscriptionsPage() {
 
       {editTarget && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
+          className="admin-modal-backdrop"
           onClick={(e) => e.target === e.currentTarget && setEditTarget(null)}
         >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 10,
-              padding: 28,
-              width: "100%",
-              maxWidth: 420,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-            }}
-          >
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Edit Plan</h2>
-            <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 18 }}>
-              {editTarget.userName} &bull; {editTarget.userEmail}
+          <div className="admin-modal" style={{ maxWidth: 420 }}>
+            <h2 className="admin-modal-title">Edit Plan</h2>
+            <p className="muted admin-modal-lead">
+              {editTarget.userName} · {editTarget.userEmail}
             </p>
 
-            <label style={{ display: "block", marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Plan</div>
-              <select
-                value={editPlan}
-                onChange={(e) => setEditPlan(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #d1d5db",
-                  fontSize: 14,
-                }}
-              >
+            <label className="admin-modal-label">
+              <span>Plan</span>
+              <select value={editPlan} onChange={(e) => setEditPlan(e.target.value)}>
                 {PLAN_OPTIONS.map((p) => (
                   <option key={p.value} value={p.value}>
                     {p.label}
@@ -401,19 +334,9 @@ export default function SubscriptionsPage() {
               </select>
             </label>
 
-            <label style={{ display: "block", marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Status</div>
-              <select
-                value={editStatus}
-                onChange={(e) => setEditStatus(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #d1d5db",
-                  fontSize: 14,
-                }}
-              >
+            <label className="admin-modal-label">
+              <span>Status</span>
+              <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)}>
                 <option value="ACTIVE">Active</option>
                 <option value="TRIALING">Trialing</option>
                 <option value="CANCELED">Canceled</option>
@@ -422,30 +345,21 @@ export default function SubscriptionsPage() {
               </select>
             </label>
 
-            <label style={{ display: "block", marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Admin notes</div>
+            <label className="admin-modal-label">
+              <span>Admin notes</span>
               <textarea
                 value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
                 rows={3}
                 placeholder="Optional notes..."
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #d1d5db",
-                  fontSize: 14,
-                  resize: "vertical",
-                  boxSizing: "border-box",
-                }}
               />
             </label>
 
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button className="btn btn-secondary" type="button" onClick={() => setEditTarget(null)}>
+            <div className="admin-modal-actions">
+              <button className="btn btn-secondary btn-sm" type="button" onClick={() => setEditTarget(null)}>
                 Cancel
               </button>
-              <button className="btn btn-primary" type="button" onClick={handleSave} disabled={saving}>
+              <button className="btn btn-sm" type="button" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving…" : "Save changes"}
               </button>
             </div>

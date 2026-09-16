@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/admin";
 import { AdminVerificationQueueItem } from "@/components/AdminVerificationQueueItem";
@@ -6,14 +7,27 @@ import {
   dedupeVerificationQueue,
 } from "@/lib/verification-queue";
 import { hasActivePlan } from "@/lib/subscription";
+import { ADMIN_PAGE_SIZE, adminListQuery } from "@/lib/admin-list";
 
 export const metadata = { title: "Verifications · Admin" };
+export const dynamic = "force-dynamic";
 
-export default async function AdminVerificationsPage() {
+type SearchParams = Promise<{ status?: string; page?: string }>;
+
+export default async function AdminVerificationsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await requireAdminPage();
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const statusFilter = sp.status || "";
+
   const raw = await prisma.verificationRequest.findMany({
+    where: statusFilter ? { status: statusFilter } : {},
     orderBy: { createdAt: "desc" },
-    take: 120,
+    take: 400,
     include: { user: { select: { id: true, name: true, email: true } } },
   });
 
@@ -39,25 +53,52 @@ export default async function AdminVerificationsPage() {
     (v) => v.status === "PENDING" && v.hasPriorityReview,
   ).length;
 
+  const total = verifications.length;
+  const pages = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
+  const pageRows = verifications.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE);
+
   return (
-    <section className="panel">
-      <h2>Verification requests</h2>
+    <>
+      <div>
+        <h1 className="page-title">Verifications</h1>
+        <p className="muted">
+          Approve photo ID and certificate submissions to grant the verified tutor badge. Pending
+          Priority Verification Review purchases appear first — payment never auto-awards Identity
+          Verified.
+          {priorityPending > 0 ? <> {priorityPending} priority pending.</> : null}
+          {hiddenResolved > 0 ? (
+            <>
+              {" "}
+              Showing the latest decision per tutor ({hiddenResolved} older duplicate
+              {hiddenResolved === 1 ? "" : "s"} hidden).
+            </>
+          ) : null}
+        </p>
+      </div>
+
+      <form className="filters filters-wide" method="get">
+        <label>
+          Status
+          <select name="status" defaultValue={statusFilter}>
+            <option value="">Any</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </label>
+        <button className="btn" type="submit">
+          Filter
+        </button>
+      </form>
+
       <p className="muted">
-        Approve photo ID and certificate submissions to grant the verified tutor badge. Pending
-        Priority Verification Review purchases appear first (oldest first within that group) —
-        payment never auto-awards Identity Verified.
-        {priorityPending > 0 ? <> {priorityPending} priority pending.</> : null}
-        {hiddenResolved > 0 ? (
-          <>
-            {" "}
-            Showing the latest decision per tutor ({hiddenResolved} older duplicate
-            {hiddenResolved === 1 ? "" : "s"} hidden).
-          </>
-        ) : null}
+        {total} request{total === 1 ? "" : "s"}
+        {pages > 1 ? ` · page ${page} of ${pages}` : ""}
       </p>
-      {verifications.length === 0 && <p className="muted">No requests yet.</p>}
+
+      {pageRows.length === 0 && <p className="muted">No requests match.</p>}
       <div className="admin-verify-queue">
-        {verifications.map((v) => (
+        {pageRows.map((v) => (
           <AdminVerificationQueueItem
             key={v.id}
             id={v.id}
@@ -72,6 +113,24 @@ export default async function AdminVerificationsPage() {
           />
         ))}
       </div>
-    </section>
+
+      {pages > 1 && (
+        <p className="muted admin-pager">
+          Page {page} of {pages}
+          {page > 1 && (
+            <>
+              {" "}
+              <Link href={`/admin/verifications?${adminListQuery(sp, page - 1)}`}>Previous</Link>
+            </>
+          )}
+          {page < pages && (
+            <>
+              {" "}
+              <Link href={`/admin/verifications?${adminListQuery(sp, page + 1)}`}>Next</Link>
+            </>
+          )}
+        </p>
+      )}
+    </>
   );
 }
