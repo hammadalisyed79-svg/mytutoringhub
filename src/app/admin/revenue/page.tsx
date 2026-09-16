@@ -136,10 +136,12 @@ export default async function RevenuePage() {
     <div className="stack-lg">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Revenue Dashboard</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Revenue</h1>
           <p style={{ color: "#6b7280", fontSize: 13, margin: "6px 0 0" }}>
-            Actual cash from Safepay-encoded <code>stripePriceId</code> (complimentary = 0) plus paid
-            past papers. No forecasts.{" "}
+            Analytics — actual cash from Safepay-encoded <code>stripePriceId</code> (complimentary = 0)
+            plus paid past papers. No forecasts. Checkout recovery:{" "}
+            <Link href="/admin/payments">Payments</Link>. Plan entitlements:{" "}
+            <Link href="/admin/subscriptions">Subscriptions</Link>.{" "}
             <Link href="/admin/revenue/funnel">Open funnel KPIs →</Link>
           </p>
         </div>

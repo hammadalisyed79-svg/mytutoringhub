@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { currencyToPkr, formatMoney, FX_PER_USD, type CurrencyCode } from "@/lib/currency";
 
 type Subscription = {
   id: string;
@@ -18,6 +20,22 @@ type Subscription = {
   endDate: string | null;
   notes: string | null;
 };
+
+function asCurrency(code: string): CurrencyCode {
+  const upper = (code || "PKR").toUpperCase();
+  return (upper in FX_PER_USD ? upper : "PKR") as CurrencyCode;
+}
+
+function formatSubPrice(sub: Subscription) {
+  return formatMoney(Number(sub.priceAmount || 0), asCurrency(sub.currency));
+}
+
+function monthlyPkr(sub: Subscription) {
+  const amount = Number(sub.priceAmount || 0);
+  if (amount <= 0 || sub.billingPeriod === "once") return 0;
+  const monthly = sub.billingPeriod === "annual" ? amount / 12 : amount;
+  return currencyToPkr(monthly, asCurrency(sub.currency));
+}
 
 const PLAN_OPTIONS: { value: string; label: string }[] = [
   { value: "STUDENT_PASS", label: "Student Pass" },
@@ -122,11 +140,7 @@ export default function SubscriptionsPage() {
   const activeStudentPlans = subs.filter(
     (s) => (s.plan === "STUDENT_PASS" || s.plan === "STUDENT_PRO") && active(s),
   ).length;
-  const mrr = subs.filter(active).reduce((acc, s) => {
-    const amount = s.priceAmount || 0;
-    if (s.billingPeriod === "once") return acc;
-    return acc + (s.billingPeriod === "annual" ? amount / 12 : amount);
-  }, 0);
+  const mrrPkr = subs.filter(active).reduce((acc, s) => acc + monthlyPkr(s), 0);
 
   function openEdit(sub: Subscription) {
     setEditTarget(sub);
@@ -152,12 +166,16 @@ export default function SubscriptionsPage() {
       const data = await res.json();
       if (!res.ok) {
         setToast(data.error || "Update failed");
-        setTimeout(() => setToast(""), 3500);
+        setTimeout(() => setToast(""), 4500);
         return;
       }
       setEditTarget(null);
-      setToast("Subscription updated");
-      setTimeout(() => setToast(""), 3500);
+      if (data.warning) {
+        setToast(data.warning);
+      } else {
+        setToast(data.message || "Subscription updated");
+      }
+      setTimeout(() => setToast(""), 4500);
       await load();
     } catch {
       setToast("Network error");
@@ -178,6 +196,12 @@ export default function SubscriptionsPage() {
           <h1 className="page-title" style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>
             Subscriptions
           </h1>
+          <p className="muted" style={{ margin: "6px 0 0", maxWidth: 640 }}>
+            Entitlements — who has which plan and status. For checkout recovery use{" "}
+            <Link href="/admin/payments">Payments</Link>; for cash analytics use{" "}
+            <Link href="/admin/revenue">Revenue</Link>. Amounts use the charged currency (PKR base
+            when unknown).
+          </p>
         </div>
         <div className="page-hero-actions">
           <button className="btn btn-secondary btn-sm" type="button" onClick={exportCsv} disabled={loading}>
@@ -204,7 +228,7 @@ export default function SubscriptionsPage() {
           { label: "Active Tutor Pro", value: activeProTutors },
           { label: "Active tutor add-ons", value: activeEliteTutors },
           { label: "Active student plans", value: activeStudentPlans },
-          { label: "Est. MRR (stored price)", value: `£${mrr.toFixed(2)}` },
+          { label: "Est. MRR (PKR)", value: formatMoney(mrrPkr, "PKR") },
         ].map((card) => (
           <div
             key={card.label}
@@ -299,10 +323,7 @@ export default function SubscriptionsPage() {
                 <td style={{ padding: "8px 12px", textTransform: "capitalize" }}>
                   {sub.billingPeriod}
                 </td>
-                <td style={{ padding: "8px 12px" }}>
-                  {sub.currency === "GBP" ? "£" : sub.currency === "USD" ? "$" : `${sub.currency} `}
-                  {Number(sub.priceAmount || 0).toFixed(2)}
-                </td>
+                <td style={{ padding: "8px 12px", whiteSpace: "nowrap" }}>{formatSubPrice(sub)}</td>
                 <td style={{ padding: "8px 12px" }}>{formatDate(sub.startDate)}</td>
                 <td style={{ padding: "8px 12px" }}>{formatDate(sub.endDate)}</td>
                 <td style={{ padding: "8px 12px" }}>
@@ -438,9 +459,12 @@ export default function SubscriptionsPage() {
             position: "fixed",
             bottom: 24,
             right: 24,
-            background: toast.toLowerCase().includes("fail") || toast.toLowerCase().includes("error")
-              ? "#dc2626"
-              : "#16a34a",
+            background:
+              toast.toLowerCase().includes("fail") ||
+              toast.toLowerCase().includes("error") ||
+              toast.toLowerCase().includes("audit")
+                ? "#dc2626"
+                : "#16a34a",
             color: "#fff",
             padding: "12px 20px",
             borderRadius: 8,

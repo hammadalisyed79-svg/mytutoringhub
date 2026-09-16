@@ -41,6 +41,9 @@ export async function writeAdminAudit(opts: {
     });
   } catch (err) {
     console.error("Admin audit log failed", err);
+    throw new Error(
+      "Audit log write failed — the change may have applied; verify the row and retry logging if needed.",
+    );
   }
 }
 

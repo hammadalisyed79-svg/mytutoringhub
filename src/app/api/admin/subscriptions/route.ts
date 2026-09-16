@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin";
+import { requireAdmin, writeAdminAudit } from "@/lib/admin";
+import { parseSafepayStoredAmount } from "@/lib/analytics-conversions";
 import { prisma } from "@/lib/prisma";
 import { syncTutorBadges } from "@/lib/subscription";
 import { z } from "zod";
@@ -18,6 +19,19 @@ const PLAN_LABELS: Record<string, string> = {
   UNLIMITED_ADS: "Unlimited Profiles (legacy)",
 };
 
+function resolveMoney(s: {
+  currency: string | null;
+  priceAmount: number | null;
+  stripePriceId: string | null;
+}) {
+  const parsed = parseSafepayStoredAmount(s.stripePriceId);
+  if (!parsed.complimentary && parsed.major > 0) {
+    return { currency: parsed.currency, priceAmount: parsed.major };
+  }
+  const currency = (s.currency || "PKR").toUpperCase();
+  return { currency, priceAmount: s.priceAmount ?? 0 };
+}
+
 function serializeSub(s: {
   id: string;
   userId: string;
@@ -27,6 +41,7 @@ function serializeSub(s: {
   billingPeriod: string | null;
   currency: string | null;
   priceAmount: number | null;
+  stripePriceId: string | null;
   startDate: Date | null;
   endDate: Date | null;
   currentPeriodEnd: Date | null;
@@ -38,6 +53,7 @@ function serializeSub(s: {
   const role =
     s.role?.toLowerCase() ||
     (s.user.role === "TUTOR" ? "tutor" : s.user.role === "STUDENT" ? "student" : s.user.role.toLowerCase());
+  const money = resolveMoney(s);
   return {
     id: s.id,
     userId: s.userId,
@@ -48,8 +64,8 @@ function serializeSub(s: {
     planLabel: PLAN_LABELS[s.plan] ?? s.plan,
     status: s.status,
     billingPeriod: s.billingPeriod || "monthly",
-    currency: s.currency || "GBP",
-    priceAmount: s.priceAmount ?? 0,
+    currency: money.currency,
+    priceAmount: money.priceAmount,
     startDate: (s.startDate || s.createdAt).toISOString(),
     endDate: (s.endDate || s.currentPeriodEnd)?.toISOString() ?? null,
     cancelledAt: s.cancelledAt?.toISOString() ?? null,
@@ -129,7 +145,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await requireAdmin())) {
+  const session = await requireAdmin();
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -173,6 +190,38 @@ export async function POST(req: NextRequest) {
 
   if (updated.user.role === "TUTOR") {
     await syncTutorBadges(updated.userId).catch(() => undefined);
+  }
+
+  const before = {
+    plan: existing.plan,
+    status: existing.status,
+    notes: existing.notes,
+  };
+  const after = {
+    plan: updated.plan,
+    status: updated.status,
+    notes: updated.notes,
+  };
+
+  try {
+    await writeAdminAudit({
+      adminId: session.user.id,
+      action: "override_subscription",
+      targetType: "Subscription",
+      targetId: updated.id,
+      detail: JSON.stringify({ before, after, userId: updated.userId }),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Audit log write failed";
+    return NextResponse.json(
+      {
+        ok: true,
+        warning: message,
+        message: "Subscription updated, but audit log failed",
+        subscription: serializeSub(updated),
+      },
+      { status: 200 },
+    );
   }
 
   return NextResponse.json({

@@ -277,7 +277,7 @@ model Subscription {
   role                 String?   // "tutor" | "student"
   billingPeriod        String?   // "monthly" | "annual" | "once" (add-ons)
   pointsRedeemedPkr    Int       @default(0)
-  currency             String?   @default("GBP")
+  currency             String?   @default("PKR")
   priceAmount          Float?
   startDate            DateTime? @default(now())
   endDate              DateTime?
