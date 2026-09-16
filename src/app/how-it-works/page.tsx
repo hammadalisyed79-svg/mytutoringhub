@@ -2,7 +2,9 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { VALUE_PROPOSITION, studentFreeContactsShort } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
-import { pageMetadata } from "@/lib/seo";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { HOW_IT_WORKS_FAQS } from "@/lib/help-knowledge";
 
 export const metadata = pageMetadata({
   title: "How It Works – Find, Contact & Learn with a Private Tutor",
@@ -26,6 +28,12 @@ export default async function HowItWorksPage() {
 
   return (
     <div className="page">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          ...faqPageJsonLd(HOW_IT_WORKS_FAQS),
+        }}
+      />
       <div className="container">
         <h1 className="page-title">How it works</h1>
         <p className="section-lead">

@@ -69,6 +69,7 @@ const publicSurfaces = [
   "app/refund/page.tsx",
   "lib/marketing-copy.ts",
   "lib/free-vs-paid.ts",
+  "lib/help-knowledge.ts",
   "lib/ai-support.ts",
   "components/PricingPlansClient.tsx",
   "components/LaunchOfferBlock.tsx",
@@ -140,7 +141,7 @@ assert.equal(priority.pricePkr, 2999);
 assert.ok(priority.features.some((f) => /never auto-(awards verification|verifies)/i.test(f)));
 assert.match(IDENTITY_VERIFIED_LINE, /earned, not purchased/i);
 
-const help = readSrc("app/help/page.tsx");
+const help = readSrc("lib/help-knowledge.ts");
 assert.match(help, /Identity Verified/);
 assert.match(help, /Access remains active[\s\S]*for the purchased period/i);
 assert.doesNotMatch(help, /What are Hub Points/);
@@ -242,6 +243,9 @@ assert.doesNotMatch(
   supportLive,
   /unlimited past papers with Student Pass|faster responses with Student Pass/i,
 );
+assert.match(supportLive, /Website FAQ knowledge|Help centre/);
+assert.match(supportLive, /Policies \(summaries/);
+assert.match(supportLive, /\/countries\//);
 assert.match(supportLive, /badge is earned, not purchased|Never say users can buy the Identity Verified badge/i);
 
 const studyPrompt = buildAiStudySystemPrompt();

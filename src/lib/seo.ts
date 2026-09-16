@@ -310,3 +310,58 @@ export function faqPageJsonLd(faqs: { q: string; a: string }[]) {
     })),
   };
 }
+
+/** Country market landing for geo SEO. */
+export function countryLandingJsonLd(opts: {
+  country: string;
+  code: string;
+  tutorCount: number;
+  path: string;
+  cities: string[];
+  subjects: string[];
+}) {
+  return {
+    "@type": "CollectionPage",
+    name: `Tutors in ${opts.country}`,
+    description: truncateDescription(
+      opts.tutorCount > 0
+        ? `${opts.tutorCount} tutors in ${opts.country} on ${SITE_NAME}. Browse free — ${BUSINESS.studentFreeContactsPerMonth} new tutor contacts/month included.`
+        : `Find private tutors in ${opts.country} on ${SITE_NAME}. Popular subjects: ${opts.subjects.slice(0, 6).join(", ")}.`,
+    ),
+    url: absoluteUrl(opts.path),
+    about: {
+      "@type": "Country",
+      name: opts.country,
+      identifier: opts.code,
+    },
+    ...(opts.cities.length
+      ? {
+          spatialCoverage: opts.cities.map((city) => ({
+            "@type": "City",
+            name: city,
+          })),
+        }
+      : {}),
+  };
+}
+
+/** ItemList helper for hub pages (use indexable URLs only). */
+export function itemListJsonLd(opts: {
+  name: string;
+  description: string;
+  path: string;
+  items: { name: string; path: string }[];
+}) {
+  return {
+    "@type": "ItemList",
+    name: opts.name,
+    description: truncateDescription(opts.description, 300),
+    url: absoluteUrl(opts.path),
+    itemListElement: opts.items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: absoluteUrl(item.path),
+    })),
+  };
+}

@@ -45,7 +45,7 @@ import { DOCUMENT_TYPE_LABELS } from "@/lib/past-papers/constants";
 import { slugify } from "@/lib/search-tutors";
 import { getUserCountry } from "@/lib/geo";
 import { reconcileUserSafepayPaperPurchases } from "@/lib/safepay-complete";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, itemListJsonLd } from "@/lib/seo";
 import { PageConversion } from "@/components/PageConversion";
 
 export const metadata = pageMetadata({
@@ -213,21 +213,38 @@ export default async function PastPapersPage({
 
   const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.mytutoringhub.com";
 
+  // Prefer indexable subject landings over filtered ?board= URLs (those are noindex).
+  const paperHubItems = [
+    {
+      name: "Cambridge IGCSE Mathematics",
+      path: "/past-papers/cambridge/igcse/mathematics-0580",
+    },
+    {
+      name: "Cambridge A Level Physics",
+      path: "/past-papers/cambridge/a-level/physics-9702",
+    },
+    {
+      name: "Cambridge IGCSE Chemistry",
+      path: "/past-papers/cambridge/igcse/chemistry-0620",
+    },
+    {
+      name: "FBISE Matric Physics",
+      path: "/past-papers/fbise/matric/physics",
+    },
+  ];
+
   return (
     <div className="page">
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: "Past Papers by Subject",
-          description: "GCSE, A-Level, IGCSE and IB past papers available for download",
+          ...itemListJsonLd({
+            name: "Past Papers by Subject",
+            description: "GCSE, A-Level, IGCSE and IB past papers available for download",
+            path: "/past-papers",
+            items: paperHubItems,
+          }),
           url: `${SITE_URL}/past-papers`,
-          itemListElement: [
-            { "@type": "ListItem", position: 1, name: "GCSE Past Papers", url: `${SITE_URL}/past-papers?board=Cambridge+IGCSE` },
-            { "@type": "ListItem", position: 2, name: "A-Level Past Papers", url: `${SITE_URL}/past-papers?board=Cambridge+International+AS+%26+A+Level` },
-            { "@type": "ListItem", position: 3, name: "IGCSE Past Papers", url: `${SITE_URL}/past-papers?level=IGCSE` },
-            { "@type": "ListItem", position: 4, name: "IB Past Papers", url: `${SITE_URL}/past-papers?board=IB` },
-          ],
         }}
       />
       <div className="container">

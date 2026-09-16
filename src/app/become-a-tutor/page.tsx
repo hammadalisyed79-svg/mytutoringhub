@@ -10,7 +10,9 @@ import {
 } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
-import { pageMetadata } from "@/lib/seo";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { HOW_IT_WORKS_FAQS } from "@/lib/help-knowledge";
 import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
@@ -40,6 +42,12 @@ export default async function BecomeATutorPage({
 
   return (
     <div className="page">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          ...faqPageJsonLd(HOW_IT_WORKS_FAQS),
+        }}
+      />
       <div className="container become-tutor-page">
         <h1 className="page-title">Start teaching</h1>
         <p className="section-lead">

@@ -12,7 +12,6 @@ import { SiteAnnouncement } from "@/components/SiteAnnouncement";
 import { AiSupportWidgetLazy } from "@/components/AiSupportWidgetLazy";
 import { getSiteSettings } from "@/lib/site-settings";
 import {
-  DEFAULT_SITE_URL,
   SITE_NAME,
   SITE_NAME_COMPACT,
   defaultOgImages,
@@ -62,7 +61,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME_COMPACT,
     title: `${SITE_NAME} – Private tutoring, elevated.`,
     description: VALUE_PROPOSITION_SHORT,
-    url: DEFAULT_SITE_URL,
+    url: siteUrl(),
     images: defaultOgImages(),
   },
   twitter: {

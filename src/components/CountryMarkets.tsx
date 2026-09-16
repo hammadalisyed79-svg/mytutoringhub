@@ -2,16 +2,15 @@ import Link from "next/link";
 import { type MarketCountry, selectFeaturedMarketCountries, subjectCode } from "@/lib/markets";
 import { uniqueSubjectsForCountry } from "@/lib/curriculum";
 import { MoreCountriesSelect } from "@/components/MoreCountriesSelect";
+import { slugify } from "@/lib/search-tutors";
 
 const CHIP_SLOTS = 12;
 const COMPACT_CITY_SLOTS = 4;
 const COMPACT_CHIP_SLOTS = 4;
 
-function searchHref(country: MarketCountry) {
-  const city = country.cities[0];
-  const params = new URLSearchParams({ country: country.name });
-  if (city) params.set("location", city);
-  return `/search?${params.toString()}`;
+/** Indexable country hub (filters on /search stay noindex). */
+function countryHubHref(country: MarketCountry) {
+  return `/countries/${country.code.toLowerCase()}`;
 }
 
 function CountryMarketCard({
@@ -26,13 +25,14 @@ function CountryMarketCard({
   const cityLimit = compact ? COMPACT_CITY_SLOTS : 3;
   const subjects = (catalog.length ? catalog : country.subjects).slice(0, chipLimit);
   const cities = country.cities.slice(0, cityLimit);
-  const city = country.cities[0];
 
   return (
     <article className={`country-market${compact ? " country-market--compact" : ""}`}>
       <div className="country-market-head">
         <div>
-          <h3>{country.name}</h3>
+          <h3>
+            <Link href={countryHubHref(country)}>{country.name}</Link>
+          </h3>
           <p className="muted">
             {cities.map((c, i) => (
               <span key={c}>
@@ -48,11 +48,8 @@ function CountryMarketCard({
             {!compact && country.cities.length > 3 && (
               <>
                 {" "}
-                <Link
-                  href={`/search?country=${encodeURIComponent(country.name)}`}
-                  className="city-more-link"
-                >
-                  +{country.cities.length - 3} more cities — search →
+                <Link href={countryHubHref(country)} className="city-more-link">
+                  +{country.cities.length - 3} more — country hub →
                 </Link>
               </>
             )}
@@ -63,9 +60,7 @@ function CountryMarketCard({
         {subjects.map((subject) => (
           <Link
             key={`${country.code}-${subject}`}
-            href={`/search?subject=${encodeURIComponent(subject)}&country=${encodeURIComponent(country.name)}${
-              city ? `&location=${encodeURIComponent(city)}` : ""
-            }`}
+            href={`/s/${slugify(subject)}`}
             className="chip"
             title={`${subjectCode(subject)} · ${subject}`}
           >
@@ -112,7 +107,7 @@ export function CountryMarkets({
                   placeholder="Jump to a country"
                   options={rest.map((country) => ({
                     label: country.name,
-                    href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
+                    href: moreCountryHref ? moreCountryHref(country) : countryHubHref(country),
                   }))}
                 />
               </div>
@@ -121,13 +116,13 @@ export function CountryMarkets({
             <>
               <h3 className="country-more-title">More countries</h3>
               <p className="muted country-more-lead">
-                {rest.length} more markets. Choose one to open tutor search for that country.
+                {rest.length} more markets. Choose one to open that country’s tutor hub.
               </p>
               <MoreCountriesSelect
                 placeholder="More countries"
                 options={rest.map((country) => ({
                   label: country.name,
-                  href: moreCountryHref ? moreCountryHref(country) : searchHref(country),
+                  href: moreCountryHref ? moreCountryHref(country) : countryHubHref(country),
                 }))}
               />
             </>
@@ -137,3 +132,4 @@ export function CountryMarkets({
     </>
   );
 }
+

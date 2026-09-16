@@ -8,7 +8,9 @@ import { PricingPlansClient } from "@/components/PricingPlansClient";
 import { prisma } from "@/lib/prisma";
 import { STUDENT_PASS_PAPERS_LINE, STUDENT_FREE_CONTACTS_LINE } from "@/lib/marketing-copy";
 import { ResendVerificationButton } from "@/components/ResendVerificationButton";
-import { pageMetadata } from "@/lib/seo";
+import { faqPageJsonLd, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { PRICING_FAQS } from "@/lib/help-knowledge";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getHubPointsBalanceSafe } from "@/lib/hub-points";
 import { reconcileUserSafepayPayments } from "@/lib/safepay-complete";
@@ -80,6 +82,12 @@ export default async function PricingPage({
 
   return (
     <div className="page checkout-page">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          ...faqPageJsonLd(PRICING_FAQS),
+        }}
+      />
       <div className="container">
         <div className="checkout-hero">
           <div>

@@ -4,6 +4,7 @@ import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 import { siteUrl } from "@/lib/seo";
 import { publicListedTutorWhere, filterCanonicallyPublicTutors, isIndexableSubjectHubSlug } from "@/lib/tutor-public-eligibility";
+import { TOP_COUNTRIES } from "@/lib/markets";
 
 /**
  * Public sitemap only — no auth/utility routes, no thin city mass-generation.
@@ -59,6 +60,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: changeFreqMap[path || "/"] || "monthly",
     priority: priorityMap[path || "/"] ?? 0.5,
+  }));
+
+  const countryRoutes = TOP_COUNTRIES.map((c) => ({
+    url: `${base}/countries/${c.code.toLowerCase()}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.68,
   }));
 
   try {
@@ -164,7 +172,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return true;
       });
 
-
     const tutorRoutes = publicTutors.map((t) => ({
       url: `${base}/tutors/${t.id}`,
       lastModified: t.updatedAt,
@@ -179,8 +186,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.75,
     }));
 
-    return [...staticRoutes, ...subjectRoutes, ...paperRoutes, ...tutorRoutes, ...listingRoutes];
+    return [
+      ...staticRoutes,
+      ...countryRoutes,
+      ...subjectRoutes,
+      ...paperRoutes,
+      ...tutorRoutes,
+      ...listingRoutes,
+    ];
   } catch {
-    return staticRoutes;
+    return [...staticRoutes, ...countryRoutes];
   }
 }
