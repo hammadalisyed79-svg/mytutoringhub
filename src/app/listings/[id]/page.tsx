@@ -54,7 +54,7 @@ function ListingCta({
     return (
       <div className="profile-cta-stack">
         <a className="btn btn-block" href="#message-tutor">
-          Contact tutor
+          Message
         </a>
       </div>
     );

@@ -81,10 +81,7 @@ function ProfileCtaButtons({
     return (
       <div className="profile-cta-stack">
         <a className="btn btn-block" href="#message-tutor">
-          Message Tutor
-        </a>
-        <a className="btn btn-secondary btn-block" href="#message-tutor">
-          Ask about availability
+          Message
         </a>
       </div>
     );
@@ -722,11 +719,6 @@ export default async function TutorProfilePage({ params }: Params) {
                             <Link className="btn btn-sm" href={listingPath(listing.id)}>
                               View details
                             </Link>
-                            {canMessage && (
-                              <a className="btn btn-secondary btn-sm" href="#message-tutor">
-                                Message
-                              </a>
-                            )}
                           </div>
                         </div>
                       </article>
@@ -973,14 +965,9 @@ export default async function TutorProfilePage({ params }: Params) {
 
       <div className="profile-mobile-bar" aria-label="Contact tutor">
         {canMessage ? (
-          <>
-            <a className="btn btn-block" href="#message-tutor">
-              Message
-            </a>
-            <a className="btn btn-secondary btn-block" href="#message-tutor">
-              Ask availability
-            </a>
-          </>
+          <a className="btn btn-block" href="#message-tutor">
+            Message
+          </a>
         ) : !session ? (
           <>
             <Link className="btn btn-block" href="/register?role=student">

@@ -32,7 +32,7 @@ export function TutorDashboardShortcuts({
     },
     {
       href: "/ads",
-      label: "Student requests",
+      label: "Requests",
       description: "Browse & reply",
       icon: "▣",
     },

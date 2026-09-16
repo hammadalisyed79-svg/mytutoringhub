@@ -80,7 +80,7 @@ export function TutorProfileStatusCard({
         <ul className="tutor-profile-live-next">
           <li>Share your profile with students</li>
           <li>
-            Reply to <Link href="/ads">student requests</Link>
+            Reply to <Link href="/ads">Requests</Link>
           </li>
           <li>
             Check <Link href="/dashboard/tutor/analytics">views &amp; enquiries</Link>

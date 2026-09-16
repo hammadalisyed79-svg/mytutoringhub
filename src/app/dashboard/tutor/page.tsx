@@ -131,7 +131,7 @@ export default async function TutorDashboardPage({
             </Link>
             {profileComplete ? (
               <Link className="btn btn-secondary" href="/ads">
-                Student requests
+                Requests
               </Link>
             ) : null}
             <SwitchProfileButton

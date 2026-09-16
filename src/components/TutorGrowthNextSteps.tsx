@@ -47,10 +47,10 @@ export function TutorGrowthNextSteps({
     },
     {
       id: "requests",
-      label: "Browse student requests that match what you teach",
+      label: "Browse Requests that match what you teach",
       done: false,
       href: "/ads",
-      cta: "View requests",
+      cta: "View Requests",
     },
   ];
 

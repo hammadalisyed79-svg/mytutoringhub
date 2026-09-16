@@ -1,16 +1,16 @@
 const PILLARS = [
   {
-    title: "Curated discovery",
-    desc: "Search by subject, board, city, and level — compare clear rates and reviews.",
+    title: "Search by what you need",
+    desc: "Filter tutors by subject, exam board, city, and level — with clear rates and reviews.",
     icon: "◎",
   },
   {
-    title: "Transparent pricing",
-    desc: "Plans cover messaging and tools only. Lesson fees stay between you and your tutor.",
+    title: "No commission on lessons",
+    desc: "Platform plans cover messaging and tools only. You pay your tutor directly for lessons.",
     icon: "◈",
   },
   {
-    title: "Global, local feel",
+    title: "Boards students actually sit",
     desc: "From GCSE and IGCSE to Matric, FBISE, and university — online or near you.",
     icon: "◉",
   },
@@ -33,9 +33,10 @@ export function PrestigePillars({ curriculaLine }: { curriculaLine: string }) {
     <section className="section prestige-pillars-section" aria-labelledby="prestige-pillars-title">
       <div className="container">
         <p className="eyebrow prestige-eyebrow">Why My Tutoring Hub</p>
-        <h2 id="prestige-pillars-title">A world-class tutoring experience</h2>
+        <h2 id="prestige-pillars-title">Clear tools. Direct contact.</h2>
         <p className="section-lead">
-          Clear tools for students and tutors — trustworthy from the first search.
+          Find tutors, prepare with past papers, and message when you are ready — without lesson
+          fees going through us.
         </p>
         <div className="prestige-pillars prestige-pillars--split">
           {pillars.map((pillar) => (

@@ -12,7 +12,7 @@ export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusVie
       </h2>
       <p className="muted">
         {view.status === "LIVE"
-          ? "Reply to student requests and keep your Teaching Profiles up to date."
+          ? "Reply to open requests and keep your Teaching Profiles up to date."
           : "Four short profile steps, then one Teaching Profile with a subject and rate."}
       </p>
       <div className="post-verify-checklist-actions">
@@ -21,7 +21,7 @@ export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusVie
         </Link>
         {view.status === "LIVE" ? (
           <Link className="btn btn-secondary" href="/ads">
-            Student requests
+            Requests
           </Link>
         ) : null}
       </div>
@@ -33,7 +33,7 @@ export function PostVerifyStudentChecklist() {
   const steps = [
     { label: "Search tutors by subject and city", href: "/search", done: true },
     { label: "Message tutors (free monthly contacts apply)", href: "/messages", done: false },
-    { label: "Post a student request if you want tutors to come to you", href: "/ads/new", done: false },
+    { label: "Post a request if you want tutors to come to you", href: "/ads/new", done: false },
     { label: "Browse past papers and study tools", href: "/past-papers", done: false },
   ];
 

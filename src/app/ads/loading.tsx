@@ -1,5 +1,5 @@
 import { PageLoading } from "@/components/PageLoading";
 
 export default function Loading() {
-  return <PageLoading title="Student requests" lead="Loading requests…" />;
+  return <PageLoading title="Requests" lead="Loading requests…" />;
 }

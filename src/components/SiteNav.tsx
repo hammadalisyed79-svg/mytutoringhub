@@ -59,7 +59,7 @@ function primaryLinks(role?: string | null) {
   if (role === "ADMIN") return [];
   if (role === "TUTOR") {
     return [
-      { href: "/ads", label: "Student requests" },
+      { href: "/ads", label: "Requests" },
       { href: "/past-papers", label: "Past papers" },
       { href: "/pricing", label: "Plans & pricing" },
     ];
@@ -74,6 +74,7 @@ function primaryLinks(role?: string | null) {
   }
   return [
     { href: "/search", label: "Find tutors" },
+    { href: "/ads", label: "Requests" },
     { href: "/become-a-tutor", label: "Become a tutor" },
     { href: "/past-papers", label: "Past papers" },
     { href: "/pricing", label: "Plans & pricing" },

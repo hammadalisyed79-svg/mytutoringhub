@@ -17,12 +17,11 @@ export async function LoggedInWelcome({
     return (
       <div className="logged-in-welcome" role="status">
         <p className="logged-in-welcome-text">
-          Welcome back, <strong>{firstName}</strong> — check student requests and reply to
-          messages.
+          Welcome back, <strong>{firstName}</strong> — check Requests and reply to messages.
         </p>
         <div className="logged-in-welcome-actions">
           <Link href="/ads" className="btn btn-sm">
-            Student requests
+            Requests
           </Link>
           <Link href="/messages" className="btn btn-secondary btn-sm">
             Messages

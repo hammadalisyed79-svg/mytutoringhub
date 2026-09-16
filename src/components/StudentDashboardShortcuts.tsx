@@ -20,11 +20,11 @@ const SHORTCUTS = [
     icon: "✦",
   },
   {
-    href: "/ads",
-    label: "Student requests",
-    description: "Browse open requests",
-    icon: "▣",
-  },
+      href: "/ads",
+      label: "Requests",
+      description: "Browse open requests",
+      icon: "▣",
+    },
   {
     href: "/past-papers",
     label: "Past papers",

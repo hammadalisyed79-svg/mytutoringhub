@@ -35,7 +35,7 @@ export async function SiteFooter() {
             <Link href="/search">Find tutors</Link>
             <Link href="/subjects">Subjects</Link>
             <Link href="/past-papers">Past papers</Link>
-            {role !== "TUTOR" && <Link href="/ads">Student requests</Link>}
+            {role !== "TUTOR" && <Link href="/ads">Requests</Link>}
             <Link href="/pricing">Plans &amp; pricing</Link>
             <Link href="/free-vs-paid">Free vs paid</Link>
             <Link href="/how-it-works">How it works</Link>
@@ -55,7 +55,7 @@ export async function SiteFooter() {
             {role === "TUTOR" ? (
               <>
                 <Link href="/dashboard/tutor">Tutor dashboard</Link>
-                <Link href="/ads">Student requests</Link>
+                <Link href="/ads">Requests</Link>
                 <Link href="/pricing">Tutor plans</Link>
               </>
             ) : (

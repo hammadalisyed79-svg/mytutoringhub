@@ -8,7 +8,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { ReportButton } from "@/components/ReportButton";
 
 export const metadata = pageMetadata({
-  title: "Student Requests – Find Students Who Need a Tutor",
+  title: "Requests – Find Students Who Need a Tutor",
   description: `${STUDENT_REQUESTS_LINE} Browse open requests by subject and city. Tutors can reply within their monthly contact limits; Tutor Pro unlocks unlimited student contacts.`,
   path: "/ads",
 });
@@ -148,7 +148,7 @@ export default async function AdsPage({
       <div className="container">
         <header className="panel page-hero">
           <div className="page-hero-copy">
-            <h1 className="page-title">Student requests</h1>
+            <h1 className="page-title">Requests</h1>
             <p className="section-lead">
               {session?.user?.role === "TUTOR"
                 ? "Students looking for tutors — reply when you are a good fit."

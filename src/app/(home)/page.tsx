@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { HeroSearch } from "@/components/HeroSearch";
+import { HomeProofStrip } from "@/components/HomeProofStrip";
 import { PrestigePillars } from "@/components/PrestigePillars";
 import { LoggedInWelcome } from "@/components/LoggedInWelcome";
 import { LogoMark } from "@/components/Logo";
@@ -122,6 +124,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <HomeProofStrip />
+      </Suspense>
 
       <section className="section home-popular-subjects" aria-labelledby="popular-subjects-title">
         <div className="container">

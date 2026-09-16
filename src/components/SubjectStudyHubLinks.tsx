@@ -34,7 +34,7 @@ export function SubjectStudyHubLinks({ subject, pastPaperCount, compact }: Props
     <aside className="panel subject-study-hub-links">
       <h2>Study {label} on My Tutoring Hub</h2>
       <p className="muted">
-        Browse tutors, past papers, and student requests — lesson fees stay between you and the tutor.
+        Browse tutors, past papers, and open requests — lesson fees stay between you and the tutor.
       </p>
       <div className="hero-ctas">
         <Link href={hubHref} className="btn btn-sm">
@@ -47,7 +47,7 @@ export function SubjectStudyHubLinks({ subject, pastPaperCount, compact }: Props
           Past papers{pastPaperCount != null && pastPaperCount > 0 ? ` (${pastPaperCount})` : ""}
         </Link>
         <Link href="/ads" className="btn btn-secondary btn-sm">
-          Student requests
+          Requests
         </Link>
       </div>
     </aside>
