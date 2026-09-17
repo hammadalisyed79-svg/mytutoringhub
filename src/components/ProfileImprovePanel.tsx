@@ -12,6 +12,7 @@ export function ProfileImprovePanel({
   trustBadge = "NEW",
   currency = "USD",
   paidCheckoutLive = true,
+  hubPointsBalance = 0,
   priorityPriceLabel,
   showPriorityCheckout = false,
 }: {
@@ -20,6 +21,7 @@ export function ProfileImprovePanel({
   trustBadge?: TutorTrustBadge | string;
   currency?: CurrencyCode | string;
   paidCheckoutLive?: boolean;
+  hubPointsBalance?: number;
   priorityPriceLabel?: string;
   /** When true, show inline Priority Verification purchase (pending / eligible). */
   showPriorityCheckout?: boolean;
@@ -71,6 +73,8 @@ export function ProfileImprovePanel({
                     label="Get Priority Review"
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
+                    hubPointsBalance={hubPointsBalance}
+                    listPricePkr={2999}
                     returnUrl="/dashboard/tutor?tab=profile&verify=1"
                     trigger="verification"
                     sourcePage="profile_improve"

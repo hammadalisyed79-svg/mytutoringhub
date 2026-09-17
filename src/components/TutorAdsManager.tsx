@@ -121,6 +121,7 @@ const EMPTY_CAPS: TeachingProfileEditorValues = {
 function CapacityUpgradeActions({
   currency,
   paidCheckoutLive,
+  hubPointsBalance = 0,
   canBuyExtraActive = true,
   secondaryHref = "/pricing?plan=TUTOR_BASIC",
   secondaryLabel = "Compare plans",
@@ -128,6 +129,7 @@ function CapacityUpgradeActions({
 }: {
   currency: CurrencyCode;
   paidCheckoutLive: boolean;
+  hubPointsBalance?: number;
   canBuyExtraActive?: boolean;
   secondaryHref?: string;
   secondaryLabel?: string;
@@ -143,6 +145,7 @@ function CapacityUpgradeActions({
         label="Activate Tutor Pro"
         featured
         paidCheckoutLive={paidCheckoutLive}
+        hubPointsBalance={hubPointsBalance}
         returnUrl={returnUrl}
         trigger="teaching_profile_limit"
         sourcePage="teaching_profiles"
@@ -358,11 +361,13 @@ export function TutorAdsManager({
   extraLevels = [],
   currency = "USD",
   paidCheckoutLive = true,
+  hubPointsBalance = 0,
 }: {
   subjects: string[];
   extraLevels?: string[];
   currency?: CurrencyCode;
   paidCheckoutLive?: boolean;
+  hubPointsBalance?: number;
 }) {
   const router = useRouter();
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -902,6 +907,7 @@ export function TutorAdsManager({
           <CapacityUpgradeActions
             currency={currency}
             paidCheckoutLive={paidCheckoutLive}
+            hubPointsBalance={hubPointsBalance}
             canBuyExtraActive={entitlement?.canBuyExtraActive !== false}
           />
         </div>
@@ -912,6 +918,7 @@ export function TutorAdsManager({
           <CapacityUpgradeActions
             currency={currency}
             paidCheckoutLive={paidCheckoutLive}
+            hubPointsBalance={hubPointsBalance}
             canBuyExtraActive={Boolean(entitlement.canBuyExtraActive)}
             secondaryHref="/pricing?plan=TUTOR_BASIC"
             secondaryLabel="View plans"
@@ -1108,6 +1115,8 @@ export function TutorAdsManager({
                     featured
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
+                    hubPointsBalance={hubPointsBalance}
+                    listPricePkr={999}
                     subjectProfileId={listing.id}
                     returnUrl={`/dashboard/tutor?tab=profile&listing=${encodeURIComponent(listing.id)}#teaching-listings`}
                     trigger="listing_boost"
@@ -1125,6 +1134,8 @@ export function TutorAdsManager({
                     }
                     oneTime
                     paidCheckoutLive={paidCheckoutLive}
+                    hubPointsBalance={hubPointsBalance}
+                    listPricePkr={Math.round(999 * 9.6)}
                     subjectProfileId={listing.id}
                     returnUrl={`/dashboard/tutor?tab=profile&listing=${encodeURIComponent(listing.id)}#teaching-listings`}
                     trigger="listing_boost"

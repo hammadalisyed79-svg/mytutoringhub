@@ -267,13 +267,20 @@ export async function POST(req: Request) {
       : def.chargePricePkr;
 
   const hubPointsBalance = await getHubPointsBalanceSafe(session.user.id);
-  const pointsRedeemedPkr = useHubPoints
+  let pointsRedeemedPkr = useHubPoints
     ? computeMaxRedeemablePoints(hubPointsBalance, basePricePkr)
     : 0;
-  const chargePricePkr = Math.max(0, basePricePkr - pointsRedeemedPkr);
+  let chargePricePkr = Math.max(0, basePricePkr - pointsRedeemedPkr);
 
-  const amountMajor = pkrToCurrency(chargePricePkr, currency);
-  const amount = toSafepayMinorUnits(amountMajor, currency);
+  let amountMajor = pkrToCurrency(chargePricePkr, currency);
+  let amount = toSafepayMinorUnits(amountMajor, currency);
+  // FX / zero-decimal rounding can wipe a tiny residual charge — ease points until Safepay gets a positive amount.
+  while (amount <= 0 && pointsRedeemedPkr > 0) {
+    pointsRedeemedPkr -= 1;
+    chargePricePkr = Math.max(0, basePricePkr - pointsRedeemedPkr);
+    amountMajor = pkrToCurrency(chargePricePkr, currency);
+    amount = toSafepayMinorUnits(amountMajor, currency);
+  }
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Invalid checkout amount" }, { status: 400 });
   }

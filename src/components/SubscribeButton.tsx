@@ -1,12 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ManualPlanActivationButton } from "@/components/ManualPlanActivationButton";
 import { manualActivationCtaLabel, manualActivationNote } from "@/lib/payments-status";
 import type { SubscriptionPlan } from "@/lib/types";
 import { fireConversionEvent } from "@/components/ConversionBeacon";
 import { checkoutStartedEventForPlan } from "@/lib/analytics-conversions";
 import type { PurchaseTrigger } from "@/lib/purchase-context";
+import { DEFAULT_PLANS } from "@/lib/plans";
+
+/** Keep in sync with HUB_POINTS_* in lib/hub-points.ts (client-safe copy). */
+const REDEMPTION_MAX_RATIO = 0.5;
+const MIN_CASH_PKR = 100;
+
+function maxRedeemablePoints(balance: number, orderPkr: number) {
+  if (balance <= 0 || orderPkr <= 0) return 0;
+  const capByPercent = Math.floor(orderPkr * REDEMPTION_MAX_RATIO);
+  let max = Math.min(balance, capByPercent);
+  if (orderPkr - max < MIN_CASH_PKR && orderPkr > MIN_CASH_PKR) {
+    max = Math.max(0, orderPkr - MIN_CASH_PKR);
+  }
+  if (orderPkr <= MIN_CASH_PKR) {
+    max = Math.min(max, Math.max(0, orderPkr - 1));
+  }
+  return Math.max(0, max);
+}
+
+function resolveListPricePkr(
+  plan: SubscriptionPlan,
+  billing: "monthly" | "annual" | undefined,
+  explicit?: number,
+) {
+  if (explicit != null && explicit > 0) return explicit;
+  const def = DEFAULT_PLANS.find((p) => p.id === plan);
+  if (!def) return 0;
+  if (billing === "annual" && def.annualPricePkr != null) return def.annualPricePkr;
+  return def.pricePkr;
+}
 
 export function SubscribeButton({
   plan,
@@ -48,6 +78,17 @@ export function SubscribeButton({
   const [useHubPoints, setUseHubPoints] = useState(hubPointsBalance > 0);
   const displayName = planLabel || plan.replace(/_/g, " ");
 
+  const resolvedListPricePkr = useMemo(
+    () => resolveListPricePkr(plan, billing, listPricePkr),
+    [plan, billing, listPricePkr],
+  );
+  const redeemablePts = useMemo(
+    () => maxRedeemablePoints(hubPointsBalance, resolvedListPricePkr),
+    [hubPointsBalance, resolvedListPricePkr],
+  );
+  const canRedeem =
+    !complimentary && hubPointsBalance > 0 && resolvedListPricePkr > 0 && redeemablePts > 0;
+
   if (!paidCheckoutLive && !complimentary) {
     return (
       <ManualPlanActivationButton
@@ -82,7 +123,7 @@ export function SubscribeButton({
       plan,
       currency,
       billing: billing ?? "monthly",
-      useHubPoints: useHubPoints && hubPointsBalance > 0,
+      useHubPoints: Boolean(useHubPoints && canRedeem),
       ...(subjectProfileId ? { subjectProfileId } : {}),
       ...(returnUrl ? { returnUrl } : {}),
       ...(trigger ? { trigger } : {}),
@@ -118,6 +159,7 @@ export function SubscribeButton({
       tracker?: string;
       alreadyActive?: boolean;
       manageUrl?: string;
+      pointsRedeemedPkr?: number;
     };
     setLoading(false);
     if (!res.ok) {
@@ -165,14 +207,17 @@ export function SubscribeButton({
 
   return (
     <div className="checkout-action">
-      {hubPointsBalance > 0 && listPricePkr && listPricePkr > 0 && !complimentary ? (
+      {canRedeem ? (
         <label className="points-checkout-toggle">
           <input
             type="checkbox"
             checked={useHubPoints}
             onChange={(e) => setUseHubPoints(e.target.checked)}
           />
-          Apply Hub Points (up to 50% off)
+          Apply Hub Points
+          {useHubPoints
+            ? ` (−${redeemablePts.toLocaleString()} pts, up to 50% off)`
+            : ` (${hubPointsBalance.toLocaleString()} pts available)`}
         </label>
       ) : null}
       <button

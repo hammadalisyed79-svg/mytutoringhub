@@ -62,8 +62,8 @@ export function PointsWalletPanel({
             <Link href="/pricing" className="btn points-wallet-cta">
               Redeem on pricing
             </Link>
-            <Link href="/free-vs-paid" className="btn btn-secondary btn-sm">
-              How points work
+            <Link href="/pricing" className="btn btn-secondary btn-sm">
+              Apply at checkout
             </Link>
           </div>
         </div>

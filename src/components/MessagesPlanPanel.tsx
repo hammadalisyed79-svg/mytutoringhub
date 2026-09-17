@@ -6,6 +6,7 @@ import { getLivePlans } from "@/lib/plans";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { formatPlanPrice, type CurrencyCode } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
+import { getHubPointsBalanceSafe } from "@/lib/hub-points";
 import type { ResolvedPlan } from "@/lib/plans";
 import type { Role } from "@/lib/types";
 
@@ -14,11 +15,13 @@ function CompactPlanCard({
   currency,
   featured,
   paidCheckoutLive,
+  hubPointsBalance = 0,
 }: {
   plan: ResolvedPlan;
   currency: CurrencyCode;
   featured?: boolean;
   paidCheckoutLive: boolean;
+  hubPointsBalance?: number;
 }) {
   const price = plan.isPromoActive ? plan.chargePricePkr : plan.listPricePkr;
 
@@ -66,6 +69,8 @@ function CompactPlanCard({
           featured={featured}
           complimentary={plan.isComplimentary}
           paidCheckoutLive={paidCheckoutLive}
+          hubPointsBalance={hubPointsBalance}
+          listPricePkr={price}
           returnUrl="/messages"
           trigger={plan.id === "TUTOR_BASIC" ? "reveal_limit" : "contact_limit"}
           sourcePage="messages"
@@ -93,11 +98,12 @@ export async function MessagesPlanPanel({
 }) {
   if (role === "ADMIN") return null;
 
-  const [summary, currency, plans, paidCheckoutLive] = await Promise.all([
+  const [summary, currency, plans, paidCheckoutLive, hubPointsBalance] = await Promise.all([
     getPlanDashboardSummary(userId, role),
     getVisitorCurrency(),
     getLivePlans(),
     Promise.resolve(isPaidCheckoutLive()),
+    getHubPointsBalanceSafe(userId),
   ]);
 
   const audience = role === "TUTOR" ? "tutor" : "student";
@@ -185,6 +191,7 @@ export async function MessagesPlanPanel({
                 currency={currency}
                 featured={plan.id === "STUDENT_PASS" || plan.id === "TUTOR_BASIC"}
                 paidCheckoutLive={paidCheckoutLive}
+                hubPointsBalance={hubPointsBalance}
               />
             ))}
           </div>

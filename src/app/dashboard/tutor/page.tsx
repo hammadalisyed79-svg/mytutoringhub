@@ -275,6 +275,7 @@ export default async function TutorDashboardPage({
                 trustBadge={badgeProgress?.current || "NEW"}
                 currency={currency}
                 paidCheckoutLive={paidCheckoutLive}
+                hubPointsBalance={hubPoints.balance}
                 verifyRequested={sp.verify === "1" && !user.tutorProfile.verified}
                 setupComplete={
                   resolveTutorWizardResumeStep({

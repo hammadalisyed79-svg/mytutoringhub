@@ -57,6 +57,7 @@ export function TutorProfileWorkspace({
   trustBadge = "NEW",
   currency = "USD",
   paidCheckoutLive = true,
+  hubPointsBalance = 0,
   verifyRequested = false,
   setupComplete,
   hasValidTeachingProfile,
@@ -72,6 +73,7 @@ export function TutorProfileWorkspace({
   trustBadge?: TutorTrustBadge | string;
   currency?: CurrencyCode;
   paidCheckoutLive?: boolean;
+  hubPointsBalance?: number;
   verifyRequested?: boolean;
   setupComplete: boolean;
   hasValidTeachingProfile: boolean;
@@ -239,6 +241,7 @@ export function TutorProfileWorkspace({
               extraLevels={extraLevels}
               currency={currency}
               paidCheckoutLive={paidCheckoutLive}
+              hubPointsBalance={hubPointsBalance}
             />
             <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
               <button type="button" className="btn btn-secondary" onClick={() => goBackFrom("subjects")}>
@@ -298,6 +301,7 @@ export function TutorProfileWorkspace({
             trustBadge={trustBadge}
             currency={currency}
             paidCheckoutLive={paidCheckoutLive}
+            hubPointsBalance={hubPointsBalance}
             showPriorityCheckout={!initial.verified}
           />
         ) : null}
