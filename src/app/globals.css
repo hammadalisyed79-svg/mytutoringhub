@@ -5821,6 +5821,11 @@ select:focus {
   gap: 1rem;
 }
 
+.assistant-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .assistant-thread {
   display: grid;
   gap: 0.75rem;

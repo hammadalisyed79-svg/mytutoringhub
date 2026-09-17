@@ -28,6 +28,7 @@ export function AiChatPanel({
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   async function load() {
@@ -49,6 +50,25 @@ export function AiChatPanel({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, busy]);
+
+  async function startNewConversation() {
+    if (busy || clearing) return;
+    if (messages.length === 0) return;
+    if (!window.confirm("Start a new conversation? Your previous messages will be cleared.")) {
+      return;
+    }
+    setClearing(true);
+    setError("");
+    const res = await fetch(apiPath, { method: "DELETE" });
+    const data = await res.json().catch(() => ({} as { error?: string }));
+    setClearing(false);
+    if (!res.ok) {
+      setError(typeof data.error === "string" ? data.error : "Could not clear chat");
+      return;
+    }
+    setMessages([]);
+    setInput("");
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -82,6 +102,16 @@ export function AiChatPanel({
 
   return (
     <div className={`assistant-shell${compact ? " assistant-shell-compact" : ""}`}>
+      <div className="assistant-toolbar">
+        <button
+          type="button"
+          className="btn btn-sm btn-secondary"
+          onClick={startNewConversation}
+          disabled={busy || clearing || messages.length === 0}
+        >
+          {clearing ? "Clearing…" : "New conversation"}
+        </button>
+      </div>
       <div className={`assistant-thread${compact ? " assistant-thread-compact" : ""}`}>
         {messages.length === 0 && <p className="muted">{emptyHint}</p>}
         {messages.map((m) => (
@@ -101,10 +131,10 @@ export function AiChatPanel({
           required
           maxLength={4000}
           placeholder={placeholder}
-          disabled={busy}
+          disabled={busy || clearing}
         />
         {error && <p className="form-error">{error}</p>}
-        <button className="btn btn-sm" type="submit" disabled={busy || !input.trim()}>
+        <button className="btn btn-sm" type="submit" disabled={busy || clearing || !input.trim()}>
           Send
         </button>
       </form>

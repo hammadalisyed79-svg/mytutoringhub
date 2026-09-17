@@ -17,11 +17,18 @@ export async function countUserAiMessages(userId: string, kind: AiChatKind, sinc
 }
 
 export async function getAiChatHistory(userId: string, kind: AiChatKind, take = 40) {
-  return prisma.aiMessage.findMany({
+  // Latest messages first, then chronological for display / model context.
+  const rows = await prisma.aiMessage.findMany({
     where: { userId, kind },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take,
   });
+  return rows.reverse();
+}
+
+/** Clears saved chat for this user + kind. Rate-limit counters still use createdAt windows. */
+export async function clearAiChatHistory(userId: string, kind: AiChatKind) {
+  await prisma.aiMessage.deleteMany({ where: { userId, kind } });
 }
 
 export async function sendAiChatMessage({

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   aiChatPayload,
+  clearAiChatHistory,
   countUserAiMessages,
   getAiChatHistory,
   sendAiChatMessage,
@@ -108,4 +109,20 @@ export async function POST(req: Request) {
     message: result.message,
     remaining: result.remaining,
   });
+}
+
+export async function DELETE() {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const access = await studyAccess(session.user.id, session.user.role as Role);
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error, ...(access.upgradeUrl ? { upgradeUrl: access.upgradeUrl } : {}) },
+      { status: access.status },
+    );
+  }
+
+  await clearAiChatHistory(session.user.id, AI_STUDY_KIND);
+  return NextResponse.json({ ok: true });
 }
