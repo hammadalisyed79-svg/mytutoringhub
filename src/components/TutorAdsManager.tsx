@@ -225,10 +225,9 @@ function formatUntil(value: string | null) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function listingBoostActive(boostUntil: Date | null, now: Date) {
-  if (!boostUntil || boostUntil <= now) return false;
-  const daysLeft = Math.floor((boostUntil.getTime() - now.getTime()) / 86400000);
-  return daysLeft % 4 === 0 || daysLeft % 4 === 3;
+/** Paid Listing Boost window still running (purchase entitlement). */
+function hasListingBoostWindow(boostUntil: Date | null, now: Date) {
+  return Boolean(boostUntil && boostUntil > now);
 }
 
 function listingHighlightActive(until: Date | null, now: Date) {
@@ -995,7 +994,8 @@ export function TutorAdsManager({
           const highlightUntil = listing.highlightedUntil
             ? new Date(listing.highlightedUntil)
             : null;
-          const boosted = listingBoostActive(boostUntil, now);
+          const boostWindowActive = hasListingBoostWindow(boostUntil, now);
+          const boostUntilLabel = formatUntil(listing.boostUntil);
           const highlighted = listingHighlightActive(highlightUntil, now);
           const editing = editingId === listing.id;
           const quality = scoreListingQuality(listing);
@@ -1033,17 +1033,16 @@ export function TutorAdsManager({
                   >
                     {quality.band} ({quality.score}/100)
                   </span>
-                  {boosted && <span className="badge accent">Boosted</span>}
+                  {boostWindowActive && <span className="badge accent">Boosted</span>}
                   {highlighted && <span className="badge accent">Highlighted</span>}
                 </div>
               </div>
 
-              {(boosted || (boostUntil && boostUntil > now)) && (
-                <p className="muted teaching-listing-boost-until">
-                  Boost until {formatUntil(listing.boostUntil)}
-                  {!boosted ? " (cycles periodically)" : ""}
+              {boostWindowActive && boostUntilLabel ? (
+                <p className="muted teaching-listing-boost-until" role="status">
+                  Boosted until <strong>{boostUntilLabel}</strong>
                 </p>
-              )}
+              ) : null}
 
               <div className="teaching-listing-actions">
                 <Link className="btn btn-secondary btn-sm" href={listingPath(listing.id)} target="_blank">
@@ -1102,7 +1101,7 @@ export function TutorAdsManager({
                     planLabel="Listing Boost"
                     currency={currency}
                     label={
-                      boosted
+                      boostWindowActive
                         ? `Extend 30-Day Listing Boost · ${formatPlanPrice(999, currency, "once")}`
                         : `30-Day Listing Boost · ${formatPlanPrice(999, currency, "once")}`
                     }
@@ -1120,7 +1119,7 @@ export function TutorAdsManager({
                     currency={currency}
                     billing="annual"
                     label={
-                      boosted
+                      boostWindowActive
                         ? "Extend 365-Day Listing Boost · save 20%"
                         : "365-Day Listing Boost · One-time · save 20%"
                     }
