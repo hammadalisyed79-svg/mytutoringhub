@@ -11,7 +11,6 @@ type AiChatPanelProps = {
   emptyHint?: string;
   placeholder?: string;
   compact?: boolean;
-  showQuota?: boolean;
   unconfiguredMessage?: string;
 };
 
@@ -22,12 +21,10 @@ export function AiChatPanel({
   emptyHint = "Ask a question to get started.",
   placeholder = "Type your message…",
   compact = false,
-  showQuota = false,
   unconfiguredMessage = "AI chat is unavailable right now. Please email admin@mytutoringhub.com.",
 }: AiChatPanelProps) {
   const [configured, setConfigured] = useState(initiallyConfigured);
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [remaining, setRemaining] = useState<number | null>(null);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,7 +39,6 @@ export function AiChatPanel({
     }
     setConfigured(Boolean(data.configured));
     setMessages(data.messages || []);
-    setRemaining(typeof data.remaining === "number" ? data.remaining : null);
     setError("");
   }
 
@@ -78,7 +74,6 @@ export function AiChatPanel({
       return;
     }
     setMessages((prev) => [...prev, data.message]);
-    if (typeof data.remaining === "number") setRemaining(data.remaining);
   }
 
   if (!configured) {
@@ -87,11 +82,6 @@ export function AiChatPanel({
 
   return (
     <div className={`assistant-shell${compact ? " assistant-shell-compact" : ""}`}>
-      {showQuota && remaining !== null && (
-        <p className="muted ai-chat-quota">
-          {remaining} message{remaining === 1 ? "" : "s"} left in the next 24 hours
-        </p>
-      )}
       <div className={`assistant-thread${compact ? " assistant-thread-compact" : ""}`}>
         {messages.length === 0 && <p className="muted">{emptyHint}</p>}
         {messages.map((m) => (

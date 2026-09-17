@@ -12452,6 +12452,21 @@ img {
   color: var(--brand-deep);
 }
 
+.assistant-compose .btn {
+  background: linear-gradient(165deg, #0f6b5c 0%, var(--brand-deep) 100%);
+  color: var(--white);
+}
+
+.assistant-compose .btn:disabled {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+/* Quota counter removed from chat UI — keep hidden if any cached markup remains. */
+.ai-chat-quota {
+  display: none !important;
+}
+
 .ai-chat-unconfigured {
   margin: 0;
   font-size: 0.92rem;
