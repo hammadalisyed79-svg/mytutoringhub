@@ -217,11 +217,20 @@ p a:not(.btn):hover,
   text-decoration-color: currentColor;
 }
 
-.muted .btn,
-.muted a.btn,
-.field-hint .btn,
-.field-hint a.btn {
+/* Primary buttons inside muted/hint copy stay white; secondaries keep dark ink. */
+.muted .btn:not(.btn-secondary):not(.btn-oauth),
+.muted a.btn:not(.btn-secondary):not(.btn-oauth),
+.field-hint .btn:not(.btn-secondary):not(.btn-oauth),
+.field-hint a.btn:not(.btn-secondary):not(.btn-oauth) {
   color: var(--white);
+  text-decoration: none;
+}
+
+.muted .btn-secondary,
+.muted a.btn-secondary,
+.field-hint .btn-secondary,
+.field-hint a.btn-secondary {
+  color: var(--brand-deep);
   text-decoration: none;
 }
 
@@ -689,13 +698,6 @@ svg {
   box-shadow: var(--shadow-glow);
 }
 
-.btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
 .btn-sm {
   padding: 0.5rem 0.95rem;
   font-size: 0.88rem;
@@ -711,7 +713,40 @@ svg {
 .btn-secondary:hover {
   background: var(--brand-soft);
   border-color: rgba(var(--brand-rgb), 0.38);
+  color: var(--brand-deep);
   box-shadow: none;
+}
+
+a.btn-secondary,
+button.btn-secondary,
+.btn.btn-secondary {
+  color: var(--brand-deep);
+}
+
+a.btn:not(.btn-secondary):not(.btn-oauth),
+button.btn:not(.btn-secondary):not(.btn-oauth),
+.btn:not(.btn-secondary):not(.btn-oauth) {
+  color: var(--white);
+}
+
+.btn:disabled,
+a.btn:disabled,
+button.btn:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  border: 1.5px solid rgba(var(--brand-rgb), 0.22);
+}
+
+.btn-secondary:disabled,
+a.btn-secondary:disabled,
+button.btn-secondary:disabled {
+  background: rgba(12, 24, 21, 0.04);
+  color: var(--muted);
+  border-color: var(--line);
 }
 
 /* Secondary buttons on dark hero â€” avoid white-on-white */
@@ -5039,8 +5074,9 @@ select:focus {
   align-self: flex-start;
   padding: 0.28rem 0.62rem;
   border-radius: 999px;
-  background: #22c55e;
-  color: #fff;
+  background: var(--ok-bg);
+  color: var(--ok);
+  border: 1px solid var(--ok-border);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -7587,13 +7623,13 @@ select:focus {
 .points-balance-unit {
   font-size: 1rem;
   font-weight: 600;
-  opacity: 0.88;
+  color: var(--muted);
 }
 
 .points-balance-equiv {
   margin: 0.45rem 0 0;
   font-size: 1rem;
-  opacity: 0.95;
+  color: var(--muted);
 }
 
 .points-balance-equiv strong {
@@ -7604,7 +7640,7 @@ select:focus {
   margin: 0.55rem 0 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  opacity: 0.9;
+  color: var(--muted);
 }
 
 .points-wallet-meta strong {
@@ -7613,13 +7649,13 @@ select:focus {
 
 .points-wallet-meta-sep {
   margin: 0 0.35rem;
-  opacity: 0.65;
+  color: var(--muted-light);
 }
 
 .points-wallet-expiry {
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
-  opacity: 0.85;
+  color: var(--muted);
 }
 
 .points-wallet-hero-actions {
@@ -7662,7 +7698,7 @@ select:focus {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  opacity: 0.78;
+  color: var(--muted);
   margin-bottom: 0.2rem;
 }
 
@@ -8063,13 +8099,29 @@ select:focus {
   }
 }
 
+.teaching-listing-actions .btn-secondary,
+.subject-profile-actions .btn-secondary,
+.teaching-listing-boost-row .btn-secondary,
+.plan-cta .btn-secondary,
+.checkout-action .btn-secondary {
+  color: var(--brand-deep);
+  background: var(--surface-raised);
+}
+
+.teaching-listing-boost-row .btn:not(.btn-secondary),
+.plan-cta .btn:not(.btn-secondary),
+.checkout-action .btn:not(.btn-secondary) {
+  color: var(--white);
+}
+
 .points-checkout-toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.65rem;
   font-size: 0.92rem;
-  color: var(--muted);
+  color: var(--ink-soft);
+  font-weight: 500;
 }
 
 .pagination {
@@ -9414,12 +9466,21 @@ a.chip-btn {
     background: rgba(var(--brand-rgb), 0.07);
   }
 
-  .nav-drawer-inner .btn {
+  .nav-drawer-inner .btn:not(.btn-secondary) {
     justify-content: center;
     margin-top: 0.65rem;
     width: 100%;
     background: var(--brand);
     color: var(--white);
+  }
+
+  .nav-drawer-inner .btn-secondary {
+    justify-content: center;
+    margin-top: 0.65rem;
+    width: 100%;
+    background: var(--surface-raised);
+    color: var(--brand-deep);
+    border: 1.5px solid rgba(var(--brand-rgb), 0.28);
   }
 
   .nav-drawer-account {
@@ -10468,29 +10529,40 @@ img {
   font-size: 0.75rem;
   font-weight: 650;
   text-transform: capitalize;
-  color: #fff;
-  background: #6b7280;
+  color: var(--ink);
+  background: rgba(12, 24, 21, 0.08);
+  border: 1px solid var(--line);
   white-space: nowrap;
 }
 
 .admin-badge--active {
-  background: #16a34a;
+  color: #065f46;
+  background: rgba(4, 120, 87, 0.12);
+  border-color: rgba(4, 120, 87, 0.28);
 }
 
 .admin-badge--trialing {
-  background: #2563eb;
+  color: #1e40af;
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.28);
 }
 
 .admin-badge--canceled {
-  background: #dc2626;
+  color: #991b1b;
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.28);
 }
 
 .admin-badge--past_due {
-  background: #d97706;
+  color: #92400e;
+  background: rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.28);
 }
 
 .admin-badge--incomplete {
-  background: #9ca3af;
+  color: var(--muted);
+  background: rgba(12, 24, 21, 0.06);
+  border-color: var(--line);
 }
 
 .admin-kpi-grid {
@@ -10616,6 +10688,13 @@ img {
 .admin-modal-danger {
   background: #dc2626;
   border-color: #dc2626;
+  color: #fff;
+}
+
+.admin-modal-danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
 }
 
 .admin-stat-grid {
@@ -10792,10 +10871,12 @@ img {
 
 .admin-danger-btn {
   background: var(--danger);
+  color: #fff;
 }
 
 .admin-danger-btn:hover {
   background: #7f1616;
+  color: #fff;
 }
 
 .admin-mod-alert {
@@ -11985,7 +12066,14 @@ img {
 
 .teaching-listing-card.is-paused,
 .subject-profile-card.is-paused {
-  opacity: 0.82;
+  background: color-mix(in srgb, var(--bg, #fff) 86%, var(--paper-deep));
+  border-style: dashed;
+  opacity: 1;
+}
+
+.teaching-listing-card.is-paused .teaching-listing-title,
+.subject-profile-card.is-paused .teaching-listing-title {
+  color: var(--muted);
 }
 
 .teaching-listing-card-head,
@@ -15279,6 +15367,11 @@ html {
 .home-page .section-lead,
 .home-page .muted {
   color: var(--muted);
+}
+
+.home-page .home-tutor-recruit .muted,
+.home-page .home-tutor-recruit .section-lead {
+  color: var(--on-dark-muted);
 }
 
 .home-page .hero.hero-clean .hero-split-inner {

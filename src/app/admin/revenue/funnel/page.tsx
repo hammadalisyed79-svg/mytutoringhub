@@ -25,9 +25,9 @@ function Card({ label, value, hint }: { label: string; value: string | number; h
       }}
     >
       <div style={{ fontSize: 22, fontWeight: 700 }}>{value}</div>
-      <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{label}</div>
       {hint ? (
-        <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>{hint}</div>
+        <div style={{ fontSize: 11, color: "var(--muted-light)", marginTop: 4 }}>{hint}</div>
       ) : null}
     </div>
   );
@@ -44,7 +44,7 @@ export default async function RevenueFunnelPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Revenue funnel (observed)</h1>
-          <p style={{ color: "#6b7280", fontSize: 13, margin: "6px 0 0" }}>
+          <p style={{ color: "var(--muted)", fontSize: 13, margin: "6px 0 0" }}>
             MTD from {new Date(report.period.since).toLocaleDateString()} — real Prisma data only. No
             forecasts. Boost performance claims remain parked.
           </p>
@@ -169,7 +169,7 @@ export default async function RevenueFunnelPage() {
           <Card label="Pass quota exhausted" value={report.pastPapers.passUsersReachingQuota} />
           <Card label="Pro after quota (same users)" value={report.pastPapers.studentProAfterQuota} />
         </div>
-        <p style={{ fontSize: 12, color: "#9ca3af" }}>{report.pastPapers.note}</p>
+        <p style={{ fontSize: 12, color: "var(--muted-light)" }}>{report.pastPapers.note}</p>
       </section>
 
       <section>
@@ -192,7 +192,7 @@ export default async function RevenueFunnelPage() {
             ))}
           </tbody>
         </table>
-        <p style={{ fontSize: 12, color: "#9ca3af" }}>{r.currencyNote}</p>
+        <p style={{ fontSize: 12, color: "var(--muted-light)" }}>{r.currencyNote}</p>
       </section>
 
       <section>
