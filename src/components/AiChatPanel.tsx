@@ -22,7 +22,7 @@ export function AiChatPanel({
   emptyHint = "Ask a question to get started.",
   placeholder = "Type your message…",
   compact = false,
-  showQuota = true,
+  showQuota = false,
   unconfiguredMessage = "AI chat is unavailable right now. Please email admin@mytutoringhub.com.",
 }: AiChatPanelProps) {
   const [configured, setConfigured] = useState(initiallyConfigured);

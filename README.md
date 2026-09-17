@@ -70,14 +70,12 @@ node scripts/ping-sitemap.mjs
 
 Optional env `SITE_SOCIAL_URLS` (comma-separated `https://…`) populates Organization `sameAs` in JSON-LD.
 
-Public footer + share icons use **Production** env vars (redeploy after setting):
+Public footer + Organization `sameAs` social profiles (defaults built in; env overrides):
 
-- `NEXT_PUBLIC_SOCIAL_LINKEDIN` — e.g. `https://www.linkedin.com/company/mytutoringhub`
-- `NEXT_PUBLIC_SOCIAL_FACEBOOK`
-- `NEXT_PUBLIC_SOCIAL_INSTAGRAM`
-- `NEXT_PUBLIC_SOCIAL_X`
-- `NEXT_PUBLIC_SOCIAL_YOUTUBE`
-- `NEXT_PUBLIC_SOCIAL_TIKTOK`
+- Facebook — `https://www.facebook.com/mytutoringhubofficial` (`NEXT_PUBLIC_SOCIAL_FACEBOOK`)
+- Instagram — `https://www.instagram.com/mytutoringhub/` (`NEXT_PUBLIC_SOCIAL_INSTAGRAM`)
+- TikTok — `https://www.tiktok.com/@mytutoringhubofficial` (`NEXT_PUBLIC_SOCIAL_TIKTOK`)
+- Optional: `NEXT_PUBLIC_SOCIAL_LINKEDIN`, `NEXT_PUBLIC_SOCIAL_X`, `NEXT_PUBLIC_SOCIAL_YOUTUBE`
 
 ## Student requests
 

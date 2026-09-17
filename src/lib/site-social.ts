@@ -12,13 +12,20 @@ export type SiteSocialLink = {
   href: string;
 };
 
+/** Canonical public profiles — env vars can override. */
+const DEFAULT_SOCIAL_URLS: Partial<Record<SiteSocialPlatform, string>> = {
+  facebook: "https://www.facebook.com/mytutoringhubofficial",
+  instagram: "https://www.instagram.com/mytutoringhub/",
+  tiktok: "https://www.tiktok.com/@mytutoringhubofficial",
+};
+
 const SOCIAL_ENV: Array<{ platform: SiteSocialPlatform; label: string; key: string }> = [
-  { platform: "linkedin", label: "LinkedIn", key: "NEXT_PUBLIC_SOCIAL_LINKEDIN" },
   { platform: "facebook", label: "Facebook", key: "NEXT_PUBLIC_SOCIAL_FACEBOOK" },
   { platform: "instagram", label: "Instagram", key: "NEXT_PUBLIC_SOCIAL_INSTAGRAM" },
+  { platform: "tiktok", label: "TikTok", key: "NEXT_PUBLIC_SOCIAL_TIKTOK" },
+  { platform: "linkedin", label: "LinkedIn", key: "NEXT_PUBLIC_SOCIAL_LINKEDIN" },
   { platform: "x", label: "X", key: "NEXT_PUBLIC_SOCIAL_X" },
   { platform: "youtube", label: "YouTube", key: "NEXT_PUBLIC_SOCIAL_YOUTUBE" },
-  { platform: "tiktok", label: "TikTok", key: "NEXT_PUBLIC_SOCIAL_TIKTOK" },
 ];
 
 function normalizeSocialUrl(raw: string) {
@@ -28,13 +35,17 @@ function normalizeSocialUrl(raw: string) {
   return `https://${trimmed.replace(/^\/+/, "")}`;
 }
 
-/** Public footer / marketing social profiles (set on Vercel as NEXT_PUBLIC_SOCIAL_*). */
+/** Public footer / marketing social profiles (defaults + optional NEXT_PUBLIC_SOCIAL_* overrides). */
 export function getSiteSocialLinks(): SiteSocialLink[] {
-  return SOCIAL_ENV.map(({ platform, label, key }) => ({
-    platform,
-    label,
-    href: normalizeSocialUrl(process.env[key] || ""),
-  })).filter((entry) => entry.href.length > 0);
+  return SOCIAL_ENV.map(({ platform, label, key }) => {
+    const fromEnv = normalizeSocialUrl(process.env[key] || "");
+    const fromDefault = normalizeSocialUrl(DEFAULT_SOCIAL_URLS[platform] || "");
+    return {
+      platform,
+      label,
+      href: fromEnv || fromDefault,
+    };
+  }).filter((entry) => entry.href.length > 0);
 }
 
 /** Extra sameAs URLs for JSON-LD (comma-separated SITE_SOCIAL_URLS). */
