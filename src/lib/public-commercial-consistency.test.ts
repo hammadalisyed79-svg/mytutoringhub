@@ -243,10 +243,13 @@ assert.doesNotMatch(
   supportLive,
   /unlimited past papers with Student Pass|faster responses with Student Pass/i,
 );
-assert.match(supportLive, /Website FAQ knowledge|Help centre/);
+assert.match(supportLive, /professional support specialist|How to talk \(sound human\)/i);
+assert.match(supportLive, /Website FAQ knowledge/);
 assert.match(supportLive, /Policies \(summaries/);
 assert.match(supportLive, /\/countries\//);
 assert.match(supportLive, /badge is earned, not purchased|Never say users can buy the Identity Verified badge/i);
+assert.doesNotMatch(supportLive, /help bot/i);
+assert.doesNotMatch(supportLive, /Certainly!|Is there anything else I can help you with/i);
 
 const studyPrompt = buildAiStudySystemPrompt();
 assert.match(studyPrompt, /Student Pro/);

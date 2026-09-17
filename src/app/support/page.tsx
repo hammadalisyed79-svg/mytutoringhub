@@ -39,9 +39,8 @@ export default async function SupportPage() {
       <div className="container narrow-prose">
         <h1 className="page-title">Support</h1>
         <p className="section-lead">
-          Instant answers about Student Pass, Student Pro, Tutor Pro, messaging limits, Teaching
-          Profiles, student requests, past papers, verification, Safepay billing, and how the
-          platform works. For homework help, use the{" "}
+          Chat with support about plans, messaging, Teaching Profiles, past papers, verification,
+          and billing. For homework help, use the{" "}
           <Link href="/assistant">Study assistant</Link> (Student Pro for students).
         </p>
         <AiChatPanel
