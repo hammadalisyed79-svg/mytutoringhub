@@ -249,7 +249,7 @@ assert.match(supportLive, /Policies \(summaries/);
 assert.match(supportLive, /\/countries\//);
 assert.match(supportLive, /badge is earned, not purchased|Never say users can buy the Identity Verified badge/i);
 assert.doesNotMatch(supportLive, /help bot/i);
-assert.doesNotMatch(supportLive, /Certainly!|Is there anything else I can help you with/i);
+assert.match(supportLive, /Avoid filler, emoji, slang, and chatbot phrases/i);
 
 const studyPrompt = buildAiStudySystemPrompt();
 assert.match(studyPrompt, /Student Pro/);
