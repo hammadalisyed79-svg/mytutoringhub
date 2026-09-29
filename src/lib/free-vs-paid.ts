@@ -166,7 +166,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Do tutors pay to be listed?",
-    a: `No. A complete profile (photo, subjects, headline, and bio) appears in search for free. ${TUTOR_FREE_LISTING_LINE}`,
+    a: `No. A complete profile (photo, headline, bio, location, qualifications, and one Teaching Profile with subject + rate) appears in search for free — that’s when students can message you. ${TUTOR_FREE_LISTING_LINE}`,
   },
   {
     q: "Is Tutor Pro really free right now?",

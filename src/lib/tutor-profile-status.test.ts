@@ -49,7 +49,7 @@ const completeBase = {
   assert.equal(view.status, "LIVE");
   assert.equal(view.percent, 100);
   assert.equal(view.cta?.label, "See how students see you");
-  assert.ok(view.summary.toLowerCase().includes("visible"));
+  assert.ok(view.summary.toLowerCase().includes("message"));
 }
 
 // Paid plan does not invent LIVE when profile incomplete / inactive

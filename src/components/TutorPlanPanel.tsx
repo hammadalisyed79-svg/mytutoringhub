@@ -81,7 +81,7 @@ export function TutorPlanPanel({
             <p className="tutor-plan-lead">
               {hasBenefits
                 ? `${activePlans.length} active benefit${activePlans.length === 1 ? "" : "s"} on your account`
-                : "Complete your profile for free search visibility — upgrade when you are ready"}
+                : "Complete your profile to appear in search and receive messages — upgrade when you are ready"}
             </p>
           </div>
           {corePlan ? (
@@ -144,10 +144,10 @@ export function TutorPlanPanel({
               </>
             ) : (
               <p>
-                Complete your profile to appear in search for free with{" "}
-                {BUSINESS.tutorFreeActiveListings} Teaching Profile. Tutor Pro unlocks
-                relevance-first ranking, unlimited student contacts, and up to{" "}
-                {BUSINESS.tutorProActiveListings} Teaching Profiles.
+                Complete your profile — including one Teaching Profile — to appear in search and
+                receive student messages for free with {BUSINESS.tutorFreeActiveListings} Teaching
+                Profile. Tutor Pro unlocks relevance-first ranking, unlimited student contacts, and
+                up to {BUSINESS.tutorProActiveListings} Teaching Profiles.
               </p>
             )}
           </div>

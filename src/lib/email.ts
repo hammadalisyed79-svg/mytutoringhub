@@ -454,27 +454,27 @@ export function tutorProfileIncompleteEmailHtml(opts: {
 
   if (opts.step === 1) {
     const subjectLead = missingTeaching
-      ? `<p>Start by creating your first <strong>Teaching Profile</strong> (one subject, rate, and how you teach), then finish any other remaining details so your profile can become eligible for tutor search.</p>`
-      : `<p>Finish the remaining listing details so your profile can become eligible for tutor search.</p>`;
+      ? `<p><strong>Students can’t message you until you’re live.</strong> Start by creating your first <strong>Teaching Profile</strong> (one subject, rate, and how you teach), then finish any other remaining details.</p>`
+      : `<p><strong>Students can’t message you until you’re live in search.</strong> Finish the remaining listing details so your profile can become eligible.</p>`;
     return emailLayout({
-      preheader: "Your tutor account is ready — your profile is not visible to students yet",
+      preheader: "Students can’t message you until your tutor profile is live",
       title: "Complete your tutor profile",
       body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your tutor account on ${brand} exists, but your profile is <strong>not currently visible</strong> to students in search.</p>
+<p>Your tutor account on ${brand} exists, but your profile is <strong>not currently visible</strong> to students — and they can’t send you messages yet.</p>
 ${subjectLead}
 <p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>
-<p>Completing these details can make your profile eligible for search when all requirements are met. This is not a rejection — save when you are ready.</p>`,
+<p>Completing these details makes your profile eligible for search when all requirements are met. This is not a rejection — save when you are ready.</p>`,
       cta: { label: "Complete my profile", href: opts.dashboardUrl },
     });
   }
 
   if (opts.step === 2) {
     return emailLayout({
-      preheader: "Your tutor profile is still hidden from students",
+      preheader: "Your tutor profile is still hidden — students can’t message you yet",
       title: "Finish your tutor profile",
       body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>A quick reminder: your tutor profile is still not visible to students.</p>
-<p>Completing the remaining details can make it eligible to appear in tutor search.</p>
+<p>A quick reminder: your tutor profile is still not visible to students, so they can’t message you.</p>
+<p>Completing the remaining details — especially one Teaching Profile with a subject and rate — makes you eligible to appear in search.</p>
 <p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
       cta: { label: "Finish my tutor profile", href: opts.dashboardUrl },
     });
@@ -486,7 +486,7 @@ ${subjectLead}
       preheader: "Complete your tutor profile when you are ready",
       title: "Complete your tutor profile",
       body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>This is a final, respectful reminder: your listing is still not visible to students.</p>
+<p>This is a final, respectful reminder: your listing is still not visible to students, and they can’t message you until you’re live.</p>
 <p>When you are ready, complete your profile from the dashboard. Your account stays safe — we will not delete it for being incomplete.</p>
 <p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
       cta: { label: "Complete my profile", href: opts.dashboardUrl },
@@ -494,10 +494,10 @@ ${subjectLead}
   }
 
   return emailLayout({
-    preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete — your profile is not visible to students yet`,
+    preheader: `${opts.requiredDone}/${opts.requiredTotal} required fields complete — students can’t message you yet`,
     title: "Complete your tutor profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your tutor profile on ${brand} is still hidden from students until the remaining listing details are saved.</p>
+<p>Your tutor profile on ${brand} is still hidden from students until the remaining listing details are saved. Students can’t message you until you’re live in search.</p>
 <p><strong>Still needed:</strong> ${escapeHtml(missingPreview.join(", "))}${more}.</p>`,
     cta: { label: "Complete my profile", href: opts.dashboardUrl },
   });
@@ -505,11 +505,11 @@ ${subjectLead}
 
 export function tutorProfileNeverStartedEmailHtml(opts: { name: string; dashboardUrl: string }) {
   return emailLayout({
-    preheader: "Your tutor account is ready — add your first details.",
+    preheader: "Students can’t message you until your tutor profile is live.",
     title: "Start your tutor profile",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>You verified your email but haven't started your tutor profile yet. It only takes a few minutes to add a photo, subjects, headline, and your highest qualification.</p>
-<p>Complete profiles appear in search for free. Tutor Pro adds priority placement when you're ready to grow.</p>`,
+<p>You verified your email but haven’t started your tutor profile yet. Add a photo, about you, location, qualifications, and one <strong>Teaching Profile</strong> (subject + rate).</p>
+<p>Complete profiles appear in search for free — and that’s when students can message you. Tutor Pro adds priority placement when you’re ready to grow.</p>`,
     cta: { label: "Start my profile", href: opts.dashboardUrl },
     footer: `<a href="${appUrl}/pricing?plan=TUTOR_BASIC">View Tutor Pro plans</a> · Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
   });
@@ -521,14 +521,14 @@ export function tutorProfileLiveEmailHtml(opts: {
   dashboardUrl: string;
 }) {
   return emailLayout({
-    preheader: "Your profile is now visible in tutor search.",
-    title: "You're live in search",
+    preheader: "You’re live — students can find and message you.",
+    title: "You’re live in search",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Congratulations — your tutor profile is complete and now visible to students browsing ${brand}.</p>
+<p>Congratulations — your tutor profile is complete and now visible to students browsing ${brand}. <strong>Students can message you</strong> from search and your Teaching Profile pages.</p>
 <p>You earned <strong>200 Hub Points</strong> for completing your profile. Use them toward Tutor Pro or a Listing Boost.</p>
-<p>Tip: add a <strong>subject profile</strong> for each subject you teach so Maths and Physics show as separate search cards. Boost any listing individually from your dashboard.</p>
-<p>Share your public profile link with students and start replying to requests.</p>`,
-    cta: { label: "Manage subject profiles", href: `${opts.dashboardUrl}?tab=profile#subject-profiles` },
+<p>Tip: add a Teaching Profile for each subject you teach so Maths and Physics show as separate search cards. Boost any listing individually from your dashboard.</p>
+<p>Share your public profile link and reply promptly when students reach out.</p>`,
+    cta: { label: "Manage Teaching Profiles", href: `${opts.dashboardUrl}?tab=profile#teaching-listings` },
     footer: `<a href="${opts.profileUrl}">View public profile</a> · <a href="${opts.dashboardUrl}">Open dashboard</a> · Questions? Contact admin@mytutoringhub.com`,
   });
 }

@@ -128,7 +128,10 @@ export function resolveTutorWizardResumeStep(
 export function resolveTutorWorkspaceBlock(opts: {
   verifyRequested?: boolean;
   setupComplete: boolean;
+  /** Any Teaching Profile row — legacy callers. Prefer hasValidTeachingProfile. */
   hasTeachingProfile: boolean;
+  /** ACTIVE Teaching Profile with subject + rate + mode — required before optional polish. */
+  hasValidTeachingProfile?: boolean;
   startExtra?: TutorWizardExtraId | null;
 }): TutorWorkspaceBlockId {
   if (opts.verifyRequested) return "verify";
@@ -136,6 +139,10 @@ export function resolveTutorWorkspaceBlock(opts: {
     return opts.startExtra;
   }
   if (!opts.setupComplete) return "setup";
-  if (!opts.hasTeachingProfile) return "subjects";
+  const teachingReady =
+    typeof opts.hasValidTeachingProfile === "boolean"
+      ? opts.hasValidTeachingProfile
+      : opts.hasTeachingProfile;
+  if (!teachingReady) return "subjects";
   return "setup";
 }

@@ -423,7 +423,7 @@ export default async function TutorAnalyticsPage() {
                 ? hasPaidPlan
                   ? "Listed with paid priority. Listing Boost strengthens one Teaching Profile among relevant matches for 30 days."
                   : "Listed in search for free. Tutor Pro adds priority ranking and unlimited student contacts."
-                : "Complete your profile (subjects + headline or photo) to appear in search."}
+                : "Complete your profile and one Teaching Profile to appear in search and receive messages."}
             </p>
             {listed && !hasPaidPlan ? (
               <p style={{ margin: "0.65rem 0 0" }}>

@@ -114,7 +114,7 @@ export function buildTutorProfileStatus(input: TutorProfileStatusInput): TutorPr
     return {
       status: "LIVE",
       title: "Your profile is live",
-      summary: "Your profile is visible to students in tutor search.",
+      summary: "You’re visible in search — students can find and message you.",
       percent: 100,
       stepsRemaining: 0,
       checks,
@@ -133,8 +133,8 @@ export function buildTutorProfileStatus(input: TutorProfileStatusInput): TutorPr
     stepsRemaining === 0 && assessment.suspiciousName
       ? "Update the name students see before your profile can appear in search."
       : stepsRemaining === 1
-        ? "1 step remaining before your profile can go live."
-        : `${stepsRemaining} steps remaining before your profile goes live.`;
+        ? "1 step remaining — then students can find and message you."
+        : `${stepsRemaining} steps remaining before students can find and message you.`;
 
   return {
     status: "INCOMPLETE",

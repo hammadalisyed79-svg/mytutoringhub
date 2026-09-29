@@ -369,9 +369,10 @@ export default async function TutorProfilePage({ params }: Params) {
 
         {profileIncomplete && (
           <div className="profile-complete-banner">
-            <strong>Complete your profile to get more student enquiries</strong>
+            <strong>Complete your profile to receive student messages</strong>
             <p className="muted">
-              Add a photo, introduction, and subjects so students can find and trust your listing.
+              Add a photo, introduction, location, qualifications, and one Teaching Profile (subject +
+              rate). Students can’t message you until you’re live in search.
             </p>
             <Link href="/dashboard" className="btn btn-sm">
               Complete profile

@@ -25,8 +25,12 @@ export const STUDENT_FREE_CONTACTS_LINE = `Free accounts include ${BUSINESS.stud
 
 export const STUDENT_PASS_PAPERS_LINE = `Student Pass includes ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro includes unlimited eligible downloads. Anyone can browse the library; individual papers can also be purchased separately when offered.`;
 
+/** One sentence for dashboards, emails, and status — what unlocks search + inbound messages. */
+export const TUTOR_GO_LIVE_REQUIREMENTS_LINE =
+  "Go live with a photo, about you, location, qualifications, and one Teaching Profile (subject, rate, and online or in person). Students can’t message you until you’re live in search.";
+
 export const TUTOR_FREE_LISTING_LINE =
-  `Complete your profile to appear in search for free. Free tutors get ${BUSINESS.tutorFreeActiveListings} active Teaching Profile, enquiries, and 100% of lesson fees. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles plus growth tools.`;
+  `Complete your profile — including one Teaching Profile — to appear in search and receive student messages for free. Free tutors get ${BUSINESS.tutorFreeActiveListings} active Teaching Profile, enquiries, and 100% of lesson fees. Tutor Pro unlocks up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles plus growth tools.`;
 
 export const TUTOR_PRO_LISTING_LINE =
   `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking among matching students, and unlimited student contacts when you message first.`;

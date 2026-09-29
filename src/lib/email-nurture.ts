@@ -115,8 +115,8 @@ export async function sendTutorProfileReminderEmail(userId: string, step: 1 | 2 
 
   try {
     const subjects: Record<1 | 2 | 3 | 4, string> = {
-      1: "Complete your My Tutoring Hub tutor profile",
-      2: "Finish your tutor profile on My Tutoring Hub",
+      1: "Students can’t message you yet — complete your tutor profile",
+      2: "Finish your tutor profile so students can message you",
       3: "Complete your My Tutoring Hub tutor profile",
       4: "Complete your My Tutoring Hub tutor profile",
     };
@@ -165,7 +165,7 @@ export async function sendTutorProfileNeverStartedEmail(userId: string) {
   try {
     await sendEmail({
       to: user.email,
-      subject: "Start your tutor profile · My Tutoring Hub",
+      subject: "Start your tutor profile so students can message you",
       html: tutorProfileNeverStartedEmailHtml({
         name: user.name,
         dashboardUrl: `${appUrl()}/dashboard/tutor`,

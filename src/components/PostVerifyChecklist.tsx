@@ -8,12 +8,12 @@ export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusVie
         Email confirmed — nice work.
       </p>
       <h2 id="post-verify-tutor-title">
-        {view.status === "LIVE" ? "Your profile can appear in search" : "Finish Quick setup to go live"}
+        {view.status === "LIVE" ? "Students can find and message you" : "Finish setup to go live"}
       </h2>
       <p className="muted">
         {view.status === "LIVE"
           ? "Reply to open requests and keep your Teaching Profiles up to date."
-          : "Four short profile steps, then one Teaching Profile with a subject and rate."}
+          : "Photo, about you, location, qualifications — then publish one Teaching Profile. Students can’t message you until you’re live."}
       </p>
       <div className="post-verify-checklist-actions">
         <Link className="btn" href="/dashboard/tutor?tab=profile#tutor-profile">

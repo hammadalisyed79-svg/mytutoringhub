@@ -610,7 +610,7 @@ export function TutorProfileForm({
       setMsg(
         nowLive
           ? "Setup saved — your Teaching Profile is live in search."
-          : "Setup saved. Continue to Teaching Profiles to go live.",
+          : "Setup saved. Publish one Teaching Profile next — students can’t message you until you’re live.",
       );
       await update({ name: name.trim() });
       if (onSetupComplete) {

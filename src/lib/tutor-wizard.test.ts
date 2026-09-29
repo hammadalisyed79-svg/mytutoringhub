@@ -19,6 +19,22 @@ assert.equal(resolveTutorWorkspaceBlock({ setupComplete: false, hasTeachingProfi
 assert.equal(resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: false }), "subjects");
 assert.equal(resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: true }), "setup");
 assert.equal(
+  resolveTutorWorkspaceBlock({
+    setupComplete: true,
+    hasTeachingProfile: true,
+    hasValidTeachingProfile: false,
+  }),
+  "subjects",
+);
+assert.equal(
+  resolveTutorWorkspaceBlock({
+    setupComplete: true,
+    hasTeachingProfile: true,
+    hasValidTeachingProfile: true,
+  }),
+  "setup",
+);
+assert.equal(
   resolveTutorWorkspaceBlock({ setupComplete: true, hasTeachingProfile: true, verifyRequested: true }),
   "verify",
 );

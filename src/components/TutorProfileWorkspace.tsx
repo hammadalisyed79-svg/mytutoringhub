@@ -87,9 +87,10 @@ export function TutorProfileWorkspace({
         verifyRequested,
         setupComplete,
         hasTeachingProfile: hasAnyTeachingProfile,
+        hasValidTeachingProfile,
         startExtra,
       }),
-    [verifyRequested, setupComplete, hasAnyTeachingProfile, startExtra],
+    [verifyRequested, setupComplete, hasAnyTeachingProfile, hasValidTeachingProfile, startExtra],
   );
   const [block, setBlock] = useState<TutorWorkspaceBlockId>(initialBlock);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -118,12 +119,29 @@ export function TutorProfileWorkspace({
     });
   }
 
+  const optionalBlockIds = new Set<TutorWorkspaceBlockId>([
+    "details",
+    "schedule",
+    "contact",
+    "verify",
+  ]);
+
   function goTo(id: TutorWorkspaceBlockId) {
+    // Teaching Profiles unlock search + inbound messages — don't skip past them.
+    if (optionalBlockIds.has(id) && !hasValidTeachingProfile) {
+      setBlock("subjects");
+      scrollToForm();
+      return;
+    }
     setBlock(id);
     scrollToForm();
   }
 
   function goNextFrom(id: TutorWorkspaceBlockId) {
+    if (id === "subjects" && !hasValidTeachingProfile) {
+      document.getElementById("teaching-listings")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const i = TUTOR_WORKSPACE_BLOCK_IDS.indexOf(id);
     goTo(TUTOR_WORKSPACE_BLOCK_IDS[Math.min(i + 1, TUTOR_WORKSPACE_BLOCK_IDS.length - 1)]);
   }
@@ -142,7 +160,7 @@ export function TutorProfileWorkspace({
           <p className="muted tutor-workspace-lead">
             {profileComplete
               ? "Refine your presence anytime — move through each stage at your pace."
-              : "A calm path from profile to subjects. Optional polish comes after."}
+              : "Finish your profile and publish one Teaching Profile to go live. Students can’t message you until you’re in search."}
           </p>
           <div className="tutor-workspace-preview-actions">
             <Link
@@ -179,7 +197,7 @@ export function TutorProfileWorkspace({
             const active = row.id === block;
             const done =
               (row.id === "setup" && setupComplete) ||
-              (row.id === "subjects" && hasAnyTeachingProfile) ||
+              (row.id === "subjects" && hasValidTeachingProfile) ||
               (row.optional && TUTOR_WORKSPACE_BLOCK_IDS.indexOf(row.id) < blockIndex);
             const incomplete = !done && !active && (!row.optional || TUTOR_WORKSPACE_BLOCK_IDS.indexOf(row.id) < blockIndex);
             return (
@@ -234,7 +252,16 @@ export function TutorProfileWorkspace({
               <h3 className="tutor-workspace-heading" id="teaching-listings-section">
                 Teaching Profiles
               </h3>
-              <p className="muted">One subject each — students find you by subject and rate.</p>
+              <p className="muted">
+                Publish at least one subject with a rate — required to appear in search and receive
+                student messages. Optional polish comes after.
+              </p>
+              {!hasValidTeachingProfile ? (
+                <p className="form-error" role="status">
+                  Add and publish one Teaching Profile to continue. Skipping is not available — students
+                  can’t message you until you’re live.
+                </p>
+              ) : null}
             </header>
             <TutorAdsManager
               subjects={subjects}
@@ -248,8 +275,18 @@ export function TutorProfileWorkspace({
                 Back
               </button>
               <div className="profile-wizard-actions-right">
-                <button type="button" className="btn" onClick={() => goNextFrom("subjects")}>
-                  {hasAnyTeachingProfile ? "Continue" : "Skip for now"}
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => goNextFrom("subjects")}
+                  disabled={!hasValidTeachingProfile}
+                  title={
+                    hasValidTeachingProfile
+                      ? undefined
+                      : "Publish one Teaching Profile first to go live and receive messages"
+                  }
+                >
+                  {hasValidTeachingProfile ? "Continue" : "Publish a Teaching Profile to continue"}
                 </button>
               </div>
             </div>
