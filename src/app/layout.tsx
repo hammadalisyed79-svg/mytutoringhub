@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { GoogleTagHead } from "@/components/GoogleTagHead";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TrustRibbon } from "@/components/TrustRibbon";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -92,6 +92,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
+      <head>
+        <GoogleTagHead />
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <a href="#main-content" className="skip-to-main">
           Skip to main content
@@ -110,7 +113,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             aiDisabled={settings.disableAiAssistant}
           />
           <ServiceWorkerRegister />
-          <GoogleAnalytics />
           <Analytics />
         </Providers>
       </body>
