@@ -544,6 +544,37 @@ export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string
   });
 }
 
+export function tutorLaunchOfferSunsetEmailHtml(opts: {
+  name: string;
+  untilLabel: string;
+  hasComplimentaryPro: boolean;
+  pricingUrl: string;
+  dashboardUrl: string;
+}) {
+  if (opts.hasComplimentaryPro) {
+    return emailLayout({
+      preheader: `Your complimentary Tutor Pro ends ${opts.untilLabel}.`,
+      title: "Launch offer ending soon",
+      body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>Your complimentary <strong>Tutor Pro</strong> under the Launch offer ends on <strong>${escapeHtml(opts.untilLabel)}</strong>.</p>
+<p>After that date, Tutor Pro returns to list price. Your free listing still includes <strong>1 live Teaching Profile</strong> permanently — students can keep finding and messaging you.</p>
+<p>If you want to keep up to 10 Teaching Profiles, ranking, and unlimited student contacts, renew Tutor Pro from pricing after the offer ends — or activate any remaining complimentary window today.</p>`,
+      cta: { label: "Open Tutor Pro plans", href: opts.pricingUrl },
+      footer: `<a href="${opts.dashboardUrl}">Open dashboard</a> · Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
+    });
+  }
+
+  return emailLayout({
+    preheader: `Launch offer ends ${opts.untilLabel} — activate Tutor Pro free.`,
+    title: "Last chance: Tutor Pro free",
+    body: `<p>Hi ${escapeHtml(opts.name)},</p>
+<p>The <strong>Launch offer</strong> ends on <strong>${escapeHtml(opts.untilLabel)}</strong>. Until then you can still activate <strong>Tutor Pro free</strong> — up to 10 live Teaching Profiles, relevance-first ranking, and unlimited student contacts.</p>
+<p>After that date, list price applies. Free listing still includes <strong>1 live Teaching Profile</strong> permanently. Students can’t message you until your profile is live — finish Quick setup and publish one Teaching Profile if you haven’t yet.</p>`,
+    cta: { label: "Activate Tutor Pro free", href: opts.pricingUrl },
+    footer: `<a href="${opts.dashboardUrl}">Complete my profile</a> · Questions? Contact <a href="mailto:admin@mytutoringhub.com">admin@mytutoringhub.com</a>.`,
+  });
+}
+
 export function tutorSecondProfileEmailHtml(opts: {
   name: string;
   dashboardUrl: string;

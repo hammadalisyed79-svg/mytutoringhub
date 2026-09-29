@@ -189,17 +189,22 @@ export default async function SeoTutorsPage({ params }: Params) {
           </section>
         )}
         {tutors.length === 0 && (
-          <div className="panel" style={{ marginTop: "1.25rem" }}>
+          <div className="panel search-demand-cta search-demand-cta--empty" style={{ marginTop: "1.25rem" }}>
+            <h2 style={{ marginTop: 0, fontSize: "1.25rem" }}>
+              No {label} tutors listed yet{cityName ? ` in ${cityName}` : ""}
+            </h2>
             <p className="muted">
-              No {label} tutors are listed yet{cityName ? ` in ${cityName}` : ""}. Browse past papers,
-              post a student request, or search with broader filters — this page stays useful while we
-              grow tutor supply.
+              Post a student request so matching tutors can message you, browse past papers, or
+              invite a tutor to list this subject.
             </p>
-            <p>
-              <Link href="/ads/new" className="btn btn-sm">
-                Post a student request
-              </Link>{" "}
-              <Link href="/become-a-tutor" className="btn btn-secondary btn-sm">
+            <p className="hero-ctas" style={{ flexWrap: "wrap", marginBottom: 0 }}>
+              <Link href="/ads/new" className="btn">
+                Post a request
+              </Link>
+              <Link href="/search" className="btn btn-secondary">
+                Broaden search
+              </Link>
+              <Link href="/become-a-tutor" className="btn btn-secondary">
                 Become a tutor
               </Link>
             </p>

@@ -6,18 +6,21 @@ import {
   recoveryEmailStageCopy,
 } from "@/lib/tutor-recovery-campaign";
 import { getRecoveryEmail1Preview } from "@/lib/tutor-recovery-send";
+import { getLaunchOfferSunsetPreview } from "@/lib/launch-offer-sunset-send";
 import { AdminRecoveryEmail1Panel } from "@/components/AdminRecoveryEmail1Panel";
+import { AdminLaunchOfferSunsetPanel } from "@/components/AdminLaunchOfferSunsetPanel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tutor supply" };
 
 export default async function AdminTutorSupplyPage() {
-  const [overview, gap, recovery, campaign, email1Preview] = await Promise.all([
+  const [overview, gap, recovery, campaign, email1Preview, sunsetPreview] = await Promise.all([
     getTutorSupplyOverview(),
     getTutorSupplyGapReport(20),
     selectTutorRecoveryAudience({ limit: 500 }),
     prepareTutorRecoveryCampaign(),
     getRecoveryEmail1Preview(),
+    getLaunchOfferSunsetPreview(),
   ]);
   const email1 = recoveryEmailStageCopy(1);
 
@@ -99,6 +102,16 @@ export default async function AdminTutorSupplyPage() {
           <br />
           Candidate list: <Link href="/admin/tutors?supply=incomplete">Incomplete tutors</Link>
         </p>
+      </section>
+
+      <section className="panel">
+        <h2>Launch offer sunset</h2>
+        <p className="muted">
+          One-time email while Tutor Pro complimentary window is active. Ends{" "}
+          <strong>{sunsetPreview.untilLabel}</strong>
+          {sunsetPreview.promoActive ? "" : " (promo not active)"}.
+        </p>
+        <AdminLaunchOfferSunsetPanel preview={sunsetPreview} />
       </section>
 
       <section className="panel">

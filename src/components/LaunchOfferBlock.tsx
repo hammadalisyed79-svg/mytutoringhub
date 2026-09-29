@@ -34,6 +34,9 @@ export function LaunchOfferBlock({
   if (!plan.isPromoActive || plan.id !== "TUTOR_BASIC") return null;
 
   const until = formatPromoUntil(plan.promoEndsAt) || TUTOR_PRO_LAUNCH_OFFER_LABEL;
+  const msLeft = plan.promoEndsAt ? plan.promoEndsAt.getTime() - Date.now() : 0;
+  const daysLeft = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
+  const endingSoon = daysLeft <= 2;
   const listPrice =
     currency && plan.listPricePkr > 0
       ? formatPlanPrice(plan.listPricePkr, currency as CurrencyCode)
@@ -45,20 +48,24 @@ export function LaunchOfferBlock({
 
   return (
     <aside
-      className={`launch-offer${compact ? " launch-offer--compact" : ""}`}
+      className={`launch-offer${compact ? " launch-offer--compact" : ""}${endingSoon ? " launch-offer--ending" : ""}`}
       aria-labelledby="launch-offer-heading"
     >
-      <p className="launch-offer-label">{label}</p>
+      <p className="launch-offer-label">
+        {endingSoon ? `${label} · ends ${until}` : label}
+      </p>
       <h2 className="launch-offer-title" id="launch-offer-heading">
         {plan.isComplimentary
-          ? `Tutor Pro free until ${until}`
+          ? endingSoon
+            ? `Last chance: Tutor Pro free until ${until}`
+            : `Tutor Pro free until ${until}`
           : `Tutor Pro offer until ${until}`}
       </h2>
       {!compact ? (
         <p className="launch-offer-lead">
-          Activate growth tools at no charge during the Launch offer. Free listing still includes{" "}
-          {BUSINESS.tutorFreeActiveListings} live Teaching Profile — permanently, not only during
-          this offer.
+          {endingSoon
+            ? `Activate before ${until} — after that, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} live Teaching Profile permanently.`
+            : `Activate growth tools at no charge during the Launch offer. Free listing still includes ${BUSINESS.tutorFreeActiveListings} live Teaching Profile — permanently, not only during this offer.`}
         </p>
       ) : (
         <p className="launch-offer-lead">

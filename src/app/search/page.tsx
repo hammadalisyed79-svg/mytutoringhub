@@ -15,7 +15,7 @@ import { curriculumBoards, curriculumCodeOptions, curriculumLevels } from "@/lib
 import { RecentAndSavedTutors } from "@/components/RecentAndSavedTutors";
 import { SaveTutorButton } from "@/components/SaveTutorButton";
 import { POPULAR_SUBJECTS } from "@/lib/marketing";
-import { relatedSubjects, resolveCity } from "@/lib/search-smart";
+import { resolveCity } from "@/lib/search-smart";
 import { formatTutorAvailability } from "@/lib/tutor-catalog";
 import { catalogSubjectNames, mergeSubjectNames } from "@/lib/subject-catalog";
 import { getUserCountry } from "@/lib/geo";
@@ -25,6 +25,7 @@ import { pageMetadata, truncateDescription } from "@/lib/seo";
 import { searchResultsShouldNoIndex } from "@/lib/seo-indexation";
 import { trackProductEvent } from "@/lib/product-events";
 import { PageConversion } from "@/components/PageConversion";
+import { SearchDemandCta } from "@/components/SearchDemandCta";
 
 export const dynamic = "force-dynamic";
 
@@ -139,7 +140,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     subjectNames,
   });
   const city = resolveCity(sp.location);
-  const related = resolved.subject ? relatedSubjects(resolved.subject, subjectNames) : [];
   const hasSearchIntent = Boolean(
     sp.subject ||
       sp.q ||
@@ -319,43 +319,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         {!showGuided && (
           <>
         {tutors.length === 0 && (
-          <div className="panel empty-state">
-            <h2>
-              {sp.verified === "1"
-                ? "We couldn’t find a verified tutor for this yet"
-                : "We couldn’t find the right tutor yet"}
-            </h2>
-            <p className="muted">
-              Post your requirement with these filters pre-filled — tutors who match can message
-              you. Or broaden city / browse online tutors.
-            </p>
-            {related.length > 0 && (
-              <p className="search-related">
-                Related subjects:{" "}
-                {related.map((name) => (
-                  <Link key={name} href={`/search?subject=${encodeURIComponent(name)}`}>
-                    {name}
-                  </Link>
-                ))}
-              </p>
-            )}
-            <p className="hero-ctas" style={{ flexWrap: "wrap" }}>
-              <Link href={studentRequestHref(sp)} className="btn">
-                Post a request
-              </Link>
-              <Link href="/search?mode=online" className="btn btn-secondary">
-                Browse online tutors
-              </Link>
-            </p>
-          </div>
+          <SearchDemandCta
+            href={studentRequestHref(sp)}
+            variant="empty"
+            subjectHint={sp.subject?.trim() || undefined}
+          />
         )}
 
         {tutors.length > 0 && tutors.length < 3 && (
-          <p className="search-note muted">
-            Few tutors match right now — try{" "}
-            <Link href="/search?mode=online">online</Link>, a nearby city, or{" "}
-            <Link href={studentRequestHref(sp)}>post your requirement</Link> so tutors can reach you.
-          </p>
+          <SearchDemandCta href={studentRequestHref(sp)} variant="thin" />
         )}
 
         {locationRelaxed && tutors.length > 0 && (
@@ -540,8 +512,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
 
         <section className="panel search-request-fallback" style={{ marginTop: "1.5rem" }}>
           <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Can&apos;t find the right tutor?</h2>
-          <p className="muted">Post what you need — matching tutors can reply.</p>
-          <Link href={studentRequestHref(sp)} className="btn btn-secondary btn-sm">
+          <p className="muted">Post what you need — matching tutors can reply. Student Pass is required to post.</p>
+          <Link href={studentRequestHref(sp)} className="btn">
             Post a request
           </Link>
         </section>

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import {
   type ConversionEventName,
   type ConversionParams,
+  googleAdsSendTo,
   sanitizeConversionParams,
 } from "@/lib/analytics-conversions";
 
@@ -36,9 +37,26 @@ export function fireConversionEvent(
   const clean = sanitizeConversionParams(params);
   if (typeof window.gtag === "function") {
     window.gtag("event", event, clean);
+    const sendTo = googleAdsSendTo(event);
+    if (sendTo) {
+      const adsPayload: Record<string, string | number | boolean> = {
+        ...clean,
+        send_to: sendTo,
+      };
+      if (typeof clean.value === "number") {
+        adsPayload.value = clean.value;
+      }
+      if (typeof clean.currency === "string") {
+        adsPayload.currency = clean.currency;
+      }
+      if (typeof clean.transaction_id === "string") {
+        adsPayload.transaction_id = clean.transaction_id;
+      }
+      window.gtag("event", "conversion", adsPayload);
+    }
   }
   if (process.env.NODE_ENV !== "production") {
-    console.info("[ga4-conversion]", event, clean);
+    console.info("[ga4-conversion]", event, clean, googleAdsSendTo(event) || undefined);
   }
   if (key) markFired(key);
   return true;

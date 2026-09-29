@@ -24,6 +24,7 @@ import {
   sendVerificationApprovedEmail,
 } from "@/lib/email-nurture";
 import { sendRecoveryEmail1Campaign } from "@/lib/tutor-recovery-send";
+import { sendLaunchOfferSunsetCampaign } from "@/lib/launch-offer-sunset-send";
 import { scanMessage } from "@/lib/message-moderation";
 import { notifyMessageWarning } from "@/lib/message-warning";
 import { z } from "zod";
@@ -1053,6 +1054,16 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "RecoveryCampaign";
       targetId = "tutor_profile_r1";
       const summary = await sendRecoveryEmail1Campaign();
+      extra = summary;
+      break;
+    }
+    case "send_launch_offer_sunset": {
+      if (!payload.confirmSend) {
+        throw new AdminActionError("confirmSend is required to send Launch offer sunset email", 400);
+      }
+      targetType = "LaunchOfferCampaign";
+      targetId = "tutor_launch_offer_sunset";
+      const summary = await sendLaunchOfferSunsetCampaign();
       extra = summary;
       break;
     }

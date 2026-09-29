@@ -8,6 +8,9 @@
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
 
+/** Google Ads account id, e.g. AW-123456789 */
+export const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || "";
+
 export type ConversionEventName =
   // Student
   | "student_registration"
@@ -59,6 +62,37 @@ export type ConversionEventName =
   | "payment_success"
   | "payment_failed"
   | "entitlement_activated";
+
+/**
+ * Optional JSON map of conversion event → Ads conversion label.
+ * Example:
+ * {"student_tutor_contact":"AbCdEf","student_pass_purchase":"XyZ123","tutor_profile_completed":"TpC456"}
+ */
+function parseAdsConversionLabels(): Partial<Record<ConversionEventName, string>> {
+  const raw = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABELS?.trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const out: Partial<Record<ConversionEventName, string>> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value === "string" && value.trim()) {
+        out[key as ConversionEventName] = value.trim();
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export const GOOGLE_ADS_CONVERSION_LABELS = parseAdsConversionLabels();
+
+export function googleAdsSendTo(event: ConversionEventName): string | null {
+  if (!GOOGLE_ADS_ID) return null;
+  const label = GOOGLE_ADS_CONVERSION_LABELS[event];
+  if (!label) return null;
+  return `${GOOGLE_ADS_ID}/${label}`;
+}
 
 export type ConversionParams = Record<string, string | number | boolean | null | undefined>;
 

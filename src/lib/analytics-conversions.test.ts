@@ -6,6 +6,8 @@ import {
   parseSafepayStoredAmount,
   sanitizeConversionParams,
   GOOGLE_ADS_PRIMARY_STUDENT,
+  googleAdsSendTo,
+  GOOGLE_ADS_ID,
 } from "@/lib/analytics-conversions";
 
 assert.equal(purchaseEventForPlan("STUDENT_PASS", { value: 1999 })?.event, "student_pass_purchase");
@@ -55,5 +57,7 @@ assert.equal(clean.message, undefined);
 assert.equal(clean.subject, "Maths");
 assert.equal(clean.value, 100);
 assert.ok(GOOGLE_ADS_PRIMARY_STUDENT.includes("student_tutor_contact"));
+assert.equal(typeof GOOGLE_ADS_ID, "string");
+assert.equal(googleAdsSendTo("student_tutor_contact"), null);
 
 console.log("analytics-conversions.test.ts: ok");

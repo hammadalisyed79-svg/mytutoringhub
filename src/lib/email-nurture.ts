@@ -40,6 +40,7 @@ export const NURTURE_SEQUENCES = {
   TUTOR_VERIFY_NUDGE: "tutor_verify_nudge",
   TUTOR_SECOND_PROFILE: "tutor_second_profile",
   TUTOR_BOOST_NUDGE: "tutor_boost_nudge",
+  TUTOR_LAUNCH_OFFER_SUNSET: "tutor_launch_offer_sunset",
   STUDENT_BROWSE_R1: "student_browse_r1",
   STUDENT_BROWSE_R2: "student_browse_r2",
   STUDENT_POST_AD_R1: "student_post_ad_r1",
@@ -67,7 +68,7 @@ export async function claimEmailEvent(userId: string, sequence: string): Promise
   }
 }
 
-async function releaseEmailEvent(userId: string, sequence: string) {
+export async function releaseEmailEvent(userId: string, sequence: string) {
   await prisma.emailSequenceEvent
     .delete({ where: { userId_sequence: { userId, sequence } } })
     .catch(() => undefined);

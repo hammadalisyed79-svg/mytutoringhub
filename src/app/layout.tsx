@@ -9,6 +9,7 @@ import { Providers } from "@/components/Providers";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { MaintenanceGate } from "@/components/MaintenanceGate";
 import { SiteAnnouncement } from "@/components/SiteAnnouncement";
+import { LaunchOfferSunsetBanner } from "@/components/LaunchOfferSunsetBanner";
 import { AiSupportWidgetLazy } from "@/components/AiSupportWidgetLazy";
 import { getSiteSettings } from "@/lib/site-settings";
 import {
@@ -99,6 +100,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <SiteHeader />
           <TrustRibbon />
           <SiteAnnouncement />
+          <LaunchOfferSunsetBanner />
           <main id="main-content" className="flex-1 site-main">
             <MaintenanceGate>{children}</MaintenanceGate>
           </main>
