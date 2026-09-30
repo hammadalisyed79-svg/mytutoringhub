@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-09-30T22:25:00.000Z",
+  "viewport": { "width": 390, "height": 844 },
+  "pages": [
+    { "path": "/", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Private tutoring, elevated.", "smallTargetCount": null },
+    { "path": "/search", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Find private tutors", "smallTargetCount": null },
+    { "path": "/pricing", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Plans & pricing", "smallTargetCount": 10, "smallTargetSample": [{ "t": "Free vs paid guide", "w": 124, "h": 20 }, { "t": "Facebook", "w": 49, "h": 38 }] },
+    { "path": "/past-papers", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Past papers", "smallTargetCount": null },
+    { "path": "/ads", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Requests", "smallTargetCount": null },
+    { "path": "/become-a-tutor", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Start teaching", "smallTargetCount": null },
+    { "path": "/help", "overflowX": false, "scrollW": 390, "clientW": 390, "hasSkipLink": true, "hasMain": true, "h1": "Help & FAQ", "smallTargetCount": null }
+  ]
+}

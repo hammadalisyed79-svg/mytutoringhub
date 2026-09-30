@@ -1,0 +1,284 @@
+{
+  "generatedAt": "2026-09-30T22:21:32.292Z",
+  "liveOrigin": "https://www.mytutoringhub.com",
+  "safepay": {
+    "configuredLocally": true,
+    "env": "sandbox",
+    "diagnostics": {
+      "env": "sandbox",
+      "host": "https://sandbox.api.getsafepay.com",
+      "apiKeyLength": 40,
+      "apiKeyLooksPublic": true,
+      "secretLength": 64,
+      "secretLooksLikeApiKey": false
+    },
+    "ping": {
+      "ok": true,
+      "detail": "client ready for sandbox (https://sandbox.api.getsafepay.com)"
+    },
+    "sandboxSession": {
+      "ok": true,
+      "hasCheckoutUrl": true,
+      "env": "sandbox",
+      "note": "Sandbox hosted session created (no card charged). Human still needed for test-card + one live charge."
+    },
+    "readinessChecks": [
+      {
+        "id": "safepay_keys",
+        "label": "Safepay API key and secret are set on Vercel",
+        "ok": true,
+        "hint": "SAFEPAY_API_KEY (sec_…) and SAFEPAY_SECRET_KEY"
+      },
+      {
+        "id": "safepay_env",
+        "label": "SAFEPAY_ENV=production for real (live) card payments",
+        "ok": false,
+        "hint": "Sandbox trial is OK for test cards — switch to production keys when KYC is approved"
+      },
+      {
+        "id": "app_url",
+        "label": "NEXT_PUBLIC_APP_URL points to your live site",
+        "ok": false,
+        "hint": "Use https://www.mytutoringhub.com on Vercel Production"
+      },
+      {
+        "id": "cron_secret",
+        "label": "CRON_SECRET set for digest + Safepay reconcile crons",
+        "ok": false,
+        "hint": "Generate a long random string in Vercel Production env"
+      },
+      {
+        "id": "webhook_secret",
+        "label": "SAFEPAY_WEBHOOK_SECRET (or shared CRON_SECRET) for payment callbacks",
+        "ok": false,
+        "hint": "Use Safepay Endpoints “shared secret” so X-SFPY-SIGNATURE HMAC verifies"
+      }
+    ],
+    "humanSteps": [
+      "In Safepay dashboard: confirm sandbox vs production keys match SAFEPAY_ENV on Vercel Production",
+      "Sandbox E2E: open hosted checkout URL (or /pricing) and pay with Safepay test card",
+      "Live E2E (production keys only): one small real charge → confirm receipt + entitlement",
+      "Confirm webhook endpoint + SAFEPAY_WEBHOOK_SECRET (or CRON_SECRET) on Vercel"
+    ]
+  },
+  "googleAds": {
+    "liveHasGtag": true,
+    "liveAdsIds": [
+      "AW-18412107705"
+    ],
+    "liveGaIds": [],
+    "localAdsIdSet": false,
+    "localGaIdSet": false,
+    "localLabelKeysPresent": [],
+    "missingPrimaryLabels": [
+      "student_tutor_contact",
+      "student_request_created",
+      "student_pass_purchase",
+      "student_pro_purchase",
+      "past_paper_purchase",
+      "tutor_profile_completed",
+      "teaching_profile_activated",
+      "tutor_pro_activation",
+      "listing_boost_purchase"
+    ],
+    "labelTemplate": {
+      "student_tutor_contact": "",
+      "student_request_created": "",
+      "student_pass_purchase": "",
+      "student_pro_purchase": "",
+      "past_paper_purchase": "",
+      "tutor_profile_completed": "",
+      "teaching_profile_activated": "",
+      "tutor_pro_activation": "",
+      "listing_boost_purchase": ""
+    },
+    "humanSteps": [
+      "Google Ads → Goals → Conversions → create conversion actions for each primary event",
+      "Set Vercel NEXT_PUBLIC_GOOGLE_ADS_ID=AW-18412107705 (already live if AW present)",
+      "Set NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABELS to JSON map of event→label (template in this report)",
+      "Optional: set NEXT_PUBLIC_GA_MEASUREMENT_ID=G-… if GA4 property exists (currently missing on live HTML)",
+      "Tag Assistant / Ads preview: fire student_tutor_contact + student_pass_purchase once",
+      "Upload creatives from public/ads/* in Google Ads UI if not already linked"
+    ]
+  },
+  "searchConsole": {
+    "sitemapStatus": 200,
+    "sitemapLocs": 409,
+    "reinspectUrls": [
+      "https://www.mytutoringhub.com/",
+      "https://www.mytutoringhub.com/pricing",
+      "https://www.mytutoringhub.com/become-a-tutor",
+      "https://www.mytutoringhub.com/free-vs-paid",
+      "https://www.mytutoringhub.com/help",
+      "https://www.mytutoringhub.com/past-papers/pearson-edexcel/gcse/computer-science",
+      "https://www.mytutoringhub.com/past-papers/cambridge/igcse/computer-science-0478",
+      "https://www.mytutoringhub.com/subjects",
+      "https://www.mytutoringhub.com/search?subject=Science",
+      "https://www.mytutoringhub.com/sitemap.xml"
+    ],
+    "liveMetaSnapshots": [
+      {
+        "url": "https://www.mytutoringhub.com/",
+        "status": 200,
+        "title": "Find Expert Private Tutors Online – GCSE, A-Level, IGCSE &amp; IB | MyTutoringHub",
+        "description": "Find tutors free. Free accounts include 3 new tutor contacts per month — upgrade for unlimited messaging and study tools. Lesson fees stay between you and the…",
+        "canonical": "https://www.mytutoringhub.com",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/pricing",
+        "status": 200,
+        "title": "Plans &amp; Pricing – Student Pass, Student Pro &amp; Tutor Subscriptions | MyTutoringHub",
+        "description": "Free accounts include 3 new tutor contacts per month. Student Pass unlocks unlimited messaging. Student Pass includes 10 past paper downloads per month. Studen…",
+        "canonical": "https://www.mytutoringhub.com/pricing",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/become-a-tutor",
+        "status": 200,
+        "title": "Become a Tutor – Free Teaching Profiles &amp; Tutor Pro Priority | MyTutoringHub",
+        "description": "Complete your profile — including one Teaching Profile — to appear in search and receive student messages for free. Free tutors get 1 active Teaching Profile,…",
+        "canonical": "https://www.mytutoringhub.com/become-a-tutor",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/free-vs-paid",
+        "status": 200,
+        "title": "Free vs Paid – What’s Included on My Tutoring Hub | MyTutoringHub",
+        "description": "Find tutors free. Free accounts include 3 new tutor contacts per month — upgrade for unlimited messaging and study tools. Lesson fees stay between you and the…",
+        "canonical": "https://www.mytutoringhub.com/free-vs-paid",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/help",
+        "status": 200,
+        "title": "Help &amp; FAQ – Contacting Tutors, Plans &amp; Payments | MyTutoringHub",
+        "description": "Answers about finding tutors, Student Pass, Tutor Pro, Safepay billing, email verification, and safety on My Tutoring Hub.",
+        "canonical": "https://www.mytutoringhub.com/help",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/past-papers/pearson-edexcel/gcse/computer-science",
+        "status": 200,
+        "title": "Computer Science EDX-GCSE-CS GCSE Past Papers | MyTutoringHub",
+        "description": "Download Pearson Edexcel GCSE Computer Science EDX-GCSE-CS past papers and marking schemes by year, session and paper. Find Computer Science tutors for additio…",
+        "canonical": "https://www.mytutoringhub.com/past-papers/pearson-edexcel/gcse/computer-science",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/past-papers/cambridge/igcse/computer-science-0478",
+        "status": 200,
+        "title": "Computer Science 0478 IGCSE Past Papers | MyTutoringHub",
+        "description": "Download Cambridge IGCSE IGCSE Computer Science 0478 past papers and marking schemes by year, session and paper. Find Computer Science tutors for additional su…",
+        "canonical": "https://www.mytutoringhub.com/past-papers/cambridge/igcse/computer-science-0478",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/subjects",
+        "status": 200,
+        "title": "Browse Subjects – GCSE, A-Level, IGCSE, IB &amp; Curriculum Codes | MyTutoringHub",
+        "description": "Browse 1,211+ curriculum subject codes and find private tutors by subject. Pakistan, Cambridge, IB, CBSE, and more.",
+        "canonical": "https://www.mytutoringhub.com/subjects",
+        "staleHints": []
+      },
+      {
+        "url": "https://www.mytutoringhub.com/search?subject=Science",
+        "status": 200,
+        "title": "Science tutors – Private Tutors | MyTutoringHub",
+        "description": "Search Science tutors on My Tutoring Hub. Compare rates and reviews. Free accounts include 3 new tutor contacts per month. Student Pass unlocks unlimited messa…",
+        "canonical": "https://www.mytutoringhub.com/search",
+        "staleHints": []
+      }
+    ],
+    "staleHintHits": [],
+    "humanSteps": [
+      "Search Console → Sitemaps → confirm https://www.mytutoringhub.com/sitemap.xml is Submitted/Success",
+      "URL Inspection → re-inspect each URL in searchConsole.reinspectUrls (especially Pearson CS + pricing/help)",
+      "Request indexing for URLs still showing Free Tutor Pro / Cambridge codes on Edexcel"
+    ]
+  },
+  "mobileA11y": {
+    "routeSmoke": [
+      {
+        "path": "/",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/search",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/pricing",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/become-a-tutor",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/past-papers",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/subjects",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/help",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/ads",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/free-vs-paid",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/login",
+        "status": 200,
+        "location": null,
+        "ok": true
+      },
+      {
+        "path": "/register",
+        "status": 200,
+        "location": null,
+        "ok": true
+      }
+    ],
+    "failedRoutes": [],
+    "automatedProbe": "node scripts/ops-mobile-a11y-probe.mjs --out docs/MTH-MOBILE-A11Y.json",
+    "humanSteps": [
+      "Chrome DevTools device mode (390×844): /, /search, /pricing, /past-papers, /ads, /become-a-tutor",
+      "Checks: no horizontal overflow, tap targets ≥44px, focus visible, skip-to-main works",
+      "Contrast: primary buttons/text vs backgrounds on hero + pricing cards",
+      "Optional: run npx lhci or scripts/lh-matrix.mjs against staging/production"
+    ]
+  },
+  "remainingHumanOnly": [
+    "Safepay: complete test-card payment in sandbox hosted checkout + one live production charge",
+    "Google Ads UI: create conversion actions → paste labels into Vercel NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABELS",
+    "Search Console: URL Inspection + Request indexing for reinspectUrls",
+    "Manual device a11y pass / Lighthouse accessibility on staging (probe covers overflow/skip/main only)"
+  ]
+}

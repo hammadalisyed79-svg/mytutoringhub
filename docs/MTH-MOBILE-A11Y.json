@@ -1,0 +1,132 @@
+{
+  "generatedAt": "2026-09-30T22:24:46.098Z",
+  "liveOrigin": "https://www.mytutoringhub.com",
+  "viewportNote": "HTML structural checks; overflow/tap targets require --browser-json from device/CDP pass",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "ok": true,
+      "title": "Find Expert Private Tutors Online – GCSE, A-Level, IGCSE &amp; IB | MyTutoringHub",
+      "h1": "Private tutoring, elevated.",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    },
+    {
+      "path": "/search",
+      "status": 200,
+      "ok": true,
+      "title": "Find Private Tutors – GCSE, A-Level, IGCSE, IB &amp; More | MyTutoringHub",
+      "h1": "Find private tutors",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    },
+    {
+      "path": "/pricing",
+      "status": 200,
+      "ok": true,
+      "title": "Plans &amp; Pricing – Student Pass, Student Pro &amp; Tutor Subscriptions | MyTutoringHub",
+      "h1": "Plans &amp; pricing",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": 10,
+      "smallTargetSample": [
+        {
+          "t": "Free vs paid guide",
+          "w": 124,
+          "h": 20
+        },
+        {
+          "t": "Facebook",
+          "w": 49,
+          "h": 38
+        }
+      ],
+      "source": "html+browser"
+    },
+    {
+      "path": "/past-papers",
+      "status": 200,
+      "ok": true,
+      "title": "Past Papers – GCSE, A-Level, IGCSE &amp; IB | MyTutoringHub",
+      "h1": "Past papers",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    },
+    {
+      "path": "/ads",
+      "status": 200,
+      "ok": true,
+      "title": "Requests – Find Students Who Need a Tutor | MyTutoringHub",
+      "h1": "Requests",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    },
+    {
+      "path": "/become-a-tutor",
+      "status": 200,
+      "ok": true,
+      "title": "Become a Tutor – Free Teaching Profiles &amp; Tutor Pro Priority | MyTutoringHub",
+      "h1": "Start teaching",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    },
+    {
+      "path": "/help",
+      "status": 200,
+      "ok": true,
+      "title": "Help &amp; FAQ – Contacting Tutors, Plans &amp; Payments | MyTutoringHub",
+      "h1": "Help &amp; FAQ",
+      "hasSkipLink": true,
+      "hasMain": true,
+      "imagesMissingAlt": 0,
+      "imgCount": 0,
+      "overflowX": false,
+      "smallTargetCount": null,
+      "smallTargetSample": null,
+      "source": "html+browser"
+    }
+  ],
+  "failed": [],
+  "summary": {
+    "checked": 7,
+    "failures": 0,
+    "overflowFailures": 0,
+    "missingSkip": 0,
+    "missingMain": 0,
+    "missingBrowserOverflow": 0
+  }
+}
