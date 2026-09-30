@@ -301,11 +301,13 @@ export function checkoutCurrency(preferred: CurrencyCode): CurrencyCode {
 /** Format `safepay_USD_1999` (minor units) stored on Subscription.stripePriceId. */
 export function formatSafepayPriceId(stripePriceId: string | null | undefined) {
   if (!stripePriceId) return null;
+  if (/promo|complimentary|manual/i.test(stripePriceId)) return formatMoney(0, "PKR");
   const match = /^safepay_([A-Z]{3})_(\d+)$/.exec(stripePriceId);
   if (!match) return null;
   const currency = match[1] as CurrencyCode;
-  const minor = Number(match[2]);
-  const major = ZERO_DECIMAL.has(currency) ? minor : minor / 100;
+  const stored = Number(match[2]);
+  // Same rule as parseSafepayStoredAmount / toSafepayMinorUnits: JPY zero-decimal, else /100.
+  const major = ZERO_DECIMAL.has(currency) ? stored : stored / 100;
   return formatMoney(major, currency);
 }
 

@@ -179,7 +179,7 @@ export function purchaseAttributionParams(opts: {
   };
 }
 
-/** Parse safepay_PKR_1999 style ids into major units. */
+/** Parse safepay_PKR_199900 style ids into major units (matches toSafepayMinorUnits storage). */
 export function parseSafepayStoredAmount(stripePriceId: string | null | undefined): {
   currency: string;
   major: number;
@@ -191,9 +191,9 @@ export function parseSafepayStoredAmount(stripePriceId: string | null | undefine
   const match = /^safepay_([A-Z]{3})_(\d+)$/.exec(stripePriceId);
   if (!match) return { currency: "PKR", major: 0, complimentary: true };
   const currency = match[1];
-  const minor = Number(match[2]);
-  const major =
-    currency === "PKR" || currency === "JPY" || currency === "KRW" ? minor : minor / 100;
+  const stored = Number(match[2]);
+  // Checkout stores Safepay minor units (paisa/cents). JPY is zero-decimal.
+  const major = currency === "JPY" ? stored : stored / 100;
   return { currency, major, complimentary: major <= 0 };
 }
 

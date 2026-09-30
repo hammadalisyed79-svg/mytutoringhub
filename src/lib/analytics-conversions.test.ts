@@ -38,8 +38,9 @@ assert.equal(attrs.actual_paid_value, 1999);
 assert.equal(attrs.transaction_id, "sub_abc");
 assert.equal(attrs.payment_source, "safepay");
 
-assert.equal(parseSafepayStoredAmount("safepay_PKR_1999").major, 1999);
-assert.equal(parseSafepayStoredAmount("safepay_PKR_1999").complimentary, false);
+assert.equal(parseSafepayStoredAmount("safepay_PKR_199900").major, 1999);
+assert.equal(parseSafepayStoredAmount("safepay_PKR_199900").complimentary, false);
+assert.equal(parseSafepayStoredAmount("safepay_USD_1999").major, 19.99);
 assert.equal(parseSafepayStoredAmount("promo_complimentary").complimentary, true);
 assert.equal(parseSafepayStoredAmount("promo_complimentary").major, 0);
 
