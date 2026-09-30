@@ -48,7 +48,7 @@ export function AiSupportWidget({ configured, aiDisabled = false }: Props) {
             <div>
               <strong>Support</strong>
               <p className="muted ai-support-panel-sub">
-                Professional help with plans, messaging &amp; billing
+                Welcome — ask anything about plans, messaging &amp; billing
               </p>
             </div>
             <button
