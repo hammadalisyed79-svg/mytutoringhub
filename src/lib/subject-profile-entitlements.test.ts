@@ -7,6 +7,7 @@ import {
   UPGRADE_REQUIRED_CODE,
   isSubjectProfilePromoActive,
   resolveSubjectProfileActiveCap,
+  subjectProfilePromoLabel,
 } from "@/lib/subject-profile-entitlements";
 import {
   UPGRADE_FOR_MORE_PROFILES_MESSAGE,
@@ -26,6 +27,8 @@ assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 2, activeCount: 2
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 10, activeCount: 10 }), false);
 assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Tutor Pro/);
 assert.doesNotMatch(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Extra Active/);
+assert.doesNotMatch(subjectProfilePromoLabel(), /Extra Active/);
+assert.match(subjectProfilePromoLabel(), /Tutor Pro: up to 10/);
 
 assert.equal(
   resolveSubjectProfileActiveCap({

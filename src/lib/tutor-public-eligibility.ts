@@ -4,6 +4,7 @@
  *   active = forceActive || (emailVerified && isTutorProfileListable(...))
  */
 import { isSuspiciousDisplayName } from "@/lib/display-name";
+import { isPaperishSubjectLabel } from "@/lib/subject-catalog";
 import { isTutorProfileListable } from "@/lib/subscription";
 import {
   getTutorProfileCompletion,
@@ -151,13 +152,22 @@ const SUBJECT_SITEMAP_SKIP = new Set([
   "manifests",
   "json",
   "catalog",
+  "confidential-instructions",
+  "examiner-reports",
+  "grade-thresholds",
+  "inserts",
+  "other",
+  "unknown-session",
 ]);
 
-export function isIndexableSubjectHubSlug(slug: string): boolean {
+export function isIndexableSubjectHubSlug(slug: string, name?: string | null): boolean {
   const normalized = slug.trim().toLowerCase();
   if (!normalized || normalized.length < 2) return false;
   if (SUBJECT_SITEMAP_SKIP.has(normalized)) return false;
-  if (/^(mark-scheme|question-paper|specimen|feb-march|may-june|oct-nov)/.test(normalized)) {
+  if (/^(mark-scheme|question-paper|specimen|feb-march|may-june|oct-nov|confidential|examiner|grade-threshold|insert)/.test(normalized)) {
+    return false;
+  }
+  if (isPaperishSubjectLabel(name) || isPaperishSubjectLabel(normalized.replace(/-/g, " "))) {
     return false;
   }
   return true;

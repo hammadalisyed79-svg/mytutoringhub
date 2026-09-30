@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { publicAvailabilityWhere } from "@/lib/past-papers/availability";
 import { slugify } from "@/lib/search-tutors";
 import { siteUrl } from "@/lib/seo";
+import { isPaperishSubjectLabel } from "@/lib/subject-catalog";
 import { publicListedTutorWhere, filterCanonicallyPublicTutors, isIndexableSubjectHubSlug } from "@/lib/tutor-public-eligibility";
 import { TOP_COUNTRIES } from "@/lib/markets";
 
@@ -110,6 +111,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         select: {
           id: true,
+          subject: true,
+          canonicalSubject: true,
           updatedAt: true,
           tutorProfile: {
             select: {
@@ -132,13 +135,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     ]);
 
-    // Subject hubs only (no automatic city fan-out — prevents thin SEO URLs at scale)
+    // Subject hubs with at least one ACTIVE public Teaching Profile (skip paperish + empty hubs).
+    const listedSubjectKeys = new Set<string>();
+    for (const listing of listings) {
+      if (!filterCanonicallyPublicTutors([listing.tutorProfile]).length) continue;
+      for (const raw of [listing.subject, listing.canonicalSubject]) {
+        if (!raw || isPaperishSubjectLabel(raw)) continue;
+        listedSubjectKeys.add(raw.trim().toLowerCase());
+        listedSubjectKeys.add(slugify(raw));
+      }
+    }
+
     const subjectRoutes = subjects
       .map((s) => {
         const slug = s.slug || slugify(s.name);
         return { slug, name: s.name };
       })
-      .filter((s) => isIndexableSubjectHubSlug(s.slug))
+      .filter((s) => isIndexableSubjectHubSlug(s.slug, s.name))
+      .filter((s) => {
+        const key = s.name.trim().toLowerCase();
+        return listedSubjectKeys.has(key) || listedSubjectKeys.has(s.slug);
+      })
       .map((s) => ({
         url: `${base}/s/${s.slug}`,
         lastModified: now,

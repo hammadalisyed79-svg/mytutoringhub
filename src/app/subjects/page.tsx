@@ -13,6 +13,7 @@ import { CURRICULUM } from "@/lib/curriculum";
 import { getUserCountry } from "@/lib/geo";
 import { getVisitorRegion } from "@/lib/visitor-region";
 import { pageMetadata } from "@/lib/seo";
+import { isPaperishSubjectLabel } from "@/lib/subject-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,9 @@ export default async function SubjectsPage({
   const region = getVisitorRegion(headersList);
   const { country, q, tab } = await searchParams;
   const showCodes = tab === "codes";
-  const dbSubjects = await prisma.subject.findMany({ orderBy: { name: "asc" } });
+  const dbSubjects = (
+    await prisma.subject.findMany({ orderBy: { name: "asc" } })
+  ).filter((s) => !isPaperishSubjectLabel(s.name) && !isPaperishSubjectLabel(s.slug));
   const rateMap = await averageRatesBySubject(dbSubjects.map((s) => s.name));
   const averages = dbSubjects.map((s) => ({
     id: s.id,

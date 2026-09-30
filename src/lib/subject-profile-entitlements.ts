@@ -91,7 +91,7 @@ export function isSubjectProfilePromoActive(_now = new Date()): boolean {
 }
 
 export function subjectProfilePromoLabel(_now = new Date()): string {
-  return `Free: ${FREE_SUBJECT_PROFILES} active · Extra Active: up to ${FREE_PLUS_EXTRA_ACTIVE_CAP} · Tutor Pro: up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} · Boost does not add capacity.`;
+  return `Free: ${FREE_SUBJECT_PROFILES} active Teaching Profile · Tutor Pro: up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} · Listing Boost does not add capacity.`;
 }
 
 /**
@@ -231,7 +231,7 @@ export async function canCreateSubjectProfile(
       cap: planCap,
       code: UPGRADE_REQUIRED_CODE,
       extraActiveSlots,
-      canBuyExtraActive: extraActiveSlots < EXTRA_ACTIVE_SLOT_MAX,
+      canBuyExtraActive: false,
     };
   }
 
@@ -256,7 +256,7 @@ export async function canCreateSubjectProfile(
       cap: activateCap,
       code: UPGRADE_REQUIRED_CODE,
       extraActiveSlots,
-      canBuyExtraActive: extraActiveSlots < EXTRA_ACTIVE_SLOT_MAX,
+      canBuyExtraActive: false,
     };
   }
 
@@ -289,7 +289,7 @@ export async function canActivateSubjectProfile(
         cap: planCap,
         code: UPGRADE_REQUIRED_CODE,
         extraActiveSlots,
-        canBuyExtraActive: extraActiveSlots < EXTRA_ACTIVE_SLOT_MAX,
+        canBuyExtraActive: false,
       };
     }
     return {

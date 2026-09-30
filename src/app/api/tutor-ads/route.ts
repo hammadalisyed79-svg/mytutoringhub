@@ -228,7 +228,7 @@ export async function GET() {
       paidCap: PAID_SUBJECT_PROFILE_CAP,
       extraActiveSlots,
       extraActiveMax: EXTRA_ACTIVE_SLOT_MAX,
-      canBuyExtraActive: extraActiveSlots < EXTRA_ACTIVE_SLOT_MAX && !unlimited && (cap || 0) < PAID_SUBJECT_PROFILE_CAP,
+      canBuyExtraActive: false,
       canCreate: createGate.ok,
       createReason: createGate.ok ? null : createGate.reason,
       createPaused: Boolean(createGate.ok && createGate.forcePaused),

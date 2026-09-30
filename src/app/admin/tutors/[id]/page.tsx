@@ -8,6 +8,7 @@ import {
   AdminToggleTutorButton,
   AdminTutorEditForm,
 } from "@/components/AdminActions";
+import { AdminNoteModalButton } from "@/components/AdminNoteModal";
 import { listingPath } from "@/lib/subject-profile";
 
 export const dynamic = "force-dynamic";
@@ -95,13 +96,19 @@ export default async function AdminTutorDetailPage({
                 <Link href={listingPath(listing.id)}>Public listing</Link>
                 {listing.status !== "HIDDEN" ? (
                   <AdminActionButton action="hide_subject_profile" id={listing.id} label="Hide" />
-                ) : (
-                  <AdminActionButton
+                ) : null}
+                {listing.status !== "ACTIVE" ? (
+                  <AdminNoteModalButton
                     action="restore_subject_profile"
                     id={listing.id}
                     label="Restore"
+                    title="Restore Teaching Profile"
+                    description="Restores this listing to ACTIVE. If the tutor is over their plan cap, add a note and confirm the bypass."
+                    noteMinLength={8}
+                    notePlaceholder="Reason for restore / plan-cap override…"
+                    confirmBypassKey="confirmBypass"
                   />
-                )}
+                ) : null}
                 {listing.status === "ACTIVE" && (
                   <AdminActionButton action="pause_subject_profile" id={listing.id} label="Pause" />
                 )}

@@ -104,14 +104,15 @@ Production `next build` **not** run in this pass.
 
 | Issue | Impact | Next action | Status |
 |-------|--------|-------------|--------|
-| Confirm Vercel `NEXT_PUBLIC_GA_MEASUREMENT_ID` + Ads conversion labels | Ads optimization | Tag Assistant; map labels in Ads UI | **Partial** — live site loads gtag/`AW-`; conversion label map + creatives still manual |
-| Upload `public/ads/*` creatives | Spend efficiency | Google Ads UI + repo assets | Open |
-| Taxonomy paperish subjects | Catalog quality | Audit run; picker filter shipped; 1 ACTIVE paperish profile paused | **Mostly done** — 11 orphan Subject rows (0 papers) still await curated delete |
-| Incomplete Safepay inventory | Admin noise | Inventory + auto-revoke ≥7d unpaid via daily cron / script | **Automated** — 4 stale TRACKER_STARTED canceled; recent Incomplete left |
-| Teaching Profiles vs plans | Cap integrity | Daily cron: enforce Pro caps + profile-vs-plan audit (hard fail = Pro over-cap) | **Automated** — Free=1 / Pro=10; Pro over-cap=0; 6 Free grandfathered |
+| Confirm Vercel `NEXT_PUBLIC_GA_MEASUREMENT_ID` + Ads conversion labels | Ads optimization | Tag Assistant; map labels in Ads UI | **Partial** — live gtag/`AW-`; label map is env/Ads UI |
+| Upload `public/ads/*` creatives | Spend efficiency | Google Ads UI | Open (assets may exist; upload is Ads UI) |
+| Taxonomy paperish subjects | Catalog quality | Deleted 11 orphan Subject rows; remapped 2 junk profiles; filtered `/subjects` + sitemap | **Closed** |
+| Incomplete Safepay inventory | Admin noise | Auto-revoke ≥7d unpaid via daily cron | **Automated** |
+| Teaching Profiles vs plans | Cap integrity | Daily audit + Pro cap enforce; admin restore gated | **Automated** |
 | Live Safepay E2E guest paper + plan purchase | Payment confidence | One sandbox + one live test charge | Open (manual) |
-| Google recrawl for stale SERP | Trust in snippets | Sitemap healthy (487 URLs); legacy Google/Bing ping retired; use Search Console | **Partial** — GSC re-inspect still manual |
-| Referral +1 contact | Growth | Removed dead path; Hub Points attribution remains | **Closed** |
+| Google recrawl for stale SERP | Trust in snippets | Sitemap excludes paperish + empty hubs; GSC re-inspect still manual | **Partial** |
+| Referral +1 contact | Growth | Removed dead path | **Closed** |
+| Extra Active public sell | Copy/SKU drift | Checkout 410; `canBuyExtraActive=false`; promo label Tutor Pro only | **Closed** |
 | Full mobile/a11y pass | Launch polish | Staging checklist | Open |
 
 Ops scripts added/updated this pass:

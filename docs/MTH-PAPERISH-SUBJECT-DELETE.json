@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-09-30T22:07:26.789Z",
+  "mode": "apply",
+  "candidates": 11,
+  "deletable": 10,
+  "blockedByTeachingProfiles": 1,
+  "deleted": 10,
+  "deletableRows": [
+    {
+      "id": "cmszptlek0000101fwg317y9r",
+      "name": "Confidential Instructions",
+      "slug": "confidential-instructions",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlex0001101fuwktjjnk",
+      "name": "Examiner Reports",
+      "slug": "examiner-reports",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlf00002101fnzcip58i",
+      "name": "Feb March",
+      "slug": "feb-march",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlf30003101ffbraxx9e",
+      "name": "Grade Thresholds",
+      "slug": "grade-thresholds",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlf70004101fbvu13iy7",
+      "name": "Inserts",
+      "slug": "inserts",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlfa0005101fjvtd0qep",
+      "name": "Mark Schemes",
+      "slug": "mark-schemes",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlfd0006101flv4luwbm",
+      "name": "May June",
+      "slug": "may-june",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlfg0007101fjefi6nxo",
+      "name": "Oct Nov",
+      "slug": "oct-nov",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlfk0008101frqjxcyjp",
+      "name": "Other",
+      "slug": "other",
+      "_count": {
+        "pastPapers": 0
+      }
+    },
+    {
+      "id": "cmszptlfr000a101fcjwci32y",
+      "name": "Unknown Session",
+      "slug": "unknown-session",
+      "_count": {
+        "pastPapers": 0
+      }
+    }
+  ],
+  "blockedRows": [
+    {
+      "id": "cmszptlfn0009101faoom7n51",
+      "name": "Question Papers",
+      "slug": "question-papers",
+      "_count": {
+        "pastPapers": 0
+      }
+    }
+  ],
+  "remainingProfiles": [
+    {
+      "id": "cmtdgox8i001nhyhj3r7nic8y",
+      "subject": "Question Papers",
+      "canonicalSubject": "Question Papers",
+      "status": "PAUSED"
+    },
+    {
+      "id": "cmtdgp8jn005bhyhj9b7pc76t",
+      "subject": "Question Papers",
+      "canonicalSubject": "Question Papers",
+      "status": "PAUSED"
+    }
+  ]
+}
