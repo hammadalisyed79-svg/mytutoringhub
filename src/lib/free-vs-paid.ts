@@ -190,7 +190,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until then, complimentary Tutor Pro and manual plan activation by email are available. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Existing holders of legacy capacity add-ons keep their entitlements.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until card checkout is live, paid plans can be activated manually by email after payment. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Existing holders of legacy capacity add-ons keep their entitlements.",
   },
 ] as const;
 

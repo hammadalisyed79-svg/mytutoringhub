@@ -6,7 +6,7 @@ import { InviteTutorShare } from "@/components/InviteTutorShare";
 import {
   TUTOR_FREE_LISTING_LINE,
   NO_LESSON_COMMISSION_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_UNTIL,
+  TUTOR_PRO_LAUNCH_OFFER_LINE,
 } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
@@ -17,7 +17,7 @@ import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
   title: "Become a Tutor – Free Teaching Profiles & Tutor Pro Priority",
-  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. Launch offer: Tutor Pro complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}.`,
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. ${TUTOR_PRO_LAUNCH_OFFER_LINE}`,
   path: "/become-a-tutor",
 });
 
@@ -94,11 +94,8 @@ export default async function BecomeATutorPage({
           <h2 style={{ marginTop: 0, fontSize: "1.15rem" }}>Free vs Tutor Pro</h2>
           <p className="muted" style={{ marginBottom: 0 }}>
             Free: {BUSINESS.tutorFreeActiveListings} active Teaching Profile. Tutor Pro: up to{" "}
-            {BUSINESS.tutorProActiveListings}, plus ranking and unlimited student contacts
-            {TUTOR_PRO_LAUNCH_OFFER_UNTIL
-              ? ` (complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL})`
-              : ""}
-            . Listing Boost is a separate visibility add-on.
+            {BUSINESS.tutorProActiveListings}, plus ranking and unlimited student contacts (list
+            price). Listing Boost is a separate visibility add-on.
           </p>
         </section>
 

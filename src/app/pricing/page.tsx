@@ -111,7 +111,7 @@ export default async function PricingPage({
           ) : (
             <>
               <span>Free Teaching Profiles</span>
-              <span>Launch offer on Tutor Pro</span>
+              <span>Tutor Pro at list price</span>
               <span>No lesson commission</span>
             </>
           )}
@@ -139,7 +139,7 @@ export default async function PricingPage({
           <p className="muted" style={{ marginBottom: "1.25rem" }}>
             {paidCheckoutLive
               ? "Join free, then pay from the plan you pick. Signed-in accounts start checkout here — no trip back to register."
-              : "Join free first. The Tutor Pro Launch offer activates without payment; paid plans can be confirmed by email until card checkout is live."}
+              : "Join free first. Paid plans can be confirmed by email until card checkout is live — Tutor Pro is at list price."}
           </p>
         )}
 

@@ -55,7 +55,7 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
     title: "Teaching",
     items: [
       {
-        q: "Is Tutor Pro free?",
+        q: "Is Tutor Pro free / what does free listing include?",
         a: `Complete tutor profiles appear in search with ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. ${TUTOR_PRO_LAUNCH_OFFER_LINE}`,
       },
       {

@@ -83,7 +83,7 @@ export function buildAiSupportSystemPrompt(opts: AiSupportPromptOptions) {
 
   const checkoutLine = opts.paidCheckoutLive
     ? `Safepay checkout is LIVE for platform SKUs (Student Pass/Pro, Tutor Pro, Listing Boost, Priority Verification Review, and single past-paper purchases). Prices display in the visitor’s currency (${currency}). Lesson fees are NEVER processed through Safepay.`
-    : `Safepay card checkout may still be launching. Complimentary Tutor Pro (Launch offer) and free Teaching Profiles work without payment. Paid plans can be requested/activated via ${PAYMENTS_SUPPORT_EMAIL} or the in-app activation flow on /pricing. Lesson fees are NEVER processed through Safepay.`;
+    : `Safepay card checkout may still be launching. Free Teaching Profiles work without payment. Tutor Pro is at list price (Launch offer ended ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}). Paid plans can be requested/activated via ${PAYMENTS_SUPPORT_EMAIL} or the in-app activation flow on /pricing. Lesson fees are NEVER processed through Safepay.`;
 
   const studentCompare = STUDENT_COMPARE_ROWS.map(
     (r) =>
