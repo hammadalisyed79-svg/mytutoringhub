@@ -14,7 +14,6 @@ import type { Role, SubscriptionPlan } from "@/lib/types";
 export const TUTOR_FREE_REVEAL_LIMIT = 3;
 export const STUDENT_FREE_CONTACT_LIMIT = 3;
 export const STUDENT_PASS_PAPER_DOWNLOADS = 10;
-export const REFERRAL_CONTACT_BONUS = 1;
 
 /** Returns the user's current plan slug — reads Subscription table, falls back to "free". */
 export async function getUserPlan(userId: string): Promise<string> {
@@ -41,6 +40,7 @@ function currentMonth(): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+/** Grandfathered bonus contacts from older referral grants (read-only; new signups use Hub Points). */
 export async function getReferralContactBonus(userId: string): Promise<number> {
   try {
     const user = await prisma.user.findUnique({
@@ -51,26 +51,6 @@ export async function getReferralContactBonus(userId: string): Promise<number> {
   } catch {
     return 0;
   }
-}
-
-/** Apply referral bonus to new user and referrer (once each). */
-export async function applyReferralSignup(newUserId: string, referrerId: string): Promise<void> {
-  if (!referrerId || referrerId === newUserId) return;
-  const referrer = await prisma.user.findUnique({
-    where: { id: referrerId },
-    select: { id: true, role: true, suspended: true },
-  });
-  if (!referrer || referrer.suspended) return;
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: newUserId },
-      data: { referralBonusContacts: { increment: REFERRAL_CONTACT_BONUS } },
-    }),
-    prisma.user.update({
-      where: { id: referrerId },
-      data: { referralBonusContacts: { increment: REFERRAL_CONTACT_BONUS } },
-    }),
-  ]);
 }
 
 /** Returns monthly usage count for a user and event type. Throws if the store is unavailable. */

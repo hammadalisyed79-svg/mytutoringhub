@@ -61,9 +61,10 @@ export async function getLaunchOfferSunsetPreview(): Promise<LaunchOfferSunsetPr
     withoutTutorPro: Math.max(0, tutors.length - withTutorPro),
     email: {
       subject: `Launch offer ends ${untilLabel} — Tutor Pro`,
-      cta: "Activate or view Tutor Pro",
-      bodyPreview:
-        "Reminds tutors the complimentary Tutor Pro window is ending; free listing (1 Teaching Profile) stays permanent.",
+      cta: plan?.isComplimentary ? "Activate Tutor Pro free" : "View Tutor Pro",
+      bodyPreview: plan?.isComplimentary
+        ? "Reminds tutors the complimentary Tutor Pro window is ending; free listing (1 Teaching Profile) stays permanent."
+        : "Tutor Pro at list price after Launch offer; free listing (1 Teaching Profile) stays permanent.",
     },
   };
 }
@@ -109,15 +110,19 @@ export async function sendLaunchOfferSunsetCampaign(): Promise<LaunchOfferSunset
     }
     try {
       const hasComplimentaryPro = await hasAnyActivePlan(user.id, ["TUTOR_BASIC"]);
+      const offerIsComplimentary = Boolean(plan.isComplimentary);
       await sendEmail({
         to: user.email,
         subject: hasComplimentaryPro
           ? `Your complimentary Tutor Pro ends ${untilLabel}`
-          : `Launch offer ends ${untilLabel} — activate Tutor Pro free`,
+          : offerIsComplimentary
+            ? `Launch offer ends ${untilLabel} — activate Tutor Pro free`
+            : `Tutor Pro after the Launch offer`,
         html: tutorLaunchOfferSunsetEmailHtml({
           name: user.name || "there",
           untilLabel,
           hasComplimentaryPro,
+          offerIsComplimentary,
           pricingUrl: `${appUrl()}/pricing?plan=TUTOR_BASIC`,
           dashboardUrl: `${appUrl()}/dashboard/tutor`,
         }),

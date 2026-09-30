@@ -3,7 +3,7 @@
  * Does not rewrite legal prose; asserts product numbers and forbids retired cliffs.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { BUSINESS } from "@/lib/business-rules";
 import { formatPlanPrice } from "@/lib/currency";
@@ -322,6 +322,20 @@ assert.match(helpFaq, /reply to inbound student messages before verifying/i);
 assert.doesNotMatch(helpFaq, /messaging and student requests stay locked until you confirm/i);
 assert.match(helpFaq, /through Safepay\./);
 assert.doesNotMatch(helpFaq, /when checkout is available/);
+
+// Dead contact-bonus referral path removed; Hub Points attribution remains the live path.
+assert.doesNotMatch(readSrc("lib/plan-limits.ts"), /applyReferralSignup/);
+assert.doesNotMatch(readSrc("lib/plan-limits.ts"), /REFERRAL_CONTACT_BONUS/);
+assert.ok(!existsSync(join(process.cwd(), "src/components/ReferralShareButton.tsx")));
+assert.ok(!existsSync(join(process.cwd(), "src/components/GoogleAnalytics.tsx")));
+assert.match(readSrc("components/GoogleTagHead.tsx"), /GoogleTagHead/);
+assert.match(readSrc("app/api/register/route.ts"), /attributeReferralOnSignup/);
+
+const sunsetEmail = readSrc("lib/email.ts");
+assert.match(sunsetEmail, /offerIsComplimentary/);
+assert.match(sunsetEmail, /Tutor Pro after the Launch offer/);
+// Free-activate CTA only inside the complimentary branch, not the post-offer default.
+assert.match(sunsetEmail, /if \(opts\.offerIsComplimentary\)/);
 
 const studyPrompt = buildAiStudySystemPrompt();
 assert.match(studyPrompt, /Student Pro/);
