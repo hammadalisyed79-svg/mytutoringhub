@@ -952,20 +952,6 @@ export function TutorProfileForm({
             onApply={setBio}
           />
         </div>
-
-        <details className="profile-advanced-details">
-          <summary>Optional headline</summary>
-          <label>
-            <span>Tutor headline</span>
-            <input
-              name="headline"
-              maxLength={120}
-              value={headline}
-              onChange={(e) => setHeadline(e.target.value)}
-              placeholder="Auto-filled from your name if left blank"
-            />
-          </label>
-        </details>
       </section>
       )}
 
