@@ -1,7 +1,7 @@
 /**
  * Canonical public-visibility computation for tutor profiles.
  * Mirrors `syncTutorBadges` active rule without writing to the database:
- *   active = forceActive || (emailVerified && isTutorProfileListable(...))
+ *   active = !suspended && (forceActive || (emailVerified && isTutorProfileListable(...)))
  */
 import { isSuspiciousDisplayName } from "@/lib/display-name";
 import { isPaperishSubjectLabel } from "@/lib/subject-catalog";
@@ -43,8 +43,10 @@ export function computeDesiredTutorPublicActive(input: TutorVisibilityInput): Tu
   const completion = getTutorProfileCompletion(input);
   const listable = isTutorProfileListable(input, input.name);
   const forceActive = Boolean(input.forceActive);
+  const suspended = Boolean(input.suspended);
 
   const blockReasons: string[] = [];
+  if (suspended) blockReasons.push("account_suspended");
   if (!emailVerified) blockReasons.push("email_unverified");
   if (suspiciousName) blockReasons.push("suspicious_display_name");
   if (!completion.complete) {
@@ -53,8 +55,9 @@ export function computeDesiredTutorPublicActive(input: TutorVisibilityInput): Tu
     }
   }
 
-  const ordinaryEligible = emailVerified && listable;
-  const desiredActive = forceActive || ordinaryEligible;
+  const ordinaryEligible = !suspended && emailVerified && listable;
+  // forceActive must never override suspension.
+  const desiredActive = !suspended && (forceActive || ordinaryEligible);
 
   return {
     desiredActive,
@@ -64,7 +67,7 @@ export function computeDesiredTutorPublicActive(input: TutorVisibilityInput): Tu
     complete: completion.complete,
     missingRequired: completion.missingRequired,
     blockReasons,
-    forceActiveOverride: forceActive && !ordinaryEligible,
+    forceActiveOverride: forceActive && !ordinaryEligible && !suspended,
   };
 }
 

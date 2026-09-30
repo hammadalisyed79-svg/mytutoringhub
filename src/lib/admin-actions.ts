@@ -574,6 +574,10 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       await prisma.$transaction([
         prisma.user.update({ where: { id: userId }, data: { suspended: true } }),
         prisma.tutorProfile.updateMany({ where: { userId }, data: { active: false, forceActive: false } }),
+        prisma.subjectProfile.updateMany({
+          where: { tutorProfile: { userId }, status: "ACTIVE" },
+          data: { status: "PAUSED" },
+        }),
         prisma.report.update({ where: { id }, data: { status: "RESOLVED" } }),
       ]);
       break;
@@ -593,10 +597,16 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         data: { suspended: action === "suspend_user" },
       });
       if (action === "suspend_user") {
-        await prisma.tutorProfile.updateMany({
-          where: { userId: id },
-          data: { active: false, forceActive: false },
-        });
+        await prisma.$transaction([
+          prisma.tutorProfile.updateMany({
+            where: { userId: id },
+            data: { active: false, forceActive: false },
+          }),
+          prisma.subjectProfile.updateMany({
+            where: { tutorProfile: { userId: id }, status: "ACTIVE" },
+            data: { status: "PAUSED" },
+          }),
+        ]);
       } else {
         const tutorUser = await prisma.user.findUnique({
           where: { id },
@@ -631,10 +641,16 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           data: { suspended: suspend },
         });
         if (suspend) {
-          await prisma.tutorProfile.updateMany({
-            where: { userId: user.id },
-            data: { active: false, forceActive: false },
-          });
+          await prisma.$transaction([
+            prisma.tutorProfile.updateMany({
+              where: { userId: user.id },
+              data: { active: false, forceActive: false },
+            }),
+            prisma.subjectProfile.updateMany({
+              where: { tutorProfile: { userId: user.id }, status: "ACTIVE" },
+              data: { status: "PAUSED" },
+            }),
+          ]);
         } else if (user.role === "TUTOR") {
           await syncTutorBadges(user.id).catch(() => undefined);
         }

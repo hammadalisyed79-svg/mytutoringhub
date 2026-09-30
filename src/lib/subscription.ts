@@ -264,7 +264,7 @@ export async function syncTutorBadges(userId: string) {
     }),
     prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, emailVerified: true },
+      select: { name: true, emailVerified: true, suspended: true },
     }),
   ]);
   if (!profile) return;
@@ -313,6 +313,9 @@ export async function syncTutorBadges(userId: string) {
   const listable =
     Boolean(user?.emailVerified) &&
     isTutorProfileListable({ ...profile, subjectProfiles: profile.subjectProfiles }, user?.name);
+  // Suspended accounts must never be re-listed by badge sync / crons.
+  const suspended = Boolean(user?.suspended);
+  const shouldList = !suspended && (profile.forceActive || listable);
 
   await prisma.tutorProfile.update({
     where: { id: profile.id },
@@ -324,7 +327,9 @@ export async function syncTutorBadges(userId: string) {
       boostUntil,
       // Complete + email-verified profiles list free; paid plans only affect ranking/ads.
       // Admin forceActive can restore visibility for edge cases without deleting accounts.
-      active: profile.forceActive || listable,
+      // Never override an account suspension.
+      active: shouldList,
+      ...(suspended ? { forceActive: false } : {}),
     },
   });
 

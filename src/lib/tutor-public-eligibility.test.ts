@@ -138,6 +138,20 @@ for (const name of ["王小明", "山田太郎", "김민수", "Иван Петр
     canViewTutorProfilePublicly({ ...base, active: true, forceActive: true, headline: "" }),
     true,
   );
+  assert.equal(
+    canViewTutorProfilePublicly({
+      ...base,
+      active: true,
+      forceActive: true,
+      suspended: true,
+      headline: "",
+    }),
+    false,
+  );
+  assert.equal(
+    computeDesiredTutorPublicActive({ ...base, forceActive: true, suspended: true }).desiredActive,
+    false,
+  );
 }
 
 // Search/sitemap select parents without subjectProfiles — must not zero out catalogue
