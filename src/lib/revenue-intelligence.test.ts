@@ -12,4 +12,9 @@ const comp = parseSafepayStoredAmount("promo_complimentary");
 const paidValue = comp.complimentary ? 0 : comp.major;
 assert.equal(paidValue, 0);
 
+// Force-complete / manual grants must never inflate revenue
+const manual = parseSafepayStoredAmount("manual_force_complete");
+assert.equal(manual.major, 0);
+assert.ok(manual.complimentary);
+
 console.log("revenue-intelligence.test.ts: ok");

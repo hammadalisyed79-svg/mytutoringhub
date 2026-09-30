@@ -319,8 +319,15 @@ export async function searchTutors(
           : {}),
         ...(keyword
           ? {
+              // Subject/canonical: exact expanded terms only (Science ≠ Computer Science).
+              // Other fields may use contains for recall.
               OR: [
-                { subject: contains(keyword) },
+                ...expandSubjectTerms(keyword).flatMap((term) => [
+                  { subject: { equals: term, mode: "insensitive" as const } },
+                  ...(includeJoinTable
+                    ? [{ canonicalSubject: { equals: term, mode: "insensitive" as const } }]
+                    : []),
+                ]),
                 { title: contains(keyword) },
                 { description: contains(keyword) },
                 { location: contains(keyword) },
@@ -379,7 +386,15 @@ export async function searchTutors(
     });
     return (rows as ListingRow[])
       .filter(isPublicListing)
-      .filter((row) => !subject || listingMatchesExpandedSubject(row, subject));
+      .filter((row) => !subject || listingMatchesExpandedSubject(row, subject))
+      .filter((row) => {
+        if (!keyword || subject) return true;
+        // Drop substring collisions on the listing subject (Science ⊂ Computer Science).
+        const hay = `${row.subject} ${row.canonicalSubject || ""}`.toLowerCase();
+        const kw = keyword.trim().toLowerCase();
+        if (!kw || !hay.includes(kw)) return true;
+        return listingMatchesExpandedSubject(row, keyword);
+      });
   };
 
   const querySafe = async (useLocation: boolean, useCountry: boolean) => {

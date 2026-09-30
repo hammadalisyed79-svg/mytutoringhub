@@ -97,8 +97,8 @@ export function FreeVsPaidComparison({ showFaq = true }: { showFaq?: boolean }) 
       <section className="compare-section">
         <h2>For students & parents</h2>
         <p className="muted">
-          Start free with monthly tutor contacts. Upgrade when you want unlimited messaging, request
-          ads, or study tools.
+          Start free with monthly tutor contacts. Upgrade when you want unlimited messaging, Tutor
+          Requests, or study tools.
         </p>
         <CompareTable
           caption="Student free vs paid features"

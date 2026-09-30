@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { formatHourly } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { ReportButton } from "@/components/ReportButton";
+import { sameCanonicalSubject } from "@/lib/teaching-profile-subject";
 
 export const metadata = pageMetadata({
   title: "Requests – Find Students Who Need a Tutor",
@@ -21,8 +22,11 @@ function subjectTokens(value: string) {
 }
 
 function subjectsMatch(adSubject: string, tutorSubjects: string[]) {
-  const ad = adSubject.toLowerCase();
-  return tutorSubjects.some((s) => ad.includes(s) || s.includes(ad));
+  const tokens = subjectTokens(adSubject);
+  if (!tokens.length) return false;
+  return tutorSubjects.some((tutorSub) =>
+    tokens.some((ad) => sameCanonicalSubject(ad, tutorSub)),
+  );
 }
 
 function requestMatchScore(

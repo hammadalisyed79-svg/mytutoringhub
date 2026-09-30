@@ -43,6 +43,8 @@ assert.equal(parseSafepayStoredAmount("safepay_PKR_199900").complimentary, false
 assert.equal(parseSafepayStoredAmount("safepay_USD_1999").major, 19.99);
 assert.equal(parseSafepayStoredAmount("promo_complimentary").complimentary, true);
 assert.equal(parseSafepayStoredAmount("promo_complimentary").major, 0);
+assert.equal(parseSafepayStoredAmount("manual_force_complete").major, 0);
+assert.ok(parseSafepayStoredAmount("manual_force_complete").complimentary);
 
 const clean = sanitizeConversionParams({
   email: "x@y.com",

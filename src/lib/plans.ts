@@ -306,10 +306,10 @@ export function applyPlanOverrides(
 export function resolvePlan(plan: PlanDefinition, now = new Date()): ResolvedPlan {
   let promoEnabled = Boolean(plan.promoEnabled);
   let endsAt = promoEnabled ? endOfPromoDay(plan.promoUntil) : null;
-  // Force-close the dated Launch offer after 30 Sep 2026 Asia/Karachi even if admin left promoEnabled on.
+  // After Launch hard end: never allow complimentary ($0) Tutor Pro — even if admin sets a new promoUntil.
   if (
     plan.id === "TUTOR_BASIC" &&
-    plan.promoUntil === "2026-09-30" &&
+    plan.promoPricePkr === 0 &&
     now.getTime() > TUTOR_PRO_LAUNCH_HARD_END.getTime()
   ) {
     promoEnabled = false;

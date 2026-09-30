@@ -205,6 +205,33 @@ const afterKarachiMidnight = resolvePlan(
 );
 assert.equal(afterKarachiMidnight.isPromoActive, false);
 
+// Admin cannot re-open complimentary Tutor Pro with a later promoUntil after hard end.
+const reopenedZeroPromo = resolvePlan(
+  {
+    ...DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+    promoEnabled: true,
+    promoPricePkr: 0,
+    promoUntil: "2026-12-31",
+  },
+  new Date("2026-10-01T12:00:00+05:00"),
+);
+assert.equal(reopenedZeroPromo.isPromoActive, false);
+assert.equal(reopenedZeroPromo.isComplimentary, false);
+assert.equal(reopenedZeroPromo.chargePricePkr, 1499);
+
+// Paid (non-zero) promos after hard end are still allowed by resolvePlan.
+const paidPromoAfter = resolvePlan(
+  {
+    ...DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+    promoEnabled: true,
+    promoPricePkr: 999,
+    promoUntil: "2026-12-31",
+  },
+  new Date("2026-10-01T12:00:00+05:00"),
+);
+assert.equal(paidPromoAfter.isPromoActive, true);
+assert.equal(paidPromoAfter.chargePricePkr, 999);
+
 assert.match(formatPlanPrice(999, "PKR", "once"), /999/);
 assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);
 assert.match(ANNUAL_SAVE_LABEL, /Save 20% with annual billing/);
@@ -281,6 +308,20 @@ assert.match(supportLive, /\/countries\//);
 assert.match(supportLive, /badge is earned, not purchased|Never say users can buy the Identity Verified badge/i);
 assert.doesNotMatch(supportLive, /help bot/i);
 assert.match(supportLive, /Avoid filler, emoji, slang, and chatbot phrases/i);
+
+// Stabilization gap fixes: Tutor Requests + exam resources labeling
+const freeVsPaidUi = readSrc("components/FreeVsPaidComparison.tsx");
+assert.match(freeVsPaidUi, /Tutor\s+Requests/);
+assert.doesNotMatch(freeVsPaidUi, /request ads/i);
+const homePapers = readSrc("components/HomePastPapersShowcase.tsx");
+assert.match(homePapers, /exam resources/);
+assert.doesNotMatch(homePapers, /\d+ past papers\. And tutors/i);
+
+const helpFaq = readSrc("lib/help-knowledge.ts");
+assert.match(helpFaq, /reply to inbound student messages before verifying/i);
+assert.doesNotMatch(helpFaq, /messaging and student requests stay locked until you confirm/i);
+assert.match(helpFaq, /through Safepay\./);
+assert.doesNotMatch(helpFaq, /when checkout is available/);
 
 const studyPrompt = buildAiStudySystemPrompt();
 assert.match(studyPrompt, /Student Pro/);

@@ -35,20 +35,21 @@ export async function HomePastPapersShowcase({ pinnedCountry }: { pinnedCountry?
         <div className="home-past-papers-copy">
           <p className="eyebrow">Exam preparation</p>
           <h2 id="home-past-papers-title">
-            {pastPaperLabel} past papers. And tutors when you need help.
+            {pastPaperLabel} exam resources. And tutors when you need help.
           </h2>
           <p className="section-lead">
-            Filter by board, qualification, subject, year, and session.
+            Filter by board, qualification, subject, year, and session — question papers, mark
+            schemes, and related exam documents.
           </p>
           <div className="hero-ctas">
             <Link href="/past-papers" className="btn">
-              Browse Past Papers
+              Browse exam resources
             </Link>
           </div>
         </div>
         <div className="home-past-papers-preview">
           <p className="home-pp-preview-label" id="home-pp-filter-title">
-            Filter past papers
+            Filter exam resources
           </p>
           <PastPaperSearchForm
             tree={pastPaperFilterTree}
@@ -65,11 +66,11 @@ export async function HomePastPapersShowcase({ pinnedCountry }: { pinnedCountry?
 
 export function HomePastPapersFallback() {
   return (
-    <section className="section home-past-papers" aria-busy="true" aria-label="Loading past papers">
+    <section className="section home-past-papers" aria-busy="true" aria-label="Loading exam resources">
       <div className="container home-past-papers-inner">
         <div className="home-past-papers-copy">
           <p className="eyebrow">Exam preparation</p>
-          <h2>Past papers catalog</h2>
+          <h2>Exam resources catalog</h2>
           <p className="section-lead">Loading filters…</p>
         </div>
       </div>

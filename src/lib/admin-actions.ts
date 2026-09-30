@@ -12,7 +12,7 @@ import {
   isSafepayTrackerPaid,
 } from "@/lib/safepay-complete";
 import { safepayConfigured } from "@/lib/safepay";
-import { PLANS } from "@/lib/plans";
+import { PLANS, TUTOR_PRO_LAUNCH_HARD_END } from "@/lib/plans";
 import type { Role, SubscriptionPlan } from "@/lib/types";
 import { isR2Configured, r2NotConfiguredMessage } from "@/lib/past-papers/r2";
 import { syncPastPapersFromR2 } from "@/lib/past-papers/past-paper-sync";
@@ -746,11 +746,17 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           "Add adminNote with bank-transfer reference or reason (min 4 characters)",
         );
       }
+      // Tag as manual so revenue intelligence never counts force-complete as Safepay cash.
+      const priorPriceId = existing.stripePriceId;
+      const manualPriceId = priorPriceId?.startsWith("manual_")
+        ? priorPriceId
+        : `manual_force_complete`;
       const sub = await prisma.subscription.update({
         where: { id },
         data: {
           status: "ACTIVE",
           currentPeriodEnd: new Date(Date.now() + (payload.days || 30) * 86400000),
+          stripePriceId: manualPriceId,
         },
       });
       await prisma.subscription.updateMany({
@@ -766,6 +772,8 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       extra = {
         paymentBypass: true,
         priorStatus: existing.status,
+        priorStripePriceId: priorPriceId || undefined,
+        stripePriceId: manualPriceId,
         plan: sub.plan,
         userId: sub.userId,
         days: payload.days || 30,
@@ -976,6 +984,17 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         }
         if (p.promoEnabled && !p.promoUntil) {
           throw new AdminActionError(`Set an end date for the ${p.name} offer`);
+        }
+        // Launch offer hard end: refuse complimentary ($0) Tutor Pro re-open.
+        if (
+          p.id === "TUTOR_BASIC" &&
+          p.promoEnabled &&
+          (p.promoPricePkr === 0 || p.promoPricePkr == null) &&
+          Date.now() > TUTOR_PRO_LAUNCH_HARD_END.getTime()
+        ) {
+          throw new AdminActionError(
+            "Complimentary Tutor Pro cannot be re-enabled after the Launch offer end (30 Sep 2026). Use a paid promo price or grant plans manually.",
+          );
         }
       }
       const planPrices = Object.fromEntries(

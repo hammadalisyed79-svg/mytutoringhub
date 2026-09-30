@@ -32,7 +32,7 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
       },
       {
         q: "Why do I need to verify my email?",
-        a: "You can use your dashboard immediately, but messaging and student requests stay locked until you confirm. Resend the link from Pricing, Dashboard, or Settings.",
+        a: "You can use your dashboard immediately. Students need a verified email to start conversations and post Tutor Requests. Tutors need a verified email to start new conversations, but can still reply to inbound student messages before verifying. Resend the link from Pricing, Dashboard, or Settings.",
       },
     ],
   },
@@ -82,7 +82,7 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
       },
       {
         q: "How do payments work?",
-        a: "Platform plans are billed for the period you purchase through Safepay when checkout is available. Access remains active for the purchased period. Automatic renewal only applies if recurring billing is explicitly offered and authorized at checkout. Lesson payments are never processed through Safepay.",
+        a: "Platform plans are billed for the period you purchase through Safepay. Access remains active for the purchased period. Automatic renewal only applies if recurring billing is explicitly offered and authorized at checkout. Lesson payments are never processed through Safepay.",
       },
     ],
   },
