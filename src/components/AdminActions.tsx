@@ -409,7 +409,7 @@ export function AdminTutorEditForm({
       </label>
       <label>
         Hourly rate (PKR base)
-        <input name="hourlyRate" type="number" min={0} step={50} defaultValue={tutor.hourlyRate} />
+        <input name="hourlyRate" type="number" min={0} step="any" inputMode="decimal" defaultValue={tutor.hourlyRate} />
       </label>
       <label>
         Location

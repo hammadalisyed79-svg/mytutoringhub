@@ -39,7 +39,7 @@ export function teachingProfileContextLine(listing: ListingContextInput): string
     joinCapabilityLabels(editor.qualifications.length ? editor.qualifications : editor.levels),
     joinCapabilityLabels(editor.syllabusCodes),
     Number.isFinite(Number(listing.rate)) && Number(listing.rate) > 0
-      ? `${Math.round(Number(listing.rate))} PKR/hr`
+      ? `${Number(listing.rate)} PKR/hr`
       : "",
   ].filter(Boolean);
   return parts.join(" · ");

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { normalizeHourlyRatePkr } from "@/lib/currency";
 import { canActivateTutorAd, canCreateTutorAd, syncTutorBadges } from "@/lib/subscription";
 import { normalizeSubjectLabel } from "@/lib/subject-profile";
 import {
@@ -428,7 +429,7 @@ export async function PATCH(req: Request) {
         ? { headline: body.headline ? String(body.headline).slice(0, 200) : null }
         : {}),
       ...(nextSubject ? { subject: nextSubject } : {}),
-      ...(body.rate != null ? { rate: Number(body.rate) } : {}),
+      ...(body.rate != null ? { rate: normalizeHourlyRatePkr(Number(body.rate)) } : {}),
       ...(body.level != null ? { level: nextLevel } : {}),
       ...(body.board !== undefined ? { board: nextBoard } : {}),
       ...(body.qualification !== undefined
@@ -456,7 +457,7 @@ export async function PATCH(req: Request) {
         ...(status ? { status } : {}),
         ...(body.title != null ? { title: String(body.title).slice(0, 120) } : {}),
         ...(nextSubject ? { subject: nextSubject } : {}),
-        ...(body.rate != null ? { rate: Number(body.rate) } : {}),
+        ...(body.rate != null ? { rate: normalizeHourlyRatePkr(Number(body.rate)) } : {}),
         ...(body.level != null ? { level: nextLevel } : {}),
         ...(body.location != null ? { location: String(body.location).slice(0, 120) } : {}),
         ...(body.description !== undefined

@@ -19,6 +19,7 @@ import { parseAvailability, serializeAvailability } from "@/lib/availability";
 import { parseDisplayNameInput } from "@/lib/display-name";
 import { isTutorProfileListable, syncTutorBadges } from "@/lib/subscription";
 import { isAllowedBlobUrl } from "@/lib/blob-url";
+import { normalizeHourlyRatePkr } from "@/lib/currency";
 import { tryAwardProfileCompleteBonus } from "@/lib/hub-points";
 import { sendTutorProfileLiveEmail } from "@/lib/email-nurture";
 import {
@@ -458,7 +459,7 @@ export async function PATCH(req: Request) {
           : data.experienceYears;
     }
     if (data.hourlyRate !== undefined && Number.isFinite(data.hourlyRate)) {
-      patch.hourlyRate = Math.round(data.hourlyRate);
+      patch.hourlyRate = normalizeHourlyRatePkr(data.hourlyRate);
     }
     if (data.availability !== undefined) {
       patch.availability = serializeAvailability(parseAvailability(data.availability)) || null;

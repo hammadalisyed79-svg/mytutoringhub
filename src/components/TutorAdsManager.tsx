@@ -250,7 +250,7 @@ function EditTeachingProfileForm({
   extraLevels: string[];
   currency: CurrencyCode;
   rateMinLocal: number;
-  rateStep: number;
+  rateStep: number | "any";
   busy: boolean;
   onSave: (e: React.FormEvent<HTMLFormElement>, caps: TeachingProfileEditorValues) => void;
 }) {

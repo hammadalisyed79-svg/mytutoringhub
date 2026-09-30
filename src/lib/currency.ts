@@ -240,35 +240,40 @@ export const MIN_HOURLY_RATE_PKR = 500;
 /** Default starter rate in PKR when a new tutor profile is created. */
 export const DEFAULT_HOURLY_RATE_PKR = 1500;
 
-/** Convert a stored PKR rate into a form input value in the visitor currency. */
-export function hourlyRateInputValue(amountPkr: number, currency: CurrencyCode): string {
-  if (currency === "PKR") return String(Math.round(amountPkr));
-  const local = pkrToCurrency(amountPkr, currency);
-  if (!Number.isFinite(local)) return "";
-  // Integer-friendly form values (matches hourlyRateInputStep / HTML number validation).
-  return String(Math.max(1, Math.round(local)));
+/** Normalize a stored hourly rate in PKR (2 decimal places; not forced to whole rupees). */
+export function normalizeHourlyRatePkr(amountPkr: number): number {
+  if (!Number.isFinite(amountPkr) || amountPkr < 0) return 0;
+  return Math.round(amountPkr * 100) / 100;
 }
 
-/** Convert a form input (visitor currency) back to whole PKR for storage. */
+/** Convert a stored PKR rate into a form input value in the visitor currency. */
+export function hourlyRateInputValue(amountPkr: number, currency: CurrencyCode): string {
+  if (!Number.isFinite(amountPkr)) return "";
+  const local = currency === "PKR" ? amountPkr : pkrToCurrency(amountPkr, currency);
+  if (!Number.isFinite(local)) return "";
+  // Keep decimals tutors set (e.g. 12.50 GBP) — do not force whole numbers.
+  return String(normalizeHourlyRatePkr(local));
+}
+
+/** Convert a form input (visitor currency) back to PKR for storage (2dp, not whole rupees only). */
 export function hourlyRateInputToPkr(amountLocal: number, currency: CurrencyCode): number {
   if (!Number.isFinite(amountLocal) || amountLocal < 0) return 0;
-  return Math.round(currencyToPkr(amountLocal, currency));
+  return normalizeHourlyRatePkr(currencyToPkr(amountLocal, currency));
 }
 
 /**
  * Minimum input amount in visitor currency that still meets MIN_HOURLY_RATE_PKR.
- * Ceiled to a whole number so HTML `step=1` accepts ordinary integer rates (e.g. €10).
+ * Precise to 2dp — not ceiled to whole currency units.
  */
 export function minHourlyRateInput(currency: CurrencyCode): number {
   if (currency === "PKR") return MIN_HOURLY_RATE_PKR;
   const local = pkrToCurrency(MIN_HOURLY_RATE_PKR, currency);
-  return Math.max(1, Math.ceil(local));
+  return Math.max(0.01, Math.round(local * 100) / 100);
 }
 
-/** HTML number input step — whole units for display currencies; 100 PKR for PKR. */
-export function hourlyRateInputStep(currency: CurrencyCode): number {
-  if (currency === "PKR") return 100;
-  return 1;
+/** HTML number input step — allow decimals (not whole-unit / 100 PKR increments). */
+export function hourlyRateInputStep(_currency: CurrencyCode): number | "any" {
+  return "any";
 }
 
 export function formatPlanPrice(

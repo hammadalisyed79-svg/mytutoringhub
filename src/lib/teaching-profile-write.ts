@@ -14,7 +14,7 @@ import {
   shouldRejectActiveCanonicalWrite,
 } from "@/lib/teaching-profile-duplicates";
 import { defaultSubjectProfileTitle, normalizeSubjectLabel, splitSubjectsCsv } from "@/lib/subject-profile";
-import { MIN_HOURLY_RATE_PKR } from "@/lib/currency";
+import { MIN_HOURLY_RATE_PKR, normalizeHourlyRatePkr } from "@/lib/currency";
 
 export const TEACHING_PROFILE_UNIQUENESS_SELECT = {
   id: true,
@@ -91,7 +91,7 @@ export function teachingProfilePersistFields(
     title,
     headline,
     description,
-    rate: input.rate,
+    rate: normalizeHourlyRatePkr(Number(input.rate) || 0),
     online: Boolean(input.online),
     inPerson: Boolean(input.inPerson),
     location,
