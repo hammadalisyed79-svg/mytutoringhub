@@ -7,6 +7,10 @@ import {
 } from "./subject-catalog";
 
 assert.deepEqual(mergeSubjectNames(["Math"], ["math"], ["Physics"]), ["Math", "Physics"]);
+assert.deepEqual(
+  mergeSubjectNames(["Mathematics", "Question Papers", "Mark Schemes", "May June"]),
+  ["Mathematics"],
+);
 
 const fromArray = parseRemoteSubjectsPayload(["Mathematics", " Physics ", "Mathematics"]);
 assert.deepEqual(fromArray, ["Mathematics", "Physics"]);

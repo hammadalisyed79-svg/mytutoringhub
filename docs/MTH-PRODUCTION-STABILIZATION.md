@@ -102,17 +102,21 @@ Production `next build` **not** run in this pass.
 
 ## 10. Remaining genuine blockers
 
-| Issue | Impact | Next action |
-|-------|--------|-------------|
-| Confirm Vercel `NEXT_PUBLIC_GA_MEASUREMENT_ID` + Ads conversion labels | Ads optimization blind | Ops: Tag Assistant smoke-test |
-| Upload `public/ads/*` creatives + map primary student conversions | Spend efficiency | Ops: Google Ads UI |
-| Run taxonomy audit against prod DB and clean paperish tutor subjects | Catalog quality | Ops: `npx tsx scripts/taxonomy-audit-readonly.ts --write` then curated cleanup |
-| Past-paper duplicate/hash anomaly report not fully generated this pass | Data quality | Ops: use existing `duplicates.ts` / quality admin tools; classify A–D before deletes |
-| Incomplete Safepay inventory (abandoned checkouts) | Admin noise | Ops: Revoke stale Incomplete; Recover only if Safepay shows paid |
-| Live Safepay E2E guest paper + plan purchase | Absolute payment confidence | Ops: one sandbox/live test charge each |
-| Google recrawl for stale SERP (Free / 3 listings / Cambridge codes on Edexcel) | Trust in search snippets | Ops: Search Console + sitemap ping |
-| Referral +1 contact still deferred (unwired) | Growth feature half-built | Product decision: ship or remove |
-| Full mobile/a11y pass on all public pages | Launch polish | QA checklist on staging |
+| Issue | Impact | Next action | Status |
+|-------|--------|-------------|--------|
+| Confirm Vercel `NEXT_PUBLIC_GA_MEASUREMENT_ID` + Ads conversion labels | Ads optimization | Tag Assistant; map labels in Ads UI | **Partial** — live site loads gtag/`AW-`; conversion label map + creatives still manual |
+| Upload `public/ads/*` creatives | Spend efficiency | Google Ads UI + repo assets | Open |
+| Taxonomy paperish subjects | Catalog quality | Audit run; picker filter shipped; 1 ACTIVE paperish profile paused | **Mostly done** — 11 orphan Subject rows (0 papers) still await curated delete |
+| Incomplete Safepay inventory | Admin noise | Inventory written (`docs/MTH-INCOMPLETE-PAYMENTS-AUDIT-READONLY.json`) | **Inventoried** — 6 incomplete (4 stale ≥7d); revoke only after Safepay confirm unpaid |
+| Live Safepay E2E guest paper + plan purchase | Payment confidence | One sandbox + one live test charge | Open (manual) |
+| Google recrawl for stale SERP | Trust in snippets | Sitemap healthy (487 URLs); legacy Google/Bing ping retired; use Search Console | **Partial** — GSC re-inspect still manual |
+| Referral +1 contact | Growth | Removed dead path; Hub Points attribution remains | **Closed** |
+| Full mobile/a11y pass | Launch polish | Staging checklist | Open |
+
+Ops scripts added/updated this pass:
+- `scripts/taxonomy-audit-readonly.ts` (`--write`, `--pause-paperish-profiles`)
+- `scripts/incomplete-payments-audit-readonly.ts` (`--write`)
+- `scripts/ping-sitemap.mjs` (sitemap health + optional IndexNow)
 
 ---
 

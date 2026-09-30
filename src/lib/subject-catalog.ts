@@ -51,6 +51,16 @@ const SKIP_R2_SEGMENTS = new Set([
   "specimen",
 ]);
 
+/** Past-paper metadata labels that must never appear as teachable subjects. */
+export const PAPERISH_SUBJECT_LABEL =
+  /confidential instructions|examiner reports?|grade thresholds?|inserts?|mark schemes?|question papers?|feb(?:ruary)?[\/\s-]*mar(?:ch)?|may[\/\s-]*jun(?:e)?|oct(?:ober)?[\/\s-]*nov(?:ember)?|unknown session|^other$/i;
+
+export function isPaperishSubjectLabel(name: string | null | undefined) {
+  const trimmed = (name || "").trim();
+  if (!trimmed) return false;
+  return PAPERISH_SUBJECT_LABEL.test(trimmed);
+}
+
 export function mergeSubjectNames(...groups: string[][]) {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -58,6 +68,7 @@ export function mergeSubjectNames(...groups: string[][]) {
     for (const raw of group) {
       const name = raw.trim();
       if (name.length < 2) continue;
+      if (isPaperishSubjectLabel(name)) continue;
       const key = name.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
@@ -74,6 +85,7 @@ export function catalogSubjectNames() {
 function pushName(out: string[], seen: Set<string>, name: string) {
   const trimmed = name.trim();
   if (trimmed.length < 2 || trimmed.length > 80) return;
+  if (isPaperishSubjectLabel(trimmed)) return;
   const key = trimmed.toLowerCase();
   if (seen.has(key)) return;
   seen.add(key);

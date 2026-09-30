@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-09-30T21:43:07.987Z",
+  "mode": "pause-paperish-profiles",
+  "totals": {
+    "catalogSubjects": 119,
+    "teachingProfilesSampled": 139,
+    "paperishCatalogSubjects": 11,
+    "paperishTeachingProfiles": 2,
+    "duplicateCatalogNames": 0,
+    "pausedPaperishProfiles": 1
+  },
+  "paperishCatalogSubjects": [
+    {
+      "id": "cmszptlek0000101fwg317y9r",
+      "name": "Confidential Instructions",
+      "slug": "confidential-instructions",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlex0001101fuwktjjnk",
+      "name": "Examiner Reports",
+      "slug": "examiner-reports",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlf00002101fnzcip58i",
+      "name": "Feb March",
+      "slug": "feb-march",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlf30003101ffbraxx9e",
+      "name": "Grade Thresholds",
+      "slug": "grade-thresholds",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlf70004101fbvu13iy7",
+      "name": "Inserts",
+      "slug": "inserts",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfa0005101fjvtd0qep",
+      "name": "Mark Schemes",
+      "slug": "mark-schemes",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfd0006101flv4luwbm",
+      "name": "May June",
+      "slug": "may-june",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfg0007101fjefi6nxo",
+      "name": "Oct Nov",
+      "slug": "oct-nov",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfk0008101frqjxcyjp",
+      "name": "Other",
+      "slug": "other",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfn0009101faoom7n51",
+      "name": "Question Papers",
+      "slug": "question-papers",
+      "linkedPastPapers": 0
+    },
+    {
+      "id": "cmszptlfr000a101fcjwci32y",
+      "name": "Unknown Session",
+      "slug": "unknown-session",
+      "linkedPastPapers": 0
+    }
+  ],
+  "paperishTeachingProfilesSample": [
+    {
+      "id": "cmtdgox8i001nhyhj3r7nic8y",
+      "subject": "Question Papers",
+      "canonicalSubject": "Question Papers",
+      "status": "PAUSED"
+    },
+    {
+      "id": "cmtdgp8jn005bhyhj9b7pc76t",
+      "subject": "Question Papers",
+      "canonicalSubject": "Question Papers",
+      "status": "ACTIVE"
+    }
+  ],
+  "duplicateCatalogNames": [],
+  "nextActions": [
+    "Do not bulk-delete Subject rows yet — 0 linked papers is a good candidate set after a second review.",
+    "Tutor pickers now filter paperish labels via isPaperishSubjectLabel / mergeSubjectNames.",
+    "Re-map paused Teaching Profiles to a real teachable subject before reactivating.",
+    "Keep Past Paper document types in past-paper taxonomy only."
+  ]
+}

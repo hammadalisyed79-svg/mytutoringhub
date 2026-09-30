@@ -1,19 +1,20 @@
 /**
  * READ-ONLY taxonomy audit for Teaching Profile subjects vs Past Paper metadata pollution.
- * Does not delete or mutate data. Writes a JSON report under docs/ when run with --write.
+ * Does not delete Subject rows. Optional --pause-paperish-profiles pauses polluted Teaching Profiles.
  *
- * Usage: npx tsx scripts/taxonomy-audit-readonly.ts [--write]
+ * Usage:
+ *   npx tsx scripts/taxonomy-audit-readonly.ts [--write]
+ *   npx tsx scripts/taxonomy-audit-readonly.ts --pause-paperish-profiles
  */
 import { PrismaClient } from "@prisma/client";
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-
-const PAPERISH =
-  /confidential instructions|examiner reports?|grade thresholds?|inserts?|mark schemes?|question papers?|feb(?:ruary)?[\/\s-]*mar(?:ch)?|may[\/\s-]*jun(?:e)?|oct(?:ober)?[\/\s-]*nov(?:ember)?|unknown session|^other$/i;
+import { isPaperishSubjectLabel } from "../src/lib/subject-catalog";
 
 async function main() {
   const prisma = new PrismaClient();
   const write = process.argv.includes("--write");
+  const pausePaperish = process.argv.includes("--pause-paperish-profiles");
   try {
     const subjects = await prisma.subject.findMany({
       select: { id: true, name: true, slug: true, _count: { select: { pastPapers: true } } },
@@ -24,9 +25,11 @@ async function main() {
       take: 20000,
     });
 
-    const paperishCatalog = subjects.filter((s) => PAPERISH.test(s.name) || PAPERISH.test(s.slug || ""));
+    const paperishCatalog = subjects.filter(
+      (s) => isPaperishSubjectLabel(s.name) || isPaperishSubjectLabel(s.slug || ""),
+    );
     const paperishProfiles = profiles.filter(
-      (p) => PAPERISH.test(p.subject || "") || PAPERISH.test(p.canonicalSubject || ""),
+      (p) => isPaperishSubjectLabel(p.subject) || isPaperishSubjectLabel(p.canonicalSubject),
     );
     const byName = new Map<string, typeof subjects>();
     for (const s of subjects) {
@@ -43,15 +46,28 @@ async function main() {
         pastPaperCounts: rows.map((r) => r._count.pastPapers),
       }));
 
+    let pausedProfiles = 0;
+    if (pausePaperish) {
+      const activeIds = paperishProfiles.filter((p) => p.status === "ACTIVE").map((p) => p.id);
+      if (activeIds.length) {
+        const result = await prisma.subjectProfile.updateMany({
+          where: { id: { in: activeIds } },
+          data: { status: "PAUSED" },
+        });
+        pausedProfiles = result.count;
+      }
+    }
+
     const report = {
       generatedAt: new Date().toISOString(),
-      mode: "read-only",
+      mode: pausePaperish ? "pause-paperish-profiles" : "read-only",
       totals: {
         catalogSubjects: subjects.length,
         teachingProfilesSampled: profiles.length,
         paperishCatalogSubjects: paperishCatalog.length,
         paperishTeachingProfiles: paperishProfiles.length,
         duplicateCatalogNames: duplicateNames.length,
+        pausedPaperishProfiles: pausedProfiles,
       },
       paperishCatalogSubjects: paperishCatalog.map((s) => ({
         id: s.id,
@@ -67,20 +83,18 @@ async function main() {
       })),
       duplicateCatalogNames: duplicateNames.slice(0, 100),
       nextActions: [
-        "Do not bulk-delete: review paperish Subject rows carefully (they may only power Past Papers).",
-        "Hide paper metadata from tutor subject pickers; keep teachable subjects only.",
-        "Re-map Teaching Profiles whose subject/canonicalSubject looks like paper metadata.",
+        "Do not bulk-delete Subject rows yet — 0 linked papers is a good candidate set after a second review.",
+        "Tutor pickers now filter paperish labels via isPaperishSubjectLabel / mergeSubjectNames.",
+        "Re-map paused Teaching Profiles to a real teachable subject before reactivating.",
         "Keep Past Paper document types in past-paper taxonomy only.",
       ],
     };
 
     console.log(JSON.stringify(report.totals, null, 2));
-    if (write) {
+    if (write || pausePaperish) {
       const out = resolve("docs/MTH-TAXONOMY-AUDIT-READONLY.json");
       writeFileSync(out, JSON.stringify(report, null, 2));
       console.log("Wrote", out);
-    } else {
-      console.log("Pass --write to save docs/MTH-TAXONOMY-AUDIT-READONLY.json");
     }
   } finally {
     await prisma.$disconnect();
