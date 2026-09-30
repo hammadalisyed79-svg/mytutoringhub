@@ -136,7 +136,7 @@ export function SearchFiltersForm({
 
   const cityPlaceholder = country
     ? `${(cityPool || []).find((city) => city !== "Online") || "City"}, Online…`
-    : defaultCityPlaceholder;
+    : "Any city or Online";
 
   function onCountryChange(next: string) {
     setCountry(next);

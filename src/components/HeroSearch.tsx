@@ -3,8 +3,17 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { countryChoices, parseSearchQuery, suggestSubjects } from "@/lib/search-smart";
-import { citiesForSearchCountry, cityBelongsToCountry } from "@/lib/tutor-catalog";
+import {
+  countryChoices,
+  parseSearchQuery,
+  suggestCities,
+  suggestSubjects,
+} from "@/lib/search-smart";
+import {
+  citiesForSearchCountry,
+  cityBelongsToCountry,
+  inferTutorCountry,
+} from "@/lib/tutor-catalog";
 import { SuggestField } from "@/components/SuggestField";
 
 export function HeroSearch({
@@ -23,7 +32,19 @@ export function HeroSearch({
   const [location, setLocation] = useState("");
   const [mode, setMode] = useState("");
 
-  const cities = useMemo(() => (country ? citiesForSearchCountry(country) : ["Online"]), [country]);
+  const cityPool = useMemo(
+    () => (country ? citiesForSearchCountry(country) : undefined),
+    [country],
+  );
+  const cityOptions = useMemo(() => {
+    const limit = country ? Math.min(cityPool?.length ?? 12, 20) : 12;
+    return suggestCities(location, limit, cityPool).map((city) => ({
+      value: city,
+      label: city,
+      hint: city === "Online" ? "Video lessons" : undefined,
+    }));
+  }, [location, cityPool, country]);
+
   const subjectOptions = useMemo(
     () =>
       suggestSubjects(q, subjects, 6).map((name) => ({
@@ -35,11 +56,19 @@ export function HeroSearch({
 
   function onCountryChange(next: string) {
     setCountry(next);
-    if (next && location && !cityBelongsToCountry(location, next)) {
+    if (next && location && location !== "Online" && !cityBelongsToCountry(location, next)) {
       setLocation("");
     }
-    if (!next && location !== "Online") {
-      setLocation("");
+  }
+
+  function onCityChange(value: string, option?: { value: string }) {
+    const next = (option?.value || value).trim();
+    setLocation(next);
+    if (!next || /^online$/i.test(next)) return;
+    // If country is blank, infer it from the city so search stays precise.
+    if (!country) {
+      const inferred = inferTutorCountry(next);
+      if (inferred) setCountry(inferred);
     }
   }
 
@@ -47,7 +76,7 @@ export function HeroSearch({
     const parsed = parseSearchQuery(rawQ);
     const params = new URLSearchParams();
     if (parsed.subject) params.set("subject", parsed.subject);
-    const nation = country || parsed.country || "";
+    const nation = country || parsed.country || inferTutorCountry(location) || "";
     const city = location || parsed.location || "";
     if (nation) params.set("country", nation);
     if (city) params.set("location", city);
@@ -117,23 +146,19 @@ export function HeroSearch({
             ))}
           </select>
         </div>
-        <div className="hero-search-field">
-          <label className="hero-search-field-label" htmlFor="hero-search-city">
+        <div className="hero-search-field hero-search-field--city">
+          <span className="hero-search-field-label" aria-hidden="true">
             City
-          </label>
-          <select
-            id="hero-search-city"
+          </span>
+          <SuggestField
+            name="location"
+            label="City"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            aria-label="City"
-          >
-            <option value="">{country ? "Any city" : "Select a country first"}</option>
-            {cities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
+            onChange={onCityChange}
+            options={cityOptions}
+            placeholder="Any city or Online"
+            hideLabel
+          />
         </div>
         <button className="btn hero-search-submit" type="submit">
           Search tutors

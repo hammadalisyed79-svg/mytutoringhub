@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { CurriculumCodeOption } from "@/lib/curriculum";
 import { subjectCode } from "@/lib/markets";
 import { countryChoices, resolveCity, resolveCountry, suggestCities, suggestSubjects } from "@/lib/search-smart";
-import { citiesForSearchCountry, cityBelongsToCountry } from "@/lib/tutor-catalog";
+import { citiesForSearchCountry, cityBelongsToCountry, inferTutorCountry } from "@/lib/tutor-catalog";
 import { SuggestField, type SuggestOption } from "@/components/SuggestField";
 
 type Props = {
@@ -23,7 +23,7 @@ type Props = {
 
 const STEPS = [
   { id: "subject", title: "What do you want to learn?", hint: "Type a subject or syllabus code" },
-  { id: "place", title: "Where should lessons happen?", hint: "Pick a country, then a city — or stay online" },
+  { id: "place", title: "Where should lessons happen?", hint: "Country and city are optional — or choose Online" },
   { id: "format", title: "Online or in person?", hint: "You can change this later" },
 ] as const;
 
@@ -79,19 +79,27 @@ export function GuidedTutorSearch({
   }, [subject, subjects, codes]);
 
   const cityOptions = useMemo(() => {
-    const limit = Math.min(cityPool?.length ?? 8, 20);
+    const limit = country ? Math.min(cityPool?.length ?? 12, 20) : 12;
     return suggestCities(location, limit, cityPool).map((city) => ({
       value: city,
       label: city,
       hint: city === "Online" ? "Video lessons" : undefined,
     }));
-  }, [location, cityPool]);
+  }, [location, cityPool, country]);
 
   function onCountryChange(next: string) {
     setCountry(next);
-    if (next && location && !cityBelongsToCountry(location, next)) {
+    if (next && location && location !== "Online" && !cityBelongsToCountry(location, next)) {
       setLocation("");
     }
+  }
+
+  function onCityChange(value: string, option?: SuggestOption) {
+    const next = (option?.value || value).trim();
+    setLocation(next);
+    if (!next || /^online$/i.test(next) || country) return;
+    const inferred = inferTutorCountry(next);
+    if (inferred) setCountry(inferred);
   }
 
   function goNext() {
@@ -177,13 +185,9 @@ export function GuidedTutorSearch({
             name="location"
             label="City"
             value={location}
-            onChange={setLocation}
+            onChange={onCityChange}
             options={cityOptions}
-            placeholder={
-              country
-                ? `${(cityPool || []).find((c) => c !== "Online") || "City"}, Online…`
-                : cityPlaceholder
-            }
+            placeholder={country ? `${(cityPool || []).find((c) => c !== "Online") || "City"}, Online…` : "Any city or Online"}
           />
         </div>
       )}
