@@ -358,6 +358,19 @@ export async function executeConsolidateGroup(
   const { syncDerivedMasterSubjects } = await import("@/lib/teaching-profile-write");
   await syncDerivedMasterSubjects(group.tutorProfileId);
 
+  // Re-assert plan caps after forcing survivor ACTIVE (Pro over-cap only; Free stays grandfathered).
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const { enforceSubjectProfileCap } = await import("@/lib/subject-profile-entitlements");
+    const owner = await prisma.tutorProfile.findUnique({
+      where: { id: group.tutorProfileId },
+      select: { userId: true },
+    });
+    if (owner?.userId) await enforceSubjectProfileCap(owner.userId, now);
+  } catch (err) {
+    console.error("[consolidation] enforceSubjectProfileCap failed", group.tutorProfileId, err);
+  }
+
   return {
     execute: true,
     tutorProfileId: group.tutorProfileId,

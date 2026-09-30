@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-09-30T21:49:46.050Z",
+  "totals": {
+    "tutorsWithActiveListings": 51,
+    "ok": 45,
+    "proOverCap": 0,
+    "freeGrandfatherOverCap": 6,
+    "expiredProStyleOverFree": 0,
+    "zeroActiveSkipped": 0
+  },
+  "samples": [
+    {
+      "userId": "cmt5r6dfy0000u88x3qk7ukbs",
+      "tutorProfileId": "cmt5r6dh90002u88x7uptwuq2",
+      "planCap": 1,
+      "activeCount": 2,
+      "bucket": "free_grandfather_over_cap"
+    },
+    {
+      "userId": "cmt6o69900000qlv9w0hdg2vv",
+      "tutorProfileId": "cmt6o69980002qlv92hqk6e2z",
+      "planCap": 1,
+      "activeCount": 2,
+      "bucket": "free_grandfather_over_cap"
+    },
+    {
+      "userId": "cmt5v2f9n0000x4dh9jzn2iwn",
+      "tutorProfileId": "cmt5v2fa10002x4dhck3tyw2f",
+      "planCap": 1,
+      "activeCount": 2,
+      "bucket": "free_grandfather_over_cap"
+    },
+    {
+      "userId": "cmt76dgw900008dkrvjetnxa0",
+      "tutorProfileId": "cmt76dgwy00028dkr65g4bfz2",
+      "planCap": 1,
+      "activeCount": 3,
+      "bucket": "free_grandfather_over_cap"
+    },
+    {
+      "userId": "cmt6dsx9600009rzej33c6iuz",
+      "tutorProfileId": "cmt6dsx9s00029rzexss1e38c",
+      "planCap": 1,
+      "activeCount": 3,
+      "bucket": "free_grandfather_over_cap"
+    },
+    {
+      "userId": "cmtckdq9n0000gmojr02zmlfw",
+      "tutorProfileId": "cmtckdqa30002gmojh2vgm2nb",
+      "planCap": 1,
+      "activeCount": 2,
+      "bucket": "free_grandfather_over_cap"
+    }
+  ],
+  "businessCaps": {
+    "free": 1,
+    "tutorPro": 10
+  },
+  "hardFailures": {
+    "proOverCap": 0,
+    "ok": true
+  }
+}

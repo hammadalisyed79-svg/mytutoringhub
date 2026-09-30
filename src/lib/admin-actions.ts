@@ -266,6 +266,36 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const id = needId(payload.id);
       targetType = "SubjectProfile";
       targetId = id;
+      const existingListing = await prisma.subjectProfile.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          status: true,
+          subject: true,
+          tutorProfileId: true,
+          tutorProfile: { select: { userId: true } },
+        },
+      });
+      if (!existingListing) throw new AdminActionError("Subject profile not found", 404);
+
+      if (action === "restore_subject_profile") {
+        const { canActivateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
+        const gate = await canActivateSubjectProfile(existingListing.tutorProfile.userId, id);
+        if (!gate.ok && !payload.confirmBypass) {
+          throw new AdminActionError(
+            `${gate.reason || "Cannot activate Teaching Profile under current plan."} Pass confirmBypass to override.`,
+          );
+        }
+        if (!gate.ok && payload.confirmBypass) {
+          const note = (payload.adminNote || "").trim();
+          if (note.length < 8) {
+            throw new AdminActionError(
+              "adminNote (min 8 characters) is required when confirmBypass overrides plan caps",
+            );
+          }
+        }
+      }
+
       const nextStatus =
         action === "hide_subject_profile"
           ? "HIDDEN"
@@ -282,6 +312,12 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           data: { status: nextStatus },
         })
         .catch(() => undefined);
+      if (action === "restore_subject_profile" && payload.confirmBypass) {
+        extra = {
+          planCapBypass: true,
+          adminNote: (payload.adminNote || "").trim() || undefined,
+        };
+      }
       break;
     }
     case "delete_subject_profile": {

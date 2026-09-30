@@ -356,21 +356,33 @@ export async function enforceSubjectProfileCap(
   return { paused: pause.length, kept: keep.length, cap };
 }
 
-/** Cap enforcement for tutors over their limit (cron / admin). */
+/** Cap enforcement for tutors over their limit (cron / admin). Paginates all tutors with ACTIVE listings. */
 export async function enforceAllSubjectProfileCaps(now = new Date()): Promise<{
   tutorsChecked: number;
   profilesPaused: number;
 }> {
-  const tutors = await prisma.tutorProfile.findMany({
-    where: { subjectProfiles: { some: { status: "ACTIVE" } } },
-    select: { userId: true },
-    take: 500,
-  });
-
+  let tutorsChecked = 0;
   let profilesPaused = 0;
-  for (const tutor of tutors) {
-    const result = await enforceSubjectProfileCap(tutor.userId, now);
-    profilesPaused += result.paused;
+  let cursor: string | undefined;
+  const pageSize = 200;
+
+  for (;;) {
+    const tutors = await prisma.tutorProfile.findMany({
+      where: { subjectProfiles: { some: { status: "ACTIVE" } } },
+      select: { id: true, userId: true },
+      orderBy: { id: "asc" },
+      take: pageSize,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+    });
+    if (!tutors.length) break;
+    for (const tutor of tutors) {
+      const result = await enforceSubjectProfileCap(tutor.userId, now);
+      profilesPaused += result.paused;
+      tutorsChecked += 1;
+    }
+    cursor = tutors[tutors.length - 1]?.id;
+    if (tutors.length < pageSize) break;
   }
-  return { tutorsChecked: tutors.length, profilesPaused };
+
+  return { tutorsChecked, profilesPaused };
 }

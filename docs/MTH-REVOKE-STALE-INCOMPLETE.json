@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-09-30T21:49:29.808Z",
+  "mode": "apply",
+  "minAgeDays": 7,
+  "candidates": 4,
+  "revoke": 4,
+  "revoked": 4,
+  "skipPaid": 0,
+  "skipNoTracker": 0,
+  "skipUnknown": 0,
+  "decisions": [
+    {
+      "id": "cmswu29o1000htkwds6o7tvwk",
+      "plan": "STUDENT_PASS",
+      "createdAt": "2026-08-17T06:08:47.474Z",
+      "action": "revoke",
+      "safepayState": "TRACKER_STARTED"
+    },
+    {
+      "id": "cmt098c0f0001weeeu5komjcf",
+      "plan": "UNLIMITED_ADS",
+      "createdAt": "2026-08-19T15:36:43.215Z",
+      "action": "revoke",
+      "safepayState": "TRACKER_STARTED"
+    },
+    {
+      "id": "cmt49cs170008hourz8pd77b5",
+      "plan": "AD_BOOST",
+      "createdAt": "2026-08-22T10:51:15.307Z",
+      "action": "revoke",
+      "safepayState": "TRACKER_STARTED"
+    },
+    {
+      "id": "cmu5ao1fh00074aungbq2dqo0",
+      "plan": "AD_BOOST",
+      "createdAt": "2026-09-17T08:55:28.829Z",
+      "action": "revoke",
+      "safepayState": "internal error: cannot find tracker with token track_c1ca7e4e-2ae3-4315-9242-b29379f1f7ca using keys"
+    }
+  ]
+}

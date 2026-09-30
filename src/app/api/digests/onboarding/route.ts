@@ -20,6 +20,30 @@ export async function GET(req: Request) {
   await expireStaleSubscriptions();
   const { enforceAllSubjectProfileCaps } = await import("@/lib/subject-profile-entitlements");
   const caps = await enforceAllSubjectProfileCaps();
+  const { auditProfileVsPlan, profileVsPlanHardFailures } = await import(
+    "@/lib/profile-vs-plan-audit"
+  );
+  const profileAudit = await auditProfileVsPlan({ sampleLimit: 20 });
+  const hard = profileVsPlanHardFailures(profileAudit);
+  const { revokeStaleIncompleteSubscriptions } = await import("@/lib/revoke-stale-incomplete");
+  const incompleteCleanup = await revokeStaleIncompleteSubscriptions({
+    minAgeDays: 7,
+    apply: true,
+  });
   const result = await runOnboardingDigest();
-  return NextResponse.json({ ...result, subjectProfileCaps: caps });
+  return NextResponse.json({
+    ...result,
+    subjectProfileCaps: caps,
+    profileVsPlan: {
+      totals: profileAudit.totals,
+      hardFailures: hard,
+      samples: profileAudit.samples,
+    },
+    incompleteCleanup: {
+      candidates: incompleteCleanup.candidates,
+      revoke: incompleteCleanup.revoke,
+      revoked: incompleteCleanup.revoked,
+      skipPaid: incompleteCleanup.skipPaid,
+    },
+  });
 }

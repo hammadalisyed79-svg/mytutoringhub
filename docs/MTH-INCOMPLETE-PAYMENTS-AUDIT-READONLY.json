@@ -1,52 +1,20 @@
 {
-  "generatedAt": "2026-09-30T21:41:43.973Z",
+  "generatedAt": "2026-09-30T21:49:44.931Z",
   "mode": "read-only",
   "totals": {
-    "incomplete": 6,
-    "stale7dOrOlder": 4
+    "incomplete": 2,
+    "stale7dOrOlder": 0
   },
   "byPlan": {
-    "STUDENT_PASS": 3,
-    "UNLIMITED_ADS": 1,
-    "AD_BOOST": 2
+    "STUDENT_PASS": 2
   },
   "byAge": {
-    "30d+": 3,
-    "7-30d": 1,
     "<1d": 2
   },
   "byTracker": {
-    "safepay_track": 6
+    "safepay_track": 2
   },
   "sampleOldest": [
-    {
-      "id": "cmswu29o1000htkwds6o7tvwk",
-      "plan": "STUDENT_PASS",
-      "createdAt": "2026-08-17T06:08:47.474Z",
-      "trackerKind": "safepay_track",
-      "priceId": "safepay_PKR_199900"
-    },
-    {
-      "id": "cmt098c0f0001weeeu5komjcf",
-      "plan": "UNLIMITED_ADS",
-      "createdAt": "2026-08-19T15:36:43.215Z",
-      "trackerKind": "safepay_track",
-      "priceId": "safepay_PKR_199900"
-    },
-    {
-      "id": "cmt49cs170008hourz8pd77b5",
-      "plan": "AD_BOOST",
-      "createdAt": "2026-08-22T10:51:15.307Z",
-      "trackerKind": "safepay_track",
-      "priceId": "safepay_PKR_99900"
-    },
-    {
-      "id": "cmu5ao1fh00074aungbq2dqo0",
-      "plan": "AD_BOOST",
-      "createdAt": "2026-09-17T08:55:28.829Z",
-      "trackerKind": "safepay_track",
-      "priceId": "safepay_PKR_79900"
-    },
     {
       "id": "cmuohgq5o0001ylka751cp1ae",
       "plan": "STUDENT_PASS",
