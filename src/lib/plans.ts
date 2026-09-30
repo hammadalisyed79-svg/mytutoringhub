@@ -104,7 +104,8 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
       "Keep 100% of lesson fees — no commission",
     ],
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
-    promoEnabled: true,
+    // Closed after 30 Sep 2026 — do not re-enable without a new dated offer.
+    promoEnabled: false,
     promoPricePkr: 0,
     promoUntil: "2026-09-30",
     promoLabel: "Launch offer",
@@ -218,11 +219,15 @@ export function isRecurringAddOnPlan(planId: string): boolean {
 /** Code defaults. Live checkout/pricing uses `getLivePlans()` so admin can override amounts. */
 export const PLANS = DEFAULT_PLANS;
 
+/** Inclusive end of a YYYY-MM-DD promo day in Asia/Karachi (UTC+5), the business timezone. */
 export function endOfPromoDay(isoDate: string | null | undefined) {
   if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
-  const ends = new Date(`${isoDate}T23:59:59.999Z`);
+  const ends = new Date(`${isoDate}T23:59:59.999+05:00`);
   return Number.isNaN(ends.getTime()) ? null : ends;
 }
+
+/** Absolute hard stop for the Tutor Pro Launch offer (end of 30 Sep 2026 Asia/Karachi). */
+export const TUTOR_PRO_LAUNCH_HARD_END = new Date("2026-09-30T18:59:59.999Z");
 
 export function formatPromoUntil(isoDate: string | Date | null | undefined) {
   const date =
@@ -236,7 +241,7 @@ export function formatPromoUntil(isoDate: string | Date | null | undefined) {
     day: "numeric",
     month: "long",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: "Asia/Karachi",
   });
 }
 
@@ -299,9 +304,19 @@ export function applyPlanOverrides(
 }
 
 export function resolvePlan(plan: PlanDefinition, now = new Date()): ResolvedPlan {
-  const endsAt = plan.promoEnabled ? endOfPromoDay(plan.promoUntil) : null;
+  let promoEnabled = Boolean(plan.promoEnabled);
+  let endsAt = promoEnabled ? endOfPromoDay(plan.promoUntil) : null;
+  // Force-close the dated Launch offer after 30 Sep 2026 Asia/Karachi even if admin left promoEnabled on.
+  if (
+    plan.id === "TUTOR_BASIC" &&
+    plan.promoUntil === "2026-09-30" &&
+    now.getTime() > TUTOR_PRO_LAUNCH_HARD_END.getTime()
+  ) {
+    promoEnabled = false;
+    endsAt = TUTOR_PRO_LAUNCH_HARD_END;
+  }
   const isPromoActive = Boolean(
-    plan.promoEnabled &&
+    promoEnabled &&
       endsAt &&
       now.getTime() <= endsAt.getTime() &&
       plan.promoPricePkr != null &&

@@ -159,20 +159,50 @@ assert.doesNotMatch(launchOffer, /Need one more live subject/);
 // 10. Tutor Pro promo
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
 assert.equal(tutorPro.promoUntil, "2026-09-30");
+assert.equal(tutorPro.promoEnabled, false);
+assert.equal(tutorPro.isPromoActive, false);
 assert.match(tutorPro.promoNote || "", /Listing Boost and Priority Verification Review/);
 assert.doesNotMatch(tutorPro.promoNote || "", /Extra Active/);
 
 const afterPromo = resolvePlan(
   DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
-  new Date("2026-10-01T00:00:01Z"),
+  new Date("2026-10-01T00:00:01+05:00"),
 );
 assert.equal(afterPromo.isPromoActive, false);
 
+// Even if admin left promoEnabled on past the Launch offer hard end, complimentary must stay off.
+const staleAdminPromo = resolvePlan(
+  {
+    ...DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+    promoEnabled: true,
+    promoPricePkr: 0,
+    promoUntil: "2026-09-30",
+  },
+  new Date("2026-10-01T01:00:00+05:00"),
+);
+assert.equal(staleAdminPromo.isPromoActive, false);
+
 const stillLive = resolvePlan(
-  DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
-  new Date("2026-09-30T23:59:00Z"),
+  {
+    ...DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+    promoEnabled: true,
+    promoPricePkr: 0,
+    promoUntil: "2026-09-30",
+  },
+  new Date("2026-09-30T18:00:00Z"), // still 30 Sep evening in Karachi
 );
 assert.equal(stillLive.isPromoActive, true);
+
+const afterKarachiMidnight = resolvePlan(
+  {
+    ...DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
+    promoEnabled: true,
+    promoPricePkr: 0,
+    promoUntil: "2026-09-30",
+  },
+  new Date("2026-09-30T19:00:00Z"), // 00:00 1 Oct Asia/Karachi
+);
+assert.equal(afterKarachiMidnight.isPromoActive, false);
 
 assert.match(formatPlanPrice(999, "PKR", "once"), /999/);
 assert.match(addOnBillingFootnote("PKR", true, "verification"), /One-time/i);

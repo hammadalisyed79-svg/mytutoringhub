@@ -40,6 +40,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/join", destination: "/register", permanent: true },
+      { source: "/tutors", destination: "/search", permanent: true },
+      { source: "/find-tutors", destination: "/search", permanent: true },
       { source: "/settings/plan", destination: "/pricing", permanent: false },
       { source: "/dashboard/student/plan", destination: "/pricing", permanent: false },
       { source: "/dashboard/tutor/plan", destination: "/pricing", permanent: false },

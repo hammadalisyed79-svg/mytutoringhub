@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { endOfPromoDay } from "@/lib/plans";
 import {
   isComplimentaryReceipt,
   receiptAmountLabel,
@@ -76,7 +77,7 @@ assert.equal(
   "Paid via Safepay",
 );
 
-const until = new Date("2026-09-30T23:59:59.999Z");
+const until = endOfPromoDay("2026-09-30")!;
 assert.equal(
   receiptLineDescription({
     planName: "Tutor Pro",
