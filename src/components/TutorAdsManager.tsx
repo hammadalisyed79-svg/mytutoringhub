@@ -362,12 +362,14 @@ export function TutorAdsManager({
   currency = "USD",
   paidCheckoutLive = true,
   hubPointsBalance = 0,
+  accountSuspended = false,
 }: {
   subjects: string[];
   extraLevels?: string[];
   currency?: CurrencyCode;
   paidCheckoutLive?: boolean;
   hubPointsBalance?: number;
+  accountSuspended?: boolean;
 }) {
   const router = useRouter();
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -594,6 +596,10 @@ export function TutorAdsManager({
   }
 
   async function setStatus(id: string, status: string) {
+    if (accountSuspended && status === "ACTIVE") {
+      flashError("Account suspended — Teaching Profiles cannot be activated.");
+      return;
+    }
     clearFeedback();
     setBusyId(id);
     const res = await fetch("/api/tutor-ads", {
@@ -924,6 +930,10 @@ export function TutorAdsManager({
             secondaryLabel="View plans"
           />
         </div>
+      ) : accountSuspended ? (
+        <p className="muted teaching-listings-catalog-hint" role="status">
+          Teaching Profiles stay paused while this account is suspended.
+        </p>
       ) : (
         <>
           <button
@@ -1059,7 +1069,7 @@ export function TutorAdsManager({
                   <button
                     className="btn btn-secondary btn-sm"
                     type="button"
-                    disabled={busyId === listing.id}
+                    disabled={busyId === listing.id || accountSuspended}
                     onClick={() => setStatus(listing.id, "PAUSED")}
                   >
                     Pause
@@ -1068,7 +1078,12 @@ export function TutorAdsManager({
                   <button
                     className="btn btn-secondary btn-sm"
                     type="button"
-                    disabled={busyId === listing.id}
+                    disabled={busyId === listing.id || accountSuspended}
+                    title={
+                      accountSuspended
+                        ? "Account suspended — cannot activate Teaching Profiles"
+                        : undefined
+                    }
                     onClick={() => setStatus(listing.id, "ACTIVE")}
                   >
                     Activate

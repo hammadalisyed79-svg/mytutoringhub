@@ -114,11 +114,15 @@ export default async function AdminUserDetailPage({ params }: Params) {
           <div className="admin-actions">
             <Link href={`/admin/tutors/${user.tutorProfile.id}`}>Edit listing</Link>
             <Link href={`/tutors/${user.tutorProfile.id}`}>Public profile</Link>
-            <AdminActionButton
-              action={user.tutorProfile.active ? "deactivate_tutor" : "activate_tutor"}
-              id={user.tutorProfile.id}
-              label={user.tutorProfile.active ? "Deactivate listing" : "Force-activate listing"}
-            />
+            {user.suspended ? (
+              <span className="muted">Unsuspend before force-activating listings</span>
+            ) : (
+              <AdminActionButton
+                action={user.tutorProfile.active ? "deactivate_tutor" : "activate_tutor"}
+                id={user.tutorProfile.id}
+                label={user.tutorProfile.active ? "Deactivate listing" : "Force-activate listing"}
+              />
+            )}
             <AdminActionButton
               action="set_verified"
               id={user.tutorProfile.id}

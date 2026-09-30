@@ -2,6 +2,26 @@ import Link from "next/link";
 import type { TutorProfileStatusView } from "@/lib/tutor-profile-status";
 
 export function PostVerifyTutorChecklist({ view }: { view: TutorProfileStatusView }) {
+  if (view.status === "SUSPENDED") {
+    return (
+      <section className="panel post-verify-checklist" aria-labelledby="post-verify-tutor-title">
+        <h2 id="post-verify-tutor-title">Account suspended</h2>
+        <p className="muted">
+          Your Teaching Profiles are hidden from search while this account is suspended. Contact
+          support if you need a review.
+        </p>
+        <div className="post-verify-checklist-actions">
+          <a className="btn" href="mailto:admin@mytutoringhub.com">
+            Email support
+          </a>
+          <Link className="btn btn-secondary" href="/help">
+            Help &amp; FAQ
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="panel post-verify-checklist" aria-labelledby="post-verify-tutor-title">
       <p className="success" role="status">

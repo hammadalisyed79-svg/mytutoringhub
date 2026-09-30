@@ -45,7 +45,10 @@ export default async function AdminTutorsPage({ searchParams }: { searchParams: 
   const [overview, staleAdRates, tutors] = await Promise.all([
     getTutorSupplyOverview(),
     prisma.tutorAd.findMany({
-      where: { status: "ACTIVE" },
+      where: {
+        status: "ACTIVE",
+        tutorProfile: { user: { suspended: false } },
+      },
       select: {
         id: true,
         title: true,

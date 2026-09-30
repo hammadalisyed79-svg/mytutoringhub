@@ -63,6 +63,7 @@ export function TutorProfileWorkspace({
   hasValidTeachingProfile,
   hasAnyTeachingProfile,
   profileComplete,
+  accountSuspended = false,
 }: {
   profileId: string;
   initial: ProfileInitial;
@@ -79,6 +80,7 @@ export function TutorProfileWorkspace({
   hasValidTeachingProfile: boolean;
   hasAnyTeachingProfile: boolean;
   profileComplete: boolean;
+  accountSuspended?: boolean;
 }) {
   const startExtra = verifyRequested ? ("verify" as const) : null;
   const initialBlock = useMemo(
@@ -252,11 +254,18 @@ export function TutorProfileWorkspace({
               <h3 className="tutor-workspace-heading" id="teaching-listings-section">
                 Teaching Profiles
               </h3>
-              <p className="muted">
-                Publish at least one subject with a rate — required to appear in search and receive
-                student messages. Optional polish comes after.
-              </p>
-              {!hasValidTeachingProfile ? (
+              {accountSuspended ? (
+                <p className="form-error" role="status">
+                  Your account is suspended. Teaching Profiles stay paused and hidden from search until
+                  an admin unsuspends you.
+                </p>
+              ) : (
+                <p className="muted">
+                  Publish at least one subject with a rate — required to appear in search and receive
+                  student messages. Optional polish comes after.
+                </p>
+              )}
+              {!accountSuspended && !hasValidTeachingProfile ? (
                 <p className="form-error" role="status">
                   Add and publish one Teaching Profile to continue. Skipping is not available — students
                   can’t message you until you’re live.
@@ -269,6 +278,7 @@ export function TutorProfileWorkspace({
               currency={currency}
               paidCheckoutLive={paidCheckoutLive}
               hubPointsBalance={hubPointsBalance}
+              accountSuspended={accountSuspended}
             />
             <div className="guided-search-actions profile-wizard-actions profile-wizard-actions--sticky profile-wizard-actions--luxe">
               <button type="button" className="btn btn-secondary" onClick={() => goBackFrom("subjects")}>

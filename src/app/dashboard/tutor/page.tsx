@@ -289,6 +289,7 @@ export default async function TutorDashboardPage({
                 )}
                 hasAnyTeachingProfile={user.tutorProfile.subjectProfiles.length > 0}
                 profileComplete={profileComplete}
+                accountSuspended={Boolean(user.suspended)}
               />
             ) : null}
           </div>

@@ -6,6 +6,7 @@ import { pastPaperVisibility } from "@/lib/past-papers/import-service";
 import { slugify } from "@/lib/search-tutors";
 import { syncTutorBadges } from "@/lib/subscription";
 import { syncTutorTrustBadge } from "@/lib/tutor-badges";
+import { pauseTutorPublicSurfaces } from "@/lib/tutor-suspend-listings";
 import {
   activatePaidSafepaySubscription,
   fetchSafepayTrackerState,
@@ -219,6 +220,17 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       const id = needId(payload.id);
       targetType = "TutorAd";
       targetId = id;
+      if (action === "restore_tutor_ad") {
+        const existing = await prisma.tutorAd.findUnique({
+          where: { id },
+          select: {
+            tutorProfile: { select: { user: { select: { suspended: true } } } },
+          },
+        });
+        if (existing?.tutorProfile.user.suspended) {
+          throw new AdminActionError("Cannot restore listings while the tutor account is suspended");
+        }
+      }
       const nextStatus = action === "hide_tutor_ad" ? "HIDDEN" : "ACTIVE";
       const ad = await prisma.tutorAd.update({
         where: { id },
@@ -279,6 +291,15 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       if (!existingListing) throw new AdminActionError("Subject profile not found", 404);
 
       if (action === "restore_subject_profile") {
+        const owner = await prisma.user.findUnique({
+          where: { id: existingListing.tutorProfile.userId },
+          select: { suspended: true },
+        });
+        if (owner?.suspended) {
+          throw new AdminActionError(
+            "Cannot restore a Teaching Profile while the tutor account is suspended",
+          );
+        }
         const { canActivateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
         const gate = await canActivateSubjectProfile(existingListing.tutorProfile.userId);
         if (!gate.ok && !payload.confirmBypass) {
@@ -378,6 +399,17 @@ export async function runAdminAction(adminId: string, raw: unknown) {
       targetType = "TutorProfile";
       targetId = id;
       const active = action === "activate_tutor";
+      if (active) {
+        const owner = await prisma.tutorProfile.findUnique({
+          where: { id },
+          select: { user: { select: { suspended: true } } },
+        });
+        if (owner?.user.suspended) {
+          throw new AdminActionError(
+            "Cannot force-activate a listing while the tutor account is suspended. Unsuspend first.",
+          );
+        }
+      }
       await prisma.tutorProfile.update({
         where: { id },
         data: { active, forceActive: active },
@@ -578,6 +610,10 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           where: { tutorProfile: { userId }, status: "ACTIVE" },
           data: { status: "PAUSED" },
         }),
+        prisma.tutorAd.updateMany({
+          where: { tutorProfile: { userId }, status: "ACTIVE" },
+          data: { status: "PAUSED" },
+        }),
         prisma.report.update({ where: { id }, data: { status: "RESOLVED" } }),
       ]);
       break;
@@ -597,16 +633,7 @@ export async function runAdminAction(adminId: string, raw: unknown) {
         data: { suspended: action === "suspend_user" },
       });
       if (action === "suspend_user") {
-        await prisma.$transaction([
-          prisma.tutorProfile.updateMany({
-            where: { userId: id },
-            data: { active: false, forceActive: false },
-          }),
-          prisma.subjectProfile.updateMany({
-            where: { tutorProfile: { userId: id }, status: "ACTIVE" },
-            data: { status: "PAUSED" },
-          }),
-        ]);
+        await pauseTutorPublicSurfaces(id);
       } else {
         const tutorUser = await prisma.user.findUnique({
           where: { id },
@@ -641,16 +668,7 @@ export async function runAdminAction(adminId: string, raw: unknown) {
           data: { suspended: suspend },
         });
         if (suspend) {
-          await prisma.$transaction([
-            prisma.tutorProfile.updateMany({
-              where: { userId: user.id },
-              data: { active: false, forceActive: false },
-            }),
-            prisma.subjectProfile.updateMany({
-              where: { tutorProfile: { userId: user.id }, status: "ACTIVE" },
-              data: { status: "PAUSED" },
-            }),
-          ]);
+          await pauseTutorPublicSurfaces(user.id);
         } else if (user.role === "TUTOR") {
           await syncTutorBadges(user.id).catch(() => undefined);
         }
