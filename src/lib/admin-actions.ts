@@ -280,7 +280,7 @@ export async function runAdminAction(adminId: string, raw: unknown) {
 
       if (action === "restore_subject_profile") {
         const { canActivateSubjectProfile } = await import("@/lib/subject-profile-entitlements");
-        const gate = await canActivateSubjectProfile(existingListing.tutorProfile.userId, id);
+        const gate = await canActivateSubjectProfile(existingListing.tutorProfile.userId);
         if (!gate.ok && !payload.confirmBypass) {
           throw new AdminActionError(
             `${gate.reason || "Cannot activate Teaching Profile under current plan."} Pass confirmBypass to override.`,
