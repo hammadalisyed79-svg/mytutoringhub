@@ -80,6 +80,20 @@ const emptyListing = {
   assert.equal(listingMatchesExpandedSubject(maths, "Biology"), false);
   assert.equal(listingMatchesExpandedSubject(neet, "Biology"), false);
   assert.equal(listingMatchesExpandedSubject(psle, "Biology"), false);
+  assert.equal(
+    listingMatchesExpandedSubject(
+      { subject: "Biology/Life Sciences", canonicalSubject: "Biology/Life Sciences", title: "Saba · Biology" },
+      "Biology",
+    ),
+    true,
+  );
+  assert.equal(
+    listingMatchesExpandedSubject(
+      { subject: "Biology", canonicalSubject: "Biology", title: "Tutor · Biology" },
+      "Biology/Life Sciences",
+    ),
+    true,
+  );
   assert.equal(listingMatchesExpandedSubject(maths, "Mathematics"), true);
 assert.equal(listingMatchesExpandedSubject({ subject: "Commerce" }, "Business"), true);
 assert.equal(listingMatchesExpandedSubject({ subject: "Business Studies" }, "Business"), true);

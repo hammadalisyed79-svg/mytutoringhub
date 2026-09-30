@@ -52,5 +52,15 @@ assert.equal(resolveSubjectName("Business Studies").value, "Business Studies");
   const studies = expandSubjectTerms("Business Studies").map((t) => t.toLowerCase());
   assert.ok(studies.includes("business"));
 }
+{
+  const bio = expandSubjectTerms("Biology").map((t) => t.toLowerCase());
+  assert.ok(bio.includes("biology"));
+  assert.ok(bio.includes("biology/life sciences") || bio.includes("biology life sciences"));
+  assert.ok(bio.includes("life sciences"));
+  assert.equal(resolveSubjectName("biology/life sciences").value, "Biology/Life Sciences");
+  assert.equal(resolveSubjectName("life sciences").value, "Life Sciences");
+  const fromLife = expandSubjectTerms("Life Sciences").map((t) => t.toLowerCase());
+  assert.ok(fromLife.includes("biology"));
+}
 
 console.log("search-smart country/city tests passed");

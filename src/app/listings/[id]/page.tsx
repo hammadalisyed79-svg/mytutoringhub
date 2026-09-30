@@ -379,7 +379,7 @@ export default async function SubjectListingPage({ params }: Params) {
               tutorProfileId: tutor.id,
               name: tutorName,
               title: listing.title,
-              description: listing.headline || bio || listing.title,
+              description: profileHeadline || bio || listing.title,
               subject: listing.subject,
               location: place || listing.location,
               hourlyRatePkr: listing.rate,

@@ -91,6 +91,11 @@ const SUBJECT_ALIASES: Record<string, string> = {
   chemistry: "Chemistry",
   bio: "Biology",
   biology: "Biology",
+  "life sciences": "Life Sciences",
+  "life science": "Life Sciences",
+  "biology life sciences": "Biology/Life Sciences",
+  "biology/life sciences": "Biology/Life Sciences",
+  "biology / life sciences": "Biology/Life Sciences",
   eng: "English",
   english: "English",
   urdu: "Urdu",
@@ -131,6 +136,9 @@ const SUBJECT_SEARCH_EXPANSIONS: Record<string, string[]> = {
   business: ["Business Studies", "Commerce"],
   "business studies": ["Business", "Commerce"],
   commerce: ["Business", "Business Studies"],
+  biology: ["Biology/Life Sciences", "Life Sciences"],
+  "life sciences": ["Biology", "Biology/Life Sciences"],
+  "biology life sciences": ["Biology", "Life Sciences"],
 };
 
 function norm(value: string) {
@@ -288,8 +296,18 @@ export function expandSubjectTerms(subject: string) {
     }
   }
   // Close catalogue neighbours for search only (does not change Teaching Profile identity).
-  for (const extra of SUBJECT_SEARCH_EXPANSIONS[norm(canonical)] || []) {
-    terms.add(extra);
+  const queue = [norm(canonical)];
+  const seenKeys = new Set(queue);
+  while (queue.length) {
+    const key = queue.shift()!;
+    for (const extra of SUBJECT_SEARCH_EXPANSIONS[key] || []) {
+      terms.add(extra);
+      const extraKey = norm(extra);
+      if (!seenKeys.has(extraKey)) {
+        seenKeys.add(extraKey);
+        queue.push(extraKey);
+      }
+    }
   }
   return [...terms];
 }
@@ -316,15 +334,21 @@ export function suggestCities(query: string, limit = 8, pool?: string[]) {
 export function suggestSubjects(query: string, subjectNames: string[], limit = 8) {
   const q = query.trim();
   if (!q) return subjectNames.slice(0, limit);
+  const resolved = resolveSubjectName(q, subjectNames).value || q;
+  const expansionKeys = new Set(expandSubjectTerms(resolved).map((term) => norm(term)));
   return subjectNames
-    .map((name) => ({
-      name,
-      score: Math.max(
-        scoreSuggestion(q, name),
-        scoreSuggestion(q, SUBJECT_CODES[name] || ""),
-        SUBJECT_ALIASES[norm(q)] === name ? 95 : 0,
-      ),
-    }))
+    .map((name) => {
+      const expansionHit = expansionKeys.has(norm(name)) ? 88 : 0;
+      return {
+        name,
+        score: Math.max(
+          scoreSuggestion(q, name),
+          scoreSuggestion(q, SUBJECT_CODES[name] || ""),
+          SUBJECT_ALIASES[norm(q)] === name ? 95 : 0,
+          expansionHit,
+        ),
+      };
+    })
     .filter((row) => row.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
@@ -401,6 +425,17 @@ export function relatedSubjects(subject: string, subjectNames: string[]) {
   if (languages.some((name) => name.toLowerCase() === subject.toLowerCase())) {
     return languages.filter((name) => name.toLowerCase() !== subject.toLowerCase()).slice(0, 4);
   }
+  const expansion = new Set(
+    expandSubjectTerms(subject)
+      .map((term) => norm(term))
+      .filter(Boolean),
+  );
+  const fromExpansion = subjectNames.filter((name) => {
+    if (name === subject) return false;
+    return expansion.has(norm(name));
+  });
+  if (fromExpansion.length) return fromExpansion.slice(0, 4);
+
   const stem = norm(subject).split(" ")[0] || "";
   if (!stem) return [];
   return subjectNames
