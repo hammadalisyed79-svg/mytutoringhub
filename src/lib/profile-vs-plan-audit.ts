@@ -1,6 +1,6 @@
 /**
  * Marketplace Teaching Profile vs plan audit (read-only inventory).
- * Free=1 / Pro=10 write gates stay; Free over-cap is grandfathered (not a hard failure).
+ * Free=1 / Pro=10; Free over-cap rows are inventory failures after enforce (not grandfathered).
  */
 import { prisma } from "@/lib/prisma";
 import {

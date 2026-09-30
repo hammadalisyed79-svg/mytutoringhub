@@ -15,7 +15,7 @@ import {
  * Legacy EXTRA_PROFILE_ADS → Pro cap; UNLIMITED_ADS → ∞.
  *
  * Free may hold up to FREE_TEACHING_PROFILE_ROW_CAP rows (Paused drafts).
- * Existing Free tutors with >1 ACTIVE are grandfathered (never auto-paused).
+ * Free over-cap ACTIVE listings are paused to plan cap (no grandfather).
  */
 export const FREE_SUBJECT_PROFILES = 1;
 export const EXTRA_ACTIVE_SLOT_MAX = 2;
@@ -27,9 +27,9 @@ export const FREE_TEACHING_PROFILE_ROW_CAP = 10;
 export const UPGRADE_REQUIRED_CODE = "UPGRADE_REQUIRED";
 export const SWITCH_LIMIT_CODE = "SWITCH_LIMIT";
 
-/** @deprecated Free listings are never auto-paused; kept for env compatibility. */
+/** @deprecated Free over-cap is enforced via enforceSubjectProfileCap; always true. */
 export function shouldEnforceFreeTeachingProfilePause() {
-  return false;
+  return true;
 }
 
 /** @deprecated Use FREE_SUBJECT_PROFILES — V2 has no promo sunset on free listings. */
@@ -306,7 +306,7 @@ export async function canActivateSubjectProfile(
 /**
  * Pause oldest ACTIVE subject profiles that exceed the tutor's cap.
  * Keeps the most recently updated listings live. No-op when under cap.
- * Never auto-pauses Free/extra path (grandfather).
+ * Free and Pro paths both enforce their plan cap.
  */
 export async function enforceSubjectProfileCap(
   userId: string,
@@ -320,13 +320,6 @@ export async function enforceSubjectProfileCap(
 
   const cap = await getSubjectProfileActiveCap(userId, now);
   if (!Number.isFinite(cap)) return { paused: 0, kept: 0, cap };
-
-  if (cap < TUTOR_PRO_SUBJECT_PROFILE_CAP) {
-    const activeCount = await prisma.subjectProfile.count({
-      where: { tutorProfileId: profile.id, status: "ACTIVE" },
-    });
-    return { paused: 0, kept: activeCount, cap };
-  }
 
   const active = await prisma.subjectProfile.findMany({
     where: { tutorProfileId: profile.id, status: "ACTIVE" },

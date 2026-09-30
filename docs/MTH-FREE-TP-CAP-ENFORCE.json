@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-09-30T22:39:43.591Z",
+  "mode": "apply",
+  "candidates": 6,
+  "profilesPaused": 8,
+  "rows": [
+    {
+      "userId": "cmt5r6dfy0000u88x3qk7ukbs",
+      "name": "Deleted User",
+      "email": "deleted_cmt5r6dfy0000u88x3qk7ukbs@invalid.local",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 2,
+      "keepListingId": "cmtdgovx60017hyhjhrs5llm2",
+      "pauseListingIds": [
+        "cmtdgowm8001fhyhjkedrge3g"
+      ]
+    },
+    {
+      "userId": "cmt6o69900000qlv9w0hdg2vv",
+      "name": "tasneem aaish",
+      "email": "aaishtasneem724@gmail.com",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 2,
+      "keepListingId": "cmtdgoxus001vhyhje8g47kuh",
+      "pauseListingIds": [
+        "cmtdgoy35001xhyhjc3cgwcrd"
+      ]
+    },
+    {
+      "userId": "cmt5v2f9n0000x4dh9jzn2iwn",
+      "name": "madiha Fazal",
+      "email": "madihafaizanmeer@gmail.com",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 2,
+      "keepListingId": "cmtdgp110002vhyhjo27qw6a7",
+      "pauseListingIds": [
+        "cmtdgp19d002xhyhjhkn321un"
+      ]
+    },
+    {
+      "userId": "cmt76dgw900008dkrvjetnxa0",
+      "name": "Shahroz Sajjad",
+      "email": "shahrozsajjad750@gmail.com",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 3,
+      "keepListingId": "cmtdgp5b20049hyhjx57i7pst",
+      "pauseListingIds": [
+        "cmtdgp6dk004lhyhj8prasrk5",
+        "cmtdgp6j6004nhyhjfulnoasz"
+      ]
+    },
+    {
+      "userId": "cmt6dsx9600009rzej33c6iuz",
+      "name": "Abdullah Ali Azhar",
+      "email": "abdullahaliazharhashmi@gmail.com",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 3,
+      "keepListingId": "cmtdgp4ub0043hyhj8uvfbfec",
+      "pauseListingIds": [
+        "cmtdgp4zx0045hyhjujhcs36b",
+        "cmtdgp55h0047hyhj797qwdzz"
+      ]
+    },
+    {
+      "userId": "cmtckdq9n0000gmojr02zmlfw",
+      "name": "Zain Ali",
+      "email": "zain2007aliarshad@gmail.com",
+      "bucket": "free_grandfather_over_cap",
+      "activeBefore": 2,
+      "keepListingId": "cmtdgp9lg005nhyhj4fcy4efg",
+      "pauseListingIds": [
+        "cmtdgp9ts005phyhjrajvvb17"
+      ]
+    }
+  ]
+}

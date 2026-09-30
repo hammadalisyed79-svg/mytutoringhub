@@ -1,5 +1,5 @@
 /**
- * Free Teaching Profile create/reactivate ratchet + Extra Active stacking.
+ * Free Teaching Profile create/reactivate caps + Extra Active stacking.
  *
  * Plan entitlement:
  *   Free = 1 ACTIVE
@@ -7,8 +7,7 @@
  *   Tutor Pro / legacy Extra pack = 10
  *   Unlimited = ∞
  *
- * Grandfathered Free tutors who already have N>1 ACTIVE may keep them
- * (ratchet via resolveCreateTeachingProfileCap). Never auto-paused.
+ * Free over-cap listings are paused to plan cap (no grandfather ratchet).
  */
 
 import {
@@ -46,22 +45,20 @@ export function resolvePlanTeachingProfileCap(opts: {
 
 /**
  * Cap used when creating or reactivating an ACTIVE Teaching Profile.
- * Free grandfather ratchet: cannot grow above current ACTIVE count when already ≥ plan cap
- * and still on Free/extra path without enough slots.
+ * Equals the plan cap (Free=1 / Extra / Pro=10). No grandfather ratchet.
  */
 export function resolveCreateTeachingProfileCap(opts: {
   planCap: number;
+  /** @deprecated Ignored — Free over-cap is no longer ratcheted. */
   activeCount: number;
 }): number {
-  if (!Number.isFinite(opts.planCap)) return opts.planCap;
-  if (opts.planCap > FREE_PLUS_EXTRA_ACTIVE_CAP) return opts.planCap;
-  return Math.max(opts.planCap, Math.max(0, opts.activeCount));
+  void opts.activeCount;
+  return opts.planCap;
 }
 
+/** @deprecated Free over-cap is enforced; always false. */
 export function isGrandfatheredFreeTeachingProfiles(activeCount: number, planCap: number) {
-  return (
-    Number.isFinite(planCap) &&
-    planCap <= FREE_PLUS_EXTRA_ACTIVE_CAP &&
-    activeCount > planCap
-  );
+  void activeCount;
+  void planCap;
+  return false;
 }

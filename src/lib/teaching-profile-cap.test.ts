@@ -1,59 +1,38 @@
 import assert from "node:assert/strict";
 import {
+  FREE_PLUS_EXTRA_ACTIVE_CAP,
   FREE_SUBJECT_PROFILES,
   TUTOR_PRO_SUBJECT_PROFILE_CAP,
-  resolveSubjectProfileActiveCap,
-} from "@/lib/subject-profile-entitlements";
+} from "./subject-profile-entitlements";
 import {
-  UPGRADE_FOR_MORE_PROFILES_MESSAGE,
   isGrandfatheredFreeTeachingProfiles,
   resolveCreateTeachingProfileCap,
   resolvePlanTeachingProfileCap,
   shouldForcePausedTeachingProfileCreate,
-} from "@/lib/teaching-profile-cap";
+} from "./teaching-profile-cap";
 
 assert.equal(FREE_SUBJECT_PROFILES, 1);
 assert.equal(TUTOR_PRO_SUBJECT_PROFILE_CAP, 10);
+assert.equal(FREE_PLUS_EXTRA_ACTIVE_CAP, 3);
 
+assert.equal(resolvePlanTeachingProfileCap({ unlimitedProfiles: false, hasTutorPro: false }), 1);
 assert.equal(
-  resolvePlanTeachingProfileCap({ unlimitedProfiles: false, hasTutorPro: false }),
-  1,
+  resolvePlanTeachingProfileCap({ unlimitedProfiles: false, hasTutorPro: false, extraActiveSlots: 2 }),
+  3,
 );
-assert.equal(
-  resolvePlanTeachingProfileCap({ unlimitedProfiles: false, hasTutorPro: true }),
-  10,
-);
+assert.equal(resolvePlanTeachingProfileCap({ unlimitedProfiles: false, hasTutorPro: true }), 10);
 
-// Grandfather ratchet: cannot grow; ratchets down with active count
-assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 3 }), 3);
-assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 2 }), 2);
+assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 3 }), 1);
+assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 2 }), 1);
 assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 1 }), 1);
 assert.equal(resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 0 }), 1);
-
-// At 3 active, create blocked (active >= createCap)
-assert.ok(3 >= resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 3 }));
-// After pause to 1, still cannot create a 2nd
-assert.ok(1 >= resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 1 }));
-// At 0, can create one
-assert.ok(0 < resolveCreateTeachingProfileCap({ planCap: 1, activeCount: 0 }));
-
-// Pro ignores free ratchet
 assert.equal(resolveCreateTeachingProfileCap({ planCap: 10, activeCount: 3 }), 10);
 
-assert.ok(isGrandfatheredFreeTeachingProfiles(3, 1));
-assert.ok(!isGrandfatheredFreeTeachingProfiles(1, 1));
-assert.ok(!isGrandfatheredFreeTeachingProfiles(3, 10));
+assert.equal(isGrandfatheredFreeTeachingProfiles(3, 1), false);
+assert.equal(isGrandfatheredFreeTeachingProfiles(1, 1), false);
 
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 1, activeCount: 0 }), false);
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 1, activeCount: 1 }), true);
 assert.equal(shouldForcePausedTeachingProfileCreate({ planCap: 10, activeCount: 1 }), false);
-
-assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /Tutor Pro/);
-assert.match(UPGRADE_FOR_MORE_PROFILES_MESSAGE, /1 active/);
-
-assert.equal(
-  resolveSubjectProfileActiveCap({ unlimitedProfiles: false, hasTutorPro: false }),
-  1,
-);
 
 console.log("teaching-profile-cap.test.ts: ok");

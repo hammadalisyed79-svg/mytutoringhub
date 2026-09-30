@@ -74,19 +74,18 @@ function listing(
   assert.equal(tutorHasMoreThanCap(scored, BROAD_SEARCH_MAX_CARDS_PER_TUTOR), true);
   const page1 = paginateWithTutorCap(scored, 1, 12, BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
   const t1OnPage1 = page1.items.filter((row) => row.tutorProfileId === "t1");
-  assert.equal(t1OnPage1.length, 2);
-  assert.deepEqual(
-    t1OnPage1.map((row) => row.listingId),
-    ["maths", "physics"],
-  );
+  assert.equal(t1OnPage1.length, 1);
+  assert.equal(t1OnPage1[0]?.listingId, "maths");
   assert.equal(
-    page1.items.some((row) => row.listingId === "chem"),
+    page1.items.some((row) => row.listingId === "physics" || row.listingId === "chem"),
     false,
   );
   assert.equal(page1.total, 4);
-  assert.equal(page1.pages, 2);
+  assert.equal(page1.pages, 3);
   const page2 = paginateWithTutorCap(scored, 2, 12, BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
-  assert.equal(page2.items[0]?.listingId, "chem");
+  assert.equal(page2.items[0]?.listingId, "physics");
+  const page3 = paginateWithTutorCap(scored, 3, 12, BROAD_SEARCH_MAX_CARDS_PER_TUTOR);
+  assert.equal(page3.items[0]?.listingId, "chem");
 }
 
 {

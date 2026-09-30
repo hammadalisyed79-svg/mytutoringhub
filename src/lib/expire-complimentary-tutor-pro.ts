@@ -54,7 +54,11 @@ function isComplimentaryGrant(row: {
   return false;
 }
 
-async function pauseExcessToFreeCap(userId: string, now: Date): Promise<{
+/** Pause ACTIVE Teaching Profiles above Free=1; keep survivor (Boost > completeness > oldest). */
+export async function pauseExcessTeachingProfilesToFreeCap(
+  userId: string,
+  now: Date = new Date(),
+): Promise<{
   activeBefore: number;
   keepListingId: string | null;
   pauseListingIds: string[];
@@ -146,7 +150,7 @@ export async function expireComplimentaryTutorPro(opts?: {
     if (!pastHardEnd && !pastPeriod) continue;
 
     const pausePlan = pauseExcess
-      ? await pauseExcessToFreeCap(sub.userId, now)
+      ? await pauseExcessTeachingProfilesToFreeCap(sub.userId, now)
       : { activeBefore: 0, keepListingId: null, pauseListingIds: [] as string[] };
 
     rows.push({

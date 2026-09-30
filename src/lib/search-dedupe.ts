@@ -6,11 +6,12 @@
  * Other specific filters (board / level / syllabus only, no subject):
  *   one card per matching Teaching Profile — no per-tutor collapse.
  * Broad search (location / keyword / empty):
- *   max 2 cards from the same TutorProfile per result page.
+ *   at most 1 card per TutorProfile (same as subject search) — siblings via alsoTeaches.
  * "Also teaches" is a secondary cross-link only (subject labels), not a substitute for a card.
  */
 
-export const BROAD_SEARCH_MAX_CARDS_PER_TUTOR = 2;
+/** Broad browse: one card per tutor (also teaches links cover siblings). */
+export const BROAD_SEARCH_MAX_CARDS_PER_TUTOR = 1;
 /** Subject family search: one best Teaching Profile card per tutor. */
 export const SUBJECT_SEARCH_MAX_CARDS_PER_TUTOR = 1;
 /** Similar / related / recommended rails: one card per tutor. */
@@ -78,7 +79,7 @@ export function isSubjectFilteredSearch(filters: { subject?: string | null }): b
 
 /**
  * Per-tutor card cap for the current search mode.
- * Subject query → 1 (avoid near-duplicate Maths cards); broad → 2; other specific → uncapped.
+ * Subject or broad browse → 1; board/level/syllabus-only → uncapped.
  */
 export function maxCardsPerTutorForSearch(filters: {
   subject?: string | null;
