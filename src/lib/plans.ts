@@ -106,10 +106,10 @@ export const DEFAULT_PLANS: PlanDefinition[] = [
     envPriceId: "STRIPE_PRICE_TUTOR_BASIC",
     promoEnabled: true,
     promoPricePkr: 0,
-    promoUntil: "2026-10-07",
-    promoLabel: "Final Launch offer",
+    promoUntil: "2026-09-30",
+    promoLabel: "Launch offer",
     promoNote:
-      "Final Launch offer: Tutor Pro is free until 7 October 2026 (up to 10 live profiles, ranking, unlimited student contacts). After that, list price applies. Free listing stays 1 live Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons.",
+      "Launch offer: Tutor Pro was free until 30 September 2026 (up to 10 live profiles, ranking, unlimited student contacts). That window has ended — list price applies. Free listing stays 1 live Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons.",
   },
   {
     id: "VERIFIED_TUTOR",

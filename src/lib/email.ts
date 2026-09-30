@@ -535,12 +535,12 @@ export function tutorProfileLiveEmailHtml(opts: {
 
 export function tutorPlanNudgeEmailHtml(opts: { name: string; pricingUrl: string }) {
   return emailLayout({
-    preheader: "Final Launch offer: activate Tutor Pro free until 7 October 2026.",
+    preheader: "Tutor Pro is available at list price — free listing stays 1 Teaching Profile.",
     title: "Grow with Tutor Pro",
     body: `<p>Hi ${escapeHtml(opts.name)},</p>
-<p>Your profile is live. Under the <strong>Final Launch offer</strong>, <strong>Tutor Pro</strong> is complimentary until <strong>7 October 2026</strong> — up to 10 live Teaching Profiles, relevance-first ranking, and unlimited student contacts.</p>
-<p>After that date, list price applies. Free listing still includes <strong>1 live Teaching Profile</strong> permanently. Listing Boost and Priority Verification Review stay separate paid add-ons.</p>`,
-    cta: { label: "Activate Tutor Pro free", href: opts.pricingUrl },
+<p>Your profile is live. The Launch offer complimentary window has ended. <strong>Tutor Pro</strong> is available at list price — up to 10 live Teaching Profiles, relevance-first ranking, and unlimited student contacts.</p>
+<p>Free listing still includes <strong>1 live Teaching Profile</strong> permanently. Listing Boost and Priority Verification Review stay separate paid add-ons.</p>`,
+    cta: { label: "View Tutor Pro", href: opts.pricingUrl },
   });
 }
 

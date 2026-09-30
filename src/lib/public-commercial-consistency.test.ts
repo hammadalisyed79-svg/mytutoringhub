@@ -158,19 +158,19 @@ assert.doesNotMatch(launchOffer, /Need one more live subject/);
 
 // 10. Tutor Pro promo
 const tutorPro = resolvePlan(DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!);
-assert.equal(tutorPro.promoUntil, "2026-10-07");
+assert.equal(tutorPro.promoUntil, "2026-09-30");
 assert.match(tutorPro.promoNote || "", /Listing Boost and Priority Verification Review/);
 assert.doesNotMatch(tutorPro.promoNote || "", /Extra Active/);
 
 const afterPromo = resolvePlan(
   DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
-  new Date("2026-10-08T00:00:01Z"),
+  new Date("2026-10-01T00:00:01Z"),
 );
 assert.equal(afterPromo.isPromoActive, false);
 
 const stillLive = resolvePlan(
   DEFAULT_PLANS.find((p) => p.id === "TUTOR_BASIC")!,
-  new Date("2026-10-07T23:59:00Z"),
+  new Date("2026-09-30T23:59:00Z"),
 );
 assert.equal(stillLive.isPromoActive, true);
 
@@ -215,7 +215,7 @@ assert.doesNotMatch(privacy, /no advertising cookies/i);
 const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free right now?");
 assert.ok(proFaq);
 assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
-assert.match(proFaq!.a, /7 October 2026/);
+assert.match(proFaq!.a, /30 September 2026/);
 assert.doesNotMatch(proFaq!.a, /Extra Active/);
 
 const aiSupport = readSrc("lib/ai-support.ts");
@@ -256,7 +256,7 @@ assert.match(studyPrompt, /Student Pro/);
 assert.match(studyPrompt, /\/search/);
 assert.match(studyPrompt, /\/support/);
 
-assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /7 October 2026/);
+assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /30 September 2026/);
 assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Listing Boost and Priority Verification Review are separate paid add-ons/);
 
 // Safepay hosts platform SKUs only — no lesson fee product
