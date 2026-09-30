@@ -115,7 +115,8 @@ assert.match(marketing, /Listing Boost and Priority Verification Review are sepa
 const freeVsPaid = readSrc("lib/free-vs-paid.ts");
 assert.doesNotMatch(freeVsPaid, /Extra Active/);
 assert.match(freeVsPaid, /Tutor Pro — up to/);
-assert.match(freeVsPaid, /Launch offer/);
+assert.doesNotMatch(freeVsPaid, /Launch offer ended/);
+assert.doesNotMatch(freeVsPaid, /Is Tutor Pro really free/);
 
 const pricingPage = readSrc("app/pricing/page.tsx");
 assert.doesNotMatch(pricingPage, /Extra Active/);
@@ -242,14 +243,14 @@ const privacy = readSrc("app/privacy/page.tsx");
 assert.doesNotMatch(privacy, /Legal review backlog/i);
 assert.doesNotMatch(privacy, /no advertising cookies/i);
 
-const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "Is Tutor Pro really free right now?");
+const proFaq = FREE_VS_PAID_FAQS.find((f) => f.q === "What does Tutor Pro include?");
 assert.ok(proFaq);
 assert.match(proFaq!.a, new RegExp(`${FREE_SUBJECT_PROFILES} active Teaching Profile`));
-assert.match(proFaq!.a, /30 September 2026/);
+assert.doesNotMatch(proFaq!.a, /really free right now/i);
 assert.doesNotMatch(proFaq!.a, /Extra Active/);
 
 const aiSupport = readSrc("lib/ai-support.ts");
-assert.match(aiSupport, /TUTOR_PRO_LAUNCH_OFFER_LINE/);
+assert.match(aiSupport, /TUTOR_PRO_PUBLIC_LINE/);
 assert.match(aiSupport, /buildAiSupportSystemPrompt/);
 assert.match(aiSupport, /paidCheckoutLive/);
 assert.match(aiSupport, /Teaching Profile/);
@@ -263,7 +264,7 @@ assert.doesNotMatch(aiSupport, /Tutor Basic/i);
 const supportLive = buildAiSupportSystemPrompt({ paidCheckoutLive: true, currency: "EUR" });
 const supportSoon = buildAiSupportSystemPrompt({ paidCheckoutLive: false, currency: "USD" });
 assert.match(supportLive, /Safepay checkout is LIVE/);
-assert.match(supportSoon, /may still be launching/);
+assert.match(supportSoon, /not configured right now/);
 assert.match(supportLive, /Always quote money in EUR/);
 assert.match(supportLive, new RegExp(`${BUSINESS.studentFreeContactsPerMonth} new tutor contacts`));
 assert.match(supportLive, new RegExp(`${BUSINESS.studentPassPaperDownloadsPerMonth} past paper`));
@@ -288,6 +289,7 @@ assert.match(studyPrompt, /\/support/);
 
 assert.match(TUTOR_PRO_LAUNCH_OFFER_UNTIL, /30 September 2026/);
 assert.match(TUTOR_PRO_LAUNCH_OFFER_LINE, /Listing Boost and Priority Verification Review are separate paid add-ons/);
+assert.doesNotMatch(TUTOR_PRO_LAUNCH_OFFER_LINE, /was complimentary until/);
 
 // Safepay hosts platform SKUs only — no lesson fee product
 const safepayCheckout = readSrc("app/api/safepay/checkout/route.ts");

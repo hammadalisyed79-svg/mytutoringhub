@@ -33,7 +33,7 @@ export default function TermsPage() {
           <p>
             Free student accounts may browse tutors and start a limited number of new tutor contacts
             each month as shown on Plans &amp; pricing. Student Pass unlocks unlimited tutor
-            contacts and student request ads; Student Pro adds unlimited past-paper downloads and
+            contacts and Tutor Requests; Student Pro adds unlimited past-paper downloads and
             the AI study assistant where offered. Tutors with a complete profile may appear in
             search without a paid plan. Tutor Pro and optional upgrades (Priority Verification
             Review, Listing Boost per Teaching Profile, legacy listing packs) improve ranking and

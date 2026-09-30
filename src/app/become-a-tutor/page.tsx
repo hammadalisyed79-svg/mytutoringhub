@@ -6,7 +6,7 @@ import { InviteTutorShare } from "@/components/InviteTutorShare";
 import {
   TUTOR_FREE_LISTING_LINE,
   NO_LESSON_COMMISSION_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_LINE,
+  TUTOR_PRO_PUBLIC_LINE,
 } from "@/lib/marketing-copy";
 import { BUSINESS } from "@/lib/business-rules";
 import { tutorRegisterPath } from "@/lib/referral-links";
@@ -17,7 +17,7 @@ import { getDbUserRole } from "@/lib/dashboard-home";
 
 export const metadata = pageMetadata({
   title: "Become a Tutor – Free Teaching Profiles & Tutor Pro Priority",
-  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. ${TUTOR_PRO_LAUNCH_OFFER_LINE}`,
+  description: `${TUTOR_FREE_LISTING_LINE} Keep 100% of lesson fees. ${TUTOR_PRO_PUBLIC_LINE}`,
   path: "/become-a-tutor",
 });
 

@@ -47,7 +47,7 @@ export const STUDENT_COMPARE_ROWS: CompareRow[] = [
     paid: "yes",
   },
   {
-    feature: "Post “need a tutor” request ads",
+    feature: "Post a Tutor Request",
     free: "no",
     paid: "yes",
     detail: "Requires Student Pass or Student Pro.",
@@ -146,12 +146,12 @@ export const ALWAYS_FREE_HIGHLIGHTS = [
 ] as const;
 
 export const STUDENT_PAID_HIGHLIGHTS = [
-  "Student Pass — unlimited messaging, request ads, 10 past papers/month",
+  "Student Pass — unlimited messaging, Tutor Requests, 10 past papers/month",
   "Student Pro — everything in Pass, plus unlimited papers & AI study coach",
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  `Tutor Pro — up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles, ranking, unlimited student contacts (list price; Launch offer ended 30 September 2026)`,
+  `Tutor Pro — up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles, ranking, unlimited student contacts`,
   "Optional — Listing Boost per profile; Priority Verification Review (badge only after approval)",
 ] as const;
 
@@ -169,8 +169,8 @@ export const FREE_VS_PAID_FAQS = [
     a: `No. A complete profile (photo, headline, bio, location, qualifications, and one Teaching Profile with subject + rate) appears in search for free — that’s when students can message you. ${TUTOR_FREE_LISTING_LINE}`,
   },
   {
-    q: "Is Tutor Pro really free right now?",
-    a: `The Launch offer complimentary window ended on 30 September 2026. Tutor Pro is now at list price (ranking + unlimited student contacts + up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles). Free tutors keep ${FREE_SUBJECT_PROFILES} active Teaching Profile permanently. Listing Boost is optional and does not add capacity. Identity Verified is earned via review — Priority Verification Review only jumps the queue.`,
+    q: "What does Tutor Pro include?",
+    a: `Tutor Pro is at list price (ranking + unlimited student contacts + up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles). Free tutors keep ${FREE_SUBJECT_PROFILES} active Teaching Profile permanently. Listing Boost is optional and does not add capacity. Identity Verified is earned via review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a Teaching Profile?",
@@ -182,7 +182,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "What is the difference between Student Pass and Student Pro?",
-    a: "Student Pass unlocks unlimited tutor messaging, student request ads, and 10 past paper downloads per month. Student Pro includes everything in Pass plus unlimited past paper downloads and the AI study assistant. Free accounts can browse past papers but need Pass, Pro, or a pay-per-paper purchase to download.",
+    a: "Student Pass unlocks unlimited tutor messaging, Tutor Requests, and 10 past paper downloads per month. Student Pro includes everything in Pass plus unlimited past paper downloads and the AI study assistant. Free accounts can browse past papers but need Pass, Pro, or a pay-per-paper purchase to download.",
   },
   {
     q: "Can I use the study assistant on a free account?",
@@ -190,7 +190,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "How do I upgrade?",
-    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay on Safepay when checkout is live. Until card checkout is live, paid plans can be activated manually by email after payment. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Existing holders of legacy capacity add-ons keep their entitlements.",
+    a: "Open Plans & pricing, choose Student Pass, Student Pro, or Tutor Pro, and pay securely with Safepay when checkout is available. If card checkout is temporarily unavailable, paid plans can be activated manually after payment confirmation. Listing Boost and Priority Verification Review are purchased from your tutor dashboard. Existing holders of legacy capacity add-ons keep their entitlements.",
   },
 ] as const;
 

@@ -32,6 +32,7 @@ import {
   listingMatchesExpandedSubject,
   teachingProfileCapabilityWhere,
 } from "@/lib/search-capabilities";
+import { canonicalTeachingSubject, sameCanonicalSubject } from "@/lib/teaching-profile-subject";
 
 export type TutorSearchFilters = {
   q?: string;
@@ -307,10 +308,12 @@ export async function searchTutors(
         ...(capabilityFilters.length ? { AND: capabilityFilters } : {}),
         ...(subject
           ? {
-              // Listing fields only — parent expertise/subjects would match every card for that tutor.
+              // Exact subject/canonical match only — never substring (Science ≠ Computer Science).
               OR: expandSubjectTerms(subject).flatMap((term) => [
-                { subject: contains(term) },
-                ...(includeJoinTable ? [{ canonicalSubject: contains(term) }] : []),
+                { subject: { equals: term, mode: "insensitive" as const } },
+                ...(includeJoinTable
+                  ? [{ canonicalSubject: { equals: term, mode: "insensitive" as const } }]
+                  : []),
               ]),
             }
           : {}),
@@ -504,13 +507,19 @@ export async function searchTutors(
 }
 
 export async function averageRateForSubject(subject: string) {
+  const terms = expandSubjectTerms(subject);
   const rows = await prisma.subjectProfile.findMany({
     where: {
       status: "ACTIVE",
-      subject: { contains: subject, mode: "insensitive" },
+      OR: terms.flatMap((term) => [
+        { subject: { equals: term, mode: "insensitive" as const } },
+        { canonicalSubject: { equals: term, mode: "insensitive" as const } },
+      ]),
       tutorProfile: publicListedTutorWhere(),
     },
     select: {
+      subject: true,
+      canonicalSubject: true,
       rate: true,
       tutorProfile: {
         select: {
@@ -530,9 +539,9 @@ export async function averageRateForSubject(subject: string) {
       },
     },
   });
-  const publicRows = rows.filter((row) =>
-    canViewTutorProfilePublicly(tutorPublicVisibilityInput(row.tutorProfile)),
-  );
+  const publicRows = rows
+    .filter((row) => canViewTutorProfilePublicly(tutorPublicVisibilityInput(row.tutorProfile)))
+    .filter((row) => listingMatchesExpandedSubject(row, subject));
   if (publicRows.length === 0) return null;
   return publicRows.reduce((s, p) => s + p.rate, 0) / publicRows.length;
 }
@@ -550,6 +559,7 @@ export async function averageRatesBySubject(subjectNames: string[]) {
     },
     select: {
       subject: true,
+      canonicalSubject: true,
       rate: true,
       tutorProfile: {
         select: {
@@ -578,9 +588,10 @@ export async function averageRatesBySubject(subjectNames: string[]) {
   for (const name of names) totals.set(name, { sum: 0, count: 0 });
 
   for (const row of publicRows) {
-    const hay = row.subject.toLowerCase();
     for (const name of names) {
-      if (!hay.includes(name.toLowerCase())) continue;
+      if (!sameCanonicalSubject(row.subject, name) && !sameCanonicalSubject(row.canonicalSubject, name)) {
+        continue;
+      }
       const bucket = totals.get(name)!;
       bucket.sum += row.rate;
       bucket.count += 1;
@@ -627,7 +638,9 @@ export function similarTutorsWhereClause(opts: {
 
   if (!first) return null;
 
-  const terms = expandSubjectTerms(first);
+  // Normalize exam-prefixed labels ("A Level Science") to canonical before expanding.
+  const canonical = canonicalTeachingSubject(first).canonical || first;
+  const terms = [...new Set([first, canonical, ...expandSubjectTerms(canonical), ...expandSubjectTerms(first)])];
   const subjectOr = terms.flatMap((term) => [
     { subject: { equals: term, mode: "insensitive" as const } },
     { canonicalSubject: { equals: term, mode: "insensitive" as const } },

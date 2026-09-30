@@ -6,7 +6,7 @@ import { BUSINESS } from "@/lib/business-rules";
 import {
   STUDENT_FREE_CONTACTS_LINE,
   TUTOR_FREE_LISTING_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_LINE,
+  TUTOR_PRO_PUBLIC_LINE,
 } from "@/lib/marketing-copy";
 
 export type HelpFaqItem = { q: string; a: string };
@@ -46,7 +46,7 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
       },
       {
         q: "How do reviews work?",
-        a: "Students who have messaged a tutor can leave a review after the conversation is at least 12 hours old. Reviews may be moderated before they appear publicly.",
+        a: "Students who have messaged a tutor can leave a review after the conversation is at least 12 hours old. Reviews are moderated before they appear publicly. Reviews reflect messaging experiences on the platform — lesson payments happen directly between student and tutor, so MTH does not verify that a paid lesson took place.",
       },
     ],
   },
@@ -55,12 +55,16 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
     title: "Teaching",
     items: [
       {
-        q: "Is Tutor Pro free / what does free listing include?",
-        a: `Complete tutor profiles appear in search with ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. ${TUTOR_PRO_LAUNCH_OFFER_LINE}`,
+        q: "What does free listing include? What is Tutor Pro?",
+        a: `Complete tutor profiles appear in search with ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. ${TUTOR_PRO_PUBLIC_LINE}`,
       },
       {
         q: "What does Identity Verified mean?",
         a: "Identity Verified tutors upload a government photo ID. Admins review privately and then approve the badge. You cannot buy the badge; Priority Verification Review only prioritises the queue.",
+      },
+      {
+        q: "Do I need to verify my email to message?",
+        a: "Students and tutors need a verified email to start new conversations. Tutors can reply to inbound student messages even before email verification.",
       },
     ],
   },
@@ -78,7 +82,7 @@ export const HELP_FAQ_CATEGORIES: HelpFaqCategory[] = [
       },
       {
         q: "How do payments work?",
-        a: "Platform plans are billed for the period you purchase through Safepay when live. Access remains active for the purchased period. Automatic renewal only applies if recurring billing is explicitly offered and authorized at checkout. Lesson payments are never processed through Safepay.",
+        a: "Platform plans are billed for the period you purchase through Safepay when checkout is available. Access remains active for the purchased period. Automatic renewal only applies if recurring billing is explicitly offered and authorized at checkout. Lesson payments are never processed through Safepay.",
       },
     ],
   },
@@ -118,11 +122,11 @@ export const ALL_HELP_FAQS: HelpFaqItem[] = HELP_FAQ_CATEGORIES.flatMap((c) => c
 export const PRICING_FAQS: HelpFaqItem[] = [
   {
     q: "What do students pay for?",
-    a: `${STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks unlimited messaging, request ads, and 10 past paper downloads/month. Student Pro adds unlimited eligible past papers and the AI study assistant. Lesson fees stay between you and the tutor.`,
+    a: `${STUDENT_FREE_CONTACTS_LINE} Student Pass unlocks unlimited messaging, Tutor Requests, and 10 past paper downloads/month. Student Pro adds unlimited eligible past papers and the AI study assistant. Lesson fees stay between you and the tutor.`,
   },
   {
     q: "What do tutors pay for?",
-    a: `${TUTOR_FREE_LISTING_LINE} Tutor Pro adds capacity, ranking, and unlimited student contacts when you message first. Listing Boost and Priority Verification Review are optional add-ons. ${TUTOR_PRO_LAUNCH_OFFER_LINE}`,
+    a: `${TUTOR_FREE_LISTING_LINE} ${TUTOR_PRO_PUBLIC_LINE}`,
   },
   {
     q: "Do plans auto-renew?",

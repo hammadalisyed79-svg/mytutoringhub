@@ -5,11 +5,10 @@ import { importedCatalogKey, isSafeCatalogKey } from "./catalog-key";
 import { matchCurriculumEntry } from "./subject-matcher";
 import { validatePdfBuffer, sha256 } from "./file-validate";
 import { duplicateComboWhere } from "./catalog-key";
-import { guessSyllabusCode } from "./browse";
+import { guessSyllabusCode, subjectSeoSlug, resolveSeoCurriculum, pastPaperBoardLabel, pastPaperBoardOptions, resolvePastPaperBoard, buildPastPaperFilterTree } from "./browse";
 import { parseManifestPayload } from "./manifest-import";
 import { classifyR2PaperObject, FBISE_R2_PAPERS_PREFIX, r2PaperListPrefixes } from "./past-paper-sync";
 import { parseFbiseStoragePath } from "./fbise-path-parser";
-import { pastPaperBoardLabel, pastPaperBoardOptions, resolvePastPaperBoard, buildPastPaperFilterTree } from "./browse";
 import { groupPapersByYearSessionComponent } from "./group-papers";
 import { isR2Configured } from "./r2";
 import { downloadableFileWhere } from "./availability";
@@ -143,6 +142,30 @@ assert.equal(guessSyllabusCode("Chemistry", "IGCSE"), "0620");
 assert.equal(guessSyllabusCode("Chemistry", "O Level"), "5070");
 assert.equal(guessSyllabusCode("Chemistry", "A Level"), "9701");
 assert.equal(guessSyllabusCode("Chemistry"), "0620");
+assert.equal(guessSyllabusCode("Computer Science", "GCSE"), "0478"); // Cambridge map only
+assert.equal(guessSyllabusCode("Computer Science", "IGCSE"), "0478");
+
+// Pearson / non-Cambridge boards must not stamp Cambridge syllabus codes into SEO slugs.
+assert.equal(
+  subjectSeoSlug({ subject: "Computer Science", level: "GCSE", board: "Pearson Edexcel" }),
+  "computer-science",
+);
+assert.equal(
+  subjectSeoSlug({ subject: "Computer Science", level: "IGCSE", board: "Cambridge International" }),
+  "computer-science-0478",
+);
+
+{
+  const resolved = resolveSeoCurriculum("pearson-edexcel", "gcse", "computer-science-0478");
+  assert.equal(resolved.syllabusCode, null);
+  assert.ok(resolved.entry);
+  assert.match(resolved.entry!.board, /Edexcel|Pearson/i);
+}
+
+{
+  const resolved = resolveSeoCurriculum("cambridge", "igcse", "computer-science-0478");
+  assert.equal(resolved.syllabusCode, "0478");
+}
 
 assert.equal(normalizeCambridgeSession("February/March"), "Feb/Mar");
 assert.equal(normalizeCambridgeSession("May/June"), "May/Jun");

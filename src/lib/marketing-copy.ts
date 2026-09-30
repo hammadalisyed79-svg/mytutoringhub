@@ -35,22 +35,27 @@ export const TUTOR_FREE_LISTING_LINE =
 export const TUTOR_PRO_LISTING_LINE =
   `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking among matching students, and unlimited student contacts when you message first.`;
 
-/** Public label for the Tutor Pro complimentary window (gated by plans.promoUntil). */
+/** @deprecated Launch offer ended 30 Sep 2026 — kept for admin/receipt history only. */
 export const TUTOR_PRO_LAUNCH_OFFER_LABEL = "Launch offer";
 
-/** Inclusive end date shown in marketing copy — must match plans.promoUntil. */
+/** Inclusive end date — historical; do not surface on public acquisition pages. */
 export const TUTOR_PRO_LAUNCH_OFFER_UNTIL = "30 September 2026";
 
-/** Benefits included free while the Launch offer is active. */
+/** Benefits that were included free while the Launch offer was active. */
 export const TUTOR_PRO_LAUNCH_BENEFITS = [
   `Up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles`,
   "Relevance-first ranking among matching students",
   "Unlimited student contacts when you message students first",
 ] as const;
 
-/** One-line summary for FAQs, help, and AI support. */
-export const TUTOR_PRO_LAUNCH_OFFER_LINE =
-  `Launch offer: Tutor Pro was complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited student contacts). That window has ended — list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons — not part of this offer.`;
+/**
+ * Public one-liner for Tutor Pro — list price only (Launch offer ended; do not re-add promo claims).
+ */
+export const TUTOR_PRO_PUBLIC_LINE =
+  `Tutor Pro includes up to ${BUSINESS.tutorProActiveListings} active Teaching Profiles, relevance-first ranking, and unlimited student contacts when you message first. Free listing includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons.`;
+
+/** @deprecated Prefer TUTOR_PRO_PUBLIC_LINE for public pages. */
+export const TUTOR_PRO_LAUNCH_OFFER_LINE = TUTOR_PRO_PUBLIC_LINE;
 
 export const IDENTITY_VERIFIED_LINE =
   "Identity Verified means a successful identity review — not a qualification, degree, quality, or background check. The badge is earned, not purchased; Priority Verification Review only jumps the queue.";
@@ -62,10 +67,14 @@ export const GEO_CURRENCY_LINE =
   "Rates shown in your local currency · tutors online or in your city · GCSE, IGCSE, A-Level, Matric, and more";
 
 export const STUDENT_REQUESTS_LINE =
-  "Post what you need — matching tutors can reply. Student Pass is required to post requests.";
+  "Post a Tutor Request — matching tutors can reply. Student Pass is required to post requests.";
 
 export const EXAM_PREP_CTA =
   `Exams coming up? Student Pass unlocks unlimited tutor messages and ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads per month. Student Pro adds unlimited eligible papers and the AI study assistant.`;
+
+/** Canonical guest/signed-out past-paper purchase hint (Student Pass is paid). */
+export const PAST_PAPER_SIGN_IN_DOWNLOADS_LINE =
+  "Sign in with Student Pass or Pro for included downloads. Student Pass includes 10 eligible downloads per month.";
 
 /** Soft invite — no Hub Points / referral rewards promotion on public sales surfaces. */
 export const REFERRAL_LINE =

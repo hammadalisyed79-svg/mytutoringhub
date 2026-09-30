@@ -8,7 +8,7 @@ const TRUST_ITEMS = [
   { icon: "✓", label: TRUST_IDENTITY_VERIFICATION },
   { icon: "◎", label: "Rates in your currency" },
   { icon: "◆", label: NO_LESSON_COMMISSION_SHORT },
-  { icon: "◇", label: "Direct tutor contact" },
+  { icon: "◇", label: "Message tutors directly" },
   { icon: "◉", label: TRUST_COUNTRIES_BOARDS },
 ] as const;
 

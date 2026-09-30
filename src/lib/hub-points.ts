@@ -135,7 +135,7 @@ export function hubPointsRedeemCards(role: string): HubPointsRedeemCard[] {
   return [
     {
       title: "Student Pass",
-      description: "Unlimited messaging & request ads",
+      description: "Unlimited messaging & Tutor Requests",
       href: "/pricing?plan=STUDENT_PASS",
       badge: "Popular",
     },

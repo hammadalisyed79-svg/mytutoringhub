@@ -6,8 +6,7 @@ import {
   STUDENT_REQUESTS_LINE,
   TUTOR_FREE_LISTING_LINE,
   TUTOR_PRO_LISTING_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_LINE,
-  TUTOR_PRO_LAUNCH_OFFER_UNTIL,
+  TUTOR_PRO_PUBLIC_LINE,
 } from "@/lib/marketing-copy";
 import { BUSINESS, NO_LESSON_COMMISSION_LINE } from "@/lib/business-rules";
 import { ANNUAL_SAVE_FOOTNOTE, DEFAULT_PLANS } from "@/lib/plans";
@@ -83,7 +82,7 @@ export function buildAiSupportSystemPrompt(opts: AiSupportPromptOptions) {
 
   const checkoutLine = opts.paidCheckoutLive
     ? `Safepay checkout is LIVE for platform SKUs (Student Pass/Pro, Tutor Pro, Listing Boost, Priority Verification Review, and single past-paper purchases). Prices display in the visitor’s currency (${currency}). Lesson fees are NEVER processed through Safepay.`
-    : `Safepay card checkout may still be launching. Free Teaching Profiles work without payment. Tutor Pro is at list price (Launch offer ended ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}). Paid plans can be requested/activated via ${PAYMENTS_SUPPORT_EMAIL} or the in-app activation flow on /pricing. Lesson fees are NEVER processed through Safepay.`;
+    : `Safepay card checkout is not configured right now. Free Teaching Profiles work without payment. Tutor Pro is at list price. Paid plans can be requested/activated via ${PAYMENTS_SUPPORT_EMAIL} or the in-app activation flow on /pricing. Lesson fees are NEVER processed through Safepay.`;
 
   const studentCompare = STUDENT_COMPARE_ROWS.map(
     (r) =>
@@ -140,7 +139,7 @@ Your role: help students and tutors with how the website works — accounts, pla
 
 ### Students
 - Free: ${STUDENT_FREE_CONTACTS_LINE} Replies inside existing threads do not use a new contact.
-- Student Pass (${passPrice}; annual ~20% off): unlimited new tutor contacts, post “need a tutor” request ads, ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads/month.
+- Student Pass (${passPrice}; annual ~20% off): unlimited new tutor contacts, post Tutor Requests, ${BUSINESS.studentPassPaperDownloadsPerMonth} past paper downloads/month.
 - Student Pro (${proPrice}; annual ~20% off): everything in Pass + unlimited eligible past paper downloads + AI study assistant (/assistant).
 - ${STUDENT_PASS_PAPERS_LINE}
 - ${STUDENT_REQUESTS_LINE} Posting requires Student Pass or Pro (/ads/new).
@@ -152,7 +151,7 @@ Your role: help students and tutors with how the website works — accounts, pla
 - Free tutors: ${BUSINESS.tutorFreeActiveListings} active Teaching Profile; ${BUSINESS.tutorFreeEnquiryRevealsPerMonth} student contacts/month when messaging students first; can receive & reply to inbound student messages; keep 100% of lesson fees.
 - ${TUTOR_PRO_LISTING_LINE}
 - Tutor Pro list price ${tutorProPrice} (annual ~20% off). Internal plan id may be TUTOR_BASIC — always call it “Tutor Pro” to users.
-- ${TUTOR_PRO_LAUNCH_OFFER_LINE}
+- ${TUTOR_PRO_PUBLIC_LINE}
 - Teaching Profile = one canonical subject listing (Maths, Physics, …) with boards/levels/syllabus; photo, verification, and reviews stay on the master profile. Students see separate search cards per Teaching Profile.
 - Listing Boost (${boostPrice} for 30 days; 365-day option ~20% off vs twelve 30-day buys): optional visibility lift on ONE Teaching Profile. Does NOT add Teaching Profile capacity. Buy from the tutor dashboard Teaching Profile, not as a capacity upgrade.
 - ${IDENTITY_VERIFIED_LINE} Priority Verification Review is a one-time ${verifyPrice} queue jump — payment never auto-grants the badge.
@@ -221,8 +220,8 @@ ${faqBlock("How it works (/how-it-works)", HOW_IT_WORKS_FAQS)}
 - Never sell retired capacity/highlight add-ons or Hub Points acquisition as current public products.
 - Never claim lesson fees go through Safepay.
 - If unsure, say so plainly and point to /help, /pricing, /free-vs-paid, /refund, or ${PAYMENTS_SUPPORT_EMAIL}.
-
-Launch offer end date when relevant: ${TUTOR_PRO_LAUNCH_OFFER_UNTIL}.`;
+- Tutors may reply to inbound student messages before email verification; starting new conversations requires a verified email.
+- Reviews require a prior conversation (≥12 hours) and are moderated before they appear publicly; MTH does not verify that a paid lesson occurred.`;
 }
 
 /** @deprecated Prefer buildAiSupportSystemPrompt({ paidCheckoutLive, currency }) for live accuracy. */

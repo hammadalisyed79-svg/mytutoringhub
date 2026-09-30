@@ -659,7 +659,7 @@ export default async function SubjectListingPage({ params }: Params) {
             <section className="profile-similar">
               <h2 className="profile-section-title">
                 {similarMode === "generic"
-                  ? "Other tutors nearby"
+                  ? "Other tutors you may want to explore"
                   : `Similar ${listing.subject} Teaching Profiles`}
               </h2>
               <p className="muted">
@@ -667,7 +667,7 @@ export default async function SubjectListingPage({ params }: Params) {
                   ? `More ${listing.subject} tutors nearby.`
                   : similarMode === "same_subject_broad"
                     ? `More ${listing.subject} tutors (wider area / online).`
-                    : "Other tutors in this area."}
+                    : "Nearby tutors when few same-subject matches are available."}
               </p>
               <div className="tutor-grid similar-tutors">
                 {similar.map((t) => {

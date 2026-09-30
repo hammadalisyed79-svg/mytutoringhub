@@ -48,4 +48,4 @@ export const NO_LESSON_COMMISSION_SHORT = "No commission on lesson fees";
 
 export const TRUST_IDENTITY_VERIFICATION = "Identity verification available";
 
-export const TRUST_COUNTRIES_BOARDS = "50+ countries & boards";
+export const TRUST_COUNTRIES_BOARDS = "50+ tutoring markets";

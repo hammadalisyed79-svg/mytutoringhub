@@ -168,14 +168,21 @@ export function seoBoardSlug(board: string) {
 }
 
 export function subjectSeoSlug(
-  entry: { subject: string; code?: string; level?: string },
+  entry: { subject: string; code?: string; level?: string; board?: string },
   syllabusCode?: string | null,
 ) {
-  const code = syllabusCode || guessSyllabusCode(entry.subject, entry.level) || "";
+  const isCambridge = /cambridge/i.test(entry.board || "");
+  // Never stamp Cambridge syllabus codes onto non-Cambridge board URLs (e.g. Pearson Edexcel).
+  const code =
+    syllabusCode ||
+    entry.code ||
+    (isCambridge ? guessSyllabusCode(entry.subject, entry.level) : null) ||
+    "";
   const base = slugify(entry.subject);
   return code ? `${base}-${code.toLowerCase()}` : base;
 }
 
+/** Cambridge-only syllabus guess — do not use for Pearson/AQA/other boards. */
 export function guessSyllabusCode(subject: string, level?: string) {
   const subjectName = subject.trim().toLowerCase();
   const levelName = (level || "").trim().toLowerCase();
@@ -213,7 +220,12 @@ export function parseSubjectSeoSlug(slug: string) {
 
 export function resolveSeoCurriculum(boardSlug: string, qualificationSlug: string, subjectSlug: string) {
   const parsed = parseSubjectSeoSlug(subjectSlug);
-  const mapped = parsed.syllabusCode ? CAMBRIDGE_SYLLABUS_MAP[parsed.syllabusCode] : undefined;
+  const isCambridgeBoard = boardSlug === "cambridge";
+  // Cambridge syllabus codes only apply on Cambridge board landings.
+  const mapped =
+    isCambridgeBoard && parsed.syllabusCode
+      ? CAMBRIDGE_SYLLABUS_MAP[parsed.syllabusCode]
+      : undefined;
   const rows = CURRICULUM.filter((row) => {
     const boardOk =
       slugify(row.board) === boardSlug ||
@@ -221,7 +233,12 @@ export function resolveSeoCurriculum(boardSlug: string, qualificationSlug: strin
     const levelOk = slugify(row.level) === qualificationSlug;
     if (!boardOk || !levelOk) return false;
     if (mapped) return row.subject.toLowerCase() === mapped.subject.toLowerCase();
-    return slugify(row.subject) === parsed.subjectSlug || slugify(row.subject) === slugify(subjectSlug);
+    // Ignore Cambridge code suffix when resolving non-Cambridge boards (legacy URLs).
+    return (
+      slugify(row.subject) === parsed.subjectSlug ||
+      slugify(row.subject) === slugify(subjectSlug) ||
+      (parsed.syllabusCode && slugify(row.subject) === parsed.subjectSlug)
+    );
   });
   const preferred =
     rows.find((row) => row.country === "Pakistan") ||
@@ -230,7 +247,8 @@ export function resolveSeoCurriculum(boardSlug: string, qualificationSlug: strin
   return {
     entry: preferred,
     rows,
-    syllabusCode: parsed.syllabusCode,
+    // Only surface Cambridge syllabus codes on Cambridge pages.
+    syllabusCode: isCambridgeBoard ? parsed.syllabusCode : null,
   };
 }
 

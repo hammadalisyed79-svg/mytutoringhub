@@ -419,7 +419,7 @@ export function PricingPlansClient({
               Student plans
             </h2>
             <p className="muted pricing-addons-lead">
-              Browse free. Upgrade only if you need unlimited messaging, request ads, or study tools.
+              Browse free. Upgrade only if you need unlimited messaging, Tutor Requests, or study tools.
               Lesson fees stay between you and the tutor.
             </p>
           </header>

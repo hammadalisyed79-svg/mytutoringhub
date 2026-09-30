@@ -14,7 +14,7 @@ export async function HomeProofStrip() {
     },
     pastPaperCount > 0 && {
       value: pastPaperCount.toLocaleString(),
-      label: pastPaperCount === 1 ? "Past paper to practice" : "Past papers to practice",
+      label: pastPaperCount === 1 ? "Exam resource to practice" : "Exam resources to practice",
     },
   ].filter(Boolean) as { value: string; label: string }[];
 

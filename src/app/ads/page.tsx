@@ -160,7 +160,7 @@ export default async function AdsPage({
           <div className="page-hero-actions">
             {session?.user?.role === "STUDENT" ? (
               <Link href="/ads/new" className="btn btn-sm">
-                Post a request
+                Post a Tutor Request
               </Link>
             ) : !session?.user ? (
               <>
@@ -201,7 +201,7 @@ export default async function AdsPage({
               </p>
               {session?.user?.role === "STUDENT" ? (
                 <Link href="/ads/new" className="btn">
-                  Post a request
+                  Post a Tutor Request
                 </Link>
               ) : session?.user?.role === "TUTOR" ? (
                 <p>

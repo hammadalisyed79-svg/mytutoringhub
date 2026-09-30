@@ -258,7 +258,10 @@ export default async function PastPapersPage({
           ) : (
             <>
               Each download is <strong>{feeLabel}</strong>
-              {session?.user ? "" : " — pay without an account, or sign in for Student Pass bundles"}.
+              {session?.user
+                ? ""
+                : " — pay without an account, or sign in with Student Pass or Pro for included downloads"}
+              .
             </>
           )}
         </p>

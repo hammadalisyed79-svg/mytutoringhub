@@ -74,6 +74,18 @@ const publicWhere = publicListedTutorWhere();
 }
 
 {
+  const where = similarTutorsWhereClause({
+    id: "listing-a",
+    subjects: "A Level Science",
+    location: "Lahore",
+  });
+  assert.ok(where);
+  const orJson = JSON.stringify(where!.OR);
+  assert.match(orJson, /"Science"/);
+  assert.doesNotMatch(orJson, /Computer Science/);
+}
+
+{
   const generic = similarTutorsWhereClause({
     id: "listing-a",
     subjects: "Science",

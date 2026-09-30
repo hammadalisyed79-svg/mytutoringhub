@@ -91,13 +91,19 @@ export default async function PastPaperSeoPage({
     subject: entry?.subject,
     board: entry?.board || (board === "cambridge" ? "Cambridge" : undefined),
     qualification: entry?.level,
-    code: code || undefined,
+    // Only apply syllabus code filter when the board actually owns that code family.
+    code:
+      code && (/cambridge/i.test(entry?.board || board) || board === "cambridge")
+        ? code
+        : undefined,
     year: sp.year ? Number(sp.year) : undefined,
     session: sp.session || undefined,
     paper: sp.paper || undefined,
     documentType: sp.documentType || undefined,
   });
-  if (papers.length < 5 && entry && !sp.documentType && !sp.paper) {
+  // Never backfill Cambridge papers onto non-Cambridge board landings.
+  const isCambridgeBoard = /cambridge/i.test(entry?.board || "") || board === "cambridge";
+  if (isCambridgeBoard && papers.length < 5 && entry && !sp.documentType && !sp.paper) {
     const extra = await prisma.pastPaper.findMany({
       where: {
         ...publicAvailabilityWhere(),

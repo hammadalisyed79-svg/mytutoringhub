@@ -66,7 +66,7 @@ export default async function AssistantPage() {
             benefits={[
               "AI Study Assistant",
               "Unlimited eligible Past Papers",
-              "All Student Pass benefits (unlimited contacts + request ads)",
+              "All Student Pass benefits (unlimited contacts + Tutor Requests)",
             ]}
             ctaLabel="Get Student Pro"
             maybeLaterHref="/study/progress"
