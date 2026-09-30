@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { formatHourly, formatPlanPrice } from "@/lib/currency";
 import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { similarTutors, slugify } from "@/lib/search-tutors";
-import { listingPath, teachingProfileDocumentTitle } from "@/lib/subject-profile";
+import { listingPath, teachingProfileDocumentTitle, teachingProfilePublicHeadline } from "@/lib/subject-profile";
 import { resolveTeachingProfileRedirect } from "@/lib/teaching-profile-redirect";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
 import {
@@ -148,10 +148,9 @@ export async function generateMetadata({ params }: Params) {
 
   const name = listing.tutorProfile.user.name?.trim() || "Tutor";
   const desc =
-    listing.headline ||
+    listing.title ||
     listing.description ||
-    listing.tutorProfile.headline ||
-    publicTutorBio(listing.tutorProfile.bio) ||
+    listing.headline ||
     `${name} offers ${listing.subject} tutoring.`;
 
   if (!isPublicListing) {
@@ -234,7 +233,20 @@ export default async function SubjectListingPage({ params }: Params) {
     online: listing.online,
     inPerson: listing.inPerson,
   });
-  const bio = publicTutorBio(listing.description || tutor.bio);
+  const bio = publicTutorBio(listing.description || "");
+  const profileHeadline = teachingProfilePublicHeadline({
+    title: listing.title,
+    headline: listing.headline,
+    subject: listing.subject,
+  });
+  const siblingActiveCount = await prisma.subjectProfile.count({
+    where: {
+      tutorProfileId: tutor.id,
+      status: "ACTIVE",
+      NOT: { id: listing.id },
+    },
+  });
+  const hasSiblingProfiles = siblingActiveCount > 0;
   const canMessage = session?.user?.role === "STUDENT";
   const viewer =
     canMessage && session?.user
@@ -412,8 +424,12 @@ export default async function SubjectListingPage({ params }: Params) {
             <Link href="/search">← Search</Link>
             {" · "}
             <Link href={`/s/${slugify(listing.subject)}`}>{listing.subject} tutors</Link>
-            {" · "}
-            <Link href={`/tutors/${tutor.id}`}>Full tutor profile</Link>
+            {hasSiblingProfiles ? (
+              <>
+                {" · "}
+                <Link href={`/tutors/${tutor.id}`}>More from this tutor</Link>
+              </>
+            ) : null}
           </p>
 
           <div className="profile-v2-layout">
@@ -429,7 +445,7 @@ export default async function SubjectListingPage({ params }: Params) {
                   priority
                 />
                 <h1 className="profile-name">{tutorName}</h1>
-                <p className="profile-headline-v2">{listing.headline || listing.title}</p>
+                <p className="profile-headline-v2">{profileHeadline}</p>
 
                 <div className="profile-badges-row">
                   {isOwner ? (
@@ -544,6 +560,16 @@ export default async function SubjectListingPage({ params }: Params) {
                     {place ? ` from ${place}` : ""}. Message to ask about lesson plans and availability.
                   </p>
                 )}
+                {(listing.qualification || tutor.qualifications) && (
+                  <p className="muted" style={{ marginBottom: 0 }}>
+                    Qualifications: {listing.qualification || tutor.qualifications}
+                  </p>
+                )}
+                {hasSiblingProfiles ? (
+                  <p style={{ marginBottom: 0 }}>
+                    <Link href={`/tutors/${tutor.id}`}>More subjects from {firstName} →</Link>
+                  </p>
+                ) : null}
               </section>
 
               <section className="profile-content-card" id="message-tutor">
@@ -590,43 +616,16 @@ export default async function SubjectListingPage({ params }: Params) {
                   </p>
                 ) : (
                   <p className="muted">
-                    Switch to a student account to message tutors, or{" "}
-                    <Link href={`/tutors/${tutor.id}`}>view the full profile</Link>.
+                    Switch to a student account with a Student Pass to message tutors.
+                    {hasSiblingProfiles ? (
+                      <>
+                        {" "}
+                        <Link href={`/tutors/${tutor.id}`}>More from this tutor</Link>
+                      </>
+                    ) : null}
                   </p>
                 )}
               </section>
-
-              {(tutor.qualifications || tutor.headline) && (
-                <section className="profile-content-card">
-                  <h2>About {firstName}</h2>
-                  {tutor.headline ? <p className="profile-headline">{tutor.headline}</p> : null}
-                  {tutor.qualifications ? (
-                    <p className="muted" style={{ marginBottom: 0 }}>
-                      Qualifications: {tutor.qualifications}
-                    </p>
-                  ) : null}
-                  <p style={{ marginBottom: 0 }}>
-                    <Link href={`/tutors/${tutor.id}`}>View full tutor profile →</Link>
-                  </p>
-                </section>
-              )}
-
-              {!tutor.qualifications && !tutor.headline && (
-                <section className="profile-content-card">
-                  <h2>About {firstName}</h2>
-                  {isOwner ? (
-                    <p className="profile-placeholder">
-                      Add a headline and qualifications on your dashboard so students can trust this
-                      listing at a glance.
-                    </p>
-                  ) : (
-                    <p className="muted" style={{ marginBottom: 0 }}>
-                      See more subjects, availability, and reviews on{" "}
-                      <Link href={`/tutors/${tutor.id}`}>{firstName}&apos;s full profile</Link>.
-                    </p>
-                  )}
-                </section>
-              )}
 
               <section className="profile-content-card" id="reviews">
                 <h2>Reviews</h2>
@@ -641,7 +640,11 @@ export default async function SubjectListingPage({ params }: Params) {
                       ))}
                     </ul>
                     <p style={{ marginBottom: 0 }}>
-                      <Link href={`/tutors/${tutor.id}`}>See full tutor profile →</Link>
+                      {hasSiblingProfiles ? (
+                        <Link href={`/tutors/${tutor.id}`}>More from this tutor →</Link>
+                      ) : (
+                        <Link href={`/s/${slugify(listing.subject)}`}>More {listing.subject} tutors →</Link>
+                      )}
                     </p>
                   </>
                 ) : (

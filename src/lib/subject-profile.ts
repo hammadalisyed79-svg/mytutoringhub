@@ -53,3 +53,20 @@ export function teachingProfileDocumentTitle(title: string, subject: string) {
 export function listingPath(listingId: string) {
   return `/listings/${listingId}`;
 }
+
+/**
+ * Student-facing Teaching Profile headline.
+ * Prefer the listing title over a master-profile headline that may list other subjects.
+ */
+export function teachingProfilePublicHeadline(opts: {
+  title?: string | null;
+  headline?: string | null;
+  subject?: string | null;
+}): string {
+  const title = (opts.title || "").trim();
+  if (title) return title;
+  const headline = (opts.headline || "").trim();
+  if (headline) return headline;
+  const subject = (opts.subject || "").trim();
+  return subject ? `${subject} tutor` : "";
+}

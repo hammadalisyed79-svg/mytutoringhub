@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { TutorAvatar } from "@/components/TutorAvatar";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -23,7 +23,7 @@ import { getVisitorCurrency } from "@/lib/visitor-currency";
 import { getPlanDashboardSummary } from "@/lib/plan-limits";
 import { isPaidCheckoutLive } from "@/lib/payments-status";
 import { getLivePlan } from "@/lib/plans";
-import { listingPath } from "@/lib/subject-profile";
+import { listingPath, teachingProfilePublicHeadline } from "@/lib/subject-profile";
 import { similarTutors, slugify } from "@/lib/search-tutors";
 import { embedVideoSrc } from "@/lib/media";
 import { formatTutorPlace, formatTutorAvailability } from "@/lib/tutor-catalog";
@@ -213,6 +213,11 @@ export default async function TutorProfilePage({ params }: Params) {
     notFound();
   }
 
+  // Public search/profile views should open the Teaching Profile, not the multi-subject hub.
+  if (!isOwner && !isAdmin && tutor.subjectProfiles.length === 1) {
+    permanentRedirect(listingPath(tutor.subjectProfiles[0]!.id));
+  }
+
   // Never expose tutor phone on public/student views (even after messaging).
   if (!isOwner && !isAdmin) {
     tutor.phone = null;
@@ -311,6 +316,15 @@ export default async function TutorProfilePage({ params }: Params) {
   const fromRate =
     listingRates.length > 0 ? Math.min(...listingRates) : tutor.hourlyRate;
   const showFromRate = listingRates.length > 1;
+  const soleListing = tutor.subjectProfiles.length === 1 ? tutor.subjectProfiles[0] : null;
+  const displayHeadline = soleListing
+    ? teachingProfilePublicHeadline({
+        title: soleListing.title,
+        headline: soleListing.headline,
+        subject: soleListing.subject,
+      }) || tutor.headline
+    : tutor.headline;
+  const displayRate = soleListing?.rate ?? fromRate;
 
   return (
     <>
@@ -401,8 +415,8 @@ export default async function TutorProfilePage({ params }: Params) {
               />
 
               <h1 className="profile-name">{tutor.user.name}</h1>
-              {tutor.headline ? (
-                <p className="profile-headline-v2">{tutor.headline}</p>
+              {displayHeadline ? (
+                <p className="profile-headline-v2">{displayHeadline}</p>
               ) : (
                 isOwner && <p className="profile-headline-v2 profile-placeholder">Add a headline</p>
               )}
@@ -456,7 +470,7 @@ export default async function TutorProfilePage({ params }: Params) {
 
               <p className="profile-rate-lg">
                 {showFromRate ? "From " : ""}
-                {formatHourly(fromRate, currency)}
+                {formatHourly(displayRate, currency)}
               </p>
 
               <ul className="profile-facts-list">
@@ -678,7 +692,7 @@ export default async function TutorProfilePage({ params }: Params) {
               )}
             </section>
 
-            {tutor.subjectProfiles.length > 0 && (
+            {tutor.subjectProfiles.length > 1 && (
               <section className="profile-content-card" id="lessons-offered">
                 <h2>Lessons offered</h2>
                 <p className="muted" style={{ marginTop: 0 }}>
@@ -818,7 +832,7 @@ export default async function TutorProfilePage({ params }: Params) {
               <h2>Contact {firstName}</h2>
               <p className="profile-rate-lg profile-rate-inline">
                 {showFromRate ? "From " : ""}
-                {formatHourly(fromRate, currency)}
+                {formatHourly(displayRate, currency)}
               </p>
               <p className="muted">{availability}</p>
               {showPhone ? (
