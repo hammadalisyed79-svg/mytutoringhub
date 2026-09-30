@@ -39,7 +39,7 @@ export const TUTOR_PRO_LISTING_LINE =
 export const TUTOR_PRO_LAUNCH_OFFER_LABEL = "Launch offer";
 
 /** Inclusive end date shown in marketing copy — must match plans.promoUntil. */
-export const TUTOR_PRO_LAUNCH_OFFER_UNTIL = "30 September 2026";
+export const TUTOR_PRO_LAUNCH_OFFER_UNTIL = "7 October 2026";
 
 /** Benefits included free while the Launch offer is active. */
 export const TUTOR_PRO_LAUNCH_BENEFITS = [
@@ -50,7 +50,7 @@ export const TUTOR_PRO_LAUNCH_BENEFITS = [
 
 /** One-line summary for FAQs, help, and AI support. */
 export const TUTOR_PRO_LAUNCH_OFFER_LINE =
-  `Launch offer: Tutor Pro is complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited student contacts). After that date, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons — not part of this offer.`;
+  `Final Launch offer: Tutor Pro is complimentary until ${TUTOR_PRO_LAUNCH_OFFER_UNTIL} (${TUTOR_PRO_LAUNCH_BENEFITS[0]}, ranking, unlimited student contacts). After that date, list price applies. Free listing still includes ${BUSINESS.tutorFreeActiveListings} active Teaching Profile permanently. Listing Boost and Priority Verification Review are separate paid add-ons — not part of this offer.`;
 
 export const IDENTITY_VERIFIED_LINE =
   "Identity Verified means a successful identity review — not a qualification, degree, quality, or background check. The badge is earned, not purchased; Priority Verification Review only jumps the queue.";

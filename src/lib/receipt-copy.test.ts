@@ -76,18 +76,18 @@ assert.equal(
   "Paid via Safepay",
 );
 
-const until = new Date("2026-09-30T23:59:59.999Z");
+const until = new Date("2026-10-07T23:59:59.999Z");
 assert.equal(
   receiptLineDescription({
     planName: "Tutor Pro",
     complimentary: true,
-    promoLabel: "Launch offer",
+    promoLabel: "Final Launch offer",
     periodEnd: until,
     isOneTimeAddOn: false,
     plan: "TUTOR_BASIC",
     billingPeriod: "monthly",
   }),
-  "Tutor Pro — Launch offer (complimentary until 30 September 2026)",
+  "Tutor Pro — Final Launch offer (complimentary until 7 October 2026)",
 );
 assert.match(
   receiptBillingDescription({

@@ -40,7 +40,7 @@ export const FREE_SUBJECT_PROFILES_AFTER_PROMO = FREE_SUBJECT_PROFILES;
 export const PAID_SUBJECT_PROFILE_CAP = TUTOR_PRO_SUBJECT_PROFILE_CAP;
 
 /** @deprecated Promo date retired from listing-cap model; kept for email/compat imports. */
-export const SUBJECT_PROFILE_PROMO_UNTIL = "2026-09-30";
+export const SUBJECT_PROFILE_PROMO_UNTIL = "2026-10-07";
 
 const TUTOR_PRO_PLANS: SubscriptionPlan[] = ["TUTOR_BASIC", "EXTRA_PROFILE_ADS"];
 

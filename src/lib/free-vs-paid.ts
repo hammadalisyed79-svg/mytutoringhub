@@ -151,7 +151,7 @@ export const STUDENT_PAID_HIGHLIGHTS = [
 ] as const;
 
 export const TUTOR_PAID_HIGHLIGHTS = [
-  `Tutor Pro — up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles, ranking, unlimited student contacts (Launch offer: complimentary until 30 September 2026)`,
+  `Tutor Pro — up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles, ranking, unlimited student contacts (Final Launch offer: complimentary until 7 October 2026)`,
   "Optional — Listing Boost per profile; Priority Verification Review (badge only after approval)",
 ] as const;
 
@@ -170,7 +170,7 @@ export const FREE_VS_PAID_FAQS = [
   },
   {
     q: "Is Tutor Pro really free right now?",
-    a: `Yes — under the Launch offer, Tutor Pro is complimentary until 30 September 2026 (ranking + unlimited student contacts + up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles). After that date, list price applies. Free tutors keep ${FREE_SUBJECT_PROFILES} active Teaching Profile permanently. Listing Boost is optional and does not add capacity. Identity Verified is earned via review — Priority Verification Review only jumps the queue.`,
+    a: `Yes — under the Final Launch offer, Tutor Pro is complimentary until 7 October 2026 (ranking + unlimited student contacts + up to ${TUTOR_PRO_SUBJECT_PROFILE_CAP} active Teaching Profiles). After that date, list price applies. Free tutors keep ${FREE_SUBJECT_PROFILES} active Teaching Profile permanently. Listing Boost is optional and does not add capacity. Identity Verified is earned via review — Priority Verification Review only jumps the queue.`,
   },
   {
     q: "What is a Teaching Profile?",
